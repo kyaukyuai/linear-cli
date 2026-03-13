@@ -111,6 +111,32 @@ This pushes:
 - `main`
 - `vX.Y.Z`
 
+## Optional Skill Publish To ClawHub
+
+If you also publish the generated agent skill to ClawHub, publish from `skills/linear-cli/` after the skill docs are up to date.
+
+Use the official CLI name `clawhub`. Do not use `clawdhub`.
+
+```bash
+deno task generate-skill-docs
+cd skills/linear-cli
+npx clawhub@latest login
+npx clawhub@latest whoami
+npx clawhub@latest publish . \
+  --slug linear-cli \
+  --name "Linear CLI" \
+  --version X.Y.Z \
+  --changelog "Refresh skill docs for linear-cli vX.Y.Z" \
+  --tags latest
+```
+
+Guidance:
+
+- use `skills/linear-cli/` as the publish root
+- keep the public skill identity stable unless you intentionally rename it
+- when the skill corresponds to a CLI release, prefer the same version as `deno.json`
+- if only the skill packaging or references changed, you can publish a separate skill version without cutting a new CLI release
+
 ## Expected Automation Flow
 
 After the tag push:
