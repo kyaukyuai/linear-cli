@@ -336,7 +336,7 @@ cd skills/linear-cli
 npx clawhub@latest login
 npx clawhub@latest whoami
 npx clawhub@latest publish . \
-  --slug linear-cli \
+  --slug kyaukyuai-linear-cli \
   --name "Linear CLI" \
   --version 2.1.0 \
   --changelog "Refresh skill docs for linear-cli v2.1.0" \
@@ -346,10 +346,12 @@ npx clawhub@latest publish . \
 guidance:
 
 - publish from `skills/linear-cli/`, not the repository root
-- keep `--slug linear-cli` and `--name "Linear CLI"` stable unless the public skill identity changes
+- keep `--slug kyaukyuai-linear-cli` and `--name "Linear CLI"` stable unless the public skill identity changes
 - when the skill matches a CLI release, prefer using the same version as `deno.json` and `CHANGELOG.md`
 - if the skill contents changed but no CLI release was cut, bump the skill version independently before publishing
 - run `deno task generate-skill-docs` first if command help or skill references changed
+
+the generic `linear-cli` slug is already taken on ClawHub, so this fork publishes as `kyaukyuai-linear-cli`.
 
 ## development
 

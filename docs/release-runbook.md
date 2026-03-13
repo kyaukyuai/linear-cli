@@ -123,7 +123,7 @@ cd skills/linear-cli
 npx clawhub@latest login
 npx clawhub@latest whoami
 npx clawhub@latest publish . \
-  --slug linear-cli \
+  --slug kyaukyuai-linear-cli \
   --name "Linear CLI" \
   --version X.Y.Z \
   --changelog "Refresh skill docs for linear-cli vX.Y.Z" \
@@ -134,6 +134,7 @@ Guidance:
 
 - use `skills/linear-cli/` as the publish root
 - keep the public skill identity stable unless you intentionally rename it
+- the current public ClawHub slug is `kyaukyuai-linear-cli`
 - when the skill corresponds to a CLI release, prefer the same version as `deno.json`
 - if only the skill packaging or references changed, you can publish a separate skill version without cutting a new CLI release
 
