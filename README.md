@@ -325,6 +325,32 @@ npx skills add kyaukyuai/linear-cli
 
 view the skill at [skills.sh/kyaukyuai/linear-cli/linear-cli](https://skills.sh/kyaukyuai/linear-cli/linear-cli)
 
+### clawhub publish for maintainers
+
+if you want to publish the generated skill to ClawHub, use the `skills/linear-cli/` directory as the publish target.
+
+> **note:** the CLI is `clawhub`, not `clawdhub`
+
+```bash
+cd skills/linear-cli
+npx clawhub@latest login
+npx clawhub@latest whoami
+npx clawhub@latest publish . \
+  --slug linear-cli \
+  --name "Linear CLI" \
+  --version 2.1.0 \
+  --changelog "Refresh skill docs for linear-cli v2.1.0" \
+  --tags latest
+```
+
+guidance:
+
+- publish from `skills/linear-cli/`, not the repository root
+- keep `--slug linear-cli` and `--name "Linear CLI"` stable unless the public skill identity changes
+- when the skill matches a CLI release, prefer using the same version as `deno.json` and `CHANGELOG.md`
+- if the skill contents changed but no CLI release was cut, bump the skill version independently before publishing
+- run `deno task generate-skill-docs` first if command help or skill references changed
+
 ## development
 
 ### release operations
