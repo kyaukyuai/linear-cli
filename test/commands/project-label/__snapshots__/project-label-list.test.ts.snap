@@ -1,0 +1,61 @@
+export const snapshot = {};
+
+snapshot[`Project Label List Command - Help Text 1`] = `
+stdout:
+"
+Usage: list
+
+Description:
+
+  List project labels
+
+Options:
+
+  -h, --help                   - Show this help.                                
+  -n, --limit         <limit>  - Maximum number of project labels  (Default: \\x1b[33m50\\x1b[39m)
+  --include-archived           - Include archived project labels                
+  -j, --json                   - Output as JSON                                 
+
+"
+stderr:
+""
+`;
+
+snapshot[`Project Label List Command - Shows Labels 1`] = `
+stdout:
+"Customer-facing plabel-1
+  color: #5E6AD2
+  description: Visible in roadmap and updates
+
+Platform plabel-2
+  color: #2F80ED
+  flags: group
+
+"
+stderr:
+""
+`;
+
+snapshot[`Project Label List Command - JSON Output 1`] = `
+stdout:
+'[
+  {
+    "id": "plabel-1",
+    "name": "Customer-facing",
+    "description": "Visible in roadmap and updates",
+    "color": "#5E6AD2",
+    "isGroup": false,
+    "createdAt": "2026-03-15T10:00:00Z",
+    "updatedAt": "2026-03-15T10:00:00Z",
+    "archivedAt": null,
+    "retiredAt": null,
+    "parent": {
+      "id": "plabel-root",
+      "name": "Product"
+    }
+  }
+]
+'
+stderr:
+""
+`;

@@ -1,0 +1,23 @@
+export const snapshot = {};
+
+snapshot[`Project Label Command - Help Text 1`] = `
+stdout:
+"
+Usage: COMMAND
+
+Description:
+
+  Manage Linear project labels
+
+Options:
+
+  -h, --help  - Show this help.  
+
+Commands:
+
+  list  - List project labels
+
+"
+stderr:
+""
+`;
