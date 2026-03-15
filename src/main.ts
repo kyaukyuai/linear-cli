@@ -15,6 +15,7 @@ import { documentCommand } from "./commands/document/document.ts"
 import { notificationCommand } from "./commands/notification/notification.ts"
 import { webhookCommand } from "./commands/webhook/webhook.ts"
 import { workflowStateCommand } from "./commands/workflow-state/workflow-state.ts"
+import { userCommand } from "./commands/user/user.ts"
 import { configCommand } from "./commands/config.ts"
 import { schemaCommand } from "./commands/schema.ts"
 import { apiCommand } from "./commands/api.ts"
@@ -66,6 +67,7 @@ Environment Variables:
   .command("notification", notificationCommand)
   .command("webhook", webhookCommand)
   .command("workflow-state", workflowStateCommand)
+  .command("user", userCommand)
   .command("completions", new CompletionsCommand())
   .command("config", configCommand)
   .command("schema", schemaCommand)
