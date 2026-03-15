@@ -1,0 +1,74 @@
+export const snapshot = {};
+
+snapshot[`Workflow State List Command - Help Text 1`] = `
+stdout:
+"
+Usage: list
+
+Description:
+
+  List workflow states for a team
+
+Options:
+
+  -h, --help             - Show this help.                      
+  --team      <teamKey>  - Team key (defaults to current team)  
+  -j, --json             - Output as JSON                       
+
+"
+stderr:
+""
+`;
+
+snapshot[`Workflow State List Command - Shows Workflow States 1`] = `
+stdout:
+"Engineering (ENG)
+0. Backlog [backlog] state-1
+1. In Progress [started] state-2
+  Actively being worked on
+"
+stderr:
+""
+`;
+
+snapshot[`Workflow State List Command - JSON Output 1`] = `
+stdout:
+'[
+  {
+    "id": "state-1",
+    "name": "Backlog",
+    "type": "backlog",
+    "position": 0,
+    "color": "#888888",
+    "description": null,
+    "createdAt": "2026-03-10T10:00:00Z",
+    "updatedAt": "2026-03-10T10:00:00Z",
+    "archivedAt": null,
+    "team": {
+      "id": "team-1",
+      "key": "ENG",
+      "name": "Engineering"
+    },
+    "inheritedFrom": null
+  }
+]
+'
+stderr:
+""
+`;
+
+snapshot[`Workflow State List Command - Team Not Found 1`] = `
+stdout:
+""
+stderr:
+"✗ Failed to list workflow states: Team not found: NOPE
+"
+`;
+
+snapshot[`Workflow State List Command - Team Not Found 1`] = `
+stdout:
+""
+stderr:
+"✗ Failed to list workflow states: Team not found: NOPE
+"
+`;

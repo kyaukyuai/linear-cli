@@ -1,0 +1,65 @@
+export const snapshot = {};
+
+snapshot[`Workflow State View Command - Help Text 1`] = `
+stdout:
+"
+Usage: view <workflowStateId>
+
+Description:
+
+  View a workflow state
+
+Options:
+
+  -h, --help  - Show this help.  
+  -j, --json  - Output as JSON   
+
+"
+stderr:
+""
+`;
+
+snapshot[`Workflow State View Command - Shows Workflow State 1`] = `
+stdout:
+"In Progress
+ID: state-2
+Type: started
+Position: 1
+Color: #00AAFF
+Team: Engineering (ENG)
+Description: Actively being worked on
+Inherited from: Started (started)
+Created: 2026-03-10T10:00:00Z
+Updated: 2026-03-11T08:00:00Z
+"
+stderr:
+""
+`;
+
+snapshot[`Workflow State View Command - JSON Output 1`] = `
+stdout:
+'{
+  "id": "state-2",
+  "name": "In Progress",
+  "type": "started",
+  "position": 1,
+  "color": "#00AAFF",
+  "description": "Actively being worked on",
+  "createdAt": "2026-03-10T10:00:00Z",
+  "updatedAt": "2026-03-11T08:00:00Z",
+  "archivedAt": null,
+  "team": {
+    "id": "team-1",
+    "key": "ENG",
+    "name": "Engineering"
+  },
+  "inheritedFrom": {
+    "id": "template-1",
+    "name": "Started",
+    "type": "started"
+  }
+}
+'
+stderr:
+""
+`;
