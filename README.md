@@ -93,6 +93,7 @@ compared to upstream, this fork adds and maintains several capabilities aimed at
 - issue workflow commands for `search`, `assign`, `move`, `priority`, `estimate`, `label add/remove`, comment delete, relations, and attachments
 - inbox notification commands for `list`, `count`, `read`, and `archive`
 - webhook commands for `list`, `view`, `create`, `update`, and `delete`
+- workflow state commands for `list` and `view`
 - JSON output for scripting across issue, cycle, project, and document commands
 - workspace-aware auth management with keyring migration and default workspace support
 - generated AI-agent skill docs, Claude plugin metadata, npm publishing, and Homebrew tap release plumbing
@@ -262,6 +263,17 @@ linear webhook create --url https://example.com/linear --resource-types Issue,Co
 linear webhook update <webhookId> --disabled
 linear webhook delete <webhookId> --yes
 linear webhook list --json
+```
+
+### workflow state commands
+
+inspect workflow states directly, without going through issue mutations.
+
+```bash
+linear workflow-state list --team ENG
+linear workflow-state list --json
+linear workflow-state view <workflowStateId>
+linear workflow-state view <workflowStateId> --json
 ```
 
 ### other commands

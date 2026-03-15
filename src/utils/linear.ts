@@ -132,12 +132,30 @@ export async function getWorkflowStates(
   const query = gql(/* GraphQL */ `
     query GetWorkflowStates($teamKey: String!) {
       team(id: $teamKey) {
+        id
+        key
+        name
         states {
           nodes {
             id
             name
             type
             position
+            color
+            description
+            createdAt
+            updatedAt
+            archivedAt
+            team {
+              id
+              key
+              name
+            }
+            inheritedFrom {
+              id
+              name
+              type
+            }
           }
         }
       }
@@ -146,6 +164,9 @@ export async function getWorkflowStates(
 
   const client = getGraphQLClient()
   const result = await client.request(query, { teamKey })
+  if (result.team == null) {
+    throw new NotFoundError("Team", teamKey)
+  }
   return result.team.states.nodes.sort(
     (a: { position: number }, b: { position: number }) =>
       a.position - b.position,
