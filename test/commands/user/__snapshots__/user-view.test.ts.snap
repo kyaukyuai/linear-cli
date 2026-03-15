@@ -1,0 +1,75 @@
+export const snapshot = {};
+
+snapshot[`User View Command - Help Text 1`] = `
+stdout:
+"
+Usage: view <userId>
+
+Description:
+
+  View a user
+
+Options:
+
+  -h, --help  - Show this help.  
+  -j, --json  - Output as JSON   
+
+"
+stderr:
+""
+`;
+
+snapshot[`User View Command - Shows User 1`] = `
+stdout:
+"John Doe
+ID: user-1
+Email: john@example.com
+Username: jdoe
+Workspace: Kyaukyuai
+Profile: https://linear.app/kyaukyuai/user/jdoe
+Active: yes
+Guest: no
+App: no
+Assignable: yes
+Mentionable: yes
+Description: Staff Engineer
+Status: :hammer: Shipping
+Timezone: Asia/Tokyo
+Last seen: 2026-03-15T12:00:00Z
+Created: 2026-03-10T09:00:00Z
+Updated: 2026-03-15T12:00:00Z
+"
+stderr:
+""
+`;
+
+snapshot[`User View Command - JSON Output 1`] = `
+stdout:
+'{
+  "id": "user-1",
+  "name": "jdoe",
+  "displayName": "John Doe",
+  "email": "john@example.com",
+  "active": true,
+  "guest": false,
+  "app": false,
+  "isAssignable": true,
+  "isMentionable": true,
+  "description": "Staff Engineer",
+  "statusEmoji": ":hammer:",
+  "statusLabel": "Shipping",
+  "timezone": "Asia/Tokyo",
+  "lastSeen": "2026-03-15T12:00:00Z",
+  "createdAt": "2026-03-10T09:00:00Z",
+  "updatedAt": "2026-03-15T12:00:00Z",
+  "archivedAt": null,
+  "url": "https://linear.app/kyaukyuai/user/jdoe",
+  "organization": {
+    "name": "Kyaukyuai",
+    "urlKey": "kyaukyuai"
+  }
+}
+'
+stderr:
+""
+`;

@@ -74,6 +74,7 @@ linear document           # Manage Linear documents
 linear notification       # Manage Linear notifications
 linear webhook            # Manage Linear webhooks
 linear workflow-state     # Manage Linear workflow states
+linear user               # Manage Linear users
 linear config             # Interactively generate .linear.toml configuration
 linear schema             # Print the GraphQL schema to stdout
 linear api                # Make a raw GraphQL API request
@@ -95,6 +96,7 @@ linear api                # Make a raw GraphQL API request
 - [notification](references/notification.md) - Manage Linear notifications
 - [webhook](references/webhook.md) - Manage Linear webhooks
 - [workflow-state](references/workflow-state.md) - Manage Linear workflow states
+- [user](references/user.md) - Manage Linear users
 - [config](references/config.md) - Interactively generate .linear.toml configuration
 - [schema](references/schema.md) - Print the GraphQL schema to stdout
 - [api](references/api.md) - Make a raw GraphQL API request

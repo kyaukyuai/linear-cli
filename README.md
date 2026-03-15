@@ -94,6 +94,7 @@ compared to upstream, this fork adds and maintains several capabilities aimed at
 - inbox notification commands for `list`, `count`, `read`, and `archive`
 - webhook commands for `list`, `view`, `create`, `update`, and `delete`
 - workflow state commands for `list` and `view`
+- user commands for `list` and `view`
 - JSON output for scripting across issue, cycle, project, and document commands
 - workspace-aware auth management with keyring migration and default workspace support
 - generated AI-agent skill docs, Claude plugin metadata, npm publishing, and Homebrew tap release plumbing
@@ -274,6 +275,18 @@ linear workflow-state list --team ENG
 linear workflow-state list --json
 linear workflow-state view <workflowStateId>
 linear workflow-state view <workflowStateId> --json
+```
+
+### user commands
+
+inspect workspace users directly with a primitive GraphQL-aligned surface.
+
+```bash
+linear user list
+linear user list --all
+linear user list --json
+linear user view <userId>
+linear user view <userId> --json
 ```
 
 ### other commands

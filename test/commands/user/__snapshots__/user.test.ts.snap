@@ -1,0 +1,24 @@
+export const snapshot = {};
+
+snapshot[`User Command - Help Text 1`] = `
+stdout:
+"
+Usage: COMMAND
+
+Description:
+
+  Manage Linear users
+
+Options:
+
+  -h, --help  - Show this help.  
+
+Commands:
+
+  list            - List users in the workspace
+  view  <userId>  - View a user                
+
+"
+stderr:
+""
+`;

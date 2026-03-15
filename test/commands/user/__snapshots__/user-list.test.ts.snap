@@ -1,0 +1,77 @@
+export const snapshot = {};
+
+snapshot[`User List Command - Help Text 1`] = `
+stdout:
+"
+Usage: list
+
+Description:
+
+  List users in the workspace
+
+Options:
+
+  -h, --help            - Show this help.                       
+  -n, --limit  <limit>  - Maximum number of users  (Default: \\x1b[33m50\\x1b[39m)
+  -a, --all             - Include disabled users                
+  -j, --json            - Output as JSON                        
+
+"
+stderr:
+""
+`;
+
+snapshot[`User List Command - Shows Users 1`] = `
+stdout:
+"Contractor user-2
+  contractor@example.com
+  username: contractor
+  flags: inactive, guest, not assignable
+
+John Doe user-1
+  john@example.com
+  username: jdoe
+  description: Staff Engineer
+  status: :hammer: Shipping
+  timezone: Asia/Tokyo
+
+"
+stderr:
+""
+`;
+
+snapshot[`User List Command - JSON Output 1`] = `
+stdout:
+'[
+  {
+    "id": "user-1",
+    "name": "jdoe",
+    "displayName": "John Doe",
+    "email": "john@example.com",
+    "active": true,
+    "guest": false,
+    "app": false,
+    "isAssignable": true,
+    "isMentionable": true,
+    "description": "Staff Engineer",
+    "statusEmoji": ":hammer:",
+    "statusLabel": "Shipping",
+    "timezone": "Asia/Tokyo"
+  }
+]
+'
+stderr:
+""
+`;
+
+snapshot[`User List Command - Includes Disabled With All 1`] = `
+stdout:
+"Contractor user-2
+  contractor@example.com
+  username: contractor
+  flags: inactive, guest, not assignable
+
+"
+stderr:
+""
+`;
