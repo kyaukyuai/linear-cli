@@ -85,14 +85,18 @@ export const viewCommand = new Command()
       console.log(`${gray("Position:")} ${workflowState.position}`)
       console.log(`${gray("Color:")} ${workflowState.color}`)
       console.log(
-        `${gray("Team:")} ${workflowState.team.name} (${workflowState.team.key})`,
+        `${
+          gray("Team:")
+        } ${workflowState.team.name} (${workflowState.team.key})`,
       )
       if (workflowState.description != null) {
         console.log(`${gray("Description:")} ${workflowState.description}`)
       }
       if (workflowState.inheritedFrom != null) {
         console.log(
-          `${gray("Inherited from:")} ${workflowState.inheritedFrom.name} (${workflowState.inheritedFrom.type})`,
+          `${
+            gray("Inherited from:")
+          } ${workflowState.inheritedFrom.name} (${workflowState.inheritedFrom.type})`,
         )
       }
       console.log(`${gray("Created:")} ${workflowState.createdAt}`)
