@@ -1,0 +1,60 @@
+export const snapshot = {};
+
+snapshot[`Project Label Remove Command - Help Text 1`] = `
+stdout:
+"
+Usage: remove <projectId> <label>
+
+Description:
+
+  Remove a label from a project
+
+Options:
+
+  -h, --help  - Show this help.  
+  -j, --json  - Output as JSON   
+
+Examples:
+
+  Remove a project label linear project label remove auth-redesign bug
+
+"
+stderr:
+""
+`;
+
+snapshot[`Project Label Remove Command - Removes Label 1`] = `
+stdout:
+'✓ Removed label "Customer-facing" from auth-redesign
+'
+stderr:
+""
+`;
+
+snapshot[`Project Label Remove Command - JSON Output 1`] = `
+stdout:
+'{
+  "changed": true,
+  "project": {
+    "id": "project-1",
+    "name": "Auth Redesign",
+    "slugId": "auth-redesign",
+    "labels": []
+  },
+  "label": {
+    "id": "plabel-1",
+    "name": "Customer-facing"
+  }
+}
+'
+stderr:
+""
+`;
+
+snapshot[`Project Label Remove Command - Not Attached 1`] = `
+stdout:
+\`Project doesn't have label "Customer-facing"
+\`
+stderr:
+""
+`;

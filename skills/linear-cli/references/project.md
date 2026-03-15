@@ -18,11 +18,12 @@ Options:
 
 Commands:
 
-  list                  - List projects                  
-  view, v  <projectId>  - View project details           
-  create                - Create a new Linear project    
-  update   <projectId>  - Update a Linear project        
-  delete   <projectId>  - Delete (trash) a Linear project
+  list                  - List projects                     
+  view, v  <projectId>  - View project details              
+  create                - Create a new Linear project       
+  update   <projectId>  - Update a Linear project           
+  delete   <projectId>  - Delete (trash) a Linear project   
+  label                 - Manage project labels on a project
 ```
 
 ## Subcommands
@@ -136,4 +137,68 @@ Options:
   -h, --help               - Show this help.                      
   -w, --workspace  <slug>  - Target workspace (uses credentials)  
   -f, --force              - Skip confirmation prompt
+```
+
+### label
+
+> Manage project labels on a project
+
+```
+Usage:   linear project label
+
+Description:
+
+  Manage project labels on a project
+
+Options:
+
+  -h, --help               - Show this help.                      
+  -w, --workspace  <slug>  - Target workspace (uses credentials)  
+
+Commands:
+
+  add     <projectId> <label>  - Add a label to a project     
+  remove  <projectId> <label>  - Remove a label from a project
+```
+
+#### label subcommands
+
+##### add
+
+```
+Usage:   linear project label add <projectId> <label>
+
+Description:
+
+  Add a label to a project
+
+Options:
+
+  -h, --help               - Show this help.                      
+  -w, --workspace  <slug>  - Target workspace (uses credentials)  
+  -j, --json               - Output as JSON                       
+
+Examples:
+
+  Add a project label linear project label add auth-redesign bug
+```
+
+##### remove
+
+```
+Usage:   linear project label remove <projectId> <label>
+
+Description:
+
+  Remove a label from a project
+
+Options:
+
+  -h, --help               - Show this help.                      
+  -w, --workspace  <slug>  - Target workspace (uses credentials)  
+  -j, --json               - Output as JSON                       
+
+Examples:
+
+  Remove a project label linear project label remove auth-redesign bug
 ```

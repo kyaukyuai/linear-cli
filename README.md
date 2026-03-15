@@ -95,6 +95,7 @@ compared to upstream, this fork adds and maintains several capabilities aimed at
 - webhook commands for `list`, `view`, `create`, `update`, and `delete`
 - workflow state commands for `list` and `view`
 - user commands for `list` and `view`
+- project label commands for `list` and `project label add/remove`
 - JSON output for scripting across issue, cycle, project, and document commands
 - workspace-aware auth management with keyring migration and default workspace support
 - generated AI-agent skill docs, Claude plugin metadata, npm publishing, and Homebrew tap release plumbing
@@ -186,6 +187,8 @@ linear team autolinks  # configure GitHub repository autolinks for Linear issues
 ```bash
 linear project list    # list projects
 linear project view    # view project details
+linear project label add <projectIdOrSlug> <labelNameOrId>     # attach a project label
+linear project label remove <projectIdOrSlug> <labelNameOrId>  # detach a project label
 ```
 
 ### milestone commands
@@ -275,6 +278,16 @@ linear workflow-state list --team ENG
 linear workflow-state list --json
 linear workflow-state view <workflowStateId>
 linear workflow-state view <workflowStateId> --json
+```
+
+### project label commands
+
+inspect workspace project labels directly with a primitive GraphQL-aligned surface.
+
+```bash
+linear project-label list
+linear project-label list --include-archived
+linear project-label list --json
 ```
 
 ### user commands

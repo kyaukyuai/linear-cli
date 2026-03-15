@@ -1,0 +1,65 @@
+export const snapshot = {};
+
+snapshot[`Project Label Add Command - Help Text 1`] = `
+stdout:
+"
+Usage: add <projectId> <label>
+
+Description:
+
+  Add a label to a project
+
+Options:
+
+  -h, --help  - Show this help.  
+  -j, --json  - Output as JSON   
+
+Examples:
+
+  Add a project label linear project label add auth-redesign bug
+
+"
+stderr:
+""
+`;
+
+snapshot[`Project Label Add Command - Adds Label 1`] = `
+stdout:
+'✓ Added label "Customer-facing" to auth-redesign
+'
+stderr:
+""
+`;
+
+snapshot[`Project Label Add Command - JSON Output 1`] = `
+stdout:
+'{
+  "changed": true,
+  "project": {
+    "id": "project-1",
+    "name": "Auth Redesign",
+    "slugId": "auth-redesign",
+    "labels": [
+      {
+        "id": "plabel-1",
+        "name": "Customer-facing"
+      }
+    ]
+  },
+  "label": {
+    "id": "plabel-1",
+    "name": "Customer-facing"
+  }
+}
+'
+stderr:
+""
+`;
+
+snapshot[`Project Label Add Command - Already Attached 1`] = `
+stdout:
+'Project already has label "Customer-facing"
+'
+stderr:
+""
+`;

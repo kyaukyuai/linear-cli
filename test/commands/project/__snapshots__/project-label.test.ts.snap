@@ -1,0 +1,24 @@
+export const snapshot = {};
+
+snapshot[`Project Label Subcommand - Help Text 1`] = `
+stdout:
+"
+Usage: COMMAND
+
+Description:
+
+  Manage project labels on a project
+
+Options:
+
+  -h, --help  - Show this help.  
+
+Commands:
+
+  add     <projectId> <label>  - Add a label to a project     
+  remove  <projectId> <label>  - Remove a label from a project
+
+"
+stderr:
+""
+`;
