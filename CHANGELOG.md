@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## [2.2.0] - 2026-03-15
+
+### Added
+
+- added `workflow-state list` and `workflow-state view` commands with team-scoped and JSON output support
+- added `user list` and `user view` commands for organization-wide user lookup with JSON output support
+- added `project-label list` plus `project label add/remove` commands for project label discovery and assignment
+
+### Improved
+
+- documented ClawHub skill publishing for the published `kyaukyuai-linear-cli` slug and fixed npm release tarball handling for future releases
+
 ## [2.1.0] - 2026-03-13
 
 ### Added
@@ -456,7 +468,8 @@
 - adds a -t, --title flag to the `issue pr` command, allowing you to provide a PR title that is different than linear's issue title
 - allows linear issue identifiers to be passed in as arguments to the issue commands as an alternative to parsing the branch name, e.g. `linear issue show ABC-123`
 
-[Unreleased]: https://github.com/kyaukyuai/linear-cli/compare/v2.1.0...HEAD
+[Unreleased]: https://github.com/kyaukyuai/linear-cli/compare/v2.2.0...HEAD
+[2.2.0]: https://github.com/kyaukyuai/linear-cli/compare/v2.1.0...v2.2.0
 [2.1.0]: https://github.com/kyaukyuai/linear-cli/compare/v2.0.1...v2.1.0
 [2.0.1]: https://github.com/kyaukyuai/linear-cli/compare/v2.0.0...v2.0.1
 [2.0.0]: https://github.com/kyaukyuai/linear-cli/compare/v1.11.1...v2.0.0
