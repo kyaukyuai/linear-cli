@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [2.4.1] - 2026-03-17
+
+### Added
+
+- added JSON output for `issue relation add` and `issue relation delete` so bots and wrappers can create and remove dependencies without parsing terminal text
+
 ## [2.4.0] - 2026-03-17
 
 ### Added
