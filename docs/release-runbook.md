@@ -58,7 +58,7 @@ Trusted publisher settings:
 
 - organization or user: `kyaukyuai`
 - repository: `linear-cli`
-- workflow filename: `release.yml`
+- workflow filename: `publish.yaml`
 - environment name: leave blank
 
 The package must remain public.

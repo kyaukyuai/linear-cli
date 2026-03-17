@@ -46,6 +46,10 @@ jobs:
       contents: read
       id-token: write
     steps:
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          registry-url: "https://registry.npmjs.org"
       - name: Download npm release artifact
         id: npm-artifact
         env:
@@ -80,6 +84,4 @@ jobs:
       - if: steps.npm-version.outputs.published == 'true'
         run: echo "${{ steps.npm-package.outputs.name }}@${{ steps.npm-package.outputs.version }} is already published; skipping"
       - if: steps.npm-version.outputs.published != 'true'
-        env:
-          NODE_AUTH_TOKEN: ""
         run: npm publish --access public --provenance "${{ steps.npm-artifact.outputs.path }}"
