@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## [2.3.0] - 2026-03-17
+
+### Added
+
+- added `issue list --json` with bot-oriented filters for `query`, `parent`, `priority`, `updated-before`, and `due-before`
+- stabilized `issue view --json` with a bot-friendly payload that includes assignee, due date, priority, relations, and comment summaries
+- added `issue create --json` and `issue update --json` with stable response payloads for wrappers and bots
+
+### Improved
+
+- aligned npm trusted publishing with the `publish.yaml` workflow used by release automation
+
 ## [2.2.1] - 2026-03-17
 
 ### Fixed
