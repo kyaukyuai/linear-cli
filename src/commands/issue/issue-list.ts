@@ -6,6 +6,7 @@ import {
   getPriorityDisplay,
   getTimeAgo,
   padDisplay,
+  parsePriority,
   truncateText,
 } from "../../utils/display.ts"
 import {
@@ -16,12 +17,13 @@ import {
   getProjectOptionsByName,
   getTeamIdByKey,
   requireTeamKey,
+  resolveIssueInternalId,
   selectOption,
 } from "../../utils/linear.ts"
 import { openTeamAssigneeView } from "../../utils/actions.ts"
 import { pipeToUserPager, shouldUsePager } from "../../utils/pager.ts"
+import { withSpinner } from "../../utils/spinner.ts"
 import { header, muted } from "../../utils/styling.ts"
-import { shouldShowSpinner } from "../../utils/hyperlink.ts"
 import {
   handleError,
   NotFoundError,
@@ -91,12 +93,33 @@ export const listCommand = new Command()
     "Filter by project milestone name (requires --project)",
   )
   .option(
+    "--query <query:string>",
+    "Filter by title or description substring",
+  )
+  .option(
+    "--parent <parent:string>",
+    "Filter by parent issue identifier",
+  )
+  .option(
+    "--priority <priority:string>",
+    "Filter by priority (0-4 or none/urgent/high/medium/low)",
+  )
+  .option(
+    "--updated-before <updatedBefore:string>",
+    "Filter issues updated before an ISO date or datetime",
+  )
+  .option(
+    "--due-before <dueBefore:string>",
+    "Filter issues due before a date (YYYY-MM-DD)",
+  )
+  .option(
     "--limit <limit:number>",
     "Maximum number of issues to fetch (default: 50, use 0 for unlimited)",
     {
       default: 50,
     },
   )
+  .option("-j, --json", "Output as JSON")
   .option("-w, --web", "Open in web browser")
   .option("-a, --app", "Open in Linear.app")
   .option("--no-pager", "Disable automatic paging for long output")
@@ -115,7 +138,13 @@ export const listCommand = new Command()
         project,
         cycle,
         milestone,
+        query,
+        parent,
+        priority,
+        updatedBefore,
+        dueBefore,
         limit,
+        json,
         pager,
       },
     ) => {
@@ -156,7 +185,21 @@ export const listCommand = new Command()
             `Sort must be one of: ${SortType.values().join(", ")}`,
           )
         }
+        if (limit < 0) {
+          throw new ValidationError(
+            "--limit must be 0 or greater",
+            {
+              suggestion:
+                "Use --limit 0 for unlimited results, or a positive integer.",
+            },
+          )
+        }
         const teamKey = requireTeamKey(team)
+
+        const normalizedQuery = normalizeQuery(query)
+        const priorityFilter = normalizePriority(priority)
+        const updatedBeforeFilter = normalizeUpdatedBefore(updatedBefore)
+        const dueBeforeFilter = normalizeDueBefore(dueBefore)
 
         let projectId: string | undefined
         if (project != null) {
@@ -200,25 +243,41 @@ export const listCommand = new Command()
           milestoneId = await getMilestoneIdByName(milestone, projectId)
         }
 
-        const { Spinner } = await import("@std/cli/unstable-spinner")
-        const showSpinner = shouldShowSpinner()
-        const spinner = showSpinner ? new Spinner() : null
-        spinner?.start()
+        let parentId: string | undefined
+        if (parent != null) {
+          parentId = await resolveIssueInternalId(parent, {
+            suggestion:
+              "Use a full issue identifier like 'ENG-123' or just the number like '123'",
+          })
+        }
 
-        const result = await fetchIssuesForState(
-          teamKey,
-          allStates ? undefined : stateArray,
-          assignee,
-          unassigned,
-          allAssignees,
-          limit === 0 ? undefined : limit,
-          projectId,
-          sort,
-          cycleId,
-          milestoneId,
+        const result = await withSpinner(
+          () =>
+            fetchIssuesForState({
+              teamKey,
+              state: allStates ? undefined : stateArray,
+              assignee,
+              unassigned,
+              allAssignees,
+              limit: limit === 0 ? undefined : limit,
+              projectId,
+              sortParam: sort,
+              cycleId,
+              milestoneId,
+              query: normalizedQuery,
+              parentId,
+              priority: priorityFilter,
+              updatedBefore: updatedBeforeFilter,
+              dueBefore: dueBeforeFilter,
+            }),
+          { enabled: !json },
         )
-        spinner?.stop()
         const issues = result.issues?.nodes || []
+
+        if (json) {
+          console.log(JSON.stringify(issues, null, 2))
+          return
+        }
 
         if (issues.length === 0) {
           console.log("No issues found.")
@@ -426,3 +485,91 @@ export const listCommand = new Command()
       }
     },
   )
+
+function normalizeQuery(query?: string): string | undefined {
+  if (query == null) {
+    return undefined
+  }
+
+  const normalized = query.trim()
+  if (normalized.length === 0) {
+    throw new ValidationError(
+      "--query cannot be empty",
+      {
+        suggestion: "Provide a non-empty string, for example `--query auth`.",
+      },
+    )
+  }
+
+  return normalized
+}
+
+function normalizePriority(priority?: string): number | undefined {
+  if (priority == null) {
+    return undefined
+  }
+
+  const normalized = parsePriority(priority)
+  if (normalized == null) {
+    throw new ValidationError(
+      `Invalid priority: ${priority}`,
+      {
+        suggestion: "Use 0-4 or one of: none, urgent, high, medium, low.",
+      },
+    )
+  }
+
+  return normalized
+}
+
+function normalizeUpdatedBefore(updatedBefore?: string): string | undefined {
+  if (updatedBefore == null) {
+    return undefined
+  }
+
+  if (Number.isNaN(Date.parse(updatedBefore))) {
+    throw new ValidationError(
+      `Invalid --updated-before value: ${updatedBefore}`,
+      {
+        suggestion:
+          "Use an ISO date or datetime, for example `2026-03-31` or `2026-03-31T12:00:00Z`.",
+      },
+    )
+  }
+
+  return updatedBefore
+}
+
+function normalizeDueBefore(dueBefore?: string): string | undefined {
+  if (dueBefore == null) {
+    return undefined
+  }
+
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(dueBefore)) {
+    throw new ValidationError(
+      `Invalid --due-before value: ${dueBefore}`,
+      {
+        suggestion:
+          "Use a date in YYYY-MM-DD format, for example `2026-03-31`.",
+      },
+    )
+  }
+
+  const date = new Date(`${dueBefore}T00:00:00Z`)
+  const [year, month, day] = dueBefore.split("-").map(Number)
+  if (
+    Number.isNaN(date.getTime()) ||
+    date.getUTCFullYear() !== year ||
+    date.getUTCMonth() + 1 !== month ||
+    date.getUTCDate() !== day
+  ) {
+    throw new ValidationError(
+      `Invalid --due-before value: ${dueBefore}`,
+      {
+        suggestion: "Use a real calendar date in YYYY-MM-DD format.",
+      },
+    )
+  }
+
+  return dueBefore
+}
