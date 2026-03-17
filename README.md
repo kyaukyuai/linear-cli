@@ -179,6 +179,8 @@ linear issue comment list          # list comments on current issue
 linear issue comment add           # add a comment to current issue
 linear issue comment add -p <id>   # reply to a specific comment
 linear issue comment add ENG-123 --body "follow-up" --json  # emit created comment data
+linear issue relation add ENG-123 blocked-by ENG-100 --json  # emit machine-readable relation creation data
+linear issue relation delete ENG-123 blocked-by ENG-100 --json  # emit machine-readable relation deletion data
 linear issue relation list ENG-123 --json  # emit dependency graph for an issue
 linear issue comment update <id>   # update a comment
 linear issue commits               # show all commits for an issue (jj only)

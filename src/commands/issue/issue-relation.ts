@@ -1,9 +1,13 @@
 import { Command } from "@cliffy/command"
 import { gql } from "../../__codegen__/gql.ts"
 import { getGraphQLClient } from "../../utils/graphql.ts"
-import { getIssueId, getIssueIdentifier } from "../../utils/linear.ts"
+import {
+  getIssueIdentifier,
+  resolveIssueInternalId,
+} from "../../utils/linear.ts"
 import { withSpinner } from "../../utils/spinner.ts"
 import {
+  CliError,
   handleError,
   isClientError,
   isNotFoundError,
@@ -33,10 +37,85 @@ function getDisplayRelationType(
   return type
 }
 
+type RelationIssueRef = {
+  id: string
+  identifier: string
+}
+
+type RelationMutationPayload = {
+  success: boolean
+  direction: "outgoing" | "incoming"
+  relationType: RelationType
+  issue: RelationIssueRef
+  relatedIssue: RelationIssueRef
+  relationId?: string
+}
+
+async function resolveRelationIssueRefs(
+  issueIdArg: string,
+  relatedIssueIdArg: string,
+): Promise<{
+  issue: RelationIssueRef
+  relatedIssue: RelationIssueRef
+}> {
+  const issueIdentifier = await getIssueIdentifier(issueIdArg)
+  if (!issueIdentifier) {
+    throw new ValidationError(
+      `Could not resolve issue identifier: ${issueIdArg}`,
+    )
+  }
+
+  const relatedIssueIdentifier = await getIssueIdentifier(relatedIssueIdArg)
+  if (!relatedIssueIdentifier) {
+    throw new ValidationError(
+      `Could not resolve issue identifier: ${relatedIssueIdArg}`,
+    )
+  }
+
+  return {
+    issue: {
+      id: await resolveRelationIssueId(issueIdentifier),
+      identifier: issueIdentifier,
+    },
+    relatedIssue: {
+      id: await resolveRelationIssueId(relatedIssueIdentifier),
+      identifier: relatedIssueIdentifier,
+    },
+  }
+}
+
+async function resolveRelationIssueId(identifier: string): Promise<string> {
+  try {
+    return await resolveIssueInternalId(identifier)
+  } catch (error) {
+    if (isClientError(error) && isNotFoundError(error)) {
+      throw new NotFoundError("Issue", identifier)
+    }
+    throw error
+  }
+}
+
+function buildRelationMutationPayload(
+  issue: RelationIssueRef,
+  relatedIssue: RelationIssueRef,
+  relationType: RelationType,
+  relationId?: string,
+): RelationMutationPayload {
+  return {
+    success: true,
+    direction: relationType === "blocked-by" ? "incoming" : "outgoing",
+    relationType,
+    issue,
+    relatedIssue,
+    relationId,
+  }
+}
+
 const addRelationCommand = new Command()
   .name("add")
   .description("Add a relation between two issues")
   .arguments("<issueId:string> <relationType:string> <relatedIssueId:string>")
+  .option("-j, --json", "Output as JSON")
   .example(
     "Mark issue as blocked by another",
     "linear issue relation add ENG-123 blocked-by ENG-100",
@@ -53,9 +132,8 @@ const addRelationCommand = new Command()
     "Mark issue as duplicate",
     "linear issue relation add ENG-123 duplicate ENG-100",
   )
-  .action(async (_options, issueIdArg, relationTypeArg, relatedIssueIdArg) => {
+  .action(async ({ json }, issueIdArg, relationTypeArg, relatedIssueIdArg) => {
     try {
-      // Validate relation type
       const relationType = relationTypeArg.toLowerCase() as RelationType
       if (!RELATION_TYPES.includes(relationType)) {
         throw new ValidationError(
@@ -64,63 +142,10 @@ const addRelationCommand = new Command()
         )
       }
 
-      // Get issue identifiers
-      const issueIdentifier = await getIssueIdentifier(issueIdArg)
-      if (!issueIdentifier) {
-        throw new ValidationError(
-          `Could not resolve issue identifier: ${issueIdArg}`,
-        )
-      }
-
-      const relatedIssueIdentifier = await getIssueIdentifier(relatedIssueIdArg)
-      if (!relatedIssueIdentifier) {
-        throw new ValidationError(
-          `Could not resolve issue identifier: ${relatedIssueIdArg}`,
-        )
-      }
-
-      const { Spinner } = await import("@std/cli/unstable-spinner")
-      const { shouldShowSpinner } = await import("../../utils/hyperlink.ts")
-      const spinner = shouldShowSpinner() ? new Spinner() : null
-      spinner?.start()
-
-      // Get issue IDs
-      let issueId: string | undefined
-      try {
-        issueId = await getIssueId(issueIdentifier)
-      } catch (error) {
-        spinner?.stop()
-        if (isClientError(error) && isNotFoundError(error)) {
-          throw new NotFoundError("Issue", issueIdentifier)
-        }
-        throw error
-      }
-      if (!issueId) {
-        spinner?.stop()
-        throw new NotFoundError("Issue", issueIdentifier)
-      }
-
-      let relatedIssueId: string | undefined
-      try {
-        relatedIssueId = await getIssueId(relatedIssueIdentifier)
-      } catch (error) {
-        spinner?.stop()
-        if (isClientError(error) && isNotFoundError(error)) {
-          throw new NotFoundError("Issue", relatedIssueIdentifier)
-        }
-        throw error
-      }
-      if (!relatedIssueId) {
-        spinner?.stop()
-        throw new NotFoundError("Issue", relatedIssueIdentifier)
-      }
-
-      // For "blocked-by", we swap the issues so the relation is correct
-      // "A blocked-by B" means "B blocks A"
-      const apiType = getApiRelationType(relationType)
-      const [fromId, toId] = relationType === "blocked-by"
-        ? [relatedIssueId, issueId]
-        : [issueId, relatedIssueId]
+      const { issue, relatedIssue } = await resolveRelationIssueRefs(
+        issueIdArg,
+        relatedIssueIdArg,
+      )
 
       const createRelationMutation = gql(`
         mutation CreateIssueRelation($input: IssueRelationCreateInput!) {
@@ -134,25 +159,43 @@ const addRelationCommand = new Command()
       `)
 
       const client = getGraphQLClient()
-      const data = await client.request(createRelationMutation, {
-        input: {
-          issueId: fromId,
-          relatedIssueId: toId,
-          type: apiType,
-        },
-      })
+      const data = await withSpinner(
+        () => {
+          const apiType = getApiRelationType(relationType)
+          const [fromId, toId] = relationType === "blocked-by"
+            ? [relatedIssue.id, issue.id]
+            : [issue.id, relatedIssue.id]
 
-      spinner?.stop()
+          return client.request(createRelationMutation, {
+            input: {
+              issueId: fromId,
+              relatedIssueId: toId,
+              type: apiType,
+            },
+          })
+        },
+        { enabled: !json },
+      )
 
       if (!data.issueRelationCreate.success) {
-        throw new Error("Failed to create relation")
+        throw new CliError("Failed to create relation")
       }
 
-      if (data.issueRelationCreate.issueRelation) {
-        console.log(
-          `✓ Created relation: ${issueIdentifier} ${relationType} ${relatedIssueIdentifier}`,
-        )
+      const payload = buildRelationMutationPayload(
+        issue,
+        relatedIssue,
+        relationType,
+        data.issueRelationCreate.issueRelation?.id,
+      )
+
+      if (json) {
+        console.log(JSON.stringify(payload, null, 2))
+        return
       }
+
+      console.log(
+        `✓ Created relation: ${issue.identifier} ${relationType} ${relatedIssue.identifier}`,
+      )
     } catch (error) {
       handleError(error, "Failed to create relation")
     }
@@ -162,9 +205,9 @@ const deleteRelationCommand = new Command()
   .name("delete")
   .description("Delete a relation between two issues")
   .arguments("<issueId:string> <relationType:string> <relatedIssueId:string>")
-  .action(async (_options, issueIdArg, relationTypeArg, relatedIssueIdArg) => {
+  .option("-j, --json", "Output as JSON")
+  .action(async ({ json }, issueIdArg, relationTypeArg, relatedIssueIdArg) => {
     try {
-      // Validate relation type
       const relationType = relationTypeArg.toLowerCase() as RelationType
       if (!RELATION_TYPES.includes(relationType)) {
         throw new ValidationError(
@@ -172,63 +215,10 @@ const deleteRelationCommand = new Command()
           { suggestion: `Must be one of: ${RELATION_TYPES.join(", ")}` },
         )
       }
-
-      // Get issue identifiers
-      const issueIdentifier = await getIssueIdentifier(issueIdArg)
-      if (!issueIdentifier) {
-        throw new ValidationError(
-          `Could not resolve issue identifier: ${issueIdArg}`,
-        )
-      }
-
-      const relatedIssueIdentifier = await getIssueIdentifier(relatedIssueIdArg)
-      if (!relatedIssueIdentifier) {
-        throw new ValidationError(
-          `Could not resolve issue identifier: ${relatedIssueIdArg}`,
-        )
-      }
-
-      const { Spinner } = await import("@std/cli/unstable-spinner")
-      const { shouldShowSpinner } = await import("../../utils/hyperlink.ts")
-      const spinner = shouldShowSpinner() ? new Spinner() : null
-      spinner?.start()
-
-      // Get issue IDs
-      let issueId: string | undefined
-      try {
-        issueId = await getIssueId(issueIdentifier)
-      } catch (error) {
-        spinner?.stop()
-        if (isClientError(error) && isNotFoundError(error)) {
-          throw new NotFoundError("Issue", issueIdentifier)
-        }
-        throw error
-      }
-      if (!issueId) {
-        spinner?.stop()
-        throw new NotFoundError("Issue", issueIdentifier)
-      }
-
-      let relatedIssueId: string | undefined
-      try {
-        relatedIssueId = await getIssueId(relatedIssueIdentifier)
-      } catch (error) {
-        spinner?.stop()
-        if (isClientError(error) && isNotFoundError(error)) {
-          throw new NotFoundError("Issue", relatedIssueIdentifier)
-        }
-        throw error
-      }
-      if (!relatedIssueId) {
-        spinner?.stop()
-        throw new NotFoundError("Issue", relatedIssueIdentifier)
-      }
-
-      // Find the relation
-      const apiType = getApiRelationType(relationType)
-      const [fromId, toId] = relationType === "blocked-by"
-        ? [relatedIssueId, issueId]
-        : [issueId, relatedIssueId]
+      const { issue, relatedIssue } = await resolveRelationIssueRefs(
+        issueIdArg,
+        relatedIssueIdArg,
+      )
 
       const findRelationQuery = gql(`
         query FindIssueRelation($issueId: String!) {
@@ -245,43 +235,64 @@ const deleteRelationCommand = new Command()
       `)
 
       const client = getGraphQLClient()
-      const findData = await client.request(findRelationQuery, {
-        issueId: fromId,
-      })
+      const relationId = await withSpinner(
+        async () => {
+          const apiType = getApiRelationType(relationType)
+          const [fromId, toId] = relationType === "blocked-by"
+            ? [relatedIssue.id, issue.id]
+            : [issue.id, relatedIssue.id]
 
-      const relation = findData.issue?.relations.nodes.find(
-        (r: { type: string; relatedIssue: { id: string } }) =>
-          r.type === apiType && r.relatedIssue.id === toId,
+          const findData = await client.request(findRelationQuery, {
+            issueId: fromId,
+          })
+
+          const relation = findData.issue?.relations.nodes.find(
+            (r: { type: string; relatedIssue: { id: string } }) =>
+              r.type === apiType && r.relatedIssue.id === toId,
+          )
+
+          if (!relation) {
+            throw new NotFoundError(
+              "Relation",
+              `${relationType} between ${issue.identifier} and ${relatedIssue.identifier}`,
+            )
+          }
+
+          const deleteRelationMutation = gql(`
+            mutation DeleteIssueRelation($id: String!) {
+              issueRelationDelete(id: $id) {
+                success
+              }
+            }
+          `)
+
+          const deleteData = await client.request(deleteRelationMutation, {
+            id: relation.id,
+          })
+
+          if (!deleteData.issueRelationDelete.success) {
+            throw new CliError("Failed to delete relation")
+          }
+
+          return relation.id
+        },
+        { enabled: !json },
       )
 
-      if (!relation) {
-        spinner?.stop()
-        throw new NotFoundError(
-          "Relation",
-          `${relationType} between ${issueIdentifier} and ${relatedIssueIdentifier}`,
-        )
-      }
+      const payload = buildRelationMutationPayload(
+        issue,
+        relatedIssue,
+        relationType,
+        relationId,
+      )
 
-      const deleteRelationMutation = gql(`
-        mutation DeleteIssueRelation($id: String!) {
-          issueRelationDelete(id: $id) {
-            success
-          }
-        }
-      `)
-
-      const deleteData = await client.request(deleteRelationMutation, {
-        id: relation.id,
-      })
-
-      spinner?.stop()
-
-      if (!deleteData.issueRelationDelete.success) {
-        throw new Error("Failed to delete relation")
+      if (json) {
+        console.log(JSON.stringify(payload, null, 2))
+        return
       }
 
       console.log(
-        `✓ Deleted relation: ${issueIdentifier} ${relationType} ${relatedIssueIdentifier}`,
+        `✓ Deleted relation: ${issue.identifier} ${relationType} ${relatedIssue.identifier}`,
       )
     } catch (error) {
       handleError(error, "Failed to delete relation")

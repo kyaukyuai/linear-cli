@@ -715,6 +715,7 @@ Options:
 
   -h, --help               - Show this help.                      
   -w, --workspace  <slug>  - Target workspace (uses credentials)  
+  -j, --json               - Output as JSON                       
 
 Examples:
 
@@ -736,7 +737,8 @@ Description:
 Options:
 
   -h, --help               - Show this help.                      
-  -w, --workspace  <slug>  - Target workspace (uses credentials)
+  -w, --workspace  <slug>  - Target workspace (uses credentials)  
+  -j, --json               - Output as JSON
 ```
 
 ##### list
