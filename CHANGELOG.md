@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 
+## [2.4.0] - 2026-03-17
+
+### Added
+
+- added JSON output parity for `team members`, `issue relation list`, and `issue comment add` to support bot-friendly team lookup, dependency traversal, and comment ledger workflows
+- added `issue parent`, `issue children`, and `issue create-batch --file` for explicit issue hierarchy traversal and batch decomposition workflows
+
 ## [2.3.0] - 2026-03-17
 
 ### Added
