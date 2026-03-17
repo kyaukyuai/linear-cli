@@ -319,6 +319,7 @@ Options:
   -w, --workspace     <slug>         - Target workspace (uses credentials)                            
   -a, --assignee      <assignee>     - Assign the issue to 'self' or someone (by username or name)    
   --due-date          <dueDate>      - Due date of the issue                                          
+  --clear-due-date                   - Clear the due date on the issue                                
   --parent            <parent>       - Parent issue (if any) as a team_number code                    
   -p, --priority      <priority>     - Priority of the issue (1-4, descending priority)               
   --estimate          <estimate>     - Points estimate of the issue                                   

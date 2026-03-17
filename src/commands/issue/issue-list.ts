@@ -260,6 +260,11 @@ export const listCommand = new Command()
             unicodeWidth(getTimeAgo(new Date(issue.updatedAt)))
           ),
         )
+        const dueHeader = "DUE"
+        const DUE_WIDTH = Math.max(
+          unicodeWidth(dueHeader),
+          ...issues.map((issue) => unicodeWidth(issue.dueDate || "-")),
+        )
 
         type TableRow = {
           priorityStr: string
@@ -267,6 +272,7 @@ export const listCommand = new Command()
           title: string
           labels: string
           state: string
+          dueDate: string
           timeAgo: string
           estimate: number | null | undefined
           assignee?: string
@@ -345,6 +351,7 @@ export const listCommand = new Command()
             title: issue.title,
             labels,
             state: statePadded,
+            dueDate: issue.dueDate || "-",
             timeAgo,
             estimate: issue.estimate,
             assignee,
@@ -352,7 +359,7 @@ export const listCommand = new Command()
         })
 
         const fixed = PRIORITY_WIDTH + ID_WIDTH + UPDATED_WIDTH + SPACE_WIDTH +
-          LABEL_WIDTH + ESTIMATE_WIDTH + STATE_WIDTH + SPACE_WIDTH +
+          LABEL_WIDTH + ESTIMATE_WIDTH + DUE_WIDTH + STATE_WIDTH + SPACE_WIDTH +
           (showAssigneeColumn ? ASSIGNEE_WIDTH + SPACE_WIDTH : 0) // sum of fixed columns including spacing for estimate
         const PADDING = 1
         const maxTitleWidth = Math.max(
@@ -367,6 +374,7 @@ export const listCommand = new Command()
           padDisplay("LABELS", LABEL_WIDTH),
           padDisplay("E", ESTIMATE_WIDTH),
           ...(showAssigneeColumn ? [padDisplay("A", ASSIGNEE_WIDTH)] : []),
+          padDisplay(dueHeader, DUE_WIDTH),
           padDisplay("STATE", STATE_WIDTH),
           padDisplay(updatedHeader, UPDATED_WIDTH),
         ]
@@ -384,6 +392,7 @@ export const listCommand = new Command()
             title,
             labels,
             state,
+            dueDate,
             timeAgo,
             estimate,
             assignee,
@@ -401,7 +410,7 @@ export const listCommand = new Command()
             padDisplay(identifier, ID_WIDTH)
           } ${truncTitle} ${labels} ${
             padDisplay(estimate?.toString() || "-", ESTIMATE_WIDTH)
-          } ${assigneeOutput}${state} ${
+          } ${assigneeOutput}${padDisplay(dueDate, DUE_WIDTH)} ${state} ${
             muted(padDisplay(timeAgo, UPDATED_WIDTH))
           }`
           outputLines.push(issueLine)

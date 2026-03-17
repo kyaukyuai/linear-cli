@@ -233,6 +233,7 @@ export async function fetchIssueDetails(
 ): Promise<{
   identifier: string
   title: string
+  dueDate?: string | null
   description?: string | null | undefined
   url: string
   branchName: string
@@ -278,6 +279,7 @@ export async function fetchIssueDetails(
         issue(id: $id) {
           identifier
           title
+          dueDate
           description
           url
           branchName
@@ -351,6 +353,7 @@ export async function fetchIssueDetails(
         issue(id: $id) {
           identifier
           title
+          dueDate
           description
           url
           branchName
@@ -546,6 +549,7 @@ export async function fetchIssuesForState(
           id
           identifier
           title
+          dueDate
           priority
           estimate
           assignee {

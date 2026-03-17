@@ -32,3 +32,13 @@ Options:
 stderr:
 ""
 `;
+
+snapshot[`Issue List Command - Shows Due Date Column 1`] = `
+stdout:
+"◌   ID      TITLE                              LABELS  E A  DUE        STATE       UPDATED   
+⚠⚠⚠ ENG-123 Fix authentication expiry handling backend 3 YK 2025-08-25 In Progress 1 day ago 
+▄   ENG-124 Audit session timeout copy                 - -  -          Todo        2 days ago
+"
+stderr:
+""
+`;

@@ -50,6 +50,8 @@ snapshot[`Issue View Command - With No Comments Flag 1`] = `
 stdout:
 "# TEST-123: Fix authentication bug in login flow
 
+**Due:** 2025-08-25
+
 Users are experiencing issues logging in when their session expires.
 "
 stderr:
@@ -190,7 +192,7 @@ snapshot[`Issue View Command - With Project And Milestone 1`] = `
 stdout:
 "# TEST-789: Add monitoring dashboards
 
-**Project:** Platform Infrastructure Q1 | **Milestone:** Phase 2: Observability
+**Due:** 2025-08-31 | **Project:** Platform Infrastructure Q1 | **Milestone:** Phase 2: Observability
 
 Set up Datadog dashboards for the new service.
 "
