@@ -484,17 +484,42 @@ export async function fetchParentIssueData(parentId: string): Promise<
   }
 }
 
+export interface FetchIssuesForStateOptions {
+  teamKey: string
+  state?: string[]
+  assignee?: string
+  unassigned?: boolean
+  allAssignees?: boolean
+  limit?: number
+  projectId?: string
+  sortParam?: "manual" | "priority"
+  cycleId?: string
+  milestoneId?: string
+  query?: string
+  parentId?: string
+  priority?: number
+  updatedBefore?: string
+  dueBefore?: string
+}
+
 export async function fetchIssuesForState(
-  teamKey: string,
-  state: string[] | undefined,
-  assignee?: string,
-  unassigned = false,
-  allAssignees = false,
-  limit?: number,
-  projectId?: string,
-  sortParam?: "manual" | "priority",
-  cycleId?: string,
-  milestoneId?: string,
+  {
+    teamKey,
+    state,
+    assignee,
+    unassigned = false,
+    allAssignees = false,
+    limit,
+    projectId,
+    sortParam,
+    cycleId,
+    milestoneId,
+    query: queryText,
+    parentId,
+    priority,
+    updatedBefore,
+    dueBefore,
+  }: FetchIssuesForStateOptions,
 ) {
   const sort = sortParam ??
     getOption("issue_sort") as "manual" | "priority" | undefined
@@ -508,16 +533,14 @@ export async function fetchIssuesForState(
     )
   }
 
-  const filter: IssueFilter = {
-    team: { key: { eq: teamKey } },
-  }
+  const filters: IssueFilter[] = [{ team: { key: { eq: teamKey } } }]
 
   if (state) {
-    filter.state = { type: { in: state } }
+    filters.push({ state: { type: { in: state } } })
   }
 
   if (unassigned) {
-    filter.assignee = { null: true }
+    filters.push({ assignee: { null: true } })
   } else if (allAssignees) {
     // No assignee filter means all assignees
   } else if (assignee) {
@@ -525,40 +548,88 @@ export async function fetchIssuesForState(
     if (!userId) {
       throw new NotFoundError("User", assignee)
     }
-    filter.assignee = { id: { eq: userId } }
+    filters.push({ assignee: { id: { eq: userId } } })
   } else {
-    filter.assignee = { isMe: { eq: true } }
+    filters.push({ assignee: { isMe: { eq: true } } })
   }
 
   if (projectId) {
-    filter.project = { id: { eq: projectId } }
+    filters.push({ project: { id: { eq: projectId } } })
   }
 
   if (cycleId) {
-    filter.cycle = { id: { eq: cycleId } }
+    filters.push({ cycle: { id: { eq: cycleId } } })
   }
 
   if (milestoneId) {
-    filter.projectMilestone = { id: { eq: milestoneId } }
+    filters.push({ projectMilestone: { id: { eq: milestoneId } } })
   }
 
-  const query = gql(/* GraphQL */ `
+  if (queryText != null) {
+    filters.push({
+      or: [
+        { title: { containsIgnoreCase: queryText } },
+        { description: { containsIgnoreCase: queryText } },
+      ],
+    })
+  }
+
+  if (parentId != null) {
+    filters.push({ parent: { id: { eq: parentId } } })
+  }
+
+  if (priority != null) {
+    filters.push({ priority: { eq: priority } })
+  }
+
+  if (updatedBefore != null) {
+    filters.push({ updatedAt: { lt: updatedBefore } })
+  }
+
+  if (dueBefore != null) {
+    filters.push({ dueDate: { lt: dueBefore } })
+  }
+
+  const filter: IssueFilter = filters.length === 1 ? filters[0] : {
+    and: filters,
+  }
+
+  const issuesQuery = gql(/* GraphQL */ `
     query GetIssuesForState($sort: [IssueSortInput!], $filter: IssueFilter!, $first: Int, $after: String) {
       issues(filter: $filter, sort: $sort, first: $first, after: $after) {
         nodes {
           id
           identifier
           title
+          url
           dueDate
           priority
           estimate
           assignee {
+            id
             initials
+            name
+            displayName
           }
           state {
             id
             name
             color
+          }
+          team {
+            id
+            key
+            name
+          }
+          project {
+            id
+            name
+            slugId
+          }
+          parent {
+            id
+            identifier
+            title
           }
           labels {
             nodes {
@@ -608,7 +679,7 @@ export async function fetchIssuesForState(
   let after: string | null | undefined = undefined
 
   while (hasNextPage) {
-    const result: GetIssuesForStateQuery = await client.request(query, {
+    const result: GetIssuesForStateQuery = await client.request(issuesQuery, {
       sort: sortPayload,
       filter,
       first: pageSize,

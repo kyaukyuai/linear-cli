@@ -48,13 +48,12 @@ export const startCommand = new Command()
       // (start should pick from a list, not continue on current issue)
       let resolvedId = issueId ? await getIssueIdentifier(issueId) : undefined
       if (!resolvedId) {
-        const result = await fetchIssuesForState(
-          teamId,
-          ["unstarted"],
-          undefined,
+        const result = await fetchIssuesForState({
+          teamKey: teamId,
+          state: ["unstarted"],
           unassigned,
           allAssignees,
-        )
+        })
         const issues = result.issues?.nodes || []
 
         if (issues.length === 0) {
