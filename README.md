@@ -163,6 +163,8 @@ linear issue create    # create a new issue (interactive prompts)
 linear issue create -t "title" -d "description"  # create with flags
 linear issue create --project "My Project" --milestone "Phase 1"  # create with milestone
 linear issue update    # update an issue (interactive prompts)
+linear issue update ENG-123 --due-date 2026-03-31  # set an issue due date
+linear issue update ENG-123 --clear-due-date       # clear an issue due date
 linear issue update ENG-123 --milestone "Phase 2"  # set milestone on existing issue
 linear issue delete    # delete an issue
 linear issue comment list          # list comments on current issue

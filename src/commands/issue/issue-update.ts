@@ -33,6 +33,10 @@ export const updateCommand = new Command()
     "Due date of the issue",
   )
   .option(
+    "--clear-due-date",
+    "Clear the due date on the issue",
+  )
+  .option(
     "--parent <parent:string>",
     "Parent issue (if any) as a team_number code",
   )
@@ -83,6 +87,7 @@ export const updateCommand = new Command()
       {
         assignee,
         dueDate,
+        clearDueDate,
         parent,
         priority,
         estimate,
@@ -103,6 +108,15 @@ export const updateCommand = new Command()
         if (description && descriptionFile) {
           throw new ValidationError(
             "Cannot specify both --description and --description-file",
+          )
+        }
+        if (dueDate != null && clearDueDate) {
+          throw new ValidationError(
+            "Cannot specify both --due-date and --clear-due-date",
+            {
+              suggestion:
+                "Use --due-date to set a due date, or --clear-due-date to remove it.",
+            },
           )
         }
 
@@ -225,11 +239,15 @@ export const updateCommand = new Command()
         }
 
         // Build the update input object, only including fields that were provided
-        const input: Record<string, string | number | string[] | undefined> = {}
+        const input: Record<
+          string,
+          string | number | string[] | null | undefined
+        > = {}
 
         if (title !== undefined) input.title = title
         if (assigneeId !== undefined) input.assigneeId = assigneeId
         if (dueDate !== undefined) input.dueDate = dueDate
+        if (clearDueDate) input.dueDate = null
         if (parent !== undefined) {
           const parentIdentifier = await getIssueIdentifier(parent)
           if (!parentIdentifier) {

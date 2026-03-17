@@ -124,6 +124,9 @@ export const viewCommand = new Command()
 
       // Build metadata line with project and milestone
       const metaParts: string[] = []
+      if (issueData.dueDate) {
+        metaParts.push(`**Due:** ${issueData.dueDate}`)
+      }
       if (issueData.project) {
         metaParts.push(`**Project:** ${issueData.project.name}`)
       }

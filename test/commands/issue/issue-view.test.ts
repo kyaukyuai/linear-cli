@@ -99,6 +99,7 @@ await snapshotTest({
             issue: {
               identifier: "TEST-123",
               title: "Fix authentication bug in login flow",
+              dueDate: "2025-08-25",
               description:
                 "Users are experiencing issues logging in when their session expires.",
               url:
@@ -526,6 +527,7 @@ await snapshotTest({
             issue: {
               identifier: "TEST-789",
               title: "Add monitoring dashboards",
+              dueDate: "2025-08-31",
               description: "Set up Datadog dashboards for the new service.",
               url:
                 "https://linear.app/test-team/issue/TEST-789/add-monitoring-dashboards",

@@ -375,3 +375,68 @@ await snapshotTest({
     }
   },
 })
+
+await snapshotTest({
+  name: "Issue Update Command - Clear Due Date",
+  meta: import.meta,
+  colors: false,
+  args: [
+    "ENG-123",
+    "--clear-due-date",
+  ],
+  denoArgs: commonDenoArgs,
+  async fn() {
+    const { cleanup } = await setupMockLinearServer([
+      {
+        queryName: "GetTeamIdByKey",
+        variables: { team: "ENG" },
+        response: {
+          data: {
+            teams: {
+              nodes: [{ id: "team-eng-id" }],
+            },
+          },
+        },
+      },
+      {
+        queryName: "UpdateIssue",
+        response: {
+          data: {
+            issueUpdate: {
+              success: true,
+              issue: {
+                id: "issue-existing-123",
+                identifier: "ENG-123",
+                url: "https://linear.app/test-team/issue/ENG-123/test-issue",
+                title: "Test Issue",
+              },
+            },
+          },
+        },
+      },
+    ], { LINEAR_TEAM_ID: "ENG" })
+
+    try {
+      await updateCommand.parse()
+    } finally {
+      await cleanup()
+    }
+  },
+})
+
+await snapshotTest({
+  name: "Issue Update Command - Due Date Conflict",
+  meta: import.meta,
+  colors: false,
+  canFail: true,
+  args: [
+    "ENG-123",
+    "--due-date",
+    "2026-03-31",
+    "--clear-due-date",
+  ],
+  denoArgs: commonDenoArgs,
+  async fn() {
+    await updateCommand.parse()
+  },
+})

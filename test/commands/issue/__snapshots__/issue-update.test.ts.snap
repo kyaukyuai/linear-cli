@@ -14,6 +14,7 @@ Options:
   -h, --help                         - Show this help.                                                
   -a, --assignee      <assignee>     - Assign the issue to 'self' or someone (by username or name)    
   --due-date          <dueDate>      - Due date of the issue                                          
+  --clear-due-date                   - Clear the due date on the issue                                
   --parent            <parent>       - Parent issue (if any) as a team_number code                    
   -p, --priority      <priority>     - Priority of the issue (1-4, descending priority)               
   --estimate          <estimate>     - Points estimate of the issue                                   
@@ -85,4 +86,24 @@ https://linear.app/test-team/issue/ENG-123/test-issue
 "
 stderr:
 ""
+`;
+
+snapshot[`Issue Update Command - Clear Due Date 1`] = `
+stdout:
+"Updating issue ENG-123
+
+✓ Updated issue ENG-123: Test Issue
+https://linear.app/test-team/issue/ENG-123/test-issue
+"
+stderr:
+""
+`;
+
+snapshot[`Issue Update Command - Due Date Conflict 1`] = `
+stdout:
+""
+stderr:
+"✗ Failed to update issue: Cannot specify both --due-date and --clear-due-date
+  Use --due-date to set a due date, or --clear-due-date to remove it.
+"
 `;
