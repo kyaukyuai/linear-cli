@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## [2.2.1] - 2026-03-17
+
+### Fixed
+
+- added due date display to `issue view` and `issue list`, and added `issue update --clear-due-date`
+
+### Improved
+
+- updated npm publishing to use trusted publishing for future releases
+
 ## [2.2.0] - 2026-03-15
 
 ### Added
@@ -468,7 +478,8 @@
 - adds a -t, --title flag to the `issue pr` command, allowing you to provide a PR title that is different than linear's issue title
 - allows linear issue identifiers to be passed in as arguments to the issue commands as an alternative to parsing the branch name, e.g. `linear issue show ABC-123`
 
-[Unreleased]: https://github.com/kyaukyuai/linear-cli/compare/v2.2.0...HEAD
+[Unreleased]: https://github.com/kyaukyuai/linear-cli/compare/v2.2.1...HEAD
+[2.2.1]: https://github.com/kyaukyuai/linear-cli/compare/v2.2.0...v2.2.1
 [2.2.0]: https://github.com/kyaukyuai/linear-cli/compare/v2.1.0...v2.2.0
 [2.1.0]: https://github.com/kyaukyuai/linear-cli/compare/v2.0.1...v2.1.0
 [2.0.1]: https://github.com/kyaukyuai/linear-cli/compare/v2.0.0...v2.0.1
