@@ -1,0 +1,118 @@
+export const snapshot = {};
+
+snapshot[`Issue Create Batch Command - Help Text 1`] = `
+stdout:
+"
+Usage: create-batch
+
+Description:
+
+  Create a parent issue and child issues from a JSON file
+
+Options:
+
+  -h, --help             - Show this help.                                 
+  --file      <path>     - Path to a JSON file describing the issue batch  
+  --team      <team>     - Team key override for the batch file            
+  --project   <project>  - Project name override for the batch file        
+  -j, --json             - Output as JSON                                  
+
+"
+stderr:
+""
+`;
+
+snapshot[`Issue Create Batch Command - JSON Output 1`] = `
+stdout:
+'{
+  "team": "ENG",
+  "project": "Roadmap",
+  "parent": {
+    "id": "issue-parent-500",
+    "identifier": "ENG-500",
+    "title": "Manager bot rollout",
+    "url": "https://linear.app/test-team/issue/ENG-500/manager-bot-rollout",
+    "dueDate": null,
+    "assignee": {
+      "id": "user-self-123",
+      "name": "alice.bot",
+      "displayName": "Alice Bot",
+      "initials": "AB"
+    },
+    "parent": null,
+    "state": {
+      "name": "In Progress",
+      "color": "#f87462"
+    }
+  },
+  "children": [
+    {
+      "id": "issue-child-501",
+      "identifier": "ENG-501",
+      "title": "Add issue list JSON",
+      "url": "https://linear.app/test-team/issue/ENG-501/add-issue-list-json",
+      "dueDate": null,
+      "assignee": {
+        "id": "user-self-123",
+        "name": "alice.bot",
+        "displayName": "Alice Bot",
+        "initials": "AB"
+      },
+      "parent": {
+        "id": "issue-parent-500",
+        "identifier": "ENG-500",
+        "title": "Manager bot rollout",
+        "url": "https://linear.app/test-team/issue/ENG-500/manager-bot-rollout",
+        "dueDate": null,
+        "state": {
+          "name": "In Progress",
+          "color": "#f87462"
+        }
+      },
+      "state": {
+        "name": "Todo",
+        "color": "#cccccc"
+      }
+    },
+    {
+      "id": "issue-child-502",
+      "identifier": "ENG-502",
+      "title": "Add issue view JSON",
+      "url": "https://linear.app/test-team/issue/ENG-502/add-issue-view-json",
+      "dueDate": "2026-04-15",
+      "assignee": null,
+      "parent": {
+        "id": "issue-parent-500",
+        "identifier": "ENG-500",
+        "title": "Manager bot rollout",
+        "url": "https://linear.app/test-team/issue/ENG-500/manager-bot-rollout",
+        "dueDate": null,
+        "state": {
+          "name": "In Progress",
+          "color": "#f87462"
+        }
+      },
+      "state": {
+        "name": "Todo",
+        "color": "#cccccc"
+      }
+    }
+  ],
+  "counts": {
+    "totalCreated": 3,
+    "childCount": 2
+  }
+}
+'
+stderr:
+""
+`;
+
+snapshot[`Issue Create Batch Command - Partial Failure 1`] = `
+stdout:
+""
+stderr:
+"✗ Failed to create issue batch: Issue batch creation failed while creating child 2 of 2
+  Already created issues: ENG-600, ENG-601
+"
+`;

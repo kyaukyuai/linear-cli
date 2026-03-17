@@ -167,6 +167,7 @@ linear issue start     # create/switch to issue branch and mark as started
 linear issue create    # create a new issue (interactive prompts)
 linear issue create -t "title" -d "description"  # create with flags
 linear issue create -t "title" --team ENG --json  # emit machine-readable created issue data
+linear issue create-batch --file ./issue-batch.json --json  # create a parent issue and child issues from JSON
 linear issue create --project "My Project" --milestone "Phase 1"  # create with milestone
 linear issue update    # update an issue (interactive prompts)
 linear issue update ENG-123 --due-date 2026-03-31  # set an issue due date
@@ -181,6 +182,26 @@ linear issue comment add ENG-123 --body "follow-up" --json  # emit created comme
 linear issue relation list ENG-123 --json  # emit dependency graph for an issue
 linear issue comment update <id>   # update a comment
 linear issue commits               # show all commits for an issue (jj only)
+linear issue parent ENG-123 --json    # emit the parent issue, or null when absent
+linear issue children ENG-123 --json  # emit child issues for decomposition workflows
+```
+
+`issue create-batch` expects a JSON file shaped like:
+
+```json
+{
+  "team": "ENG",
+  "project": "Roadmap",
+  "parent": {
+    "title": "Manager bot rollout",
+    "description": "Coordinate rollout work",
+    "state": "started"
+  },
+  "children": [
+    { "title": "Add issue list JSON", "assignee": "self" },
+    { "title": "Add issue view JSON", "dueDate": "2026-04-15" }
+  ]
+}
 ```
 
 ### team commands
