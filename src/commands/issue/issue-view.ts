@@ -28,6 +28,30 @@ import {
   LINEAR_UPLOAD_HOSTNAMES,
 } from "../../const.ts"
 
+type IssueDetails = Awaited<ReturnType<typeof fetchIssueDetails>>
+type IssueRef = {
+  id?: string
+  identifier: string
+  title: string
+  url?: string
+  dueDate?: string | null
+  state: { name: string; color: string }
+}
+type IssueComment = NonNullable<IssueDetails["comments"]>[number]
+type RelationIssue = {
+  id: string
+  identifier: string
+  title: string
+  url: string
+  dueDate?: string | null
+  state: { name: string; color: string }
+}
+type IssueCommentAuthor = {
+  type: "user" | "externalUser"
+  name: string
+  displayName: string
+}
+
 export const viewCommand = new Command()
   .name("view")
   .description("View issue details (default) or open in browser/app")
@@ -61,8 +85,21 @@ export const viewCommand = new Command()
       const issueData = await fetchIssueDetails(
         resolvedId,
         shouldShowSpinner() && !json,
-        showComments,
+        showComments || json,
       )
+
+      if (json) {
+        console.log(
+          JSON.stringify(
+            buildIssueViewJsonPayload(issueData, {
+              includeComments: showComments,
+            }),
+            null,
+            2,
+          ),
+        )
+        return
+      }
 
       let urlToPath: Map<string, string> | undefined
       const shouldDownload = download && getOption("download_images") !== false
@@ -85,12 +122,6 @@ export const viewCommand = new Command()
           issueData.identifier,
           issueData.attachments,
         )
-      }
-
-      // Handle JSON output
-      if (json) {
-        console.log(JSON.stringify(issueData, null, 2))
-        return
       }
 
       // Determine hyperlink format (only if enabled and environment supports it)
@@ -238,11 +269,190 @@ export const viewCommand = new Command()
     }
   })
 
-// Helper type for issue hierarchy display
-type IssueRef = {
-  identifier: string
-  title: string
-  state: { name: string; color: string }
+function buildIssueViewJsonPayload(
+  issueData: IssueDetails,
+  options: { includeComments: boolean },
+) {
+  const relationBuckets = buildRelationBuckets(issueData)
+  const comments = issueData.comments ?? []
+  const commentsHasMore = issueData.commentsHasMore ?? false
+
+  return {
+    id: issueData.id,
+    identifier: issueData.identifier,
+    title: issueData.title,
+    description: issueData.description ?? null,
+    url: issueData.url,
+    branchName: issueData.branchName,
+    dueDate: issueData.dueDate ?? null,
+    priority: issueData.priority ?? null,
+    priorityLabel: issueData.priorityLabel ?? null,
+    state: issueData.state,
+    assignee: issueData.assignee ?? null,
+    project: issueData.project ?? null,
+    projectMilestone: issueData.projectMilestone ?? null,
+    cycle: issueData.cycle ?? null,
+    parent: issueData.parent ?? null,
+    children: issueData.children ?? [],
+    relations: relationBuckets,
+    comments: {
+      included: options.includeComments,
+      hasMore: commentsHasMore,
+      nodes: options.includeComments ? comments.map(formatJsonComment) : [],
+    },
+    commentsSummary: buildCommentsSummary(comments, commentsHasMore),
+    attachments: issueData.attachments ?? [],
+  }
+}
+
+function buildRelationBuckets(issueData: IssueDetails) {
+  const blocks = (issueData.relations ?? [])
+    .filter((relation) => relation.type === "blocks")
+    .map((relation) => toRelationTarget(relation.id, relation.relatedIssue))
+  const blockedBy = (issueData.inverseRelations ?? [])
+    .filter((relation) => relation.type === "blocks")
+    .map((relation) => toRelationTarget(relation.id, relation.issue))
+  const related = dedupeRelatedIssues([
+    ...(issueData.relations ?? [])
+      .filter((relation) => relation.type === "related")
+      .map((relation) => toRelationTarget(relation.id, relation.relatedIssue)),
+    ...(issueData.inverseRelations ?? [])
+      .filter((relation) => relation.type === "related")
+      .map((relation) => toRelationTarget(relation.id, relation.issue)),
+  ])
+  const duplicateOf = (issueData.relations ?? [])
+    .filter((relation) => relation.type === "duplicate")
+    .map((relation) =>
+      toRelationTarget(relation.id, relation.relatedIssue)
+    )[0] ??
+    null
+  const duplicatedBy = (issueData.inverseRelations ?? [])
+    .filter((relation) => relation.type === "duplicate")
+    .map((relation) => toRelationTarget(relation.id, relation.issue))
+
+  return {
+    blocks,
+    blockedBy,
+    related,
+    duplicateOf,
+    duplicatedBy,
+  }
+}
+
+function toRelationTarget(relationId: string, issue: RelationIssue) {
+  return {
+    relationId,
+    id: issue.id,
+    identifier: issue.identifier,
+    title: issue.title,
+    url: issue.url,
+    dueDate: issue.dueDate ?? null,
+    state: issue.state,
+  }
+}
+
+function dedupeRelatedIssues<
+  T extends { identifier: string; relationId: string },
+>(relations: T[]): T[] {
+  const uniqueRelations = new Map<string, T>()
+
+  for (const relation of relations) {
+    if (!uniqueRelations.has(relation.identifier)) {
+      uniqueRelations.set(relation.identifier, relation)
+    }
+  }
+
+  return Array.from(uniqueRelations.values())
+}
+
+function formatJsonComment(comment: IssueComment) {
+  return {
+    id: comment.id,
+    body: comment.body,
+    createdAt: comment.createdAt,
+    parentId: comment.parent?.id ?? null,
+    author: getCommentAuthor(comment),
+  }
+}
+
+function buildCommentsSummary(
+  comments: IssueComment[],
+  hasMore: boolean,
+) {
+  const participants = new Map<string, IssueCommentAuthor>()
+  let latestComment: IssueComment | null = null
+  let topLevelCount = 0
+  let replyCount = 0
+
+  for (const comment of comments) {
+    const author = getCommentAuthor(comment)
+    if (author != null) {
+      participants.set(
+        `${author.type}:${author.name}:${author.displayName}`,
+        author,
+      )
+    }
+
+    if (comment.parent == null) {
+      topLevelCount++
+    } else {
+      replyCount++
+    }
+
+    if (
+      latestComment == null ||
+      new Date(comment.createdAt).getTime() >
+        new Date(latestComment.createdAt).getTime()
+    ) {
+      latestComment = comment
+    }
+  }
+
+  return {
+    fetchedCount: comments.length,
+    hasMore,
+    topLevelCount,
+    replyCount,
+    participantCount: participants.size,
+    participants: Array.from(participants.values()).sort((a, b) =>
+      a.displayName.localeCompare(b.displayName)
+    ),
+    latestComment: latestComment == null ? null : {
+      id: latestComment.id,
+      createdAt: latestComment.createdAt,
+      parentId: latestComment.parent?.id ?? null,
+      author: getCommentAuthor(latestComment),
+      excerpt: summarizeCommentBody(latestComment.body),
+    },
+  }
+}
+
+function getCommentAuthor(comment: IssueComment): IssueCommentAuthor | null {
+  if (comment.user != null) {
+    return {
+      type: "user",
+      name: comment.user.name,
+      displayName: comment.user.displayName,
+    }
+  }
+
+  if (comment.externalUser != null) {
+    return {
+      type: "externalUser",
+      name: comment.externalUser.name,
+      displayName: comment.externalUser.displayName,
+    }
+  }
+
+  return null
+}
+
+function summarizeCommentBody(body: string, maxLength = 160): string {
+  const normalizedBody = body.replaceAll(/\s+/g, " ").trim()
+  if (normalizedBody.length <= maxLength) {
+    return normalizedBody
+  }
+  return `${normalizedBody.slice(0, maxLength - 1)}…`
 }
 
 // Helper function to format parent/children as markdown

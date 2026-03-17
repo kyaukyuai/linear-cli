@@ -58,6 +58,9 @@ await snapshotTest({
               },
               comments: {
                 nodes: [],
+                pageInfo: {
+                  hasNextPage: false,
+                },
               },
               attachments: {
                 nodes: [],
@@ -226,6 +229,9 @@ await snapshotTest({
                     parent: null,
                   },
                 ],
+                pageInfo: {
+                  hasNextPage: false,
+                },
               },
               attachments: {
                 nodes: [],
@@ -296,25 +302,188 @@ await snapshotTest({
   async fn() {
     const server = new MockLinearServer([
       {
-        queryName: "GetIssueDetails",
+        queryName: "GetIssueDetailsWithComments",
         variables: { id: "TEST-123" },
         response: {
           data: {
             issue: {
+              id: "issue-123",
               identifier: "TEST-123",
               title: "Fix authentication bug in login flow",
+              dueDate: "2025-08-25",
               description:
                 "Users are experiencing issues logging in when their session expires.",
               url:
                 "https://linear.app/test-team/issue/TEST-123/fix-authentication-bug-in-login-flow",
               branchName: "fix/test-123-auth-bug",
+              assignee: {
+                id: "user-1",
+                name: "jane.doe",
+                displayName: "Jane Doe",
+                initials: "JD",
+              },
+              priority: 2,
+              priorityLabel: "High",
               state: {
                 name: "In Progress",
                 color: "#f87462",
               },
-              parent: null,
+              project: {
+                name: "Auth Reliability",
+              },
+              projectMilestone: null,
+              cycle: null,
+              parent: {
+                id: "issue-100",
+                identifier: "TEST-100",
+                title: "Epic: Security Improvements",
+                url:
+                  "https://linear.app/test-team/issue/TEST-100/epic-security-improvements",
+                dueDate: null,
+                state: {
+                  name: "Backlog",
+                  color: "#bec2c8",
+                },
+              },
               children: {
                 nodes: [],
+              },
+              comments: {
+                nodes: [
+                  {
+                    id: "comment-1",
+                    body:
+                      "I've reproduced this issue on staging. The session timeout seems to be too aggressive.",
+                    createdAt: "2024-01-15T10:30:00Z",
+                    user: {
+                      name: "john.doe",
+                      displayName: "John Doe",
+                    },
+                    externalUser: null,
+                    parent: null,
+                  },
+                  {
+                    id: "comment-2",
+                    body:
+                      "Working on a fix. Will increase the session timeout and add proper error handling.",
+                    createdAt: "2024-01-15T14:22:00Z",
+                    user: {
+                      name: "jane.doe",
+                      displayName: "Jane Doe",
+                    },
+                    externalUser: null,
+                    parent: {
+                      id: "comment-1",
+                    },
+                  },
+                ],
+                pageInfo: {
+                  hasNextPage: false,
+                },
+              },
+              relations: {
+                nodes: [
+                  {
+                    id: "relation-1",
+                    type: "blocks",
+                    relatedIssue: {
+                      id: "issue-200",
+                      identifier: "TEST-200",
+                      title: "Update session middleware",
+                      url:
+                        "https://linear.app/test-team/issue/TEST-200/update-session-middleware",
+                      dueDate: "2025-08-20",
+                      state: {
+                        name: "Todo",
+                        color: "#bec2c8",
+                      },
+                    },
+                  },
+                  {
+                    id: "relation-2",
+                    type: "related",
+                    relatedIssue: {
+                      id: "issue-201",
+                      identifier: "TEST-201",
+                      title: "Improve auth logging",
+                      url:
+                        "https://linear.app/test-team/issue/TEST-201/improve-auth-logging",
+                      dueDate: null,
+                      state: {
+                        name: "In Progress",
+                        color: "#f87462",
+                      },
+                    },
+                  },
+                  {
+                    id: "relation-3",
+                    type: "duplicate",
+                    relatedIssue: {
+                      id: "issue-202",
+                      identifier: "TEST-202",
+                      title: "Older auth bug report",
+                      url:
+                        "https://linear.app/test-team/issue/TEST-202/older-auth-bug-report",
+                      dueDate: null,
+                      state: {
+                        name: "Canceled",
+                        color: "#bec2c8",
+                      },
+                    },
+                  },
+                ],
+              },
+              inverseRelations: {
+                nodes: [
+                  {
+                    id: "relation-4",
+                    type: "blocks",
+                    issue: {
+                      id: "issue-203",
+                      identifier: "TEST-203",
+                      title: "Investigate auth regression",
+                      url:
+                        "https://linear.app/test-team/issue/TEST-203/investigate-auth-regression",
+                      dueDate: "2025-08-19",
+                      state: {
+                        name: "Started",
+                        color: "#f87462",
+                      },
+                    },
+                  },
+                  {
+                    id: "relation-5",
+                    type: "related",
+                    issue: {
+                      id: "issue-204",
+                      identifier: "TEST-204",
+                      title: "Token refresh edge cases",
+                      url:
+                        "https://linear.app/test-team/issue/TEST-204/token-refresh-edge-cases",
+                      dueDate: null,
+                      state: {
+                        name: "Backlog",
+                        color: "#bec2c8",
+                      },
+                    },
+                  },
+                  {
+                    id: "relation-6",
+                    type: "duplicate",
+                    issue: {
+                      id: "issue-205",
+                      identifier: "TEST-205",
+                      title: "Duplicate auth bug follow-up",
+                      url:
+                        "https://linear.app/test-team/issue/TEST-205/duplicate-auth-bug-follow-up",
+                      dueDate: null,
+                      state: {
+                        name: "Done",
+                        color: "#4cb782",
+                      },
+                    },
+                  },
+                ],
               },
               attachments: {
                 nodes: [],
@@ -354,19 +523,33 @@ await snapshotTest({
         response: {
           data: {
             issue: {
+              id: "issue-123",
               identifier: "TEST-123",
               title: "Fix authentication bug in login flow",
+              dueDate: "2025-08-25",
               description:
                 "Users are experiencing issues logging in when their session expires.",
               url:
                 "https://linear.app/test-team/issue/TEST-123/fix-authentication-bug-in-login-flow",
               branchName: "fix/test-123-auth-bug",
+              assignee: {
+                id: "user-2",
+                name: "alex.dev",
+                displayName: "Alex Developer",
+                initials: "AD",
+              },
+              priority: 1,
+              priorityLabel: "Urgent",
               state: {
                 name: "In Progress",
                 color: "#f87462",
               },
               project: null,
               projectMilestone: null,
+              cycle: {
+                name: "Sprint 12",
+                number: 12,
+              },
               parent: null,
               children: {
                 nodes: [],
@@ -400,6 +583,32 @@ await snapshotTest({
                     },
                   },
                 ],
+                pageInfo: {
+                  hasNextPage: true,
+                },
+              },
+              relations: {
+                nodes: [
+                  {
+                    id: "relation-7",
+                    type: "related",
+                    relatedIssue: {
+                      id: "issue-301",
+                      identifier: "TEST-301",
+                      title: "Session timeout audit",
+                      url:
+                        "https://linear.app/test-team/issue/TEST-301/session-timeout-audit",
+                      dueDate: null,
+                      state: {
+                        name: "Todo",
+                        color: "#bec2c8",
+                      },
+                    },
+                  },
+                ],
+              },
+              inverseRelations: {
+                nodes: [],
               },
               attachments: {
                 nodes: [],
