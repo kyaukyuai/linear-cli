@@ -13,12 +13,14 @@ import {
   getWorkflowStateByNameOrType,
   lookupUserId,
 } from "../../utils/linear.ts"
+import { withSpinner } from "../../utils/spinner.ts"
 import {
   CliError,
   handleError,
   NotFoundError,
   ValidationError,
 } from "../../utils/errors.ts"
+import { buildIssueWritePayload } from "./issue-write-payload.ts"
 
 export const updateCommand = new Command()
   .name("update")
@@ -81,6 +83,7 @@ export const updateCommand = new Command()
     "--cycle <cycle:string>",
     "Cycle name, number, or 'active'",
   )
+  .option("-j, --json", "Output as JSON")
   .option("-t, --title <title:string>", "Title of the issue")
   .action(
     async (
@@ -100,6 +103,7 @@ export const updateCommand = new Command()
         milestone,
         cycle,
         title,
+        json,
       },
       issueIdArg,
     ) => {
@@ -148,11 +152,6 @@ export const updateCommand = new Command()
             },
           )
         }
-
-        const { Spinner } = await import("@std/cli/unstable-spinner")
-        const { shouldShowSpinner } = await import("../../utils/hyperlink.ts")
-        const spinner = shouldShowSpinner() ? new Spinner() : null
-        spinner?.start()
 
         // Extract team from issue ID if not provided
         let teamKey = team
@@ -273,25 +272,56 @@ export const updateCommand = new Command()
         if (cycleId !== undefined) input.cycleId = cycleId
         if (stateId !== undefined) input.stateId = stateId
 
-        spinner?.stop()
-        console.log(`Updating issue ${issueId}`)
-        console.log()
-        spinner?.start()
+        if (!json) {
+          console.log(`Updating issue ${issueId}`)
+          console.log()
+        }
 
         const updateIssueMutation = gql(`
           mutation UpdateIssue($id: String!, $input: IssueUpdateInput!) {
             issueUpdate(id: $id, input: $input) {
               success
-              issue { id, identifier, url, title }
+              issue {
+                id
+                identifier
+                title
+                url
+                dueDate
+                assignee {
+                  id
+                  name
+                  displayName
+                  initials
+                }
+                parent {
+                  id
+                  identifier
+                  title
+                  url
+                  dueDate
+                  state {
+                    name
+                    color
+                  }
+                }
+                state {
+                  name
+                  color
+                }
+              }
             }
           }
         `)
 
         const client = getGraphQLClient()
-        const data = await client.request(updateIssueMutation, {
-          id: issueId,
-          input,
-        })
+        const data = await withSpinner(
+          () =>
+            client.request(updateIssueMutation, {
+              id: issueId,
+              input,
+            }),
+          { enabled: !json },
+        )
 
         if (!data.issueUpdate.success) {
           throw new CliError("Issue update failed")
@@ -302,7 +332,11 @@ export const updateCommand = new Command()
           throw new CliError("Issue update failed - no issue returned")
         }
 
-        spinner?.stop()
+        if (json) {
+          console.log(JSON.stringify(buildIssueWritePayload(issue), null, 2))
+          return
+        }
+
         console.log(`✓ Updated issue ${issue.identifier}: ${issue.title}`)
         console.log(issue.url)
       } catch (error) {

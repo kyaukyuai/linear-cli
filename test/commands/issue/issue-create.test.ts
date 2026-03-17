@@ -94,6 +94,164 @@ await snapshotTest({
   },
 })
 
+await snapshotTest({
+  name: "Issue Create Command - JSON Output",
+  meta: import.meta,
+  colors: false,
+  args: [
+    "--title",
+    "Bot-created issue",
+    "--description",
+    "Created from automation",
+    "--assignee",
+    "self",
+    "--due-date",
+    "2026-03-31",
+    "--parent",
+    "ENG-220",
+    "--team",
+    "ENG",
+    "--state",
+    "started",
+    "--json",
+    "--no-interactive",
+  ],
+  denoArgs: commonDenoArgs,
+  async fn() {
+    const { cleanup } = await setupMockLinearServer([
+      {
+        queryName: "GetTeamIdByKey",
+        variables: { team: "ENG" },
+        response: {
+          data: {
+            teams: {
+              nodes: [{ id: "team-eng-id" }],
+            },
+          },
+        },
+      },
+      {
+        queryName: "GetViewerId",
+        variables: {},
+        response: {
+          data: {
+            viewer: {
+              id: "user-self-123",
+            },
+          },
+        },
+      },
+      {
+        queryName: "GetIssueId",
+        variables: { id: "ENG-220" },
+        response: {
+          data: {
+            issue: {
+              id: "parent-issue-id",
+            },
+          },
+        },
+      },
+      {
+        queryName: "GetParentIssueData",
+        variables: { id: "parent-issue-id" },
+        response: {
+          data: {
+            issue: {
+              title: "Parent Issue",
+              identifier: "ENG-220",
+              project: null,
+            },
+          },
+        },
+      },
+      {
+        queryName: "GetWorkflowStates",
+        variables: { teamKey: "ENG" },
+        response: {
+          data: {
+            team: {
+              id: "team-eng-id",
+              key: "ENG",
+              name: "Engineering",
+              states: {
+                nodes: [
+                  {
+                    id: "state-started",
+                    name: "In Progress",
+                    type: "started",
+                    position: 2,
+                    color: "#f87462",
+                    description: null,
+                    createdAt: "2026-01-01T00:00:00Z",
+                    updatedAt: "2026-01-01T00:00:00Z",
+                    archivedAt: null,
+                    team: {
+                      id: "team-eng-id",
+                      key: "ENG",
+                      name: "Engineering",
+                    },
+                    inheritedFrom: null,
+                  },
+                ],
+              },
+            },
+          },
+        },
+      },
+      {
+        queryName: "CreateIssue",
+        response: {
+          data: {
+            issueCreate: {
+              success: true,
+              issue: {
+                id: "issue-new-json",
+                identifier: "ENG-321",
+                title: "Bot-created issue",
+                url:
+                  "https://linear.app/test-team/issue/ENG-321/bot-created-issue",
+                dueDate: "2026-03-31",
+                assignee: {
+                  id: "user-self-123",
+                  name: "alice.bot",
+                  displayName: "Alice Bot",
+                  initials: "AB",
+                },
+                parent: {
+                  id: "parent-issue-id",
+                  identifier: "ENG-220",
+                  title: "Parent Issue",
+                  url:
+                    "https://linear.app/test-team/issue/ENG-220/parent-issue",
+                  dueDate: null,
+                  state: {
+                    name: "Backlog",
+                    color: "#bec2c8",
+                  },
+                },
+                state: {
+                  name: "In Progress",
+                  color: "#f87462",
+                },
+                team: {
+                  key: "ENG",
+                },
+              },
+            },
+          },
+        },
+      },
+    ], { LINEAR_TEAM_ID: "ENG" })
+
+    try {
+      await createCommand.parse()
+    } finally {
+      await cleanup()
+    }
+  },
+})
+
 // Test creating an issue with milestone
 await snapshotTest({
   name: "Issue Create Command - With Milestone",

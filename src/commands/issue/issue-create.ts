@@ -27,12 +27,14 @@ import {
   type WorkflowState,
 } from "../../utils/linear.ts"
 import { startWorkOnIssue } from "../../utils/actions.ts"
+import { withSpinner } from "../../utils/spinner.ts"
 import {
   CliError,
   handleError,
   NotFoundError,
   ValidationError,
 } from "../../utils/errors.ts"
+import { buildIssueWritePayload } from "./issue-write-payload.ts"
 
 type IssueLabel = { id: string; name: string; color: string }
 
@@ -505,6 +507,7 @@ export const createCommand = new Command()
     "--cycle <cycle:string>",
     "Cycle name, number, or 'active'",
   )
+  .option("-j, --json", "Output as JSON")
   .option(
     "--no-use-default-template",
     "Do not use default template for the issue",
@@ -531,14 +534,24 @@ export const createCommand = new Command()
         cycle,
         interactive,
         title,
+        json,
       },
     ) => {
-      interactive = interactive && Deno.stdout.isTerminal()
+      interactive = interactive && Deno.stdout.isTerminal() && !json
 
       // Validate that description and descriptionFile are not both provided
       if (description && descriptionFile) {
         throw new ValidationError(
           "Cannot specify both --description and --description-file",
+        )
+      }
+      if (json && start) {
+        throw new ValidationError(
+          "Cannot use --json with --start",
+          {
+            suggestion:
+              "Use --json for machine-readable output, or omit it when you want to start work immediately.",
+          },
         )
       }
 
@@ -604,28 +617,62 @@ export const createCommand = new Command()
             mutation CreateIssue($input: IssueCreateInput!) {
               issueCreate(input: $input) {
                 success
-                issue { id, identifier, url, team { key } }
+                issue {
+                  id
+                  identifier
+                  title
+                  url
+                  dueDate
+                  assignee {
+                    id
+                    name
+                    displayName
+                    initials
+                  }
+                  parent {
+                    id
+                    identifier
+                    title
+                    url
+                    dueDate
+                    state {
+                      name
+                      color
+                    }
+                  }
+                  state {
+                    name
+                    color
+                  }
+                  team {
+                    key
+                  }
+                }
               }
             }
           `)
 
           const client = getGraphQLClient()
-          const data = await client.request(createIssueMutation, {
-            input: {
-              title: interactiveData.title,
-              assigneeId: interactiveData.assigneeId,
-              dueDate: undefined,
-              parentId: interactiveData.parentId,
-              priority: interactiveData.priority,
-              estimate: interactiveData.estimate,
-              labelIds: interactiveData.labelIds,
-              teamId: interactiveData.teamId,
-              projectId: interactiveData.projectId,
-              stateId: interactiveData.stateId,
-              useDefaultTemplate,
-              description: interactiveData.description,
-            },
-          })
+          const data = await withSpinner(
+            () =>
+              client.request(createIssueMutation, {
+                input: {
+                  title: interactiveData.title,
+                  assigneeId: interactiveData.assigneeId,
+                  dueDate: undefined,
+                  parentId: interactiveData.parentId,
+                  priority: interactiveData.priority,
+                  estimate: interactiveData.estimate,
+                  labelIds: interactiveData.labelIds,
+                  teamId: interactiveData.teamId,
+                  projectId: interactiveData.projectId,
+                  stateId: interactiveData.stateId,
+                  useDefaultTemplate,
+                  description: interactiveData.description,
+                },
+              }),
+            { enabled: true },
+          )
 
           if (!data.issueCreate.success) {
             throw new CliError("Issue creation failed")
@@ -658,16 +705,12 @@ export const createCommand = new Command()
         throw new ValidationError(
           "Title is required when not using interactive mode",
           {
-            suggestion:
-              "Use --title or run without any flags (or only --parent) for interactive mode.",
+            suggestion: json
+              ? "Use --title when requesting --json output."
+              : "Use --title or run without any flags (or only --parent) for interactive mode.",
           },
         )
       }
-
-      const { Spinner } = await import("@std/cli/unstable-spinner")
-      const { shouldShowSpinner } = await import("../../utils/hyperlink.ts")
-      const spinner = shouldShowSpinner() ? new Spinner() : null
-      spinner?.start()
       try {
         team = (team == null) ? getTeamKey() : team.toUpperCase()
         if (!team) {
@@ -678,9 +721,7 @@ export const createCommand = new Command()
         let teamId = await getTeamIdByKey(team)
         if (interactive && !teamId) {
           const teamIds = await searchTeamsByKeySubstring(team)
-          spinner?.stop()
           teamId = await selectOption("Team", team, teamIds)
-          spinner?.start()
         }
         if (!teamId) {
           throw new NotFoundError("Team", team)
@@ -727,9 +768,7 @@ export const createCommand = new Command()
                 label,
                 team,
               )
-              spinner?.stop()
               labelId = await selectOption("Issue label", label, labelIds)
-              spinner?.start()
             }
             if (!labelId) {
               throw new NotFoundError("Issue label", label)
@@ -744,13 +783,11 @@ export const createCommand = new Command()
           projectId = await getProjectIdByName(effectiveProject)
           if (projectId === undefined && interactive) {
             const projectIds = await getProjectOptionsByName(effectiveProject)
-            spinner?.stop()
             projectId = await selectOption(
               "Project",
               effectiveProject,
               projectIds,
             )
-            spinner?.start()
           }
           if (projectId === undefined) {
             throw new NotFoundError("Project", effectiveProject)
@@ -822,22 +859,55 @@ export const createCommand = new Command()
           useDefaultTemplate,
           description: finalDescription,
         }
-        spinner?.stop()
-        console.log(`Creating issue in ${team}`)
-        console.log()
-        spinner?.start()
+        if (!json) {
+          console.log(`Creating issue in ${team}`)
+          console.log()
+        }
 
         const createIssueMutation = gql(`
           mutation CreateIssue($input: IssueCreateInput!) {
             issueCreate(input: $input) {
               success
-              issue { id, identifier, url, team { key } }
+              issue {
+                id
+                identifier
+                title
+                url
+                dueDate
+                assignee {
+                  id
+                  name
+                  displayName
+                  initials
+                }
+                parent {
+                  id
+                  identifier
+                  title
+                  url
+                  dueDate
+                  state {
+                    name
+                    color
+                  }
+                }
+                state {
+                  name
+                  color
+                }
+                team {
+                  key
+                }
+              }
             }
           }
         `)
 
         const client = getGraphQLClient()
-        const data = await client.request(createIssueMutation, { input })
+        const data = await withSpinner(
+          () => client.request(createIssueMutation, { input }),
+          { enabled: !json },
+        )
         if (!data.issueCreate.success) {
           throw new CliError("Issue creation failed")
         }
@@ -846,14 +916,17 @@ export const createCommand = new Command()
           throw new CliError("Issue creation failed - no issue returned")
         }
         const issueId = issue.id
-        spinner?.stop()
+        if (json) {
+          console.log(JSON.stringify(buildIssueWritePayload(issue), null, 2))
+          return
+        }
+
         console.log(issue.url)
 
         if (start) {
           await startWorkOnIssue(issueId, issue.team.key)
         }
       } catch (error) {
-        spinner?.stop()
         handleError(error, "Failed to create issue")
       }
     },
