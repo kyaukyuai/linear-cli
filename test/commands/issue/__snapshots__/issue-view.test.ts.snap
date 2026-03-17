@@ -99,17 +99,159 @@ stderr:
 snapshot[`Issue View Command - JSON Output No Comments 1`] = `
 stdout:
 '{
+  "id": "issue-123",
   "identifier": "TEST-123",
   "title": "Fix authentication bug in login flow",
   "description": "Users are experiencing issues logging in when their session expires.",
   "url": "https://linear.app/test-team/issue/TEST-123/fix-authentication-bug-in-login-flow",
   "branchName": "fix/test-123-auth-bug",
+  "dueDate": "2025-08-25",
+  "priority": 2,
+  "priorityLabel": "High",
   "state": {
     "name": "In Progress",
     "color": "#f87462"
   },
-  "parent": null,
+  "assignee": {
+    "id": "user-1",
+    "name": "jane.doe",
+    "displayName": "Jane Doe",
+    "initials": "JD"
+  },
+  "project": {
+    "name": "Auth Reliability"
+  },
+  "projectMilestone": null,
+  "cycle": null,
+  "parent": {
+    "id": "issue-100",
+    "identifier": "TEST-100",
+    "title": "Epic: Security Improvements",
+    "url": "https://linear.app/test-team/issue/TEST-100/epic-security-improvements",
+    "dueDate": null,
+    "state": {
+      "name": "Backlog",
+      "color": "#bec2c8"
+    }
+  },
   "children": [],
+  "relations": {
+    "blocks": [
+      {
+        "relationId": "relation-1",
+        "id": "issue-200",
+        "identifier": "TEST-200",
+        "title": "Update session middleware",
+        "url": "https://linear.app/test-team/issue/TEST-200/update-session-middleware",
+        "dueDate": "2025-08-20",
+        "state": {
+          "name": "Todo",
+          "color": "#bec2c8"
+        }
+      }
+    ],
+    "blockedBy": [
+      {
+        "relationId": "relation-4",
+        "id": "issue-203",
+        "identifier": "TEST-203",
+        "title": "Investigate auth regression",
+        "url": "https://linear.app/test-team/issue/TEST-203/investigate-auth-regression",
+        "dueDate": "2025-08-19",
+        "state": {
+          "name": "Started",
+          "color": "#f87462"
+        }
+      }
+    ],
+    "related": [
+      {
+        "relationId": "relation-2",
+        "id": "issue-201",
+        "identifier": "TEST-201",
+        "title": "Improve auth logging",
+        "url": "https://linear.app/test-team/issue/TEST-201/improve-auth-logging",
+        "dueDate": null,
+        "state": {
+          "name": "In Progress",
+          "color": "#f87462"
+        }
+      },
+      {
+        "relationId": "relation-5",
+        "id": "issue-204",
+        "identifier": "TEST-204",
+        "title": "Token refresh edge cases",
+        "url": "https://linear.app/test-team/issue/TEST-204/token-refresh-edge-cases",
+        "dueDate": null,
+        "state": {
+          "name": "Backlog",
+          "color": "#bec2c8"
+        }
+      }
+    ],
+    "duplicateOf": {
+      "relationId": "relation-3",
+      "id": "issue-202",
+      "identifier": "TEST-202",
+      "title": "Older auth bug report",
+      "url": "https://linear.app/test-team/issue/TEST-202/older-auth-bug-report",
+      "dueDate": null,
+      "state": {
+        "name": "Canceled",
+        "color": "#bec2c8"
+      }
+    },
+    "duplicatedBy": [
+      {
+        "relationId": "relation-6",
+        "id": "issue-205",
+        "identifier": "TEST-205",
+        "title": "Duplicate auth bug follow-up",
+        "url": "https://linear.app/test-team/issue/TEST-205/duplicate-auth-bug-follow-up",
+        "dueDate": null,
+        "state": {
+          "name": "Done",
+          "color": "#4cb782"
+        }
+      }
+    ]
+  },
+  "comments": {
+    "included": false,
+    "hasMore": false,
+    "nodes": []
+  },
+  "commentsSummary": {
+    "fetchedCount": 2,
+    "hasMore": false,
+    "topLevelCount": 1,
+    "replyCount": 1,
+    "participantCount": 2,
+    "participants": [
+      {
+        "type": "user",
+        "name": "jane.doe",
+        "displayName": "Jane Doe"
+      },
+      {
+        "type": "user",
+        "name": "john.doe",
+        "displayName": "John Doe"
+      }
+    ],
+    "latestComment": {
+      "id": "comment-2",
+      "createdAt": "2024-01-15T14:22:00Z",
+      "parentId": "comment-1",
+      "author": {
+        "type": "user",
+        "name": "jane.doe",
+        "displayName": "Jane Doe"
+      },
+      "excerpt": "Working on a fix. Will increase the session timeout and add proper error handling."
+    }
+  },
   "attachments": []
 }
 '
@@ -120,45 +262,111 @@ stderr:
 snapshot[`Issue View Command - JSON Output With Comments 1`] = `
 stdout:
 \`{
+  "id": "issue-123",
   "identifier": "TEST-123",
   "title": "Fix authentication bug in login flow",
   "description": "Users are experiencing issues logging in when their session expires.",
   "url": "https://linear.app/test-team/issue/TEST-123/fix-authentication-bug-in-login-flow",
   "branchName": "fix/test-123-auth-bug",
+  "dueDate": "2025-08-25",
+  "priority": 1,
+  "priorityLabel": "Urgent",
   "state": {
     "name": "In Progress",
     "color": "#f87462"
   },
+  "assignee": {
+    "id": "user-2",
+    "name": "alex.dev",
+    "displayName": "Alex Developer",
+    "initials": "AD"
+  },
   "project": null,
   "projectMilestone": null,
+  "cycle": {
+    "name": "Sprint 12",
+    "number": 12
+  },
   "parent": null,
   "children": [],
-  "comments": [
-    {
-      "id": "comment-1",
-      "body": "I've reproduced this issue on staging. The session timeout seems to be too aggressive.",
-      "createdAt": "2024-01-15T10:30:00Z",
-      "user": {
-        "name": "john.doe",
-        "displayName": "John Doe"
+  "relations": {
+    "blocks": [],
+    "blockedBy": [],
+    "related": [
+      {
+        "relationId": "relation-7",
+        "id": "issue-301",
+        "identifier": "TEST-301",
+        "title": "Session timeout audit",
+        "url": "https://linear.app/test-team/issue/TEST-301/session-timeout-audit",
+        "dueDate": null,
+        "state": {
+          "name": "Todo",
+          "color": "#bec2c8"
+        }
+      }
+    ],
+    "duplicateOf": null,
+    "duplicatedBy": []
+  },
+  "comments": {
+    "included": true,
+    "hasMore": true,
+    "nodes": [
+      {
+        "id": "comment-1",
+        "body": "I've reproduced this issue on staging. The session timeout seems to be too aggressive.",
+        "createdAt": "2024-01-15T10:30:00Z",
+        "parentId": null,
+        "author": {
+          "type": "user",
+          "name": "john.doe",
+          "displayName": "John Doe"
+        }
       },
-      "externalUser": null,
-      "parent": null
-    },
-    {
-      "id": "comment-2",
-      "body": "Working on a fix. Will increase the session timeout and add proper error handling.",
-      "createdAt": "2024-01-15T14:22:00Z",
-      "user": {
+      {
+        "id": "comment-2",
+        "body": "Working on a fix. Will increase the session timeout and add proper error handling.",
+        "createdAt": "2024-01-15T14:22:00Z",
+        "parentId": "comment-1",
+        "author": {
+          "type": "user",
+          "name": "jane.smith",
+          "displayName": "Jane Smith"
+        }
+      }
+    ]
+  },
+  "commentsSummary": {
+    "fetchedCount": 2,
+    "hasMore": true,
+    "topLevelCount": 1,
+    "replyCount": 1,
+    "participantCount": 2,
+    "participants": [
+      {
+        "type": "user",
         "name": "jane.smith",
         "displayName": "Jane Smith"
       },
-      "externalUser": null,
-      "parent": {
-        "id": "comment-1"
+      {
+        "type": "user",
+        "name": "john.doe",
+        "displayName": "John Doe"
       }
+    ],
+    "latestComment": {
+      "id": "comment-2",
+      "createdAt": "2024-01-15T14:22:00Z",
+      "parentId": "comment-1",
+      "author": {
+        "type": "user",
+        "name": "jane.smith",
+        "displayName": "Jane Smith"
+      },
+      "excerpt": "Working on a fix. Will increase the session timeout and add proper error handling."
     }
-  ],
+  },
   "attachments": []
 }
 \`
