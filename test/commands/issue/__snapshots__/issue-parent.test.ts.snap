@@ -1,0 +1,51 @@
+export const snapshot = {};
+
+snapshot[`Issue Parent Command - Help Text 1`] = `
+stdout:
+"
+Usage: parent [issueId]
+
+Description:
+
+  Show the parent issue for an issue
+
+Options:
+
+  -h, --help  - Show this help.  
+  -j, --json  - Output as JSON   
+
+"
+stderr:
+""
+`;
+
+snapshot[`Issue Parent Command - JSON Output 1`] = `
+stdout:
+'{
+  "issue": {
+    "id": "issue-child-321",
+    "identifier": "ENG-321",
+    "title": "Implement child workflow",
+    "url": "https://linear.app/test-team/issue/ENG-321/implement-child-workflow",
+    "dueDate": "2026-04-10",
+    "state": {
+      "name": "In Progress",
+      "color": "#f87462"
+    }
+  },
+  "parent": {
+    "id": "issue-parent-100",
+    "identifier": "ENG-100",
+    "title": "Parent planning issue",
+    "url": "https://linear.app/test-team/issue/ENG-100/parent-planning-issue",
+    "dueDate": "2026-04-01",
+    "state": {
+      "name": "Backlog",
+      "color": "#999999"
+    }
+  }
+}
+'
+stderr:
+""
+`;

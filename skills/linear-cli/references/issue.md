@@ -30,11 +30,14 @@ Commands:
   pull-request, pr  [issueId]             - Create a GitHub pull request with issue details          
   delete, d         [issueId]             - Delete an issue                                          
   create                                  - Create a linear issue                                    
+  create-batch                            - Create a parent issue and child issues from a JSON file  
   update            [issueId]             - Update a linear issue                                    
   move              <issueId> <state>     - Move an issue to a different workflow state              
   assign            <issueId> [assignee]  - Assign an issue to a user                                
   priority          <issueId> <priority>  - Set the priority of an issue                             
   estimate          <issueId> [points]    - Set the estimate (points) of an issue                    
+  parent            [issueId]             - Show the parent issue for an issue                       
+  children          [issueId]             - List child issues for an issue                           
   label                                   - Manage issue labels                                      
   comment                                 - Manage issue comments                                    
   attach            <issueId> <filepath>  - Attach a file to an issue                                
@@ -309,6 +312,27 @@ Options:
   -t, --title                <title>        - Title of the issue
 ```
 
+### create-batch
+
+> Create a parent issue and child issues from a JSON file
+
+```
+Usage:   linear issue create-batch
+
+Description:
+
+  Create a parent issue and child issues from a JSON file
+
+Options:
+
+  -h, --help                  - Show this help.                                 
+  -w, --workspace  <slug>     - Target workspace (uses credentials)             
+  --file           <path>     - Path to a JSON file describing the issue batch  
+  --team           <team>     - Team key override for the batch file            
+  --project        <project>  - Project name override for the batch file        
+  -j, --json                  - Output as JSON
+```
+
 ### update
 
 > Update a linear issue
@@ -440,6 +464,42 @@ Examples:
   Set 3 points   linear issue estimate ENG-123 3      
   Set 5 points   linear issue estimate ENG-123 5      
   Clear estimate linear issue estimate ENG-123 --clear
+```
+
+### parent
+
+> Show the parent issue for an issue
+
+```
+Usage:   linear issue parent [issueId]
+
+Description:
+
+  Show the parent issue for an issue
+
+Options:
+
+  -h, --help               - Show this help.                      
+  -w, --workspace  <slug>  - Target workspace (uses credentials)  
+  -j, --json               - Output as JSON
+```
+
+### children
+
+> List child issues for an issue
+
+```
+Usage:   linear issue children [issueId]
+
+Description:
+
+  List child issues for an issue
+
+Options:
+
+  -h, --help               - Show this help.                      
+  -w, --workspace  <slug>  - Target workspace (uses credentials)  
+  -j, --json               - Output as JSON
 ```
 
 ### label

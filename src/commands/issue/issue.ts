@@ -3,14 +3,17 @@ import { assignCommand } from "./issue-assign.ts"
 import { attachCommand } from "./issue-attach.ts"
 import { commentCommand } from "./issue-comment.ts"
 import { createCommand } from "./issue-create.ts"
+import { createBatchCommand } from "./issue-create-batch.ts"
 import { deleteCommand } from "./issue-delete.ts"
 import { describeCommand } from "./issue-describe.ts"
+import { childrenCommand } from "./issue-children.ts"
 import { commitsCommand } from "./issue-commits.ts"
 import { estimateCommand } from "./issue-estimate.ts"
 import { idCommand } from "./issue-id.ts"
 import { labelCommand } from "./issue-label.ts"
 import { listCommand } from "./issue-list.ts"
 import { moveCommand } from "./issue-move.ts"
+import { parentCommand } from "./issue-parent.ts"
 import { priorityCommand } from "./issue-priority.ts"
 import { pullRequestCommand } from "./issue-pull-request.ts"
 import { relationCommand } from "./issue-relation.ts"
@@ -38,11 +41,14 @@ export const issueCommand = new Command()
   .command("pull-request", pullRequestCommand)
   .command("delete", deleteCommand)
   .command("create", createCommand)
+  .command("create-batch", createBatchCommand)
   .command("update", updateCommand)
   .command("move", moveCommand)
   .command("assign", assignCommand)
   .command("priority", priorityCommand)
   .command("estimate", estimateCommand)
+  .command("parent", parentCommand)
+  .command("children", childrenCommand)
   .command("label", labelCommand)
   .command("comment", commentCommand)
   .command("attach", attachCommand)
