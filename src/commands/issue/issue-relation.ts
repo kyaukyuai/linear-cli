@@ -2,6 +2,7 @@ import { Command } from "@cliffy/command"
 import { gql } from "../../__codegen__/gql.ts"
 import { getGraphQLClient } from "../../utils/graphql.ts"
 import { getIssueId, getIssueIdentifier } from "../../utils/linear.ts"
+import { withSpinner } from "../../utils/spinner.ts"
 import {
   handleError,
   isClientError,
@@ -19,6 +20,16 @@ function getApiRelationType(
   type: RelationType,
 ): "blocks" | "related" | "duplicate" {
   if (type === "blocked-by") return "blocks"
+  return type
+}
+
+function getDisplayRelationType(
+  type: string,
+  direction: "outgoing" | "incoming",
+): string {
+  if (direction === "incoming" && type === "blocks") {
+    return "blocked-by"
+  }
   return type
 }
 
@@ -281,7 +292,8 @@ const listRelationsCommand = new Command()
   .name("list")
   .description("List relations for an issue")
   .arguments("[issueId:string]")
-  .action(async (_options, issueIdArg) => {
+  .option("-j, --json", "Output as JSON")
+  .action(async ({ json }, issueIdArg) => {
     try {
       const issueIdentifier = await getIssueIdentifier(issueIdArg)
       if (!issueIdentifier) {
@@ -291,23 +303,27 @@ const listRelationsCommand = new Command()
         )
       }
 
-      const { Spinner } = await import("@std/cli/unstable-spinner")
-      const { shouldShowSpinner } = await import("../../utils/hyperlink.ts")
-      const spinner = shouldShowSpinner() ? new Spinner() : null
-      spinner?.start()
-
       const listRelationsQuery = gql(`
         query ListIssueRelations($issueId: String!) {
           issue(id: $issueId) {
+            id
             identifier
             title
+            url
             relations {
               nodes {
                 id
                 type
                 relatedIssue {
+                  id
                   identifier
                   title
+                  url
+                  dueDate
+                  state {
+                    name
+                    color
+                  }
                 }
               }
             }
@@ -316,8 +332,15 @@ const listRelationsCommand = new Command()
                 id
                 type
                 issue {
+                  id
                   identifier
                   title
+                  url
+                  dueDate
+                  state {
+                    name
+                    color
+                  }
                 }
               }
             }
@@ -326,32 +349,75 @@ const listRelationsCommand = new Command()
       `)
 
       const client = getGraphQLClient()
-      let data
-      try {
-        data = await client.request(listRelationsQuery, {
-          issueId: issueIdentifier,
-        })
-      } catch (error) {
-        spinner?.stop()
-        if (isClientError(error) && isNotFoundError(error)) {
-          throw new NotFoundError("Issue", issueIdentifier)
+      const data = await withSpinner(async () => {
+        try {
+          return await client.request(listRelationsQuery, {
+            issueId: issueIdentifier,
+          })
+        } catch (error) {
+          if (isClientError(error) && isNotFoundError(error)) {
+            throw new NotFoundError("Issue", issueIdentifier)
+          }
+          throw error
         }
-        throw error
-      }
-
-      spinner?.stop()
+      }, { enabled: !json })
 
       if (!data.issue) {
         throw new NotFoundError("Issue", issueIdentifier)
       }
 
       const { identifier, title, relations, inverseRelations } = data.issue
+      const outgoing = relations.nodes
+      const incoming = inverseRelations.nodes
+
+      if (json) {
+        console.log(JSON.stringify(
+          {
+            issue: {
+              id: data.issue.id,
+              identifier: data.issue.identifier,
+              title: data.issue.title,
+              url: data.issue.url,
+            },
+            outgoing: outgoing.map((rel) => ({
+              id: rel.id,
+              type: getDisplayRelationType(rel.type, "outgoing"),
+              issue: {
+                id: rel.relatedIssue.id,
+                identifier: rel.relatedIssue.identifier,
+                title: rel.relatedIssue.title,
+                url: rel.relatedIssue.url,
+                dueDate: rel.relatedIssue.dueDate,
+                state: {
+                  name: rel.relatedIssue.state.name,
+                  color: rel.relatedIssue.state.color,
+                },
+              },
+            })),
+            incoming: incoming.map((rel) => ({
+              id: rel.id,
+              type: getDisplayRelationType(rel.type, "incoming"),
+              issue: {
+                id: rel.issue.id,
+                identifier: rel.issue.identifier,
+                title: rel.issue.title,
+                url: rel.issue.url,
+                dueDate: rel.issue.dueDate,
+                state: {
+                  name: rel.issue.state.name,
+                  color: rel.issue.state.color,
+                },
+              },
+            })),
+          },
+          null,
+          2,
+        ))
+        return
+      }
 
       console.log(`Relations for ${identifier}: ${title}`)
       console.log()
-
-      const outgoing = relations.nodes
-      const incoming = inverseRelations.nodes
 
       if (outgoing.length === 0 && incoming.length === 0) {
         console.log("  No relations")

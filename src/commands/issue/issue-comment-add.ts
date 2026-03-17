@@ -2,7 +2,10 @@ import { Command } from "@cliffy/command"
 import { Input } from "@cliffy/prompt"
 import { gql } from "../../__codegen__/gql.ts"
 import { getGraphQLClient } from "../../utils/graphql.ts"
-import { getIssueIdentifier } from "../../utils/linear.ts"
+import {
+  getIssueIdentifier,
+  resolveIssueInternalId,
+} from "../../utils/linear.ts"
 import {
   formatAsMarkdownLink,
   uploadFile,
@@ -10,6 +13,7 @@ import {
 } from "../../utils/upload.ts"
 import { shouldShowSpinner } from "../../utils/hyperlink.ts"
 import { CliError, handleError, ValidationError } from "../../utils/errors.ts"
+import { withSpinner } from "../../utils/spinner.ts"
 
 export const commentAddCommand = new Command()
   .name("add")
@@ -26,8 +30,9 @@ export const commentAddCommand = new Command()
     "Attach a file to the comment (can be used multiple times)",
     { collect: true },
   )
+  .option("-j, --json", "Output as JSON")
   .action(async (options, issueId) => {
-    const { body, bodyFile, parent, attach } = options
+    const { body, bodyFile, parent, attach, json } = options
 
     try {
       // Validate that body and bodyFile are not both provided
@@ -61,6 +66,7 @@ export const commentAddCommand = new Command()
           { suggestion: "Please provide an issue ID like 'ENG-123'." },
         )
       }
+      const resolvedIssueId = await resolveIssueInternalId(resolvedIdentifier)
 
       // Validate and upload attachments first
       const attachments = attach || []
@@ -79,19 +85,30 @@ export const commentAddCommand = new Command()
         // Upload files
         for (const filepath of attachments) {
           const result = await uploadFile(filepath, {
-            showProgress: shouldShowSpinner(),
+            showProgress: !json && shouldShowSpinner(),
           })
           uploadedFiles.push({
             filename: result.filename,
             assetUrl: result.assetUrl,
             isImage: result.contentType.startsWith("image/"),
           })
-          console.log(`✓ Uploaded ${result.filename}`)
+          if (!json) {
+            console.log(`✓ Uploaded ${result.filename}`)
+          }
         }
       }
 
       // If no body provided and no attachments, prompt for it
       if (!commentBody && uploadedFiles.length === 0) {
+        if (json) {
+          throw new ValidationError(
+            "Comment body cannot be empty",
+            {
+              suggestion:
+                "Provide --body or --body-file when requesting --json output.",
+            },
+          )
+        }
         commentBody = await Input.prompt({
           message: "Comment body",
           default: "",
@@ -131,6 +148,15 @@ export const commentAddCommand = new Command()
               body
               createdAt
               url
+              parent {
+                id
+              }
+              issue {
+                id
+                identifier
+                title
+                url
+              }
               user {
                 name
                 displayName
@@ -143,16 +169,17 @@ export const commentAddCommand = new Command()
       const client = getGraphQLClient()
       const input: Record<string, unknown> = {
         body: commentBody,
-        issueId: resolvedIdentifier,
+        issueId: resolvedIssueId,
       }
 
       if (parent) {
         input.parentId = parent
       }
 
-      const data = await client.request(mutation, {
-        input,
-      })
+      const data = await withSpinner(
+        () => client.request(mutation, { input }),
+        { enabled: !json },
+      )
 
       if (!data.commentCreate.success) {
         throw new CliError("Failed to create comment")
@@ -161,6 +188,40 @@ export const commentAddCommand = new Command()
       const comment = data.commentCreate.comment
       if (!comment) {
         throw new CliError("Comment creation failed - no comment returned")
+      }
+
+      if (json) {
+        console.log(JSON.stringify(
+          {
+            id: comment.id,
+            body: comment.body,
+            createdAt: comment.createdAt,
+            url: comment.url,
+            parentId: comment.parent?.id ?? parent ?? null,
+            issue: comment.issue
+              ? {
+                id: comment.issue.id,
+                identifier: comment.issue.identifier,
+                title: comment.issue.title,
+                url: comment.issue.url,
+              }
+              : {
+                id: resolvedIssueId,
+                identifier: resolvedIdentifier,
+                title: null,
+                url: null,
+              },
+            user: comment.user
+              ? {
+                name: comment.user.name,
+                displayName: comment.user.displayName,
+              }
+              : null,
+          },
+          null,
+          2,
+        ))
+        return
       }
 
       console.log(`✓ Comment added to ${resolvedIdentifier}`)

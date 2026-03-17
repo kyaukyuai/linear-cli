@@ -1,26 +1,58 @@
 import { Command } from "@cliffy/command"
 import { getTeamMembers, requireTeamKey } from "../../utils/linear.ts"
 import { handleError } from "../../utils/errors.ts"
+import { withSpinner } from "../../utils/spinner.ts"
 
 export const membersCommand = new Command()
   .name("members")
   .description("List team members")
   .arguments("[teamKey:string]")
   .option("-a, --all", "Include inactive members")
-  .action(async (options, teamKey?: string) => {
+  .option("-j, --json", "Output as JSON")
+  .action(async ({ all, json }, teamKey?: string) => {
     try {
       const resolvedTeamKey = requireTeamKey(teamKey)
 
-      const members = await getTeamMembers(resolvedTeamKey)
+      const members = await withSpinner(
+        () => getTeamMembers(resolvedTeamKey),
+        { enabled: !json },
+      )
+
+      const filteredMembers = all
+        ? members
+        : members.filter((member) => member.active)
+
+      if (json) {
+        console.log(JSON.stringify(
+          {
+            team: resolvedTeamKey,
+            includeInactive: all,
+            members: filteredMembers.map((member) => ({
+              id: member.id,
+              name: member.name,
+              displayName: member.displayName,
+              email: member.email,
+              active: member.active,
+              initials: member.initials,
+              description: member.description,
+              timezone: member.timezone,
+              lastSeen: member.lastSeen,
+              statusEmoji: member.statusEmoji,
+              statusLabel: member.statusLabel,
+              guest: member.guest,
+              isAssignable: member.isAssignable,
+            })),
+          },
+          null,
+          2,
+        ))
+        return
+      }
 
       if (members.length === 0) {
         console.log("No members found for this team.")
         return
       }
-
-      const filteredMembers = options.all
-        ? members
-        : members.filter((member) => member.active)
 
       if (filteredMembers.length === 0) {
         console.log(

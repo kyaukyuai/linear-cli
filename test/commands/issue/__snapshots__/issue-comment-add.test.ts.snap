@@ -17,3 +17,27 @@ https://linear.app/issue/TEST-123#comment-uuid-reply-789
 stderr:
 ""
 `;
+
+snapshot[`Issue Comment Add Command - JSON Output 1`] = `
+stdout:
+'{
+  "id": "comment-json-123",
+  "body": "Tracking follow-up",
+  "createdAt": "2026-03-17T14:30:00Z",
+  "url": "https://linear.app/issue/TEST-123#comment-json-123",
+  "parentId": null,
+  "issue": {
+    "id": "issue-uuid-123",
+    "identifier": "TEST-123",
+    "title": "Tracking issue",
+    "url": "https://linear.app/issue/TEST-123"
+  },
+  "user": {
+    "name": "testuser",
+    "displayName": "Test User"
+  }
+}
+'
+stderr:
+""
+`;

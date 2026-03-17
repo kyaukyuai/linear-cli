@@ -107,3 +107,73 @@ await snapshotTest({
     }
   },
 })
+
+await snapshotTest({
+  name: "Issue Relation List Command - JSON Output",
+  meta: import.meta,
+  colors: false,
+  args: ["list", "ENG-123", "--json"],
+  denoArgs: commonDenoArgs,
+  async fn() {
+    const { cleanup } = await setupMockLinearServer([
+      {
+        queryName: "ListIssueRelations",
+        variables: { issueId: "ENG-123" },
+        response: {
+          data: {
+            issue: {
+              id: "issue-id-123",
+              identifier: "ENG-123",
+              title: "Parent issue",
+              url: "https://linear.app/issue/ENG-123",
+              relations: {
+                nodes: [
+                  {
+                    id: "relation-out-1",
+                    type: "blocks",
+                    relatedIssue: {
+                      id: "issue-id-456",
+                      identifier: "ENG-456",
+                      title: "Blocked issue",
+                      url: "https://linear.app/issue/ENG-456",
+                      dueDate: "2026-03-20",
+                      state: {
+                        name: "Todo",
+                        color: "#94a3b8",
+                      },
+                    },
+                  },
+                ],
+              },
+              inverseRelations: {
+                nodes: [
+                  {
+                    id: "relation-in-1",
+                    type: "blocks",
+                    issue: {
+                      id: "issue-id-789",
+                      identifier: "ENG-789",
+                      title: "Blocking issue",
+                      url: "https://linear.app/issue/ENG-789",
+                      dueDate: null,
+                      state: {
+                        name: "In Progress",
+                        color: "#3b82f6",
+                      },
+                    },
+                  },
+                ],
+              },
+            },
+          },
+        },
+      },
+    ])
+
+    try {
+      await relationCommand.parse()
+    } finally {
+      await cleanup()
+    }
+  },
+})

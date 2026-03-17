@@ -546,7 +546,8 @@ Options:
   -b, --body       <text>      - Comment body text                                               
   --body-file      <path>      - Read comment body from a file (preferred for markdown content)  
   -p, --parent     <id>        - Parent comment ID for replies                                   
-  -a, --attach     <filepath>  - Attach a file to the comment (can be used multiple times)
+  -a, --attach     <filepath>  - Attach a file to the comment (can be used multiple times)       
+  -j, --json                   - Output as JSON
 ```
 
 ##### delete
@@ -690,5 +691,6 @@ Description:
 Options:
 
   -h, --help               - Show this help.                      
-  -w, --workspace  <slug>  - Target workspace (uses credentials)
+  -w, --workspace  <slug>  - Target workspace (uses credentials)  
+  -j, --json               - Output as JSON
 ```
