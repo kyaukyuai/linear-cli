@@ -1192,7 +1192,10 @@ export async function getTeamMembers(teamKey: string) {
     }
   `)
 
-  const allMembers = []
+  type TeamMember = NonNullable<
+    GetTeamMembersQuery["team"]
+  >["members"]["nodes"][number]
+  const allMembers: TeamMember[] = []
   let hasNextPage = true
   let after: string | null | undefined = undefined
 
@@ -1202,6 +1205,10 @@ export async function getTeamMembers(teamKey: string) {
       first: 100, // Fetch 100 members per page
       after,
     })
+
+    if (result.team == null) {
+      throw new NotFoundError("Team", teamKey)
+    }
 
     const members = result.team.members.nodes
     allMembers.push(...members)

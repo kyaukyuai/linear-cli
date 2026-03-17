@@ -177,6 +177,8 @@ linear issue delete    # delete an issue
 linear issue comment list          # list comments on current issue
 linear issue comment add           # add a comment to current issue
 linear issue comment add -p <id>   # reply to a specific comment
+linear issue comment add ENG-123 --body "follow-up" --json  # emit created comment data
+linear issue relation list ENG-123 --json  # emit dependency graph for an issue
 linear issue comment update <id>   # update a comment
 linear issue commits               # show all commits for an issue (jj only)
 ```
@@ -187,6 +189,7 @@ linear issue commits               # show all commits for an issue (jj only)
 linear team list       # list teams
 linear team id         # print out the team id (e.g. for scripts)
 linear team members    # list team members
+linear team members ENG --json  # emit assignable candidates for a team
 linear team create     # create a new team
 linear team autolinks  # configure GitHub repository autolinks for Linear issues
 ```

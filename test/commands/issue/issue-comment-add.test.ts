@@ -110,3 +110,59 @@ await snapshotTest({
     }
   },
 })
+
+await snapshotTest({
+  name: "Issue Comment Add Command - JSON Output",
+  meta: import.meta,
+  colors: false,
+  args: ["TEST-123", "--body", "Tracking follow-up", "--json"],
+  denoArgs: commonDenoArgs,
+  async fn() {
+    const { cleanup } = await setupMockLinearServer([
+      {
+        queryName: "GetIssueId",
+        variables: { id: "TEST-123" },
+        response: {
+          data: {
+            issue: {
+              id: "issue-uuid-123",
+            },
+          },
+        },
+      },
+      {
+        queryName: "AddComment",
+        response: {
+          data: {
+            commentCreate: {
+              success: true,
+              comment: {
+                id: "comment-json-123",
+                body: "Tracking follow-up",
+                createdAt: "2026-03-17T14:30:00Z",
+                url: "https://linear.app/issue/TEST-123#comment-json-123",
+                parent: null,
+                issue: {
+                  id: "issue-uuid-123",
+                  identifier: "TEST-123",
+                  title: "Tracking issue",
+                  url: "https://linear.app/issue/TEST-123",
+                },
+                user: {
+                  name: "testuser",
+                  displayName: "Test User",
+                },
+              },
+            },
+          },
+        },
+      },
+    ])
+
+    try {
+      await commentAddCommand.parse()
+    } finally {
+      await cleanup()
+    }
+  },
+})
