@@ -303,6 +303,7 @@ Options:
   -s, --state                <state>        - Workflow state for the issue (by name or type)                 
   --milestone                <milestone>    - Name of the project milestone                                  
   --cycle                    <cycle>        - Cycle name, number, or 'active'                                
+  -j, --json                                - Output as JSON                                                 
   --no-use-default-template                 - Do not use default template for the issue                      
   --no-interactive                          - Disable interactive prompts                                    
   -t, --title                <title>        - Title of the issue
@@ -337,6 +338,7 @@ Options:
   -s, --state         <state>        - Workflow state for the issue (by name or type)                 
   --milestone         <milestone>    - Name of the project milestone                                  
   --cycle             <cycle>        - Cycle name, number, or 'active'                                
+  -j, --json                         - Output as JSON                                                 
   -t, --title         <title>        - Title of the issue
 ```
 

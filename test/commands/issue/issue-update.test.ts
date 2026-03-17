@@ -90,6 +90,94 @@ await snapshotTest({
   },
 })
 
+await snapshotTest({
+  name: "Issue Update Command - JSON Output",
+  meta: import.meta,
+  colors: false,
+  args: [
+    "ENG-123",
+    "--title",
+    "Updated from bot",
+    "--due-date",
+    "2026-04-01",
+    "--assignee",
+    "self",
+    "--json",
+  ],
+  denoArgs: commonDenoArgs,
+  async fn() {
+    const { cleanup } = await setupMockLinearServer([
+      {
+        queryName: "GetTeamIdByKey",
+        variables: { team: "ENG" },
+        response: {
+          data: {
+            teams: {
+              nodes: [{ id: "team-eng-id" }],
+            },
+          },
+        },
+      },
+      {
+        queryName: "GetViewerId",
+        variables: {},
+        response: {
+          data: {
+            viewer: {
+              id: "user-self-123",
+            },
+          },
+        },
+      },
+      {
+        queryName: "UpdateIssue",
+        response: {
+          data: {
+            issueUpdate: {
+              success: true,
+              issue: {
+                id: "issue-existing-123",
+                identifier: "ENG-123",
+                title: "Updated from bot",
+                url:
+                  "https://linear.app/test-team/issue/ENG-123/updated-from-bot",
+                dueDate: "2026-04-01",
+                assignee: {
+                  id: "user-self-123",
+                  name: "alice.bot",
+                  displayName: "Alice Bot",
+                  initials: "AB",
+                },
+                parent: {
+                  id: "parent-issue-id",
+                  identifier: "ENG-100",
+                  title: "Parent Epic",
+                  url: "https://linear.app/test-team/issue/ENG-100/parent-epic",
+                  dueDate: null,
+                  state: {
+                    name: "In Progress",
+                    color: "#f87462",
+                  },
+                },
+                state: {
+                  name: "Todo",
+                  color: "#bec2c8",
+                },
+              },
+            },
+          },
+        },
+      },
+    ], { LINEAR_TEAM_ID: "ENG" })
+
+    try {
+      await updateCommand.parse()
+    } finally {
+      await cleanup()
+    }
+  },
+})
+
 // Test updating an issue with milestone
 await snapshotTest({
   name: "Issue Update Command - With Milestone",

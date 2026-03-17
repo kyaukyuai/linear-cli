@@ -26,6 +26,7 @@ Options:
   -s, --state                <state>        - Workflow state for the issue (by name or type)                 
   --milestone                <milestone>    - Name of the project milestone                                  
   --cycle                    <cycle>        - Cycle name, number, or 'active'                                
+  -j, --json                                - Output as JSON                                                 
   --no-use-default-template                 - Do not use default template for the issue                      
   --no-interactive                          - Disable interactive prompts                                    
   -t, --title                <title>        - Title of the issue                                             
@@ -41,6 +42,41 @@ stdout:
 
 https://linear.app/test-team/issue/ENG-123/fix-authentication-bug
 "
+stderr:
+""
+`;
+
+snapshot[`Issue Create Command - JSON Output 1`] = `
+stdout:
+'{
+  "id": "issue-new-json",
+  "identifier": "ENG-321",
+  "title": "Bot-created issue",
+  "url": "https://linear.app/test-team/issue/ENG-321/bot-created-issue",
+  "dueDate": "2026-03-31",
+  "assignee": {
+    "id": "user-self-123",
+    "name": "alice.bot",
+    "displayName": "Alice Bot",
+    "initials": "AB"
+  },
+  "parent": {
+    "id": "parent-issue-id",
+    "identifier": "ENG-220",
+    "title": "Parent Issue",
+    "url": "https://linear.app/test-team/issue/ENG-220/parent-issue",
+    "dueDate": null,
+    "state": {
+      "name": "Backlog",
+      "color": "#bec2c8"
+    }
+  },
+  "state": {
+    "name": "In Progress",
+    "color": "#f87462"
+  }
+}
+'
 stderr:
 ""
 `;
