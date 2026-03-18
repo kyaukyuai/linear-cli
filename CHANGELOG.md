@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## [2.5.0] - 2026-03-18
+
+### Added
+
+- documented Automation Contract v1 for the bot-facing `--json` surface, including stable command coverage, shared value rules, and compatibility guarantees
+
+### Changed
+
+- automation-tier `--json` commands now return a machine-readable JSON error envelope on failure, including parser and argument validation failures before command actions run
+
+### Improved
+
+- added contract-focused tests for JSON error mapping and automation-tier failure output to catch breaking changes earlier
+
 ## [2.4.1] - 2026-03-17
 
 ### Added
