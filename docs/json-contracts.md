@@ -173,6 +173,13 @@ Top-level shape:
     "state": { "id": "state-1", "name": "In Progress", "color": "#f87462" },
     "team": { "id": "team-1", "key": "ENG", "name": "Engineering" },
     "project": null,
+    "cycle": {
+      "id": "cycle-1",
+      "name": "Cycle 42",
+      "number": 42,
+      "startsAt": "2026-03-16T00:00:00.000Z",
+      "endsAt": "2026-03-29T23:59:59.000Z"
+    },
     "parent": null,
     "labels": { "nodes": [] }
   }
