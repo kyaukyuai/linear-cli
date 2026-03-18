@@ -81,6 +81,22 @@ stderr:
 ""
 `;
 
+snapshot[`Issue Create Command - JSON Validation Failure 1`] = `
+stdout:
+'{
+  "success": false,
+  "error": {
+    "type": "validation_error",
+    "message": "Cannot use --json with --start",
+    "suggestion": "Use --json for machine-readable output, or omit it when you want to start work immediately.",
+    "context": "Failed to create issue"
+  }
+}
+'
+stderr:
+""
+`;
+
 snapshot[`Issue Create Command - With Milestone 1`] = `
 stdout:
 "Creating issue in ENG

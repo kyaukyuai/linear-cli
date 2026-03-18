@@ -152,6 +152,18 @@ await snapshotTest({
 })
 
 await snapshotTest({
+  name: "Issue Relation Add Command - JSON Validation Failure",
+  meta: import.meta,
+  colors: false,
+  canFail: true,
+  args: ["add", "ENG-123", "invalid", "ENG-456", "--json"],
+  denoArgs: commonDenoArgs,
+  async fn() {
+    await relationCommand.parse()
+  },
+})
+
+await snapshotTest({
   name: "Issue Relation Delete Command - JSON Output",
   meta: import.meta,
   colors: false,
@@ -210,6 +222,18 @@ await snapshotTest({
     } finally {
       await cleanup()
     }
+  },
+})
+
+await snapshotTest({
+  name: "Issue Relation Delete Command - JSON Validation Failure",
+  meta: import.meta,
+  colors: false,
+  canFail: true,
+  args: ["delete", "ENG-123", "invalid", "ENG-456", "--json"],
+  denoArgs: commonDenoArgs,
+  async fn() {
+    await relationCommand.parse()
   },
 })
 

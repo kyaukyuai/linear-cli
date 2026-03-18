@@ -252,6 +252,18 @@ await snapshotTest({
   },
 })
 
+await snapshotTest({
+  name: "Issue Create Command - JSON Validation Failure",
+  meta: import.meta,
+  colors: false,
+  canFail: true,
+  args: ["--json", "--start"],
+  denoArgs: commonDenoArgs,
+  async fn() {
+    await createCommand.parse()
+  },
+})
+
 // Test creating an issue with milestone
 await snapshotTest({
   name: "Issue Create Command - With Milestone",

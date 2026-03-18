@@ -5,10 +5,13 @@ import {
   getIssueIdentifier,
   resolveIssueInternalId,
 } from "../../utils/linear.ts"
+import {
+  handleAutomationCommandError,
+  handleAutomationContractParseError,
+} from "../../utils/json_output.ts"
 import { withSpinner } from "../../utils/spinner.ts"
 import {
   CliError,
-  handleError,
   isClientError,
   isNotFoundError,
   NotFoundError,
@@ -116,6 +119,13 @@ const addRelationCommand = new Command()
   .description("Add a relation between two issues")
   .arguments("<issueId:string> <relationType:string> <relatedIssueId:string>")
   .option("-j, --json", "Output as JSON")
+  .error((error, cmd) => {
+    handleAutomationContractParseError(
+      error,
+      cmd,
+      "Failed to add issue relation",
+    )
+  })
   .example(
     "Mark issue as blocked by another",
     "linear issue relation add ENG-123 blocked-by ENG-100",
@@ -197,7 +207,7 @@ const addRelationCommand = new Command()
         `✓ Created relation: ${issue.identifier} ${relationType} ${relatedIssue.identifier}`,
       )
     } catch (error) {
-      handleError(error, "Failed to create relation")
+      handleAutomationCommandError(error, "Failed to create relation", json)
     }
   })
 
@@ -206,6 +216,13 @@ const deleteRelationCommand = new Command()
   .description("Delete a relation between two issues")
   .arguments("<issueId:string> <relationType:string> <relatedIssueId:string>")
   .option("-j, --json", "Output as JSON")
+  .error((error, cmd) => {
+    handleAutomationContractParseError(
+      error,
+      cmd,
+      "Failed to delete issue relation",
+    )
+  })
   .action(async ({ json }, issueIdArg, relationTypeArg, relatedIssueIdArg) => {
     try {
       const relationType = relationTypeArg.toLowerCase() as RelationType
@@ -295,7 +312,7 @@ const deleteRelationCommand = new Command()
         `✓ Deleted relation: ${issue.identifier} ${relationType} ${relatedIssue.identifier}`,
       )
     } catch (error) {
-      handleError(error, "Failed to delete relation")
+      handleAutomationCommandError(error, "Failed to delete relation", json)
     }
   })
 
@@ -304,6 +321,13 @@ const listRelationsCommand = new Command()
   .description("List relations for an issue")
   .arguments("[issueId:string]")
   .option("-j, --json", "Output as JSON")
+  .error((error, cmd) => {
+    handleAutomationContractParseError(
+      error,
+      cmd,
+      "Failed to list issue relations",
+    )
+  })
   .action(async ({ json }, issueIdArg) => {
     try {
       const issueIdentifier = await getIssueIdentifier(issueIdArg)
@@ -456,7 +480,7 @@ const listRelationsCommand = new Command()
         }
       }
     } catch (error) {
-      handleError(error, "Failed to list relations")
+      handleAutomationCommandError(error, "Failed to list relations", json)
     }
   })
 

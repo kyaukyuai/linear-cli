@@ -528,3 +528,21 @@ await snapshotTest({
     await updateCommand.parse()
   },
 })
+
+await snapshotTest({
+  name: "Issue Update Command - JSON Due Date Conflict",
+  meta: import.meta,
+  colors: false,
+  canFail: true,
+  args: [
+    "ENG-123",
+    "--due-date",
+    "2026-03-31",
+    "--clear-due-date",
+    "--json",
+  ],
+  denoArgs: commonDenoArgs,
+  async fn() {
+    await updateCommand.parse()
+  },
+})

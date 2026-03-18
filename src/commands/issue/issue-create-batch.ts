@@ -11,13 +11,12 @@ import {
   lookupUserId,
   requireTeamKey,
 } from "../../utils/linear.ts"
-import { withSpinner } from "../../utils/spinner.ts"
 import {
-  CliError,
-  handleError,
-  NotFoundError,
-  ValidationError,
-} from "../../utils/errors.ts"
+  handleAutomationCommandError,
+  handleAutomationContractParseError,
+} from "../../utils/json_output.ts"
+import { withSpinner } from "../../utils/spinner.ts"
+import { CliError, NotFoundError, ValidationError } from "../../utils/errors.ts"
 import {
   buildIssueWritePayload,
   type IssueWritePayloadIssue,
@@ -321,10 +320,17 @@ export const createBatchCommand = new Command()
     "Project name override for the batch file",
   )
   .option("-j, --json", "Output as JSON")
+  .error((error, cmd) => {
+    handleAutomationContractParseError(
+      error,
+      cmd,
+      "Failed to create issue batch",
+    )
+  })
   .action(async ({ file, team, project, json }) => {
-    try {
-      const jsonOutput = json === true
+    const jsonOutput = json === true
 
+    try {
       if (file == null) {
         throw new ValidationError(
           "Batch file is required",
@@ -440,6 +446,10 @@ export const createBatchCommand = new Command()
         console.log(`Child: ${child.identifier} ${child.url}`)
       }
     } catch (error) {
-      handleError(error, "Failed to create issue batch")
+      handleAutomationCommandError(
+        error,
+        "Failed to create issue batch",
+        jsonOutput,
+      )
     }
   })

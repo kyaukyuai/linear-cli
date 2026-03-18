@@ -70,3 +70,31 @@ await snapshotTest({
     }
   },
 })
+
+await snapshotTest({
+  name: "Team Members Command - JSON Team Not Found",
+  meta: import.meta,
+  colors: false,
+  canFail: true,
+  args: ["ENGX", "--json"],
+  denoArgs: commonDenoArgs,
+  async fn() {
+    const { cleanup } = await setupMockLinearServer([
+      {
+        queryName: "GetTeamMembers",
+        variables: { teamKey: "ENGX", first: 100, after: undefined },
+        response: {
+          data: {
+            team: null,
+          },
+        },
+      },
+    ])
+
+    try {
+      await membersCommand.parse()
+    } finally {
+      await cleanup()
+    }
+  },
+})

@@ -22,13 +22,13 @@ import {
 } from "../../utils/linear.ts"
 import { openTeamAssigneeView } from "../../utils/actions.ts"
 import { pipeToUserPager, shouldUsePager } from "../../utils/pager.ts"
+import {
+  handleAutomationCommandError,
+  handleAutomationContractParseError,
+} from "../../utils/json_output.ts"
 import { withSpinner } from "../../utils/spinner.ts"
 import { header, muted } from "../../utils/styling.ts"
-import {
-  handleError,
-  NotFoundError,
-  ValidationError,
-} from "../../utils/errors.ts"
+import { NotFoundError, ValidationError } from "../../utils/errors.ts"
 
 const SortType = new EnumType(["manual", "priority"])
 const StateType = new EnumType([
@@ -123,6 +123,9 @@ export const listCommand = new Command()
   .option("-w, --web", "Open in web browser")
   .option("-a, --app", "Open in Linear.app")
   .option("--no-pager", "Disable automatic paging for long output")
+  .error((error, cmd) => {
+    handleAutomationContractParseError(error, cmd, "Failed to list issues")
+  })
   .action(
     async (
       {
@@ -481,7 +484,7 @@ export const listCommand = new Command()
           outputLines.forEach((line) => console.log(line))
         }
       } catch (error) {
-        handleError(error, "Failed to list issues")
+        handleAutomationCommandError(error, "Failed to list issues", json)
       }
     },
   )

@@ -26,3 +26,19 @@ stdout:
 stderr:
 ""
 `;
+
+snapshot[`Team Members Command - JSON Team Not Found 1`] = `
+stdout:
+'{
+  "success": false,
+  "error": {
+    "type": "not_found",
+    "message": "Team not found: ENGX",
+    "suggestion": null,
+    "context": "Failed to fetch team members"
+  }
+}
+'
+stderr:
+""
+`;
