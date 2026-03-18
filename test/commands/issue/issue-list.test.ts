@@ -154,6 +154,13 @@ await snapshotTest({
                     name: "Auth Refresh",
                     slugId: "auth-refresh",
                   },
+                  cycle: {
+                    id: "cycle-1",
+                    name: "Cycle 42",
+                    number: 42,
+                    startsAt: "2025-08-18T00:00:00Z",
+                    endsAt: "2025-08-31T23:59:59Z",
+                  },
                   parent: {
                     id: "issue-parent-1",
                     identifier: "ENG-100",
@@ -253,6 +260,13 @@ await snapshotTest({
                     name: "Engineering",
                   },
                   project: null,
+                  cycle: {
+                    id: "cycle-2",
+                    name: "Cycle 43",
+                    number: 43,
+                    startsAt: "2025-09-01T00:00:00Z",
+                    endsAt: "2025-09-14T23:59:59Z",
+                  },
                   parent: null,
                   labels: {
                     nodes: [],
@@ -380,6 +394,7 @@ await snapshotTest({
                     name: "Engineering",
                   },
                   project: null,
+                  cycle: null,
                   parent: null,
                   labels: {
                     nodes: [],

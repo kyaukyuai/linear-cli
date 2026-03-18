@@ -782,6 +782,13 @@ export async function fetchIssuesForState(
             name
             slugId
           }
+          cycle {
+            id
+            name
+            number
+            startsAt
+            endsAt
+          }
           parent {
             id
             identifier
