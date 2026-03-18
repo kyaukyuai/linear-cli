@@ -15,6 +15,7 @@ Options:
   -s, --state          <state>          - Filter by issue state (can be repeated for multiple states)           (Default: [ \\x1b[32m"unstarted"\\x1b[39m ], Values: \\x1b[32m"triage"\\x1b[39m, \\x1b[32m"backlog"\\x1b[39m,
                                                                                                                 \\x1b[32m"unstarted"\\x1b[39m, \\x1b[32m"started"\\x1b[39m, \\x1b[32m"completed"\\x1b[39m, \\x1b[32m"canceled"\\x1b[39m)       
   --all-states                          - Show issues from all states                                                                                                  
+  --all                                 - Shortcut for --all-states --all-assignees --limit 0                                                                          
   --assignee           <assignee>       - Filter by assignee (username)                                                                                                
   -A, --all-assignees                   - Show issues for all assignees                                                                                                
   -U, --unassigned                      - Show only unassigned issues                                                                                                  
@@ -103,6 +104,41 @@ stderr:
 ""
 `;
 
+snapshot[`Issue List Command - All Shortcut 1`] = `
+stdout:
+'[
+  {
+    "id": "issue-3",
+    "identifier": "ENG-125",
+    "title": "Enumerate all open work",
+    "url": "https://linear.app/test/issue/ENG-125/enumerate-all-open-work",
+    "dueDate": null,
+    "priority": 2,
+    "estimate": null,
+    "assignee": null,
+    "state": {
+      "id": "state-3",
+      "name": "Backlog",
+      "color": "#bec2c8"
+    },
+    "team": {
+      "id": "team-1",
+      "key": "ENG",
+      "name": "Engineering"
+    },
+    "project": null,
+    "parent": null,
+    "labels": {
+      "nodes": []
+    },
+    "updatedAt": "2025-08-14T15:30:00Z"
+  }
+]
+'
+stderr:
+""
+`;
+
 snapshot[`Issue List Command - Backlog Includes Unassigned By Default 1`] = `
 stdout:
 '[
@@ -133,6 +169,22 @@ stdout:
     "updatedAt": "2025-08-15T15:30:00Z"
   }
 ]
+'
+stderr:
+""
+`;
+
+snapshot[`Issue List Command - All Shortcut Validation Failure 1`] = `
+stdout:
+'{
+  "success": false,
+  "error": {
+    "type": "validation_error",
+    "message": "Cannot specify multiple assignee filters (--assignee, --all-assignees, --unassigned, --all)",
+    "suggestion": null,
+    "context": "Failed to list issues"
+  }
+}
 '
 stderr:
 ""

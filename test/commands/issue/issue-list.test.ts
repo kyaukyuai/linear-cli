@@ -190,6 +190,94 @@ await snapshotTest({
 })
 
 await snapshotTest({
+  name: "Issue List Command - All Shortcut",
+  meta: import.meta,
+  colors: false,
+  args: ["--all", "--json"],
+  denoArgs: commonDenoArgs,
+  async fn() {
+    const { cleanup } = await setupMockLinearServer([
+      {
+        queryName: "GetIssuesForState",
+        variables: {
+          sort: [
+            { workflowState: { order: "Descending" } },
+            {
+              priority: {
+                nulls: "last",
+                order: "Descending",
+              },
+            },
+            {
+              manual: {
+                nulls: "last",
+                order: "Ascending",
+              },
+            },
+          ],
+          filter: {
+            team: {
+              key: {
+                eq: "ENG",
+              },
+            },
+          },
+          first: 50,
+        },
+        response: {
+          data: {
+            issues: {
+              nodes: [
+                {
+                  id: "issue-3",
+                  identifier: "ENG-125",
+                  title: "Enumerate all open work",
+                  url:
+                    "https://linear.app/test/issue/ENG-125/enumerate-all-open-work",
+                  dueDate: null,
+                  priority: 2,
+                  estimate: null,
+                  assignee: null,
+                  state: {
+                    id: "state-3",
+                    name: "Backlog",
+                    color: "#bec2c8",
+                  },
+                  team: {
+                    id: "team-1",
+                    key: "ENG",
+                    name: "Engineering",
+                  },
+                  project: null,
+                  parent: null,
+                  labels: {
+                    nodes: [],
+                  },
+                  updatedAt: "2025-08-14T15:30:00Z",
+                },
+              ],
+              pageInfo: {
+                hasNextPage: false,
+                endCursor: null,
+              },
+            },
+          },
+        },
+      },
+    ], {
+      LINEAR_TEAM_ID: "ENG",
+      LINEAR_ISSUE_SORT: "priority",
+    })
+
+    try {
+      await listCommand.parse()
+    } finally {
+      await cleanup()
+    }
+  },
+})
+
+await snapshotTest({
   name: "Issue List Command - Backlog Includes Unassigned By Default",
   meta: import.meta,
   colors: false,
@@ -312,6 +400,18 @@ await snapshotTest({
     } finally {
       await cleanup()
     }
+  },
+})
+
+await snapshotTest({
+  name: "Issue List Command - All Shortcut Validation Failure",
+  meta: import.meta,
+  colors: false,
+  canFail: true,
+  args: ["--all", "--assignee", "ykakui", "--json"],
+  denoArgs: commonDenoArgs,
+  async fn() {
+    await listCommand.parse()
   },
 })
 

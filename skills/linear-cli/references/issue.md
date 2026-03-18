@@ -81,6 +81,7 @@ Options:
   -s, --state          <state>          - Filter by issue state (can be repeated for multiple states)           (Default: [ "unstarted" ], Values: "triage", "backlog",
                                                                                                                 "unstarted", "started", "completed", "canceled")       
   --all-states                          - Show issues from all states                                                                                                  
+  --all                                 - Shortcut for --all-states --all-assignees --limit 0                                                                          
   --assignee           <assignee>       - Filter by assignee (username)                                                                                                
   -A, --all-assignees                   - Show issues for all assignees                                                                                                
   -U, --unassigned                      - Show only unassigned issues                                                                                                  

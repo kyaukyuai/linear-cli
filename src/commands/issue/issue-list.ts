@@ -58,6 +58,10 @@ export const listCommand = new Command()
     "Show issues from all states",
   )
   .option(
+    "--all",
+    "Shortcut for --all-states --all-assignees --limit 0",
+  )
+  .option(
     "--assignee <assignee:string>",
     "Filter by assignee (username)",
   )
@@ -136,6 +140,7 @@ export const listCommand = new Command()
         unassigned,
         web,
         app,
+        all,
         allStates,
         team,
         project,
@@ -158,11 +163,25 @@ export const listCommand = new Command()
       }
 
       try {
+        const effectiveAllStates = all || allStates
+        const effectiveAllAssignees = all || allAssignees
+        const effectiveLimit = all ? 0 : limit
+
+        if (all && limit !== 50 && limit !== 0) {
+          throw new ValidationError(
+            "Cannot use --all with --limit",
+            {
+              suggestion:
+                "Use --all by itself, or spell out --all-states --all-assignees with a custom --limit.",
+            },
+          )
+        }
+
         const assigneeFilterCount =
-          [assignee, allAssignees, unassigned].filter(Boolean).length
+          [assignee, effectiveAllAssignees, unassigned].filter(Boolean).length
         if (assigneeFilterCount > 1) {
           throw new ValidationError(
-            "Cannot specify multiple assignee filters (--assignee, --all-assignees, --unassigned)",
+            "Cannot specify multiple assignee filters (--assignee, --all-assignees, --unassigned, --all)",
           )
         }
 
@@ -171,9 +190,12 @@ export const listCommand = new Command()
           : [state]
 
         if (
-          allStates && (stateArray.length > 1 || stateArray[0] !== "unstarted")
+          effectiveAllStates &&
+          (stateArray.length > 1 || stateArray[0] !== "unstarted")
         ) {
-          throw new ValidationError("Cannot use --all-states with --state flag")
+          throw new ValidationError(
+            "Cannot use --all or --all-states with --state flag",
+          )
         }
 
         const sort = sortFlag ||
@@ -188,7 +210,7 @@ export const listCommand = new Command()
             `Sort must be one of: ${SortType.values().join(", ")}`,
           )
         }
-        if (limit < 0) {
+        if (effectiveLimit < 0) {
           throw new ValidationError(
             "--limit must be 0 or greater",
             {
@@ -258,11 +280,11 @@ export const listCommand = new Command()
           () =>
             fetchIssuesForState({
               teamKey,
-              state: allStates ? undefined : stateArray,
+              state: effectiveAllStates ? undefined : stateArray,
               assignee,
               unassigned,
-              allAssignees,
-              limit: limit === 0 ? undefined : limit,
+              allAssignees: effectiveAllAssignees,
+              limit: effectiveLimit === 0 ? undefined : effectiveLimit,
               projectId,
               sortParam: sort,
               cycleId,
@@ -314,7 +336,7 @@ export const listCommand = new Command()
         )
         const ASSIGNEE_WIDTH = 2 // fixed width for assignee initials
         const SPACE_WIDTH = 4
-        const showAssigneeColumn = allAssignees || unassigned
+        const showAssigneeColumn = effectiveAllAssignees || unassigned
         const updatedHeader = "UPDATED"
         const UPDATED_WIDTH = Math.max(
           unicodeWidth(updatedHeader),
