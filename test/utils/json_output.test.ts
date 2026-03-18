@@ -1,4 +1,5 @@
 import { assertEquals } from "@std/assert"
+import { fromFileUrl } from "@std/path"
 import { ClientError, type GraphQLResponse } from "graphql-request"
 import {
   AuthError,
@@ -140,9 +141,13 @@ Deno.test("buildJsonErrorEnvelope maps Cliffy ValidationError by name", () => {
 
 Deno.test("handleJsonError exits non-zero and writes one JSON document to stdout", async () => {
   const scriptPath = await Deno.makeTempFile({ suffix: ".ts" })
-  const repoRoot = "/Users/kyaukyuai/src/github.com/kyaukyuai/linear-cli"
-  const jsonOutputPath = `${repoRoot}/src/utils/json_output.ts`
-  const errorsPath = `${repoRoot}/src/utils/errors.ts`
+  const repoRoot = fromFileUrl(new URL("../../", import.meta.url))
+  const denoJsonPath = fromFileUrl(new URL("../../deno.json", import.meta.url))
+  const jsonOutputPath = new URL(
+    "../../src/utils/json_output.ts",
+    import.meta.url,
+  ).href
+  const errorsPath = new URL("../../src/utils/errors.ts", import.meta.url).href
 
   await Deno.writeTextFile(
     scriptPath,
@@ -159,7 +164,7 @@ handleJsonError(
 
   try {
     const output = await new Deno.Command("deno", {
-      args: ["run", "-c", `${repoRoot}/deno.json`, "--allow-all", scriptPath],
+      args: ["run", "-c", denoJsonPath, "--allow-all", scriptPath],
       cwd: repoRoot,
       stdout: "piped",
       stderr: "piped",
