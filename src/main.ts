@@ -21,6 +21,7 @@ import { configCommand } from "./commands/config.ts"
 import { schemaCommand } from "./commands/schema.ts"
 import { apiCommand } from "./commands/api.ts"
 import { setCliWorkspace } from "./config.ts"
+import { maybeHandleAutomationContractParseError } from "./utils/json_output.ts"
 
 // Import config and credentials setup
 import "./config.ts"
@@ -41,6 +42,9 @@ Environment Variables:
   )
   .globalAction((options) => {
     setCliWorkspace(options.workspace)
+  })
+  .error((error, cmd) => {
+    maybeHandleAutomationContractParseError(error, cmd)
   })
   .action(() => {
     console.log("Use --help to see available commands")

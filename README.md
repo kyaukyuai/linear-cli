@@ -100,6 +100,15 @@ compared to upstream, this fork adds and maintains several capabilities aimed at
 - workspace-aware auth management with keyring migration and default workspace support
 - generated AI-agent skill docs, Claude plugin metadata, npm publishing, and Homebrew tap release plumbing
 
+## automation contract v1
+
+for bot and org-wide automation use cases, `linear-cli` defines a stable JSON contract for a focused automation tier.
+
+- in scope: `issue list/view/create/update --json`, `issue relation add/delete/list --json`, `issue comment add --json`, `team members --json`, `issue parent/children/create-batch --json`
+- out of scope: non-JSON terminal output, `linear api`, and other `--json` commands that are not listed above
+
+the contract fixes top-level success payload shapes and requires machine-readable failure payloads for the automation tier. see [docs/json-contracts.md](docs/json-contracts.md) for the full contract, compatibility rules, and example payloads. that guarantee also covers parser and argument validation failures when `--json` is present.
+
 ## differences from upstream
 
 this fork is intentionally diverging from upstream in a few ways:

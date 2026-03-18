@@ -63,6 +63,22 @@ stderr:
 ""
 `;
 
+snapshot[`Issue Relation Add Command - JSON Validation Failure 1`] = `
+stdout:
+'{
+  "success": false,
+  "error": {
+    "type": "validation_error",
+    "message": "Invalid relation type: invalid",
+    "suggestion": "Must be one of: blocks, blocked-by, related, duplicate",
+    "context": "Failed to create relation"
+  }
+}
+'
+stderr:
+""
+`;
+
 snapshot[`Issue Relation Delete Command - JSON Output 1`] = `
 stdout:
 '{
@@ -78,6 +94,22 @@ stdout:
     "identifier": "ENG-456"
   },
   "relationId": "relation-id-3"
+}
+'
+stderr:
+""
+`;
+
+snapshot[`Issue Relation Delete Command - JSON Validation Failure 1`] = `
+stdout:
+'{
+  "success": false,
+  "error": {
+    "type": "validation_error",
+    "message": "Invalid relation type: invalid",
+    "suggestion": "Must be one of: blocks, blocked-by, related, duplicate",
+    "context": "Failed to delete relation"
+  }
 }
 '
 stderr:

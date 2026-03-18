@@ -292,6 +292,41 @@ await snapshotTest({
   },
 })
 
+await snapshotTest({
+  name: "Issue View Command - JSON Issue Not Found",
+  meta: import.meta,
+  colors: false,
+  canFail: true,
+  args: ["TEST-999", "--json"],
+  denoArgs,
+  async fn() {
+    const server = new MockLinearServer([
+      {
+        queryName: "GetIssueDetailsWithComments",
+        variables: { id: "TEST-999" },
+        response: {
+          errors: [{
+            message: "Issue not found: TEST-999",
+            extensions: { code: "NOT_FOUND" },
+          }],
+        },
+      },
+    ])
+
+    try {
+      await server.start()
+      Deno.env.set("LINEAR_GRAPHQL_ENDPOINT", server.getEndpoint())
+      Deno.env.set("LINEAR_API_KEY", "Bearer test-token")
+
+      await viewCommand.parse()
+    } finally {
+      await server.stop()
+      Deno.env.delete("LINEAR_GRAPHQL_ENDPOINT")
+      Deno.env.delete("LINEAR_API_KEY")
+    }
+  },
+})
+
 // Test JSON output with no comments
 await snapshotTest({
   name: "Issue View Command - JSON Output No Comments",

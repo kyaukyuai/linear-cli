@@ -343,3 +343,36 @@ await snapshotTest({
     }
   },
 })
+
+await snapshotTest({
+  name: "Issue List Command - JSON Validation Failure",
+  meta: import.meta,
+  colors: false,
+  canFail: true,
+  args: ["--all-assignees", "--json", "--due-before", "2025-02-31"],
+  denoArgs: commonDenoArgs,
+  async fn() {
+    const { cleanup } = await setupMockLinearServer([], {
+      LINEAR_TEAM_ID: "ENG",
+      LINEAR_ISSUE_SORT: "priority",
+    })
+
+    try {
+      await listCommand.parse()
+    } finally {
+      await cleanup()
+    }
+  },
+})
+
+await snapshotTest({
+  name: "Issue List Command - JSON Parse Failure",
+  meta: import.meta,
+  colors: false,
+  canFail: true,
+  args: ["--all-assignees", "--json", "--query"],
+  denoArgs: commonDenoArgs,
+  async fn() {
+    await listCommand.parse()
+  },
+})

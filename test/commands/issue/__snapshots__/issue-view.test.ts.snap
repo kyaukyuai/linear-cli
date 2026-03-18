@@ -96,6 +96,22 @@ stderr:
 "
 `;
 
+snapshot[`Issue View Command - JSON Issue Not Found 1`] = `
+stdout:
+'{
+  "success": false,
+  "error": {
+    "type": "not_found",
+    "message": "Issue not found: TEST-999",
+    "suggestion": null,
+    "context": "Failed to view issue"
+  }
+}
+'
+stderr:
+""
+`;
+
 snapshot[`Issue View Command - JSON Output No Comments 1`] = `
 stdout:
 '{

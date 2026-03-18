@@ -27,13 +27,12 @@ import {
   type WorkflowState,
 } from "../../utils/linear.ts"
 import { startWorkOnIssue } from "../../utils/actions.ts"
-import { withSpinner } from "../../utils/spinner.ts"
 import {
-  CliError,
-  handleError,
-  NotFoundError,
-  ValidationError,
-} from "../../utils/errors.ts"
+  handleAutomationCommandError,
+  handleAutomationContractParseError,
+} from "../../utils/json_output.ts"
+import { withSpinner } from "../../utils/spinner.ts"
+import { CliError, NotFoundError, ValidationError } from "../../utils/errors.ts"
 import { buildIssueWritePayload } from "./issue-write-payload.ts"
 
 type IssueLabel = { id: string; name: string; color: string }
@@ -514,6 +513,9 @@ export const createCommand = new Command()
   )
   .option("--no-interactive", "Disable interactive prompts")
   .option("-t, --title <title:string>", "Title of the issue")
+  .error((error, cmd) => {
+    handleAutomationContractParseError(error, cmd, "Failed to create issue")
+  })
   .action(
     async (
       {
@@ -537,49 +539,50 @@ export const createCommand = new Command()
         json,
       },
     ) => {
-      interactive = interactive && Deno.stdout.isTerminal() && !json
+      try {
+        interactive = interactive && Deno.stdout.isTerminal() && !json
 
-      // Validate that description and descriptionFile are not both provided
-      if (description && descriptionFile) {
-        throw new ValidationError(
-          "Cannot specify both --description and --description-file",
-        )
-      }
-      if (json && start) {
-        throw new ValidationError(
-          "Cannot use --json with --start",
-          {
-            suggestion:
-              "Use --json for machine-readable output, or omit it when you want to start work immediately.",
-          },
-        )
-      }
-
-      // Read description from file if provided
-      let finalDescription = description
-      if (descriptionFile) {
-        try {
-          finalDescription = await Deno.readTextFile(descriptionFile)
-        } catch (error) {
+        // Validate that description and descriptionFile are not both provided
+        if (description && descriptionFile) {
           throw new ValidationError(
-            `Failed to read description file: ${descriptionFile}`,
+            "Cannot specify both --description and --description-file",
+          )
+        }
+        if (json && start) {
+          throw new ValidationError(
+            "Cannot use --json with --start",
             {
-              suggestion: `Error: ${
-                error instanceof Error ? error.message : String(error)
-              }`,
+              suggestion:
+                "Use --json for machine-readable output, or omit it when you want to start work immediately.",
             },
           )
         }
-      }
 
-      // If no flags are provided (or only parent is provided), use interactive mode
-      const noFlagsProvided = !title && !assignee && !dueDate &&
-        priority === undefined && estimate === undefined && !finalDescription &&
-        (!labels || labels.length === 0) &&
-        !team && !project && !state && !milestone && !cycle && !start
+        // Read description from file if provided
+        let finalDescription = description
+        if (descriptionFile) {
+          try {
+            finalDescription = await Deno.readTextFile(descriptionFile)
+          } catch (error) {
+            throw new ValidationError(
+              `Failed to read description file: ${descriptionFile}`,
+              {
+                suggestion: `Error: ${
+                  error instanceof Error ? error.message : String(error)
+                }`,
+              },
+            )
+          }
+        }
 
-      if (noFlagsProvided && interactive) {
-        try {
+        // If no flags are provided (or only parent is provided), use interactive mode
+        const noFlagsProvided = !title && !assignee && !dueDate &&
+          priority === undefined && estimate === undefined &&
+          !finalDescription &&
+          (!labels || labels.length === 0) &&
+          !team && !project && !state && !milestone && !cycle && !start
+
+        if (noFlagsProvided && interactive) {
           // Convert parent identifier if provided and fetch parent data
           let parentId: string | undefined
           let parentData: {
@@ -695,23 +698,20 @@ export const createCommand = new Command()
             }
           }
           return
-        } catch (error) {
-          handleError(error, "Failed to create issue")
         }
-      }
 
-      // Fallback to flag-based mode
-      if (!title) {
-        throw new ValidationError(
-          "Title is required when not using interactive mode",
-          {
-            suggestion: json
-              ? "Use --title when requesting --json output."
-              : "Use --title or run without any flags (or only --parent) for interactive mode.",
-          },
-        )
-      }
-      try {
+        // Fallback to flag-based mode
+        if (!title) {
+          throw new ValidationError(
+            "Title is required when not using interactive mode",
+            {
+              suggestion: json
+                ? "Use --title when requesting --json output."
+                : "Use --title or run without any flags (or only --parent) for interactive mode.",
+            },
+          )
+        }
+
         team = (team == null) ? getTeamKey() : team.toUpperCase()
         if (!team) {
           throw new ValidationError("Could not determine team key")
@@ -927,7 +927,7 @@ export const createCommand = new Command()
           await startWorkOnIssue(issueId, issue.team.key)
         }
       } catch (error) {
-        handleError(error, "Failed to create issue")
+        handleAutomationCommandError(error, "Failed to create issue", json)
       }
     },
   )

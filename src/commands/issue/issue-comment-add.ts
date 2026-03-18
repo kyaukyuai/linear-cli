@@ -12,7 +12,11 @@ import {
   validateFilePath,
 } from "../../utils/upload.ts"
 import { shouldShowSpinner } from "../../utils/hyperlink.ts"
-import { CliError, handleError, ValidationError } from "../../utils/errors.ts"
+import {
+  handleAutomationCommandError,
+  handleAutomationContractParseError,
+} from "../../utils/json_output.ts"
+import { CliError, ValidationError } from "../../utils/errors.ts"
 import { withSpinner } from "../../utils/spinner.ts"
 
 export const commentAddCommand = new Command()
@@ -31,6 +35,9 @@ export const commentAddCommand = new Command()
     { collect: true },
   )
   .option("-j, --json", "Output as JSON")
+  .error((error, cmd) => {
+    handleAutomationContractParseError(error, cmd, "Failed to add comment")
+  })
   .action(async (options, issueId) => {
     const { body, bodyFile, parent, attach, json } = options
 
@@ -227,6 +234,6 @@ export const commentAddCommand = new Command()
       console.log(`✓ Comment added to ${resolvedIdentifier}`)
       console.log(comment.url)
     } catch (error) {
-      handleError(error, "Failed to add comment")
+      handleAutomationCommandError(error, "Failed to add comment", json)
     }
   })

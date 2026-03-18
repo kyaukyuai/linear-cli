@@ -143,3 +143,19 @@ stderr:
   Use --due-date to set a due date, or --clear-due-date to remove it.
 "
 `;
+
+snapshot[`Issue Update Command - JSON Due Date Conflict 1`] = `
+stdout:
+'{
+  "success": false,
+  "error": {
+    "type": "validation_error",
+    "message": "Cannot specify both --due-date and --clear-due-date",
+    "suggestion": "Use --due-date to set a due date, or --clear-due-date to remove it.",
+    "context": "Failed to update issue"
+  }
+}
+'
+stderr:
+""
+`;

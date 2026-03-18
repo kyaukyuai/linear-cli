@@ -22,7 +22,11 @@ import {
   shouldShowSpinner,
 } from "../../utils/hyperlink.ts"
 import { createHyperlinkExtension } from "../../utils/charmd-hyperlink-extension.ts"
-import { handleError, ValidationError } from "../../utils/errors.ts"
+import {
+  handleAutomationCommandError,
+  handleAutomationContractParseError,
+} from "../../utils/json_output.ts"
+import { ValidationError } from "../../utils/errors.ts"
 import {
   LINEAR_PRIVATE_UPLOAD_HOST,
   LINEAR_UPLOAD_HOSTNAMES,
@@ -63,6 +67,9 @@ export const viewCommand = new Command()
   .option("--no-pager", "Disable automatic paging for long output")
   .option("-j, --json", "Output issue data as JSON")
   .option("--no-download", "Keep remote URLs instead of downloading files")
+  .error((error, cmd) => {
+    handleAutomationContractParseError(error, cmd, "Failed to view issue")
+  })
   .action(async (options, issueId) => {
     const { web, app, comments, pager, json, download } = options
     const showComments = comments !== false
@@ -265,7 +272,7 @@ export const viewCommand = new Command()
         console.log(markdown)
       }
     } catch (error) {
-      handleError(error, "Failed to view issue")
+      handleAutomationCommandError(error, "Failed to view issue", json)
     }
   })
 

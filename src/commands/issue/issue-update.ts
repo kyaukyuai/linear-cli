@@ -13,13 +13,12 @@ import {
   getWorkflowStateByNameOrType,
   lookupUserId,
 } from "../../utils/linear.ts"
-import { withSpinner } from "../../utils/spinner.ts"
 import {
-  CliError,
-  handleError,
-  NotFoundError,
-  ValidationError,
-} from "../../utils/errors.ts"
+  handleAutomationCommandError,
+  handleAutomationContractParseError,
+} from "../../utils/json_output.ts"
+import { withSpinner } from "../../utils/spinner.ts"
+import { CliError, NotFoundError, ValidationError } from "../../utils/errors.ts"
 import { buildIssueWritePayload } from "./issue-write-payload.ts"
 
 export const updateCommand = new Command()
@@ -85,6 +84,9 @@ export const updateCommand = new Command()
   )
   .option("-j, --json", "Output as JSON")
   .option("-t, --title <title:string>", "Title of the issue")
+  .error((error, cmd) => {
+    handleAutomationContractParseError(error, cmd, "Failed to update issue")
+  })
   .action(
     async (
       {
@@ -340,7 +342,7 @@ export const updateCommand = new Command()
         console.log(`✓ Updated issue ${issue.identifier}: ${issue.title}`)
         console.log(issue.url)
       } catch (error) {
-        handleError(error, "Failed to update issue")
+        handleAutomationCommandError(error, "Failed to update issue", json)
       }
     },
   )

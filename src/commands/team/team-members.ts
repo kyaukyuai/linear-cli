@@ -1,6 +1,9 @@
 import { Command } from "@cliffy/command"
 import { getTeamMembers, requireTeamKey } from "../../utils/linear.ts"
-import { handleError } from "../../utils/errors.ts"
+import {
+  handleAutomationCommandError,
+  handleAutomationContractParseError,
+} from "../../utils/json_output.ts"
 import { withSpinner } from "../../utils/spinner.ts"
 
 export const membersCommand = new Command()
@@ -9,6 +12,13 @@ export const membersCommand = new Command()
   .arguments("[teamKey:string]")
   .option("-a, --all", "Include inactive members")
   .option("-j, --json", "Output as JSON")
+  .error((error, cmd) => {
+    handleAutomationContractParseError(
+      error,
+      cmd,
+      "Failed to fetch team members",
+    )
+  })
   .action(async ({ all, json }, teamKey?: string) => {
     try {
       const resolvedTeamKey = requireTeamKey(teamKey)
@@ -97,6 +107,6 @@ export const membersCommand = new Command()
         console.log("")
       }
     } catch (error) {
-      handleError(error, "Failed to fetch team members")
+      handleAutomationCommandError(error, "Failed to fetch team members", json)
     }
   })

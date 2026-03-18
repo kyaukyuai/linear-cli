@@ -2,7 +2,11 @@ import { Command } from "@cliffy/command"
 import { bold, gray } from "@std/fmt/colors"
 import { fetchIssueDetails, getIssueIdentifier } from "../../utils/linear.ts"
 import { shouldShowSpinner } from "../../utils/hyperlink.ts"
-import { handleError, ValidationError } from "../../utils/errors.ts"
+import {
+  handleAutomationCommandError,
+  handleAutomationContractParseError,
+} from "../../utils/json_output.ts"
+import { ValidationError } from "../../utils/errors.ts"
 import { toIssueHierarchyRef } from "./issue-hierarchy-payload.ts"
 
 export const parentCommand = new Command()
@@ -10,6 +14,13 @@ export const parentCommand = new Command()
   .description("Show the parent issue for an issue")
   .arguments("[issueId:string]")
   .option("-j, --json", "Output as JSON")
+  .error((error, cmd) => {
+    handleAutomationContractParseError(
+      error,
+      cmd,
+      "Failed to fetch parent issue",
+    )
+  })
   .action(async ({ json }, issueId) => {
     try {
       const resolvedId = await getIssueIdentifier(issueId)
@@ -49,6 +60,6 @@ export const parentCommand = new Command()
       }
       console.log(payload.parent.url)
     } catch (error) {
-      handleError(error, "Failed to show parent issue")
+      handleAutomationCommandError(error, "Failed to show parent issue", json)
     }
   })
