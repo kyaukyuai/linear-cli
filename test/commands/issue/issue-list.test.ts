@@ -190,6 +190,132 @@ await snapshotTest({
 })
 
 await snapshotTest({
+  name: "Issue List Command - Backlog Includes Unassigned By Default",
+  meta: import.meta,
+  colors: false,
+  args: ["--state", "backlog", "--json"],
+  denoArgs: commonDenoArgs,
+  async fn() {
+    const { cleanup } = await setupMockLinearServer([
+      {
+        queryName: "GetIssuesForState",
+        variables: {
+          sort: [
+            { workflowState: { order: "Descending" } },
+            {
+              priority: {
+                nulls: "last",
+                order: "Descending",
+              },
+            },
+            {
+              manual: {
+                nulls: "last",
+                order: "Ascending",
+              },
+            },
+          ],
+          filter: {
+            and: [
+              {
+                team: {
+                  key: {
+                    eq: "ENG",
+                  },
+                },
+              },
+              {
+                state: {
+                  type: {
+                    in: ["backlog"],
+                  },
+                },
+              },
+              {
+                or: [
+                  {
+                    assignee: {
+                      isMe: {
+                        eq: true,
+                      },
+                    },
+                  },
+                  {
+                    and: [
+                      {
+                        state: {
+                          type: {
+                            eq: "backlog",
+                          },
+                        },
+                      },
+                      {
+                        assignee: {
+                          null: true,
+                        },
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
+          },
+          first: 50,
+        },
+        response: {
+          data: {
+            issues: {
+              nodes: [
+                {
+                  id: "issue-2",
+                  identifier: "ENG-124",
+                  title: "Audit session timeout copy",
+                  url:
+                    "https://linear.app/test/issue/ENG-124/audit-session-timeout-copy",
+                  dueDate: null,
+                  priority: 4,
+                  estimate: null,
+                  assignee: null,
+                  state: {
+                    id: "state-2",
+                    name: "Backlog",
+                    color: "#bec2c8",
+                  },
+                  team: {
+                    id: "team-1",
+                    key: "ENG",
+                    name: "Engineering",
+                  },
+                  project: null,
+                  parent: null,
+                  labels: {
+                    nodes: [],
+                  },
+                  updatedAt: "2025-08-15T15:30:00Z",
+                },
+              ],
+              pageInfo: {
+                hasNextPage: false,
+                endCursor: null,
+              },
+            },
+          },
+        },
+      },
+    ], {
+      LINEAR_TEAM_ID: "ENG",
+      LINEAR_ISSUE_SORT: "priority",
+    })
+
+    try {
+      await listCommand.parse()
+    } finally {
+      await cleanup()
+    }
+  },
+})
+
+await snapshotTest({
   name: "Issue List Command - Applies Bot Filters",
   meta: import.meta,
   colors: false,

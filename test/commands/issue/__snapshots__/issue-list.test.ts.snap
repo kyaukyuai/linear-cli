@@ -103,6 +103,41 @@ stderr:
 ""
 `;
 
+snapshot[`Issue List Command - Backlog Includes Unassigned By Default 1`] = `
+stdout:
+'[
+  {
+    "id": "issue-2",
+    "identifier": "ENG-124",
+    "title": "Audit session timeout copy",
+    "url": "https://linear.app/test/issue/ENG-124/audit-session-timeout-copy",
+    "dueDate": null,
+    "priority": 4,
+    "estimate": null,
+    "assignee": null,
+    "state": {
+      "id": "state-2",
+      "name": "Backlog",
+      "color": "#bec2c8"
+    },
+    "team": {
+      "id": "team-1",
+      "key": "ENG",
+      "name": "Engineering"
+    },
+    "project": null,
+    "parent": null,
+    "labels": {
+      "nodes": []
+    },
+    "updatedAt": "2025-08-15T15:30:00Z"
+  }
+]
+'
+stderr:
+""
+`;
+
 snapshot[`Issue List Command - Applies Bot Filters 1`] = `
 stdout:
 "[]

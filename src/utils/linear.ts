@@ -680,6 +680,8 @@ export async function fetchIssuesForState(
     filters.push({ state: { type: { in: state } } })
   }
 
+  const includesBacklog = state?.includes("backlog") ?? false
+
   if (unassigned) {
     filters.push({ assignee: { null: true } })
   } else if (allAssignees) {
@@ -690,6 +692,18 @@ export async function fetchIssuesForState(
       throw new NotFoundError("User", assignee)
     }
     filters.push({ assignee: { id: { eq: userId } } })
+  } else if (includesBacklog) {
+    filters.push({
+      or: [
+        { assignee: { isMe: { eq: true } } },
+        {
+          and: [
+            { state: { type: { eq: "backlog" } } },
+            { assignee: { null: true } },
+          ],
+        },
+      ],
+    })
   } else {
     filters.push({ assignee: { isMe: { eq: true } } })
   }
