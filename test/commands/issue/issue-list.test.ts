@@ -40,6 +40,7 @@ await snapshotTest({
                   title: "Fix authentication expiry handling",
                   dueDate: "2025-08-25",
                   priority: 1,
+                  priorityLabel: "Urgent",
                   estimate: 3,
                   assignee: {
                     initials: "YK",
@@ -66,6 +67,7 @@ await snapshotTest({
                   title: "Audit session timeout copy",
                   dueDate: null,
                   priority: 4,
+                  priorityLabel: "Low",
                   estimate: null,
                   assignee: null,
                   state: {
@@ -129,6 +131,7 @@ await snapshotTest({
                     "https://linear.app/test/issue/ENG-123/fix-authentication-expiry-handling",
                   dueDate: "2025-08-25",
                   priority: 1,
+                  priorityLabel: "Urgent",
                   estimate: 3,
                   assignee: {
                     id: "user-1",
@@ -236,6 +239,7 @@ await snapshotTest({
                     "https://linear.app/test/issue/ENG-125/enumerate-all-open-work",
                   dueDate: null,
                   priority: 2,
+                  priorityLabel: "High",
                   estimate: null,
                   assignee: null,
                   state: {
@@ -362,6 +366,7 @@ await snapshotTest({
                     "https://linear.app/test/issue/ENG-124/audit-session-timeout-copy",
                   dueDate: null,
                   priority: 4,
+                  priorityLabel: "Low",
                   estimate: null,
                   assignee: null,
                   state: {

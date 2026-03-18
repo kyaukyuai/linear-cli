@@ -166,6 +166,7 @@ Top-level shape:
     "url": "https://linear.app/acme/issue/ENG-123/fix-auth-refresh-edge-case",
     "dueDate": "2026-04-01",
     "priority": 2,
+    "priorityLabel": "High",
     "estimate": 3,
     "updatedAt": "2026-03-18T00:00:00.000Z",
     "assignee": null,
