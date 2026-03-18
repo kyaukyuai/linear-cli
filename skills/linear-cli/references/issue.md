@@ -18,29 +18,29 @@ Options:
 
 Commands:
 
-  id                                      - Print the issue based on the current git branch          
-  list                                    - List your issues                                         
-  search            <query>               - Deprecated: use `issue list` or `api` for issue filtering
-  title             [issueId]             - Print the issue title                                    
-  start             [issueId]             - Start working on an issue                                
-  view, v           [issueId]             - View issue details (default) or open in browser/app      
-  url               [issueId]             - Print the issue URL                                      
-  describe          [issueId]             - Print the issue title and Linear-issue trailer           
-  commits           [issueId]             - Show all commits for a Linear issue (jj only)            
-  pull-request, pr  [issueId]             - Create a GitHub pull request with issue details          
-  delete, d         [issueId]             - Delete an issue                                          
-  create                                  - Create a linear issue                                    
-  create-batch                            - Create a parent issue and child issues from a JSON file  
-  update            [issueId]             - Update a linear issue                                    
-  move              <issueId> <state>     - Move an issue to a different workflow state              
-  assign            <issueId> [assignee]  - Assign an issue to a user                                
-  priority          <issueId> <priority>  - Set the priority of an issue                             
-  estimate          <issueId> [points]    - Set the estimate (points) of an issue                    
-  parent            [issueId]             - Show the parent issue for an issue                       
-  children          [issueId]             - List child issues for an issue                           
-  label                                   - Manage issue labels                                      
-  comment                                 - Manage issue comments                                    
-  attach            <issueId> <filepath>  - Attach a file to an issue                                
+  id                                      - Print the issue based on the current git branch                    
+  list                                    - List issues assigned to you (use -A/--all-assignees to include all)
+  search            <query>               - Deprecated: use `issue list` or `api` for issue filtering          
+  title             [issueId]             - Print the issue title                                              
+  start             [issueId]             - Start working on an issue                                          
+  view, v           [issueId]             - View issue details (default) or open in browser/app                
+  url               [issueId]             - Print the issue URL                                                
+  describe          [issueId]             - Print the issue title and Linear-issue trailer                     
+  commits           [issueId]             - Show all commits for a Linear issue (jj only)                      
+  pull-request, pr  [issueId]             - Create a GitHub pull request with issue details                    
+  delete, d         [issueId]             - Delete an issue                                                    
+  create                                  - Create a linear issue                                              
+  create-batch                            - Create a parent issue and child issues from a JSON file            
+  update            [issueId]             - Update a linear issue                                              
+  move              <issueId> <state>     - Move an issue to a different workflow state                        
+  assign            <issueId> [assignee]  - Assign an issue to a user                                          
+  priority          <issueId> <priority>  - Set the priority of an issue                                       
+  estimate          <issueId> [points]    - Set the estimate (points) of an issue                              
+  parent            [issueId]             - Show the parent issue for an issue                                 
+  children          [issueId]             - List child issues for an issue                                     
+  label                                   - Manage issue labels                                                
+  comment                                 - Manage issue comments                                              
+  attach            <issueId> <filepath>  - Attach a file to an issue                                          
   relation                                - Manage issue relations (dependencies)
 ```
 
@@ -65,14 +65,14 @@ Options:
 
 ### list
 
-> List your issues
+> List issues assigned to you (use -A/--all-assignees to include all)
 
 ```
 Usage:   linear issue list
 
 Description:
 
-  List your issues
+  List issues assigned to you (use -A/--all-assignees to include all)
 
 Options:
 

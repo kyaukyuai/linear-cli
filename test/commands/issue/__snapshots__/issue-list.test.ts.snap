@@ -7,7 +7,7 @@ Usage: list
 
 Description:
 
-  List your issues
+  List issues assigned to you (use -A/--all-assignees to include all)
 
 Options:
 
@@ -172,6 +172,15 @@ stdout:
 '
 stderr:
 ""
+`;
+
+snapshot[`Issue List Command - All States Shows Assignee Tip 1`] = `
+stdout:
+"No issues found.
+"
+stderr:
+"Tip: showing only your issues. Use -A/--all-assignees to include unassigned and other assignees.
+"
 `;
 
 snapshot[`Issue List Command - All Shortcut Validation Failure 1`] = `
