@@ -2,6 +2,25 @@
 
 ## [Unreleased]
 
+## [2.6.0] - 2026-03-18
+
+### Added
+
+- added `--all` to `issue list` as a shortcut for `--all-states --all-assignees --limit 0`
+- added `priorityLabel` and `cycle` to `issue list --json` for better payload parity with bot and planning workflows
+
+### Changed
+
+- clarified in `issue list` help and generated docs that the default scope is issues assigned to the current user unless all assignees are requested
+
+### Fixed
+
+- include unassigned backlog issues in the default `issue list --state backlog` view so backlog triage does not miss unowned work
+
+### Improved
+
+- hardened the local `setup-deno` GitHub Action to download Deno release archives directly with retries instead of relying on `deno.land/install.sh`
+
 ## [2.5.0] - 2026-03-18
 
 ### Added
@@ -517,7 +536,12 @@
 - adds a -t, --title flag to the `issue pr` command, allowing you to provide a PR title that is different than linear's issue title
 - allows linear issue identifiers to be passed in as arguments to the issue commands as an alternative to parsing the branch name, e.g. `linear issue show ABC-123`
 
-[Unreleased]: https://github.com/kyaukyuai/linear-cli/compare/v2.2.1...HEAD
+[Unreleased]: https://github.com/kyaukyuai/linear-cli/compare/v2.6.0...HEAD
+[2.6.0]: https://github.com/kyaukyuai/linear-cli/compare/v2.5.0...v2.6.0
+[2.5.0]: https://github.com/kyaukyuai/linear-cli/compare/v2.4.1...v2.5.0
+[2.4.1]: https://github.com/kyaukyuai/linear-cli/compare/v2.4.0...v2.4.1
+[2.4.0]: https://github.com/kyaukyuai/linear-cli/compare/v2.3.0...v2.4.0
+[2.3.0]: https://github.com/kyaukyuai/linear-cli/compare/v2.2.1...v2.3.0
 [2.2.1]: https://github.com/kyaukyuai/linear-cli/compare/v2.2.0...v2.2.1
 [2.2.0]: https://github.com/kyaukyuai/linear-cli/compare/v2.1.0...v2.2.0
 [2.1.0]: https://github.com/kyaukyuai/linear-cli/compare/v2.0.1...v2.1.0
