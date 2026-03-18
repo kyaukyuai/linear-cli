@@ -404,6 +404,41 @@ await snapshotTest({
 })
 
 await snapshotTest({
+  name: "Issue List Command - All States Shows Assignee Tip",
+  meta: import.meta,
+  colors: false,
+  args: ["--all-states", "--no-pager"],
+  denoArgs: commonDenoArgs,
+  async fn() {
+    const { cleanup } = await setupMockLinearServer([
+      {
+        queryName: "GetIssuesForState",
+        response: {
+          data: {
+            issues: {
+              nodes: [],
+              pageInfo: {
+                hasNextPage: false,
+                endCursor: null,
+              },
+            },
+          },
+        },
+      },
+    ], {
+      LINEAR_TEAM_ID: "ENG",
+      LINEAR_ISSUE_SORT: "priority",
+    })
+
+    try {
+      await listCommand.parse()
+    } finally {
+      await cleanup()
+    }
+  },
+})
+
+await snapshotTest({
   name: "Issue List Command - All Shortcut Validation Failure",
   meta: import.meta,
   colors: false,

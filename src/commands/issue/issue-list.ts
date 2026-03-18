@@ -42,7 +42,9 @@ const StateType = new EnumType([
 
 export const listCommand = new Command()
   .name("list")
-  .description("List your issues")
+  .description(
+    "List issues assigned to you (use -A/--all-assignees to include all)",
+  )
   .type("sort", SortType)
   .type("state", StateType)
   .option(
@@ -163,9 +165,16 @@ export const listCommand = new Command()
       }
 
       try {
-        const effectiveAllStates = all || allStates
-        const effectiveAllAssignees = all || allAssignees
+        const effectiveAllStates = Boolean(all || allStates)
+        const effectiveAllAssignees = Boolean(all || allAssignees)
         const effectiveLimit = all ? 0 : limit
+        const showAllStatesAssigneeTip = shouldShowAllStatesAssigneeTip({
+          allStates: effectiveAllStates,
+          allAssignees: effectiveAllAssignees,
+          assignee,
+          unassigned,
+          json: Boolean(json),
+        })
 
         if (all && limit !== 50 && limit !== 0) {
           throw new ValidationError(
@@ -302,6 +311,14 @@ export const listCommand = new Command()
         if (json) {
           console.log(JSON.stringify(issues, null, 2))
           return
+        }
+
+        if (showAllStatesAssigneeTip) {
+          console.error(
+            muted(
+              "Tip: showing only your issues. Use -A/--all-assignees to include unassigned and other assignees.",
+            ),
+          )
         }
 
         if (issues.length === 0) {
@@ -527,6 +544,28 @@ function normalizeQuery(query?: string): string | undefined {
   }
 
   return normalized
+}
+
+function shouldShowAllStatesAssigneeTip(
+  {
+    allStates,
+    allAssignees,
+    assignee,
+    unassigned,
+    json,
+  }: {
+    allStates: boolean
+    allAssignees: boolean
+    assignee?: string
+    unassigned?: boolean
+    json: boolean
+  },
+): boolean {
+  if (json || !allStates || allAssignees || unassigned || assignee != null) {
+    return false
+  }
+
+  return true
 }
 
 function normalizePriority(priority?: string): number | undefined {
