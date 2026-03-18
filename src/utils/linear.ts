@@ -759,6 +759,7 @@ export async function fetchIssuesForState(
           url
           dueDate
           priority
+          priorityLabel
           estimate
           assignee {
             id
