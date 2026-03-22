@@ -31,14 +31,14 @@ import { header, muted } from "../../utils/styling.ts"
 import { NotFoundError, ValidationError } from "../../utils/errors.ts"
 
 const SortType = new EnumType(["manual", "priority"])
-const StateType = new EnumType([
+const VALID_STATES = [
   "triage",
   "backlog",
   "unstarted",
   "started",
   "completed",
   "canceled",
-])
+] as const
 
 export const listCommand = new Command()
   .name("list")
@@ -46,10 +46,9 @@ export const listCommand = new Command()
     "List issues assigned to you (use -A/--all-assignees to include all)",
   )
   .type("sort", SortType)
-  .type("state", StateType)
   .option(
-    "-s, --state <state:state>",
-    "Filter by issue state (can be repeated for multiple states)",
+    "-s, --state <state:string>",
+    "Filter by issue state (triage, backlog, unstarted|todo, started, completed, canceled). May be repeated.",
     {
       default: ["unstarted"],
       collect: true,
@@ -194,9 +193,10 @@ export const listCommand = new Command()
           )
         }
 
-        const stateArray: string[] = Array.isArray(state)
+        const rawStateArray: string[] = Array.isArray(state)
           ? state.flat()
           : [state]
+        const stateArray = normalizeStates(rawStateArray)
 
         if (
           effectiveAllStates &&
@@ -544,6 +544,33 @@ function normalizeQuery(query?: string): string | undefined {
   }
 
   return normalized
+}
+
+function normalizeStates(states: string[]): string[] {
+  return states.map((state) => normalizeState(state))
+}
+
+function normalizeState(state: string): string {
+  const normalized = state.trim().toLowerCase()
+  if (normalized === "todo") {
+    return "unstarted"
+  }
+
+  if (
+    VALID_STATES.includes(
+      normalized as (typeof VALID_STATES)[number],
+    )
+  ) {
+    return normalized
+  }
+
+  throw new ValidationError(
+    `Invalid state: ${state}`,
+    {
+      suggestion:
+        "Use one of: triage, backlog, unstarted (alias: todo), started, completed, canceled.",
+    },
+  )
 }
 
 function shouldShowAllStatesAssigneeTip(

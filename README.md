@@ -168,6 +168,7 @@ linear issue pr        # creates a GitHub PR with issue details via `gh pr creat
 linear issue list      # list issues assigned to you in a table view (supports -s/--state and --sort)
 linear issue list --all --json  # list all issues across states and assignees without a limit
 linear issue list --all-states  # still defaults to your issues; use -A to include others
+linear issue list -s todo  # alias for unstarted
 linear issue list --project "My Project" --milestone "Phase 1"  # filter by milestone
 linear issue list --json  # emit machine-readable issue data
 linear issue list --all-states --query auth --priority high --updated-before 2026-03-31T00:00:00Z --due-before 2026-04-07 --json

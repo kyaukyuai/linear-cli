@@ -424,6 +424,84 @@ await snapshotTest({
 })
 
 await snapshotTest({
+  name: "Issue List Command - Todo Alias",
+  meta: import.meta,
+  colors: false,
+  args: ["--state", "todo", "--json"],
+  denoArgs: commonDenoArgs,
+  async fn() {
+    const { cleanup } = await setupMockLinearServer([
+      {
+        queryName: "GetIssuesForState",
+        variables: {
+          sort: [
+            { workflowState: { order: "Descending" } },
+            {
+              priority: {
+                nulls: "last",
+                order: "Descending",
+              },
+            },
+            {
+              manual: {
+                nulls: "last",
+                order: "Ascending",
+              },
+            },
+          ],
+          filter: {
+            and: [
+              {
+                team: {
+                  key: {
+                    eq: "ENG",
+                  },
+                },
+              },
+              {
+                state: {
+                  type: {
+                    in: ["unstarted"],
+                  },
+                },
+              },
+              {
+                assignee: {
+                  isMe: {
+                    eq: true,
+                  },
+                },
+              },
+            ],
+          },
+          first: 50,
+        },
+        response: {
+          data: {
+            issues: {
+              nodes: [],
+              pageInfo: {
+                hasNextPage: false,
+                endCursor: null,
+              },
+            },
+          },
+        },
+      },
+    ], {
+      LINEAR_TEAM_ID: "ENG",
+      LINEAR_ISSUE_SORT: "priority",
+    })
+
+    try {
+      await listCommand.parse()
+    } finally {
+      await cleanup()
+    }
+  },
+})
+
+await snapshotTest({
   name: "Issue List Command - All States Shows Assignee Tip",
   meta: import.meta,
   colors: false,
@@ -631,6 +709,27 @@ await snapshotTest({
   colors: false,
   canFail: true,
   args: ["--all-assignees", "--json", "--due-before", "2025-02-31"],
+  denoArgs: commonDenoArgs,
+  async fn() {
+    const { cleanup } = await setupMockLinearServer([], {
+      LINEAR_TEAM_ID: "ENG",
+      LINEAR_ISSUE_SORT: "priority",
+    })
+
+    try {
+      await listCommand.parse()
+    } finally {
+      await cleanup()
+    }
+  },
+})
+
+await snapshotTest({
+  name: "Issue List Command - Invalid State Value",
+  meta: import.meta,
+  colors: false,
+  canFail: true,
+  args: ["--state", "todoo", "--json"],
   denoArgs: commonDenoArgs,
   async fn() {
     const { cleanup } = await setupMockLinearServer([], {
