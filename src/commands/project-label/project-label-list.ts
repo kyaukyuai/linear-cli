@@ -35,6 +35,7 @@ export const listCommand = new Command()
   })
   .option("--include-archived", "Include archived project labels")
   .option("-j, --json", "Output as JSON")
+  .option("--no-pager", "Disable automatic paging for long output")
   .action(async ({ limit, includeArchived, json }) => {
     try {
       if (limit < 1 || limit > 250) {

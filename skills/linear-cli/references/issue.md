@@ -655,9 +655,10 @@ Description:
 
 Options:
 
-  -h, --help               - Show this help.                      
-  -w, --workspace  <slug>  - Target workspace (uses credentials)  
-  -j, --json               - Output as JSON
+  -h, --help               - Show this help.                           
+  -w, --workspace  <slug>  - Target workspace (uses credentials)       
+  -j, --json               - Output as JSON                            
+  --no-pager               - Disable automatic paging for long output
 ```
 
 ### attach

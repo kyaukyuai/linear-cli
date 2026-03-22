@@ -40,12 +40,13 @@ Description:
 
 Options:
 
-  -h, --help                     - Show this help.                                   
-  -w, --workspace     <slug>     - Target workspace (uses credentials)               
-  -n, --limit         <limit>    - Maximum number of webhooks           (Default: 20)
-  --team              <teamKey>  - Filter by team key                                
-  --include-archived             - Include archived webhooks                         
-  -j, --json                     - Output as JSON
+  -h, --help                     - Show this help.                                        
+  -w, --workspace     <slug>     - Target workspace (uses credentials)                    
+  -n, --limit         <limit>    - Maximum number of webhooks                (Default: 20)
+  --team              <teamKey>  - Filter by team key                                     
+  --include-archived             - Include archived webhooks                              
+  -j, --json                     - Output as JSON                                         
+  --no-pager                     - Disable automatic paging for long output
 ```
 
 ### view

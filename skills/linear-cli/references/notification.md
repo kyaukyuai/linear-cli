@@ -39,12 +39,13 @@ Description:
 
 Options:
 
-  -h, --help                   - Show this help.                                   
-  -w, --workspace     <slug>   - Target workspace (uses credentials)               
-  -n, --limit         <limit>  - Maximum number of notifications      (Default: 20)
-  --include-archived           - Include archived notifications                    
-  --unread                     - Show only unread notifications                    
-  -j, --json                   - Output as JSON
+  -h, --help                   - Show this help.                                        
+  -w, --workspace     <slug>   - Target workspace (uses credentials)                    
+  -n, --limit         <limit>  - Maximum number of notifications           (Default: 20)
+  --include-archived           - Include archived notifications                         
+  --unread                     - Show only unread notifications                         
+  -j, --json                   - Output as JSON                                         
+  --no-pager                   - Disable automatic paging for long output
 ```
 
 ### count

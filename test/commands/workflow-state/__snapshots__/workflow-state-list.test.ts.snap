@@ -11,9 +11,10 @@ Description:
 
 Options:
 
-  -h, --help             - Show this help.                      
-  --team      <teamKey>  - Team key (defaults to current team)  
-  -j, --json             - Output as JSON                       
+  -h, --help             - Show this help.                           
+  --team      <teamKey>  - Team key (defaults to current team)       
+  -j, --json             - Output as JSON                            
+  --no-pager             - Disable automatic paging for long output  
 
 "
 stderr:
@@ -55,14 +56,6 @@ stdout:
 '
 stderr:
 ""
-`;
-
-snapshot[`Workflow State List Command - Team Not Found 1`] = `
-stdout:
-""
-stderr:
-"✗ Failed to list workflow states: Team not found: NOPE
-"
 `;
 
 snapshot[`Workflow State List Command - Team Not Found 1`] = `

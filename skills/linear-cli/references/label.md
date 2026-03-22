@@ -42,7 +42,8 @@ Options:
   --team       <teamKey>  - Filter by team (e.g., TC). Shows team-specific labels only.  
   --workspace             - Show only workspace-level labels (not team-specific)         
   --all                   - Show all labels (both workspace and team)                    
-  -j, --json              - Output as JSON
+  -j, --json              - Output as JSON                                               
+  --no-pager              - Disable automatic paging for long output
 ```
 
 ### create

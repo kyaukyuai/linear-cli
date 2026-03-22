@@ -91,6 +91,7 @@ export const listCommand = new Command()
   .arguments("<initiativeId:string>")
   .option("-j, --json", "Output as JSON")
   .option("--limit <limit:number>", "Limit results", { default: 10 })
+  .option("--no-pager", "Disable automatic paging for long output")
   .action(async ({ json, limit }, initiativeId) => {
     const { Spinner } = await import("@std/cli/unstable-spinner")
     const showSpinner = shouldShowSpinner() && !json

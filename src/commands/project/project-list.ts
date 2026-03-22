@@ -68,6 +68,7 @@ export const listCommand = new Command()
   .option("-w, --web", "Open in web browser")
   .option("-a, --app", "Open in Linear.app")
   .option("-j, --json", "Output as JSON")
+  .option("--no-pager", "Disable automatic paging for long output")
   .action(async ({ team, allTeams, status, web, app, json }) => {
     if (web || app) {
       let workspace = getOption("workspace")

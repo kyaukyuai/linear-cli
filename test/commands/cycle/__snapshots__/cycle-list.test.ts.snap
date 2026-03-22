@@ -11,8 +11,9 @@ Description:
 
 Options:
 
-  -h, --help          - Show this help.                      
-  --team      <team>  - Team key (defaults to current team)  
+  -h, --help          - Show this help.                           
+  --team      <team>  - Team key (defaults to current team)       
+  --no-pager          - Disable automatic paging for long output  
 
 "
 stderr:

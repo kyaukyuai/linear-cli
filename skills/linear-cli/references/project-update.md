@@ -58,8 +58,9 @@ Description:
 
 Options:
 
-  -h, --help                - Show this help.                                   
-  -w, --workspace  <slug>   - Target workspace (uses credentials)               
-  --json                    - Output as JSON                                    
-  --limit          <limit>  - Limit results                        (Default: 10)
+  -h, --help                - Show this help.                                        
+  -w, --workspace  <slug>   - Target workspace (uses credentials)                    
+  --json                    - Output as JSON                                         
+  --limit          <limit>  - Limit results                             (Default: 10)
+  --no-pager                - Disable automatic paging for long output
 ```

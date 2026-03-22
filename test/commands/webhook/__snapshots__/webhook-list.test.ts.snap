@@ -11,11 +11,12 @@ Description:
 
 Options:
 
-  -h, --help                     - Show this help.                          
-  -n, --limit         <limit>    - Maximum number of webhooks  (Default: \\x1b[33m20\\x1b[39m)
-  --team              <teamKey>  - Filter by team key                       
-  --include-archived             - Include archived webhooks                
-  -j, --json                     - Output as JSON                           
+  -h, --help                     - Show this help.                                        
+  -n, --limit         <limit>    - Maximum number of webhooks                (Default: \\x1b[33m20\\x1b[39m)
+  --team              <teamKey>  - Filter by team key                                     
+  --include-archived             - Include archived webhooks                              
+  -j, --json                     - Output as JSON                                         
+  --no-pager                     - Disable automatic paging for long output               
 
 "
 stderr:

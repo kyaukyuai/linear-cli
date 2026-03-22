@@ -12,6 +12,7 @@ export const listCommand = new Command()
     "Team key (defaults to current team)",
   )
   .option("-j, --json", "Output as JSON")
+  .option("--no-pager", "Disable automatic paging for long output")
   .action(async ({ team, json }) => {
     try {
       const teamKey = requireTeamKey(team)

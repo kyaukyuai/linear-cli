@@ -52,6 +52,7 @@ export const listCommand = new Command()
   .name("list")
   .description("List cycles for a team")
   .option("--team <team:string>", "Team key (defaults to current team)")
+  .option("--no-pager", "Disable automatic paging for long output")
   .action(async ({ team }) => {
     try {
       const teamKey = requireTeamKey(team)

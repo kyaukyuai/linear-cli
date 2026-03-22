@@ -52,7 +52,8 @@ Options:
   -w, --web                  - Open initiatives page in web browser           
   -a, --app                  - Open initiatives page in Linear.app            
   -j, --json                 - Output as JSON                                 
-  --archived                 - Include archived initiatives
+  --archived                 - Include archived initiatives                   
+  --no-pager                 - Disable automatic paging for long output
 ```
 
 ### view
