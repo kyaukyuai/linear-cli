@@ -9,11 +9,36 @@ stderr:
 ""
 `;
 
+snapshot[`Issue Comment Add Command - With Positional Body 1`] = `
+stdout:
+"✓ Comment added to TEST-123
+https://linear.app/issue/TEST-123#comment-uuid-positional-456
+"
+stderr:
+""
+`;
+
 snapshot[`Issue Comment Add Command - With Parent Flag 1`] = `
 stdout:
 "✓ Comment added to TEST-123
 https://linear.app/issue/TEST-123#comment-uuid-reply-789
 "
+stderr:
+""
+`;
+
+snapshot[`Issue Comment Add Command - Body Conflict 1`] = `
+stdout:
+'{
+  "success": false,
+  "error": {
+    "type": "validation_error",
+    "message": "Cannot specify both a positional comment body and --body",
+    "suggestion": "Pass the comment body either as \`linear issue comment add <ISSUE> \\\\"text\\\\"\` or with --body.",
+    "context": "Failed to add comment"
+  }
+}
+'
 stderr:
 ""
 `;

@@ -189,6 +189,7 @@ linear issue update ENG-123 --milestone "Phase 2"  # set milestone on existing i
 linear issue delete    # delete an issue
 linear issue comment list          # list comments on current issue
 linear issue comment add           # add a comment to current issue
+linear issue comment add ENG-123 "follow-up"  # add a comment with positional body
 linear issue comment add -p <id>   # reply to a specific comment
 linear issue comment add ENG-123 --body "follow-up" --json  # emit created comment data
 linear issue relation add ENG-123 blocked-by ENG-100 --json  # emit machine-readable relation creation data
