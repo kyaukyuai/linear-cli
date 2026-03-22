@@ -91,6 +91,57 @@ await snapshotTest({
 })
 
 await snapshotTest({
+  name: "Issue Update Command - Accepts No Interactive Flag",
+  meta: import.meta,
+  colors: false,
+  args: [
+    "ENG-123",
+    "--no-interactive",
+    "--title",
+    "Updated without prompts",
+  ],
+  denoArgs: commonDenoArgs,
+  async fn() {
+    const { cleanup } = await setupMockLinearServer([
+      {
+        queryName: "GetTeamIdByKey",
+        variables: { team: "ENG" },
+        response: {
+          data: {
+            teams: {
+              nodes: [{ id: "team-eng-id" }],
+            },
+          },
+        },
+      },
+      {
+        queryName: "UpdateIssue",
+        response: {
+          data: {
+            issueUpdate: {
+              success: true,
+              issue: {
+                id: "issue-existing-123",
+                identifier: "ENG-123",
+                url:
+                  "https://linear.app/test-team/issue/ENG-123/updated-without-prompts",
+                title: "Updated without prompts",
+              },
+            },
+          },
+        },
+      },
+    ], { LINEAR_TEAM_ID: "ENG" })
+
+    try {
+      await updateCommand.parse()
+    } finally {
+      await cleanup()
+    }
+  },
+})
+
+await snapshotTest({
   name: "Issue Update Command - JSON Output",
   meta: import.meta,
   colors: false,

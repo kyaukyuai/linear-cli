@@ -88,6 +88,10 @@ export const updateCommand = new Command()
     "--cycle <cycle:string>",
     "Cycle name, number, or 'active'",
   )
+  .option(
+    "--no-interactive",
+    "Accepted for compatibility; issue update is always non-interactive",
+  )
   .option("-j, --json", "Output as JSON")
   .option("-t, --title <title:string>", "Title of the issue")
   .error((error, cmd) => {

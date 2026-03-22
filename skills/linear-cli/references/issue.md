@@ -347,24 +347,25 @@ Description:
 
 Options:
 
-  -h, --help                         - Show this help.                                                
-  -w, --workspace     <slug>         - Target workspace (uses credentials)                            
-  -a, --assignee      <assignee>     - Assign the issue to 'self' or someone (by username or name)    
-  --due-date          <dueDate>      - Due date of the issue                                          
-  --clear-due-date                   - Clear the due date on the issue                                
-  --parent            <parent>       - Parent issue (if any) as a team_number code                    
-  -p, --priority      <priority>     - Priority of the issue (1-4, descending priority)               
-  --estimate          <estimate>     - Points estimate of the issue                                   
-  -d, --description   <description>  - Description of the issue                                       
-  --comment           <comment>      - Add a comment after successfully updating the issue            
-  --description-file  <path>         - Read description from a file (preferred for markdown content)  
-  -l, --label         <label>        - Issue label associated with the issue. May be repeated.        
-  --team              <team>         - Team associated with the issue (if not your default team)      
-  --project           <project>      - Name or slug ID of the project with the issue                  
-  -s, --state         <state>        - Workflow state for the issue (by name or type)                 
-  --milestone         <milestone>    - Name of the project milestone                                  
-  --cycle             <cycle>        - Cycle name, number, or 'active'                                
-  -j, --json                         - Output as JSON                                                 
+  -h, --help                         - Show this help.                                                     
+  -w, --workspace     <slug>         - Target workspace (uses credentials)                                 
+  -a, --assignee      <assignee>     - Assign the issue to 'self' or someone (by username or name)         
+  --due-date          <dueDate>      - Due date of the issue                                               
+  --clear-due-date                   - Clear the due date on the issue                                     
+  --parent            <parent>       - Parent issue (if any) as a team_number code                         
+  -p, --priority      <priority>     - Priority of the issue (1-4, descending priority)                    
+  --estimate          <estimate>     - Points estimate of the issue                                        
+  -d, --description   <description>  - Description of the issue                                            
+  --comment           <comment>      - Add a comment after successfully updating the issue                 
+  --description-file  <path>         - Read description from a file (preferred for markdown content)       
+  -l, --label         <label>        - Issue label associated with the issue. May be repeated.             
+  --team              <team>         - Team associated with the issue (if not your default team)           
+  --project           <project>      - Name or slug ID of the project with the issue                       
+  -s, --state         <state>        - Workflow state for the issue (by name or type)                      
+  --milestone         <milestone>    - Name of the project milestone                                       
+  --cycle             <cycle>        - Cycle name, number, or 'active'                                     
+  --no-interactive                   - Accepted for compatibility; issue update is always non-interactive  
+  -j, --json                         - Output as JSON                                                      
   -t, --title         <title>        - Title of the issue
 ```
 
