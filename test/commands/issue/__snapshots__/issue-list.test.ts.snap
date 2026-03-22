@@ -11,29 +11,29 @@ Description:
 
 Options:
 
-  -h, --help                            - Show this help.                                                                                                              
-  -s, --state          <state>          - Filter by issue state (can be repeated for multiple states)           (Default: [ \\x1b[32m"unstarted"\\x1b[39m ], Values: \\x1b[32m"triage"\\x1b[39m, \\x1b[32m"backlog"\\x1b[39m,
-                                                                                                                \\x1b[32m"unstarted"\\x1b[39m, \\x1b[32m"started"\\x1b[39m, \\x1b[32m"completed"\\x1b[39m, \\x1b[32m"canceled"\\x1b[39m)       
-  --all-states                          - Show issues from all states                                                                                                  
-  --all                                 - Shortcut for --all-states --all-assignees --limit 0                                                                          
-  --assignee           <assignee>       - Filter by assignee (username)                                                                                                
-  -A, --all-assignees                   - Show issues for all assignees                                                                                                
-  -U, --unassigned                      - Show only unassigned issues                                                                                                  
-  --sort               <sort>           - Sort order (can also be set via LINEAR_ISSUE_SORT)                    (Values: \\x1b[32m"manual"\\x1b[39m, \\x1b[32m"priority"\\x1b[39m)                         
-  --team               <team>           - Team to list issues for (if not your default team)                                                                           
-  --project            <project>        - Filter by project name                                                                                                       
-  --cycle              <cycle>          - Filter by cycle name, number, or 'active'                                                                                    
-  --milestone          <milestone>      - Filter by project milestone name (requires --project)                                                                        
-  --query              <query>          - Filter by title or description substring                                                                                     
-  --parent             <parent>         - Filter by parent issue identifier                                                                                            
-  --priority           <priority>       - Filter by priority (0-4 or none/urgent/high/medium/low)                                                                      
-  --updated-before     <updatedBefore>  - Filter issues updated before an ISO date or datetime                                                                         
-  --due-before         <dueBefore>      - Filter issues due before a date (YYYY-MM-DD)                                                                                 
-  --limit              <limit>          - Maximum number of issues to fetch (default: 50, use 0 for unlimited)  (Default: \\x1b[33m50\\x1b[39m)                                          
-  -j, --json                            - Output as JSON                                                                                                               
-  -w, --web                             - Open in web browser                                                                                                          
-  -a, --app                             - Open in Linear.app                                                                                                           
-  --no-pager                            - Disable automatic paging for long output                                                                                     
+  -h, --help                            - Show this help.                                                                                            
+  -s, --state          <state>          - Filter by issue state (triage, backlog, unstarted|todo, started, completed,  (Default: [ \\x1b[32m"unstarted"\\x1b[39m ])    
+                                          canceled). May be repeated.                                                                                
+  --all-states                          - Show issues from all states                                                                                
+  --all                                 - Shortcut for --all-states --all-assignees --limit 0                                                        
+  --assignee           <assignee>       - Filter by assignee (username)                                                                              
+  -A, --all-assignees                   - Show issues for all assignees                                                                              
+  -U, --unassigned                      - Show only unassigned issues                                                                                
+  --sort               <sort>           - Sort order (can also be set via LINEAR_ISSUE_SORT)                           (Values: \\x1b[32m"manual"\\x1b[39m, \\x1b[32m"priority"\\x1b[39m)
+  --team               <team>           - Team to list issues for (if not your default team)                                                         
+  --project            <project>        - Filter by project name                                                                                     
+  --cycle              <cycle>          - Filter by cycle name, number, or 'active'                                                                  
+  --milestone          <milestone>      - Filter by project milestone name (requires --project)                                                      
+  --query              <query>          - Filter by title or description substring                                                                   
+  --parent             <parent>         - Filter by parent issue identifier                                                                          
+  --priority           <priority>       - Filter by priority (0-4 or none/urgent/high/medium/low)                                                    
+  --updated-before     <updatedBefore>  - Filter issues updated before an ISO date or datetime                                                       
+  --due-before         <dueBefore>      - Filter issues due before a date (YYYY-MM-DD)                                                               
+  --limit              <limit>          - Maximum number of issues to fetch (default: 50, use 0 for unlimited)         (Default: \\x1b[33m50\\x1b[39m)                 
+  -j, --json                            - Output as JSON                                                                                             
+  -w, --web                             - Open in web browser                                                                                        
+  -a, --app                             - Open in Linear.app                                                                                         
+  --no-pager                            - Disable automatic paging for long output                                                                   
 
 \`
 stderr:
@@ -192,6 +192,14 @@ stderr:
 ""
 `;
 
+snapshot[`Issue List Command - Todo Alias 1`] = `
+stdout:
+"[]
+"
+stderr:
+""
+`;
+
 snapshot[`Issue List Command - All States Shows Assignee Tip 1`] = `
 stdout:
 "No issues found.
@@ -233,6 +241,22 @@ stdout:
     "type": "validation_error",
     "message": "Invalid --due-before value: 2025-02-31",
     "suggestion": "Use a real calendar date in YYYY-MM-DD format.",
+    "context": "Failed to list issues"
+  }
+}
+'
+stderr:
+""
+`;
+
+snapshot[`Issue List Command - Invalid State Value 1`] = `
+stdout:
+'{
+  "success": false,
+  "error": {
+    "type": "validation_error",
+    "message": "Invalid state: todoo",
+    "suggestion": "Use one of: triage, backlog, unstarted (alias: todo), started, completed, canceled.",
     "context": "Failed to list issues"
   }
 }
