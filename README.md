@@ -184,6 +184,7 @@ linear issue update    # update an issue (interactive prompts)
 linear issue update ENG-123 --due-date 2026-03-31  # set an issue due date
 linear issue update ENG-123 --clear-due-date       # clear an issue due date
 linear issue update ENG-123 --assignee self --json  # emit machine-readable updated issue data
+linear issue update ENG-123 --state started --comment "Work has started"  # update and comment in one command
 linear issue update ENG-123 --milestone "Phase 2"  # set milestone on existing issue
 linear issue delete    # delete an issue
 linear issue comment list          # list comments on current issue
