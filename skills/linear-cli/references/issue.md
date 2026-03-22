@@ -584,10 +584,10 @@ Options:
 
 Commands:
 
-  add     [issueId]    - Add a comment to an issue or reply to a comment
-  delete  <commentId>  - Delete a comment                               
-  update  <commentId>  - Update an existing comment                     
-  list    [issueId]    - List comments for an issue
+  add     [issueId] [body]  - Add a comment to an issue or reply to a comment
+  delete  <commentId>       - Delete a comment                               
+  update  <commentId>       - Update an existing comment                     
+  list    [issueId]         - List comments for an issue
 ```
 
 #### comment subcommands
@@ -595,7 +595,7 @@ Commands:
 ##### add
 
 ```
-Usage:   linear issue comment add [issueId]
+Usage:   linear issue comment add [issueId] [body]
 
 Description:
 

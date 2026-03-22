@@ -21,7 +21,7 @@ import { buildIssueCommentPayload } from "./issue-comment-payload.ts"
 export const commentAddCommand = new Command()
   .name("add")
   .description("Add a comment to an issue or reply to a comment")
-  .arguments("[issueId:string]")
+  .arguments("[issueId:string] [body:string]")
   .option("-b, --body <text:string>", "Comment body text")
   .option(
     "--body-file <path:string>",
@@ -37,19 +37,28 @@ export const commentAddCommand = new Command()
   .error((error, cmd) => {
     handleAutomationContractParseError(error, cmd, "Failed to add comment")
   })
-  .action(async (options, issueId) => {
+  .action(async (options, issueId, bodyArg) => {
     const { body, bodyFile, parent, attach, json } = options
 
     try {
-      // Validate that body and bodyFile are not both provided
-      if (body && bodyFile) {
+      // Validate that body sources are not both provided
+      if (body != null && bodyFile != null) {
         throw new ValidationError(
           "Cannot specify both --body and --body-file",
         )
       }
+      if (body != null && bodyArg != null) {
+        throw new ValidationError(
+          "Cannot specify both a positional comment body and --body",
+          {
+            suggestion:
+              'Pass the comment body either as `linear issue comment add <ISSUE> "text"` or with --body.',
+          },
+        )
+      }
 
       // Read body from file if provided
-      let commentBody = body
+      let commentBody = bodyArg ?? body
       if (bodyFile) {
         try {
           commentBody = await Deno.readTextFile(bodyFile)

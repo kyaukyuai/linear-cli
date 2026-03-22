@@ -57,6 +57,60 @@ await snapshotTest({
 
 // Test replying to a comment with parent flag
 await snapshotTest({
+  name: "Issue Comment Add Command - With Positional Body",
+  meta: import.meta,
+  colors: false,
+  args: [
+    "TEST-123",
+    "This is a positional comment",
+  ],
+  denoArgs: commonDenoArgs,
+  async fn() {
+    const { cleanup } = await setupMockLinearServer([
+      {
+        queryName: "GetIssueId",
+        variables: { id: "TEST-123" },
+        response: {
+          data: {
+            issue: {
+              id: "issue-uuid-123",
+            },
+          },
+        },
+      },
+      {
+        queryName: "AddComment",
+        response: {
+          data: {
+            commentCreate: {
+              success: true,
+              comment: {
+                id: "comment-uuid-positional-456",
+                body: "This is a positional comment",
+                createdAt: "2024-01-15T10:35:00Z",
+                url:
+                  "https://linear.app/issue/TEST-123#comment-uuid-positional-456",
+                user: {
+                  name: "testuser",
+                  displayName: "Test User",
+                },
+              },
+            },
+          },
+        },
+      },
+    ])
+
+    try {
+      await commentAddCommand.parse()
+    } finally {
+      await cleanup()
+    }
+  },
+})
+
+// Test replying to a comment with parent flag
+await snapshotTest({
   name: "Issue Comment Add Command - With Parent Flag",
   meta: import.meta,
   colors: false,
@@ -108,6 +162,24 @@ await snapshotTest({
     } finally {
       await cleanup()
     }
+  },
+})
+
+await snapshotTest({
+  name: "Issue Comment Add Command - Body Conflict",
+  meta: import.meta,
+  colors: false,
+  canFail: true,
+  args: [
+    "TEST-123",
+    "Positional body",
+    "--body",
+    "Flag body",
+    "--json",
+  ],
+  denoArgs: commonDenoArgs,
+  async fn() {
+    await commentAddCommand.parse()
   },
 })
 
