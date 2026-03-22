@@ -61,6 +61,7 @@ export const listCommand = new Command()
   .option("--include-archived", "Include archived notifications")
   .option("--unread", "Show only unread notifications")
   .option("-j, --json", "Output as JSON")
+  .option("--no-pager", "Disable automatic paging for long output")
   .action(async ({ limit, includeArchived, unread, json }) => {
     try {
       if (limit < 1 || limit > 100) {

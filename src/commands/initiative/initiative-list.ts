@@ -81,6 +81,7 @@ export const listCommand = new Command()
   .option("-a, --app", "Open initiatives page in Linear.app")
   .option("-j, --json", "Output as JSON")
   .option("--archived", "Include archived initiatives")
+  .option("--no-pager", "Disable automatic paging for long output")
   .action(async ({ status, allStatuses, owner, web, app, json, archived }) => {
     // Handle open in browser/app
     if (web || app) {

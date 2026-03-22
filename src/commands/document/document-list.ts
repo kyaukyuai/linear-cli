@@ -42,6 +42,7 @@ export const listCommand = new Command()
   .option("--issue <issue:string>", "Filter by issue (identifier like TC-123)")
   .option("--json", "Output as JSON")
   .option("--limit <limit:number>", "Limit results", { default: 50 })
+  .option("--no-pager", "Disable automatic paging for long output")
   .action(async ({ project, issue, json, limit }) => {
     const { Spinner } = await import("@std/cli/unstable-spinner")
     const showSpinner = shouldShowSpinner() && !json

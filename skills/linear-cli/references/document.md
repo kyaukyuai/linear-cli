@@ -46,6 +46,7 @@ Options:
   --issue          <issue>    - Filter by issue (identifier like TC-123)               
   --json                      - Output as JSON                                         
   --limit          <limit>    - Limit results                             (Default: 50)
+  --no-pager                  - Disable automatic paging for long output
 ```
 
 ### view

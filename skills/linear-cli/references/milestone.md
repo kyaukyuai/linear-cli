@@ -40,9 +40,10 @@ Description:
 
 Options:
 
-  -h, --help                    - Show this help.                                
-  -w, --workspace  <slug>       - Target workspace (uses credentials)            
-  --project        <projectId>  - Project ID                           (required)
+  -h, --help                    - Show this help.                                     
+  -w, --workspace  <slug>       - Target workspace (uses credentials)                 
+  --project        <projectId>  - Project ID                                (required)
+  --no-pager                    - Disable automatic paging for long output
 ```
 
 ### view

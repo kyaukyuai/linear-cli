@@ -11,6 +11,7 @@ export const commentListCommand = new Command()
   .description("List comments for an issue")
   .arguments("[issueId:string]")
   .option("-j, --json", "Output as JSON")
+  .option("--no-pager", "Disable automatic paging for long output")
   .action(async (options, issueId) => {
     const { json } = options
 

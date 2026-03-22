@@ -37,11 +37,12 @@ Description:
 
 Options:
 
-  -h, --help                - Show this help.                                   
-  -w, --workspace  <slug>   - Target workspace (uses credentials)               
-  -n, --limit      <limit>  - Maximum number of users              (Default: 50)
-  -a, --all                 - Include disabled users                            
-  -j, --json                - Output as JSON
+  -h, --help                - Show this help.                                        
+  -w, --workspace  <slug>   - Target workspace (uses credentials)                    
+  -n, --limit      <limit>  - Maximum number of users                   (Default: 50)
+  -a, --all                 - Include disabled users                                 
+  -j, --json                - Output as JSON                                         
+  --no-pager                - Disable automatic paging for long output
 ```
 
 ### view

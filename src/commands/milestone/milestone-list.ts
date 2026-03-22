@@ -32,6 +32,7 @@ export const listCommand = new Command()
   .name("list")
   .description("List milestones for a project")
   .option("--project <projectId:string>", "Project ID", { required: true })
+  .option("--no-pager", "Disable automatic paging for long output")
   .action(async ({ project: projectIdOrSlug }) => {
     const { Spinner } = await import("@std/cli/unstable-spinner")
     const showSpinner = shouldShowSpinner()

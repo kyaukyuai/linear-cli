@@ -36,9 +36,10 @@ Description:
 
 Options:
 
-  -h, --help                   - Show this help.                                   
-  -w, --workspace     <slug>   - Target workspace (uses credentials)               
-  -n, --limit         <limit>  - Maximum number of project labels     (Default: 50)
-  --include-archived           - Include archived project labels                   
-  -j, --json                   - Output as JSON
+  -h, --help                   - Show this help.                                        
+  -w, --workspace     <slug>   - Target workspace (uses credentials)                    
+  -n, --limit         <limit>  - Maximum number of project labels          (Default: 50)
+  --include-archived           - Include archived project labels                        
+  -j, --json                   - Output as JSON                                         
+  --no-pager                   - Disable automatic paging for long output
 ```

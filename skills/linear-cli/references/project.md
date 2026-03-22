@@ -41,14 +41,15 @@ Description:
 
 Options:
 
-  -h, --help                 - Show this help.                      
-  -w, --workspace  <slug>    - Target workspace (uses credentials)  
-  --team           <team>    - Filter by team key                   
-  --all-teams                - Show projects from all teams         
-  --status         <status>  - Filter by status name                
-  -w, --web                  - Open in web browser                  
-  -a, --app                  - Open in Linear.app                   
-  -j, --json                 - Output as JSON
+  -h, --help                 - Show this help.                           
+  -w, --workspace  <slug>    - Target workspace (uses credentials)       
+  --team           <team>    - Filter by team key                        
+  --all-teams                - Show projects from all teams              
+  --status         <status>  - Filter by status name                     
+  -w, --web                  - Open in web browser                       
+  -a, --app                  - Open in Linear.app                        
+  -j, --json                 - Output as JSON                            
+  --no-pager                 - Disable automatic paging for long output
 ```
 
 ### view

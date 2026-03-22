@@ -71,6 +71,7 @@ async function fetchWorkspaceInfo(
 export const listCommand = new Command()
   .name("list")
   .description("List configured workspaces")
+  .option("--no-pager", "Disable automatic paging for long output")
   .action(async () => {
     try {
       const workspaces = getWorkspaces()

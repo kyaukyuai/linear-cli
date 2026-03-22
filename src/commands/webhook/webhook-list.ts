@@ -95,6 +95,7 @@ export const listCommand = new Command()
   .option("--team <teamKey:string>", "Filter by team key")
   .option("--include-archived", "Include archived webhooks")
   .option("-j, --json", "Output as JSON")
+  .option("--no-pager", "Disable automatic paging for long output")
   .action(async ({ limit, team, includeArchived, json }) => {
     try {
       if (limit < 1 || limit > 100) {

@@ -35,6 +35,7 @@ export const listCommand = new Command()
   })
   .option("-a, --all", "Include disabled users")
   .option("-j, --json", "Output as JSON")
+  .option("--no-pager", "Disable automatic paging for long output")
   .action(async ({ limit, all, json }) => {
     try {
       if (limit < 1 || limit > 250) {

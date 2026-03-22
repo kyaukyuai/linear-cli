@@ -82,10 +82,11 @@ Description:
 
 Options:
 
-  -h, --help               - Show this help.                      
-  -w, --workspace  <slug>  - Target workspace (uses credentials)  
-  -w, --web                - Open in web browser                  
-  -a, --app                - Open in Linear.app
+  -h, --help               - Show this help.                           
+  -w, --workspace  <slug>  - Target workspace (uses credentials)       
+  -w, --web                - Open in web browser                       
+  -a, --app                - Open in Linear.app                        
+  --no-pager               - Disable automatic paging for long output
 ```
 
 ### id

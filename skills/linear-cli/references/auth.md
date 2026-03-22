@@ -79,8 +79,9 @@ Description:
 
 Options:
 
-  -h, --help               - Show this help.                      
-  -w, --workspace  <slug>  - Target workspace (uses credentials)
+  -h, --help               - Show this help.                           
+  -w, --workspace  <slug>  - Target workspace (uses credentials)       
+  --no-pager               - Disable automatic paging for long output
 ```
 
 ### default
