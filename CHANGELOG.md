@@ -2,6 +2,23 @@
 
 ## [Unreleased]
 
+## [2.7.0] - 2026-03-23
+
+### Added
+
+- added `--comment` to `issue update` so issue edits and follow-up comments can be sent in one command
+- added positional comment body support for `issue comment add ISSUE "body"` while keeping `--body` and `--body-file` support
+- added `--no-pager` to list-oriented commands beyond `issue list` for CI and agent-friendly non-interactive output
+- added `todo` as an alias for `unstarted` in `issue list --state`
+
+### Changed
+
+- clarified valid `issue list --state` values in help and generated docs, including the `todo` alias
+
+### Fixed
+
+- accepted `--no-interactive` on `issue update` for compatibility with existing scripted workflows
+
 ## [2.6.0] - 2026-03-18
 
 ### Added
@@ -536,7 +553,8 @@
 - adds a -t, --title flag to the `issue pr` command, allowing you to provide a PR title that is different than linear's issue title
 - allows linear issue identifiers to be passed in as arguments to the issue commands as an alternative to parsing the branch name, e.g. `linear issue show ABC-123`
 
-[Unreleased]: https://github.com/kyaukyuai/linear-cli/compare/v2.6.0...HEAD
+[Unreleased]: https://github.com/kyaukyuai/linear-cli/compare/v2.7.0...HEAD
+[2.7.0]: https://github.com/kyaukyuai/linear-cli/compare/v2.6.0...v2.7.0
 [2.6.0]: https://github.com/kyaukyuai/linear-cli/compare/v2.5.0...v2.6.0
 [2.5.0]: https://github.com/kyaukyuai/linear-cli/compare/v2.4.1...v2.5.0
 [2.4.1]: https://github.com/kyaukyuai/linear-cli/compare/v2.4.0...v2.4.1
