@@ -1,7 +1,5 @@
 import { Command } from "@cliffy/command"
 import { Input } from "@cliffy/prompt"
-import { gql } from "../../__codegen__/gql.ts"
-import { getGraphQLClient } from "../../utils/graphql.ts"
 import {
   getIssueIdentifier,
   resolveIssueInternalId,
@@ -16,8 +14,9 @@ import {
   handleAutomationCommandError,
   handleAutomationContractParseError,
 } from "../../utils/json_output.ts"
-import { CliError, ValidationError } from "../../utils/errors.ts"
-import { withSpinner } from "../../utils/spinner.ts"
+import { ValidationError } from "../../utils/errors.ts"
+import { createIssueComment } from "./issue-comment-utils.ts"
+import { buildIssueCommentPayload } from "./issue-comment-payload.ts"
 
 export const commentAddCommand = new Command()
   .name("add")
@@ -146,35 +145,15 @@ export const commentAddCommand = new Command()
         }
       }
 
-      const mutation = gql(`
-        mutation AddComment($input: CommentCreateInput!) {
-          commentCreate(input: $input) {
-            success
-            comment {
-              id
-              body
-              createdAt
-              url
-              parent {
-                id
-              }
-              issue {
-                id
-                identifier
-                title
-                url
-              }
-              user {
-                name
-                displayName
-              }
-            }
-          }
-        }
-      `)
+      if (commentBody == null) {
+        throw new ValidationError("Comment body cannot be empty")
+      }
 
-      const client = getGraphQLClient()
-      const input: Record<string, unknown> = {
+      const input: {
+        body: string
+        issueId: string
+        parentId?: string
+      } = {
         body: commentBody,
         issueId: resolvedIssueId,
       }
@@ -183,48 +162,18 @@ export const commentAddCommand = new Command()
         input.parentId = parent
       }
 
-      const data = await withSpinner(
-        () => client.request(mutation, { input }),
-        { enabled: !json },
-      )
-
-      if (!data.commentCreate.success) {
-        throw new CliError("Failed to create comment")
-      }
-
-      const comment = data.commentCreate.comment
-      if (!comment) {
-        throw new CliError("Comment creation failed - no comment returned")
-      }
+      const comment = await createIssueComment(input, {
+        spinnerEnabled: !json,
+      })
 
       if (json) {
         console.log(JSON.stringify(
-          {
-            id: comment.id,
-            body: comment.body,
-            createdAt: comment.createdAt,
-            url: comment.url,
-            parentId: comment.parent?.id ?? parent ?? null,
-            issue: comment.issue
-              ? {
-                id: comment.issue.id,
-                identifier: comment.issue.identifier,
-                title: comment.issue.title,
-                url: comment.issue.url,
-              }
-              : {
-                id: resolvedIssueId,
-                identifier: resolvedIdentifier,
-                title: null,
-                url: null,
-              },
-            user: comment.user
-              ? {
-                name: comment.user.name,
-                displayName: comment.user.displayName,
-              }
-              : null,
-          },
+          buildIssueCommentPayload(comment, {
+            id: resolvedIssueId,
+            identifier: resolvedIdentifier,
+            title: null,
+            url: null,
+          }),
           null,
           2,
         ))

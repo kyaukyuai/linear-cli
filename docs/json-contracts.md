@@ -250,6 +250,8 @@ Top-level shape:
 }
 ```
 
+When `issue update --json` is called with `--comment`, the same top-level object is returned with an additional `comment` field shaped like `issue comment add --json`.
+
 ### `issue relation add --json` and `issue relation delete --json`
 
 Top-level shape:

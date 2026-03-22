@@ -102,6 +102,8 @@ await snapshotTest({
     "2026-04-01",
     "--assignee",
     "self",
+    "--comment",
+    "Investigating now",
     "--json",
   ],
   denoArgs: commonDenoArgs,
@@ -162,6 +164,126 @@ await snapshotTest({
                 state: {
                   name: "Todo",
                   color: "#bec2c8",
+                },
+              },
+            },
+          },
+        },
+      },
+      {
+        queryName: "AddComment",
+        response: {
+          data: {
+            commentCreate: {
+              success: true,
+              comment: {
+                id: "comment-json-123",
+                body: "Investigating now",
+                createdAt: "2026-03-22T12:45:00Z",
+                url:
+                  "https://linear.app/test-team/issue/ENG-123/updated-from-bot#comment-json-123",
+                parent: null,
+                issue: {
+                  id: "issue-existing-123",
+                  identifier: "ENG-123",
+                  title: "Updated from bot",
+                  url:
+                    "https://linear.app/test-team/issue/ENG-123/updated-from-bot",
+                },
+                user: {
+                  name: "alice.bot",
+                  displayName: "Alice Bot",
+                },
+              },
+            },
+          },
+        },
+      },
+    ], { LINEAR_TEAM_ID: "ENG" })
+
+    try {
+      await updateCommand.parse()
+    } finally {
+      await cleanup()
+    }
+  },
+})
+
+await snapshotTest({
+  name: "Issue Update Command - With Comment",
+  meta: import.meta,
+  colors: false,
+  args: [
+    "ENG-123",
+    "--state",
+    "started",
+    "--comment",
+    "Work has started",
+  ],
+  denoArgs: commonDenoArgs,
+  async fn() {
+    const { cleanup } = await setupMockLinearServer([
+      {
+        queryName: "GetTeamIdByKey",
+        variables: { team: "ENG" },
+        response: {
+          data: {
+            teams: {
+              nodes: [{ id: "team-eng-id" }],
+            },
+          },
+        },
+      },
+      {
+        queryName: "GetWorkflowStates",
+        variables: { teamKey: "ENG" },
+        response: {
+          data: {
+            team: {
+              states: {
+                nodes: [
+                  {
+                    id: "state-started-id",
+                    name: "In Progress",
+                    type: "started",
+                  },
+                ],
+              },
+            },
+          },
+        },
+      },
+      {
+        queryName: "UpdateIssue",
+        response: {
+          data: {
+            issueUpdate: {
+              success: true,
+              issue: {
+                id: "issue-existing-123",
+                identifier: "ENG-123",
+                title: "Test Issue",
+                url: "https://linear.app/test-team/issue/ENG-123/test-issue",
+              },
+            },
+          },
+        },
+      },
+      {
+        queryName: "AddComment",
+        response: {
+          data: {
+            commentCreate: {
+              success: true,
+              comment: {
+                id: "comment-123",
+                body: "Work has started",
+                createdAt: "2026-03-22T12:50:00Z",
+                url:
+                  "https://linear.app/test-team/issue/ENG-123/test-issue#comment-123",
+                user: {
+                  name: "alice.bot",
+                  displayName: "Alice Bot",
                 },
               },
             },
@@ -539,6 +661,23 @@ await snapshotTest({
     "--due-date",
     "2026-03-31",
     "--clear-due-date",
+    "--json",
+  ],
+  denoArgs: commonDenoArgs,
+  async fn() {
+    await updateCommand.parse()
+  },
+})
+
+await snapshotTest({
+  name: "Issue Update Command - JSON Comment Requires Updates",
+  meta: import.meta,
+  colors: false,
+  canFail: true,
+  args: [
+    "ENG-123",
+    "--comment",
+    "Standalone comment",
     "--json",
   ],
   denoArgs: commonDenoArgs,

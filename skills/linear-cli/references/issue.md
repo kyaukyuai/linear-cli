@@ -356,6 +356,7 @@ Options:
   -p, --priority      <priority>     - Priority of the issue (1-4, descending priority)               
   --estimate          <estimate>     - Points estimate of the issue                                   
   -d, --description   <description>  - Description of the issue                                       
+  --comment           <comment>      - Add a comment after successfully updating the issue            
   --description-file  <path>         - Read description from a file (preferred for markdown content)  
   -l, --label         <label>        - Issue label associated with the issue. May be repeated.        
   --team              <team>         - Team associated with the issue (if not your default team)      

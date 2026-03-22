@@ -19,6 +19,7 @@ Options:
   -p, --priority      <priority>     - Priority of the issue (1-4, descending priority)               
   --estimate          <estimate>     - Points estimate of the issue                                   
   -d, --description   <description>  - Description of the issue                                       
+  --comment           <comment>      - Add a comment after successfully updating the issue            
   --description-file  <path>         - Read description from a file (preferred for markdown content)  
   -l, --label         <label>        - Issue label associated with the issue. May be repeated.        
   --team              <team>         - Team associated with the issue (if not your default team)      
@@ -73,9 +74,39 @@ stdout:
   "state": {
     "name": "Todo",
     "color": "#bec2c8"
+  },
+  "comment": {
+    "id": "comment-json-123",
+    "body": "Investigating now",
+    "createdAt": "2026-03-22T12:45:00Z",
+    "url": "https://linear.app/test-team/issue/ENG-123/updated-from-bot#comment-json-123",
+    "parentId": null,
+    "issue": {
+      "id": "issue-existing-123",
+      "identifier": "ENG-123",
+      "title": "Updated from bot",
+      "url": "https://linear.app/test-team/issue/ENG-123/updated-from-bot"
+    },
+    "user": {
+      "name": "alice.bot",
+      "displayName": "Alice Bot"
+    }
   }
 }
 '
+stderr:
+""
+`;
+
+snapshot[`Issue Update Command - With Comment 1`] = `
+stdout:
+"Updating issue ENG-123
+
+✓ Updated issue ENG-123: Test Issue
+https://linear.app/test-team/issue/ENG-123/test-issue
+✓ Comment added to ENG-123
+https://linear.app/test-team/issue/ENG-123/test-issue#comment-123
+"
 stderr:
 ""
 `;
@@ -152,6 +183,22 @@ stdout:
     "type": "validation_error",
     "message": "Cannot specify both --due-date and --clear-due-date",
     "suggestion": "Use --due-date to set a due date, or --clear-due-date to remove it.",
+    "context": "Failed to update issue"
+  }
+}
+'
+stderr:
+""
+`;
+
+snapshot[`Issue Update Command - JSON Comment Requires Updates 1`] = `
+stdout:
+'{
+  "success": false,
+  "error": {
+    "type": "validation_error",
+    "message": "Cannot use --comment without any issue updates",
+    "suggestion": "Use \`linear issue comment add <ISSUE> --body <text>\` to add a standalone comment.",
     "context": "Failed to update issue"
   }
 }

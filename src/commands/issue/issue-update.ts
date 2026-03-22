@@ -20,6 +20,8 @@ import {
 import { withSpinner } from "../../utils/spinner.ts"
 import { CliError, NotFoundError, ValidationError } from "../../utils/errors.ts"
 import { buildIssueWritePayload } from "./issue-write-payload.ts"
+import { buildIssueCommentPayload } from "./issue-comment-payload.ts"
+import { createIssueComment } from "./issue-comment-utils.ts"
 
 export const updateCommand = new Command()
   .name("update")
@@ -52,6 +54,10 @@ export const updateCommand = new Command()
   .option(
     "-d, --description <description:string>",
     "Description of the issue",
+  )
+  .option(
+    "--comment <comment:string>",
+    "Add a comment after successfully updating the issue",
   )
   .option(
     "--description-file <path:string>",
@@ -97,6 +103,7 @@ export const updateCommand = new Command()
         priority,
         estimate,
         description,
+        comment,
         descriptionFile,
         label: labels,
         team,
@@ -116,12 +123,39 @@ export const updateCommand = new Command()
             "Cannot specify both --description and --description-file",
           )
         }
+        if (comment != null && comment.trim().length === 0) {
+          throw new ValidationError("Comment body cannot be empty")
+        }
         if (dueDate != null && clearDueDate) {
           throw new ValidationError(
             "Cannot specify both --due-date and --clear-due-date",
             {
               suggestion:
                 "Use --due-date to set a due date, or --clear-due-date to remove it.",
+            },
+          )
+        }
+        const hasIssueUpdates = assignee != null ||
+          dueDate != null ||
+          clearDueDate ||
+          parent != null ||
+          (priority != null && !Number.isNaN(priority)) ||
+          (estimate != null && !Number.isNaN(estimate)) ||
+          description != null ||
+          descriptionFile != null ||
+          (labels != null && labels.length > 0) ||
+          team != null ||
+          project != null ||
+          state != null ||
+          milestone != null ||
+          cycle != null ||
+          title != null
+        if (comment != null && !hasIssueUpdates) {
+          throw new ValidationError(
+            "Cannot use --comment without any issue updates",
+            {
+              suggestion:
+                "Use `linear issue comment add <ISSUE> --body <text>` to add a standalone comment.",
             },
           )
         }
@@ -334,13 +368,54 @@ export const updateCommand = new Command()
           throw new CliError("Issue update failed - no issue returned")
         }
 
+        let createdComment = null
+        if (comment != null) {
+          try {
+            createdComment = await createIssueComment(
+              {
+                issueId: issue.id,
+                body: comment,
+              },
+              { spinnerEnabled: !json },
+            )
+          } catch (error) {
+            throw new CliError(
+              `Issue ${issue.identifier} was updated, but adding the comment failed.`,
+              {
+                suggestion:
+                  `Retry with \`linear issue comment add ${issue.identifier} --body ${
+                    JSON.stringify(comment)
+                  }\`.`,
+                cause: error,
+              },
+            )
+          }
+        }
+
         if (json) {
-          console.log(JSON.stringify(buildIssueWritePayload(issue), null, 2))
+          const payload = buildIssueWritePayload(issue)
+          console.log(JSON.stringify(
+            createdComment == null ? payload : {
+              ...payload,
+              comment: buildIssueCommentPayload(createdComment, {
+                id: issue.id,
+                identifier: issue.identifier,
+                title: issue.title,
+                url: issue.url,
+              }),
+            },
+            null,
+            2,
+          ))
           return
         }
 
         console.log(`✓ Updated issue ${issue.identifier}: ${issue.title}`)
         console.log(issue.url)
+        if (createdComment != null) {
+          console.log(`✓ Comment added to ${issue.identifier}`)
+          console.log(createdComment.url)
+        }
       } catch (error) {
         handleAutomationCommandError(error, "Failed to update issue", json)
       }
