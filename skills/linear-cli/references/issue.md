@@ -76,29 +76,30 @@ Description:
 
 Options:
 
-  -h, --help                            - Show this help.                                                                                            
-  -w, --workspace      <slug>           - Target workspace (uses credentials)                                                                        
-  -s, --state          <state>          - Filter by issue state (triage, backlog, unstarted|todo, started, completed,  (Default: [ "unstarted" ])    
-                                          canceled). May be repeated.                                                                                
-  --all-states                          - Show issues from all states                                                                                
-  --all                                 - Shortcut for --all-states --all-assignees --limit 0                                                        
-  --assignee           <assignee>       - Filter by assignee (username)                                                                              
-  -A, --all-assignees                   - Show issues for all assignees                                                                              
-  -U, --unassigned                      - Show only unassigned issues                                                                                
-  --sort               <sort>           - Sort order (can also be set via LINEAR_ISSUE_SORT)                           (Values: "manual", "priority")
-  --team               <team>           - Team to list issues for (if not your default team)                                                         
-  --project            <project>        - Filter by project name                                                                                     
-  --cycle              <cycle>          - Filter by cycle name, number, or 'active'                                                                  
-  --milestone          <milestone>      - Filter by project milestone name (requires --project)                                                      
-  --query              <query>          - Filter by title or description substring                                                                   
-  --parent             <parent>         - Filter by parent issue identifier                                                                          
-  --priority           <priority>       - Filter by priority (0-4 or none/urgent/high/medium/low)                                                    
-  --updated-before     <updatedBefore>  - Filter issues updated before an ISO date or datetime                                                       
-  --due-before         <dueBefore>      - Filter issues due before a date (YYYY-MM-DD)                                                               
-  --limit              <limit>          - Maximum number of issues to fetch (default: 50, use 0 for unlimited)         (Default: 50)                 
-  -j, --json                            - Output as JSON                                                                                             
-  -w, --web                             - Open in web browser                                                                                        
-  -a, --app                             - Open in Linear.app                                                                                         
+  -h, --help                            - Show this help.                                                                                                
+  -w, --workspace      <slug>           - Target workspace (uses credentials)                                                                            
+  -s, --state          <state>          - Filter by issue state (triage, backlog, unstarted|todo, started, completed,      (Default: [ "unstarted" ])    
+                                          canceled). May be repeated.                                                                                    
+  --all-states                          - Show issues from all states                                                                                    
+  --all                                 - Shortcut for --all-states --all-assignees --limit 0 (explicit --state overrides                                
+                                          all-states)                                                                                                    
+  --assignee           <assignee>       - Filter by assignee (username)                                                                                  
+  -A, --all-assignees                   - Show issues for all assignees                                                                                  
+  -U, --unassigned                      - Show only unassigned issues                                                                                    
+  --sort               <sort>           - Sort order (can also be set via LINEAR_ISSUE_SORT)                               (Values: "manual", "priority")
+  --team               <team>           - Team to list issues for (if not your default team)                                                             
+  --project            <project>        - Filter by project name                                                                                         
+  --cycle              <cycle>          - Filter by cycle name, number, or 'active'                                                                      
+  --milestone          <milestone>      - Filter by project milestone name (requires --project)                                                          
+  --query              <query>          - Filter by title or description substring                                                                       
+  --parent             <parent>         - Filter by parent issue identifier                                                                              
+  --priority           <priority>       - Filter by priority (0-4 or none/urgent/high/medium/low)                                                        
+  --updated-before     <updatedBefore>  - Filter issues updated before an ISO date or datetime                                                           
+  --due-before         <dueBefore>      - Filter issues due before a date (YYYY-MM-DD)                                                                   
+  --limit              <limit>          - Maximum number of issues to fetch (default: 50, use 0 for unlimited)             (Default: 50)                 
+  -j, --json                            - Output as JSON                                                                                                 
+  -w, --web                             - Open in web browser                                                                                            
+  -a, --app                             - Open in Linear.app                                                                                             
   --no-pager                            - Disable automatic paging for long output
 ```
 

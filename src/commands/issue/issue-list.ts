@@ -60,7 +60,7 @@ export const listCommand = new Command()
   )
   .option(
     "--all",
-    "Shortcut for --all-states --all-assignees --limit 0",
+    "Shortcut for --all-states --all-assignees --limit 0 (explicit --state overrides all-states)",
   )
   .option(
     "--assignee <assignee:string>",
@@ -164,7 +164,8 @@ export const listCommand = new Command()
       }
 
       try {
-        const effectiveAllStates = Boolean(all || allStates)
+        const stateProvided = hasIssueListStateFlag()
+        const effectiveAllStates = Boolean(allStates || (all && !stateProvided))
         const effectiveAllAssignees = Boolean(all || allAssignees)
         const effectiveLimit = all ? 0 : limit
         const showAllStatesAssigneeTip = shouldShowAllStatesAssigneeTip({
@@ -199,11 +200,16 @@ export const listCommand = new Command()
         const stateArray = normalizeStates(rawStateArray)
 
         if (
-          effectiveAllStates &&
-          (stateArray.length > 1 || stateArray[0] !== "unstarted")
+          allStates &&
+          (stateProvided || stateArray.length > 1 ||
+            stateArray[0] !== "unstarted")
         ) {
           throw new ValidationError(
-            "Cannot use --all or --all-states with --state flag",
+            "Cannot use --all-states with -s/--state",
+            {
+              suggestion:
+                "--all-states already includes every state. Remove --all-states to filter by -s/--state, or use --all -s/--state to include all assignees with a state filter.",
+            },
           )
         }
 
@@ -544,6 +550,17 @@ function normalizeQuery(query?: string): string | undefined {
   }
 
   return normalized
+}
+
+function hasIssueListStateFlag(): boolean {
+  const rawArgs = Reflect.get(listCommand as object, "rawArgs")
+  if (
+    !Array.isArray(rawArgs) || rawArgs.some((arg) => typeof arg !== "string")
+  ) {
+    return false
+  }
+
+  return rawArgs.includes("--state") || rawArgs.includes("-s")
 }
 
 function normalizeStates(states: string[]): string[] {
