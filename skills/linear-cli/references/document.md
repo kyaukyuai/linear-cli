@@ -90,7 +90,8 @@ Options:
   --project           <project>  - Attach to project (slug or ID)            
   --issue             <issue>    - Attach to issue (identifier like TC-123)  
   --icon              <icon>     - Document icon (emoji)                     
-  -i, --interactive              - Interactive mode with prompts
+  -i, --interactive              - Interactive mode with prompts             
+  --dry-run                      - Preview the document without creating it
 ```
 
 ### update
@@ -106,13 +107,14 @@ Description:
 
 Options:
 
-  -h, --help                     - Show this help.                              
-  -w, --workspace     <slug>     - Target workspace (uses credentials)          
-  -t, --title         <title>    - New title for the document                   
-  -c, --content       <content>  - New markdown content (inline)                
-  -f, --content-file  <path>     - Read new content from file                   
-  --icon              <icon>     - New icon (emoji)                             
-  -e, --edit                     - Open current content in $EDITOR for editing
+  -h, --help                     - Show this help.                                   
+  -w, --workspace     <slug>     - Target workspace (uses credentials)               
+  -t, --title         <title>    - New title for the document                        
+  -c, --content       <content>  - New markdown content (inline)                     
+  -f, --content-file  <path>     - Read new content from file                        
+  --icon              <icon>     - New icon (emoji)                                  
+  -e, --edit                     - Open current content in $EDITOR for editing       
+  --dry-run                      - Preview the update without mutating the document
 ```
 
 ### delete
@@ -133,5 +135,6 @@ Options:
   -y, --yes                  - Skip confirmation prompt                            
   --bulk           <ids...>  - Delete multiple documents by slug or ID             
   --bulk-file      <file>    - Read document slugs/IDs from a file (one per line)  
-  --bulk-stdin               - Read document slugs/IDs from stdin
+  --bulk-stdin               - Read document slugs/IDs from stdin                  
+  --dry-run                  - Preview the deletion without mutating documents
 ```

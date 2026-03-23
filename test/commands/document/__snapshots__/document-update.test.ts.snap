@@ -11,12 +11,13 @@ Description:
 
 Options:
 
-  -h, --help                     - Show this help.                              
-  -t, --title         <title>    - New title for the document                   
-  -c, --content       <content>  - New markdown content (inline)                
-  -f, --content-file  <path>     - Read new content from file                   
-  --icon              <icon>     - New icon (emoji)                             
-  -e, --edit                     - Open current content in \$EDITOR for editing  
+  -h, --help                     - Show this help.                                   
+  -t, --title         <title>    - New title for the document                        
+  -c, --content       <content>  - New markdown content (inline)                     
+  -f, --content-file  <path>     - Read new content from file                        
+  --icon              <icon>     - New icon (emoji)                                  
+  -e, --edit                     - Open current content in \$EDITOR for editing       
+  --dry-run                      - Preview the update without mutating the document  
 
 "
 stderr:
@@ -57,4 +58,14 @@ stderr:
 "✗ Failed to update document: No update fields provided
   Use --title, --content, --content-file, --icon, or --edit.
 "
+`;
+
+snapshot[`Document Update Command - Dry Run 1`] = `
+stdout:
+"Dry run: Would update document d4b93e3b2695
+Document: d4b93e3b2695
+title: Preview Title
+"
+stderr:
+""
 `;

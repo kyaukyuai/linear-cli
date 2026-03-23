@@ -125,3 +125,14 @@ await snapshotTest({
     }
   },
 })
+
+await snapshotTest({
+  name: "Webhook Update Command - Dry Run JSON Output",
+  meta: import.meta,
+  colors: false,
+  args: ["webhook-1", "--label", "Preview webhook", "--json", "--dry-run"],
+  denoArgs: commonDenoArgs,
+  async fn() {
+    await updateCommand.parse()
+  },
+})

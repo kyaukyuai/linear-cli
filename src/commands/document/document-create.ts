@@ -1,6 +1,7 @@
 import { Command } from "@cliffy/command"
 import { Input, Select } from "@cliffy/prompt"
 import { gql } from "../../__codegen__/gql.ts"
+import { emitDryRunOutput } from "../../utils/dry_run.ts"
 import { getGraphQLClient } from "../../utils/graphql.ts"
 import { getEditor, openEditor } from "../../utils/editor.ts"
 import { readIdsFromStdin } from "../../utils/bulk.ts"
@@ -10,6 +11,7 @@ import {
   NotFoundError,
   ValidationError,
 } from "../../utils/errors.ts"
+import { buildWriteCommandPreview } from "../../utils/write_preview.ts"
 
 /**
  * Read content from stdin if available (piped input, with timeout)
@@ -47,6 +49,7 @@ export const createCommand = new Command()
   .option("--issue <issue:string>", "Attach to issue (identifier like TC-123)")
   .option("--icon <icon:string>", "Document icon (emoji)")
   .option("-i, --interactive", "Interactive mode with prompts")
+  .option("--dry-run", "Preview the document without creating it")
   .action(
     async ({
       title,
@@ -56,10 +59,9 @@ export const createCommand = new Command()
       issue,
       icon,
       interactive,
+      dryRun,
     }) => {
       try {
-        const client = getGraphQLClient()
-
         // Determine if we should use interactive mode
         let useInteractive = interactive && Deno.stdout.isTerminal()
 
@@ -94,6 +96,12 @@ export const createCommand = new Command()
             }
           })
 
+          if (dryRun) {
+            previewDocumentCreate(input)
+            return
+          }
+
+          const client = getGraphQLClient()
           await createDocument(client, input)
           return
         }
@@ -146,6 +154,7 @@ export const createCommand = new Command()
         // Resolve project ID if provided
         let projectId: string | undefined
         if (project) {
+          const client = getGraphQLClient()
           projectId = await resolveProjectId(client, project)
           if (!projectId) {
             throw new NotFoundError("Project", project, {
@@ -157,6 +166,7 @@ export const createCommand = new Command()
         // Resolve issue ID if provided
         let issueId: string | undefined
         if (issue) {
+          const client = getGraphQLClient()
           issueId = await resolveIssueId(client, issue)
           if (!issueId) {
             throw new NotFoundError("Issue", issue, {
@@ -181,6 +191,12 @@ export const createCommand = new Command()
           }
         })
 
+        if (dryRun) {
+          previewDocumentCreate(input)
+          return
+        }
+
+        const client = getGraphQLClient()
         await createDocument(client, input)
       } catch (error) {
         handleError(error, "Failed to create document")
@@ -380,6 +396,37 @@ async function resolveIssueId(
   }
 
   return undefined
+}
+
+function previewDocumentCreate(input: Record<string, string | undefined>) {
+  emitDryRunOutput({
+    summary: `Would create document ${input.title}`,
+    data: buildWriteCommandPreview({
+      command: "document.create",
+      operation: "create",
+      target: {
+        resource: "document",
+        title: input.title,
+      },
+      changes: {
+        input: {
+          title: input.title,
+          icon: input.icon ?? null,
+          projectId: input.projectId ?? null,
+          issueId: input.issueId ?? null,
+          hasContent: input.content != null,
+          contentLength: input.content?.length ?? 0,
+        },
+      },
+    }),
+    lines: [
+      `Title: ${input.title}`,
+      ...(input.projectId != null ? [`Project ID: ${input.projectId}`] : []),
+      ...(input.issueId != null ? [`Issue ID: ${input.issueId}`] : []),
+      ...(input.icon != null ? [`Icon: ${input.icon}`] : []),
+      `Content: ${input.content?.length ?? 0} chars`,
+    ],
+  })
 }
 
 async function createDocument(

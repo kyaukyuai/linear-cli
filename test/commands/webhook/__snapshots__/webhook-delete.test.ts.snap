@@ -11,9 +11,10 @@ Description:
 
 Options:
 
-  -h, --help  - Show this help.           
-  -y, --yes   - Skip confirmation prompt  
-  -j, --json  - Output as JSON            
+  -h, --help  - Show this help.                                    
+  -y, --yes   - Skip confirmation prompt                           
+  -j, --json  - Output as JSON                                     
+  --dry-run   - Preview the deletion without mutating the webhook  
 
 "
 stderr:
@@ -35,6 +36,29 @@ stdout:
   "label": "Issue events",
   "url": "https://example.com/hooks/issues",
   "success": true
+}
+'
+stderr:
+""
+`;
+
+snapshot[`Webhook Delete Command - Dry Run JSON Output 1`] = `
+stdout:
+'{
+  "success": true,
+  "dryRun": true,
+  "summary": "Would delete webhook Issue events",
+  "data": {
+    "command": "webhook.delete",
+    "operation": "delete",
+    "destructive": true,
+    "target": {
+      "resource": "webhook",
+      "id": "webhook-1",
+      "label": "Issue events",
+      "url": "https://example.com/hooks/issues"
+    }
+  }
 }
 '
 stderr:

@@ -255,4 +255,15 @@ await snapshotTest({
   },
 })
 
+await snapshotTest({
+  name: "Document Create Command - Dry Run",
+  meta: import.meta,
+  colors: false,
+  args: ["--title", "Preview Doc", "--content", "# Hello", "--dry-run"],
+  denoArgs: commonDenoArgs,
+  async fn() {
+    await createCommand.parse()
+  },
+})
+
 // NOTE: "API Error" test removed - stack traces contain machine-specific paths

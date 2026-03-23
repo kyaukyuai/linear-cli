@@ -190,3 +190,40 @@ await snapshotTest({
     }
   },
 })
+
+await snapshotTest({
+  name: "Document Delete Command - Dry Run",
+  meta: import.meta,
+  colors: false,
+  args: ["d4b93e3b2695", "--dry-run"],
+  denoArgs: commonDenoArgs,
+  async fn() {
+    const server = new MockLinearServer([
+      {
+        queryName: "GetDocumentForDelete",
+        variables: { id: "d4b93e3b2695" },
+        response: {
+          data: {
+            document: {
+              id: "doc-uuid-123",
+              slugId: "d4b93e3b2695",
+              title: "Test Document",
+            },
+          },
+        },
+      },
+    ])
+
+    try {
+      await server.start()
+      Deno.env.set("LINEAR_GRAPHQL_ENDPOINT", server.getEndpoint())
+      Deno.env.set("LINEAR_API_KEY", "Bearer test-token")
+
+      await deleteCommand.parse()
+    } finally {
+      await server.stop()
+      Deno.env.delete("LINEAR_GRAPHQL_ENDPOINT")
+      Deno.env.delete("LINEAR_API_KEY")
+    }
+  },
+})

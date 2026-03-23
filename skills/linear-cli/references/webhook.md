@@ -89,7 +89,8 @@ Options:
   --all-public-teams                     - Enable the webhook for all public teams instead of a specific team  
   --secret              <secret>         - Secret used to sign webhook payloads                                
   --disabled                             - Create the webhook disabled                                         
-  -j, --json                             - Output as JSON
+  -j, --json                             - Output as JSON                                                      
+  --dry-run                              - Preview the webhook without creating it
 ```
 
 ### update
@@ -105,15 +106,16 @@ Description:
 
 Options:
 
-  -h, --help                             - Show this help.                      
-  -w, --workspace       <slug>           - Target workspace (uses credentials)  
-  -u, --url             <url>            - New webhook URL                      
-  -r, --resource-types  <resourceTypes>  - New comma-separated resource types   
-  -l, --label           <label>          - New webhook label                    
-  --secret              <secret>         - New secret used to sign payloads     
-  --enabled                              - Enable the webhook                   
-  --disabled                             - Disable the webhook                  
-  -j, --json                             - Output as JSON
+  -h, --help                             - Show this help.                                  
+  -w, --workspace       <slug>           - Target workspace (uses credentials)              
+  -u, --url             <url>            - New webhook URL                                  
+  -r, --resource-types  <resourceTypes>  - New comma-separated resource types               
+  -l, --label           <label>          - New webhook label                                
+  --secret              <secret>         - New secret used to sign payloads                 
+  --enabled                              - Enable the webhook                               
+  --disabled                             - Disable the webhook                              
+  -j, --json                             - Output as JSON                                   
+  --dry-run                              - Preview the update without mutating the webhook
 ```
 
 ### delete
@@ -129,8 +131,9 @@ Description:
 
 Options:
 
-  -h, --help               - Show this help.                      
-  -w, --workspace  <slug>  - Target workspace (uses credentials)  
-  -y, --yes                - Skip confirmation prompt             
-  -j, --json               - Output as JSON
+  -h, --help               - Show this help.                                    
+  -w, --workspace  <slug>  - Target workspace (uses credentials)                
+  -y, --yes                - Skip confirmation prompt                           
+  -j, --json               - Output as JSON                                     
+  --dry-run                - Preview the deletion without mutating the webhook
 ```

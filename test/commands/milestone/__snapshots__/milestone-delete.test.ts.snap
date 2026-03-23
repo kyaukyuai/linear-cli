@@ -11,8 +11,9 @@ Description:
 
 Options:
 
-  -h, --help   - Show this help.           
-  -f, --force  - Skip confirmation prompt  
+  -h, --help   - Show this help.                                      
+  -f, --force  - Skip confirmation prompt                             
+  --dry-run    - Preview the deletion without mutating the milestone  
 
 "
 stderr:
@@ -22,6 +23,15 @@ stderr:
 snapshot[`Milestone Delete Command - With Force Flag 1`] = `
 stdout:
 "✓ Deleted milestone milestone-123
+"
+stderr:
+""
+`;
+
+snapshot[`Milestone Delete Command - Dry Run 1`] = `
+stdout:
+"Dry run: Would delete milestone milestone-preview
+Milestone: milestone-preview
 "
 stderr:
 ""

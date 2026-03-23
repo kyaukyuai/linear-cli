@@ -20,6 +20,7 @@ Options:
   --secret              <secret>         - Secret used to sign webhook payloads                                
   --disabled                             - Create the webhook disabled                                         
   -j, --json                             - Output as JSON                                                      
+  --dry-run                              - Preview the webhook without creating it                             
 
 "
 stderr:
@@ -57,6 +58,41 @@ stdout:
     "id": "user-1",
     "name": "jdoe",
     "displayName": "John Doe"
+  }
+}
+'
+stderr:
+""
+`;
+
+snapshot[`Webhook Create Command - Dry Run JSON Output 1`] = `
+stdout:
+'{
+  "success": true,
+  "dryRun": true,
+  "summary": "Would create webhook for https://example.com/hooks/dry-run",
+  "data": {
+    "command": "webhook.create",
+    "operation": "create",
+    "destructive": false,
+    "target": {
+      "resource": "webhook",
+      "url": "https://example.com/hooks/dry-run"
+    },
+    "changes": {
+      "input": {
+        "url": "https://example.com/hooks/dry-run",
+        "label": null,
+        "enabled": true,
+        "allPublicTeams": true,
+        "resourceTypes": [
+          "Issue"
+        ],
+        "teamKey": null,
+        "teamId": null,
+        "secretProvided": false
+      }
+    }
   }
 }
 '

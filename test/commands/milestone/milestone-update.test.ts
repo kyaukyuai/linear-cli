@@ -263,3 +263,19 @@ await cliffySnapshotTest({
     }
   },
 })
+
+await cliffySnapshotTest({
+  name: "Milestone Update Command - Dry Run",
+  meta: import.meta,
+  colors: false,
+  args: [
+    "milestone-preview",
+    "--name",
+    "Preview Milestone",
+    "--dry-run",
+  ],
+  denoArgs: commonDenoArgs,
+  async fn() {
+    await updateCommand.parse()
+  },
+})

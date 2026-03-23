@@ -19,6 +19,7 @@ Options:
   --start-date       <startDate>    - Start date (YYYY-MM-DD)                                          
   --target-date      <targetDate>   - Target date (YYYY-MM-DD)                                         
   -t, --team         <team>         - Team key (can be repeated for multiple teams)                    
+  --dry-run                         - Preview the update without mutating the project                  
 
 "
 stderr:
@@ -47,6 +48,16 @@ snapshot[`Project Update Command - Update Status 1`] = `
 stdout:
 "✓ Updated project: Test Project
 https://linear.app/test/project/proj-status
+"
+stderr:
+""
+`;
+
+snapshot[`Project Update Command - Dry Run 1`] = `
+stdout:
+"Dry run: Would update project 550e8400-e29b-41d4-a716-446655440099
+Project: 550e8400-e29b-41d4-a716-446655440099
+name: Preview Project Name
 "
 stderr:
 ""

@@ -1,5 +1,6 @@
 import { Command } from "@cliffy/command"
 import { gql } from "../../__codegen__/gql.ts"
+import { emitDryRunOutput } from "../../utils/dry_run.ts"
 import { getGraphQLClient } from "../../utils/graphql.ts"
 import { getEditor } from "../../utils/editor.ts"
 import { readIdsFromStdin } from "../../utils/bulk.ts"
@@ -9,6 +10,7 @@ import {
   NotFoundError,
   ValidationError,
 } from "../../utils/errors.ts"
+import { buildWriteCommandPreview } from "../../utils/write_preview.ts"
 
 /**
  * Open editor with initial content and return the edited content
@@ -108,14 +110,13 @@ export const updateCommand = new Command()
   )
   .option("--icon <icon:string>", "New icon (emoji)")
   .option("-e, --edit", "Open current content in $EDITOR for editing")
+  .option("--dry-run", "Preview the update without mutating the document")
   .action(
     async (
-      { title, content, contentFile, icon, edit },
+      { title, content, contentFile, icon, edit, dryRun },
       documentId,
     ) => {
       try {
-        const client = getGraphQLClient()
-
         // Build the update input
         const input: Record<string, string> = {}
 
@@ -151,6 +152,7 @@ export const updateCommand = new Command()
             )
           }
         } else if (edit) {
+          const client = getGraphQLClient()
           // Edit mode: fetch current content and open in editor
           const getDocumentQuery = gql(`
           query GetDocumentForEdit($id: String!) {
@@ -209,6 +211,36 @@ export const updateCommand = new Command()
           })
         }
 
+        if (dryRun) {
+          emitDryRunOutput({
+            summary: `Would update document ${documentId}`,
+            data: buildWriteCommandPreview({
+              command: "document.update",
+              operation: "update",
+              target: {
+                resource: "document",
+                id: documentId,
+              },
+              changes: {
+                title: input.title ?? null,
+                icon: input.icon ?? null,
+                hasContent: input.content != null,
+                contentLength: input.content?.length ?? 0,
+              },
+            }),
+            lines: [
+              `Document: ${documentId}`,
+              ...Object.entries(input).map(([key, value]) =>
+                key === "content"
+                  ? `content: ${(value as string).length} chars`
+                  : `${key}: ${String(value)}`
+              ),
+            ],
+          })
+          return
+        }
+
+        const client = getGraphQLClient()
         // Execute the update
         const updateMutation = gql(`
         mutation UpdateDocument($id: String!, $input: DocumentUpdateInput!) {

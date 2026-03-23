@@ -95,7 +95,8 @@ Options:
   --target-date      <targetDate>   - Target completion date (YYYY-MM-DD)                                      
   --initiative       <initiative>   - Add to initiative immediately (ID, slug, or name)                        
   -i, --interactive                 - Interactive mode (default if no flags provided)                          
-  -j, --json                        - Output created project as JSON
+  -j, --json                        - Output created project as JSON                                           
+  --dry-run                         - Preview the project without creating it
 ```
 
 ### update
@@ -119,7 +120,8 @@ Options:
   -l, --lead         <lead>         - Project lead (username, email, or @me)                           
   --start-date       <startDate>    - Start date (YYYY-MM-DD)                                          
   --target-date      <targetDate>   - Target date (YYYY-MM-DD)                                         
-  -t, --team         <team>         - Team key (can be repeated for multiple teams)
+  -t, --team         <team>         - Team key (can be repeated for multiple teams)                    
+  --dry-run                         - Preview the update without mutating the project
 ```
 
 ### delete
@@ -135,9 +137,10 @@ Description:
 
 Options:
 
-  -h, --help               - Show this help.                      
-  -w, --workspace  <slug>  - Target workspace (uses credentials)  
-  -f, --force              - Skip confirmation prompt
+  -h, --help               - Show this help.                                    
+  -w, --workspace  <slug>  - Target workspace (uses credentials)                
+  -f, --force              - Skip confirmation prompt                           
+  --dry-run                - Preview the deletion without mutating the project
 ```
 
 ### label

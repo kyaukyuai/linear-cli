@@ -11,12 +11,13 @@ Description:
 
 Options:
 
-  -h, --help                    - Show this help.                          
-  --name         <name>         - Milestone name                           
-  --description  <description>  - Milestone description                    
-  --target-date  <date>         - Target date (YYYY-MM-DD)                 
-  --sort-order   <value>        - Sort order relative to other milestones  
-  --project      <projectId>    - Move to a different project              
+  -h, --help                    - Show this help.                                    
+  --name         <name>         - Milestone name                                     
+  --description  <description>  - Milestone description                              
+  --target-date  <date>         - Target date (YYYY-MM-DD)                           
+  --sort-order   <value>        - Sort order relative to other milestones            
+  --project      <projectId>    - Move to a different project                        
+  --dry-run                     - Preview the update without mutating the milestone  
 
 "
 stderr:
@@ -78,6 +79,16 @@ stdout:
   Target Date: 2026-12-31
   Sort Order: 2
   Project: Final Project
+"
+stderr:
+""
+`;
+
+snapshot[`Milestone Update Command - Dry Run 1`] = `
+stdout:
+"Dry run: Would update milestone milestone-preview
+Milestone: milestone-preview
+name: Preview Milestone
 "
 stderr:
 ""

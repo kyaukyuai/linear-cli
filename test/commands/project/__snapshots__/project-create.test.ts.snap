@@ -22,6 +22,7 @@ Options:
   --initiative       <initiative>   - Add to initiative immediately (ID, slug, or name)                        
   -i, --interactive                 - Interactive mode (default if no flags provided)                          
   -j, --json                        - Output created project as JSON                                           
+  --dry-run                         - Preview the project without creating it                                  
 
 "
 stderr:
@@ -35,6 +36,46 @@ stdout:
   "slugId": "json-test-project",
   "name": "JSON Test Project",
   "url": "https://linear.app/test/project/json-test-project"
+}
+'
+stderr:
+""
+`;
+
+snapshot[`Project Create Command - Dry Run JSON Output 1`] = `
+stdout:
+'{
+  "success": true,
+  "dryRun": true,
+  "summary": "Would create project Dry Run Project",
+  "data": {
+    "command": "project.create",
+    "operation": "create",
+    "destructive": false,
+    "target": {
+      "resource": "project",
+      "name": "Dry Run Project"
+    },
+    "changes": {
+      "input": {
+        "name": "Dry Run Project",
+        "description": null,
+        "teamKeys": [
+          "ENG"
+        ],
+        "teamIds": [
+          "team-eng-123"
+        ],
+        "lead": null,
+        "leadId": null,
+        "status": null,
+        "statusId": null,
+        "startDate": null,
+        "targetDate": null,
+        "initiative": null
+      }
+    }
+  }
 }
 '
 stderr:

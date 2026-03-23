@@ -3,8 +3,10 @@ import { Confirm } from "@cliffy/prompt"
 import { green } from "@std/fmt/colors"
 import { gql } from "../../__codegen__/gql.ts"
 import { getGraphQLClient } from "../../utils/graphql.ts"
+import { emitDryRunOutput } from "../../utils/dry_run.ts"
 import { CliError, handleError, ValidationError } from "../../utils/errors.ts"
 import { withSpinner } from "../../utils/spinner.ts"
+import { buildWriteCommandPreview } from "../../utils/write_preview.ts"
 import { getWebhookDisplayLabel } from "./webhook-utils.ts"
 
 const GetWebhookForDelete = gql(`
@@ -32,13 +34,39 @@ export const deleteCommand = new Command()
   .arguments("<webhookId:string>")
   .option("-y, --yes", "Skip confirmation prompt")
   .option("-j, --json", "Output as JSON")
-  .action(async ({ yes, json }, webhookId) => {
+  .option("--dry-run", "Preview the deletion without mutating the webhook")
+  .action(async ({ yes, json, dryRun }, webhookId) => {
     try {
       const client = getGraphQLClient()
       const webhook = await withSpinner(
         () => client.request(GetWebhookForDelete, { id: webhookId }),
-        { enabled: !json && yes },
+        { enabled: !json && yes && !dryRun },
       )
+
+      if (dryRun) {
+        emitDryRunOutput({
+          json,
+          summary: `Would delete webhook ${
+            getWebhookDisplayLabel(webhook.webhook.label)
+          }`,
+          data: buildWriteCommandPreview({
+            command: "webhook.delete",
+            operation: "delete",
+            target: {
+              resource: "webhook",
+              id: webhook.webhook.id,
+              label: webhook.webhook.label,
+              url: webhook.webhook.url,
+            },
+          }),
+          lines: [
+            `Webhook: ${getWebhookDisplayLabel(webhook.webhook.label)}`,
+            `ID: ${webhook.webhook.id}`,
+            `URL: ${webhook.webhook.url ?? "-"}`,
+          ],
+        })
+        return
+      }
 
       if (!yes) {
         if (!Deno.stdin.isTerminal()) {

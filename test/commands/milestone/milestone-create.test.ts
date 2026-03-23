@@ -142,3 +142,22 @@ await cliffySnapshotTest({
     }
   },
 })
+
+await cliffySnapshotTest({
+  name: "Milestone Create Command - Dry Run",
+  meta: import.meta,
+  colors: false,
+  args: [
+    "--project",
+    "550e8400-e29b-41d4-a716-446655440099",
+    "--name",
+    "Preview Milestone",
+    "--target-date",
+    "2026-03-31",
+    "--dry-run",
+  ],
+  denoArgs: commonDenoArgs,
+  async fn() {
+    await createCommand.parse()
+  },
+})

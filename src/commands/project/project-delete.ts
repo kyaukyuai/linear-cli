@@ -1,10 +1,12 @@
 import { Command } from "@cliffy/command"
 import { Confirm } from "@cliffy/prompt"
 import { gql } from "../../__codegen__/gql.ts"
+import { emitDryRunOutput } from "../../utils/dry_run.ts"
 import { getGraphQLClient } from "../../utils/graphql.ts"
 import { resolveProjectId } from "../../utils/linear.ts"
 import { shouldShowSpinner } from "../../utils/hyperlink.ts"
 import { CliError, handleError, ValidationError } from "../../utils/errors.ts"
+import { buildWriteCommandPreview } from "../../utils/write_preview.ts"
 
 const DeleteProject = gql(`
   mutation DeleteProject($id: String!) {
@@ -23,8 +25,9 @@ export const deleteCommand = new Command()
   .description("Delete (trash) a Linear project")
   .arguments("<projectId:string>")
   .option("-f, --force", "Skip confirmation prompt")
-  .action(async ({ force }, projectId) => {
-    if (!force) {
+  .option("--dry-run", "Preview the deletion without mutating the project")
+  .action(async ({ force, dryRun }, projectId) => {
+    if (!force && !dryRun) {
       if (!Deno.stdin.isTerminal()) {
         throw new ValidationError("Interactive confirmation required", {
           suggestion: "Use --force to skip confirmation.",
@@ -41,14 +44,36 @@ export const deleteCommand = new Command()
       }
     }
 
-    const { Spinner } = await import("@std/cli/unstable-spinner")
-    const showSpinner = shouldShowSpinner()
-    const spinner = showSpinner ? new Spinner() : null
-    spinner?.start()
+    let spinner: { start: () => void; stop: () => void } | null = null
 
     try {
-      const client = getGraphQLClient()
       const resolvedId = await resolveProjectId(projectId)
+
+      if (dryRun) {
+        emitDryRunOutput({
+          summary: `Would delete project ${projectId}`,
+          data: buildWriteCommandPreview({
+            command: "project.delete",
+            operation: "delete",
+            target: {
+              resource: "project",
+              input: projectId,
+              id: resolvedId,
+            },
+          }),
+          lines: [
+            `Project: ${projectId}`,
+            `Resolved ID: ${resolvedId}`,
+          ],
+        })
+        return
+      }
+
+      const { Spinner } = await import("@std/cli/unstable-spinner")
+      const showSpinner = shouldShowSpinner()
+      spinner = showSpinner ? new Spinner() : null
+      spinner?.start()
+      const client = getGraphQLClient()
 
       const result = await client.request(DeleteProject, {
         id: resolvedId,

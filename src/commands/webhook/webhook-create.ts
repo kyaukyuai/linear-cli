@@ -2,6 +2,7 @@ import { Command } from "@cliffy/command"
 import { green } from "@std/fmt/colors"
 import { gql } from "../../__codegen__/gql.ts"
 import { getGraphQLClient } from "../../utils/graphql.ts"
+import { emitDryRunOutput } from "../../utils/dry_run.ts"
 import { getTeamIdByKey, requireTeamKey } from "../../utils/linear.ts"
 import {
   CliError,
@@ -10,6 +11,7 @@ import {
   ValidationError,
 } from "../../utils/errors.ts"
 import { withSpinner } from "../../utils/spinner.ts"
+import { buildWriteCommandPreview } from "../../utils/write_preview.ts"
 import {
   getWebhookDisplayLabel,
   getWebhookScope,
@@ -66,6 +68,7 @@ export const createCommand = new Command()
   .option("--secret <secret:string>", "Secret used to sign webhook payloads")
   .option("--disabled", "Create the webhook disabled")
   .option("-j, --json", "Output as JSON")
+  .option("--dry-run", "Preview the webhook without creating it")
   .action(
     async (
       {
@@ -77,6 +80,7 @@ export const createCommand = new Command()
         secret,
         disabled,
         json,
+        dryRun,
       },
     ) => {
       try {
@@ -127,6 +131,42 @@ export const createCommand = new Command()
             throw new NotFoundError("Team", teamKey)
           }
           input.teamId = teamId
+        }
+
+        if (dryRun) {
+          emitDryRunOutput({
+            json,
+            summary: `Would create webhook for ${validatedUrl}`,
+            data: buildWriteCommandPreview({
+              command: "webhook.create",
+              operation: "create",
+              target: {
+                resource: "webhook",
+                url: validatedUrl,
+              },
+              changes: {
+                input: {
+                  url: validatedUrl,
+                  label: label ?? null,
+                  enabled: !disabled,
+                  allPublicTeams: allPublicTeams || false,
+                  resourceTypes: parsedResourceTypes,
+                  teamKey: allPublicTeams ? null : requireTeamKey(team),
+                  teamId: input.teamId ?? null,
+                  secretProvided: secret != null,
+                },
+              },
+            }),
+            lines: [
+              `URL: ${validatedUrl}`,
+              `Resources: ${parsedResourceTypes.join(", ")}`,
+              ...(label != null ? [`Label: ${label}`] : []),
+              ...(allPublicTeams
+                ? ["Scope: all public teams"]
+                : [`Team: ${requireTeamKey(team)}`]),
+            ],
+          })
+          return
         }
 
         const client = getGraphQLClient()

@@ -1,6 +1,7 @@
 import { Command } from "@cliffy/command"
 import { Confirm } from "@cliffy/prompt"
 import { gql } from "../../__codegen__/gql.ts"
+import { emitDryRunOutput } from "../../utils/dry_run.ts"
 import { getGraphQLClient } from "../../utils/graphql.ts"
 import {
   type BulkOperationResult,
@@ -15,6 +16,7 @@ import {
   NotFoundError,
   ValidationError,
 } from "../../utils/errors.ts"
+import { buildWriteCommandPreview } from "../../utils/write_preview.ts"
 
 interface DocumentDeleteResult extends BulkOperationResult {
   title?: string
@@ -35,9 +37,10 @@ export const deleteCommand = new Command()
     "Read document slugs/IDs from a file (one per line)",
   )
   .option("--bulk-stdin", "Read document slugs/IDs from stdin")
+  .option("--dry-run", "Preview the deletion without mutating documents")
   .action(
     async (
-      { yes, bulk, bulkFile, bulkStdin },
+      { yes, bulk, bulkFile, bulkStdin, dryRun },
       documentId,
     ) => {
       try {
@@ -50,6 +53,7 @@ export const deleteCommand = new Command()
             bulkFile,
             bulkStdin,
             yes,
+            dryRun,
           })
           return
         }
@@ -61,7 +65,7 @@ export const deleteCommand = new Command()
           })
         }
 
-        await handleSingleDelete(client, documentId, { yes })
+        await handleSingleDelete(client, documentId, { yes, dryRun })
       } catch (error) {
         handleError(error, "Failed to delete document")
       }
@@ -72,9 +76,9 @@ async function handleSingleDelete(
   // deno-lint-ignore no-explicit-any
   client: any,
   documentId: string,
-  options: { yes?: boolean },
+  options: { yes?: boolean; dryRun?: boolean },
 ): Promise<void> {
-  const { yes } = options
+  const { yes, dryRun } = options
 
   // Get document details for confirmation message
   const detailsQuery = gql(`
@@ -94,6 +98,27 @@ async function handleSingleDelete(
   }
 
   const document = documentDetails.document
+
+  if (dryRun) {
+    emitDryRunOutput({
+      summary: `Would delete document ${document.title}`,
+      data: buildWriteCommandPreview({
+        command: "document.delete",
+        operation: "delete",
+        target: {
+          resource: "document",
+          id: document.id,
+          slugId: document.slugId,
+          title: document.title,
+        },
+      }),
+      lines: [
+        `Document: ${document.title}`,
+        `ID: ${document.id}`,
+      ],
+    })
+    return
+  }
 
   // Confirm deletion
   if (!yes) {
@@ -139,9 +164,10 @@ async function handleBulkDelete(
     bulkFile?: string
     bulkStdin?: boolean
     yes?: boolean
+    dryRun?: boolean
   },
 ): Promise<void> {
-  const { yes } = options
+  const { yes, dryRun } = options
 
   // Collect all IDs
   const ids = await collectBulkIds({
@@ -152,6 +178,26 @@ async function handleBulkDelete(
 
   if (ids.length === 0) {
     throw new ValidationError("No document IDs provided for bulk delete")
+  }
+
+  if (dryRun) {
+    emitDryRunOutput({
+      summary: `Would delete ${ids.length} document(s)`,
+      data: buildWriteCommandPreview({
+        command: "document.delete",
+        operation: "delete",
+        target: {
+          resource: "document",
+          ids,
+          bulk: true,
+        },
+      }),
+      lines: [
+        `Documents: ${ids.length}`,
+        ...ids.map((id) => `- ${id}`),
+      ],
+    })
+    return
   }
 
   console.log(`Found ${ids.length} document(s) to delete.`)

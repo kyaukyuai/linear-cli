@@ -2,6 +2,7 @@ import { Command } from "@cliffy/command"
 import { Input, Select } from "@cliffy/prompt"
 import { gql } from "../../__codegen__/gql.ts"
 import { getGraphQLClient } from "../../utils/graphql.ts"
+import { emitDryRunOutput } from "../../utils/dry_run.ts"
 import {
   getAllTeams,
   getTeamIdByKey,
@@ -9,6 +10,7 @@ import {
   lookupUserId,
 } from "../../utils/linear.ts"
 import { shouldShowSpinner } from "../../utils/hyperlink.ts"
+import { buildWriteCommandPreview } from "../../utils/write_preview.ts"
 import {
   CliError,
   handleError,
@@ -141,6 +143,7 @@ export const createCommand = new Command()
     "Interactive mode (default if no flags provided)",
   )
   .option("-j, --json", "Output created project as JSON")
+  .option("--dry-run", "Preview the project without creating it")
   .action(
     async (options) => {
       const {
@@ -154,6 +157,7 @@ export const createCommand = new Command()
         initiative: providedInitiative,
         interactive: interactiveFlag,
         json: jsonOutput,
+        dryRun,
       } = options
 
       const client = getGraphQLClient()
@@ -354,6 +358,45 @@ export const createCommand = new Command()
         ...(statusId && { statusId }),
         ...(startDate && { startDate }),
         ...(targetDate && { targetDate }),
+      }
+
+      if (dryRun) {
+        const previewPayload = buildWriteCommandPreview({
+          command: "project.create",
+          operation: "create",
+          target: {
+            resource: "project",
+            name,
+          },
+          changes: {
+            input: {
+              name,
+              description: description ?? null,
+              teamKeys: teams.map((team) => team.toUpperCase()),
+              teamIds,
+              lead: lead ?? null,
+              leadId: leadId ?? null,
+              status: status ?? null,
+              statusId: statusId ?? null,
+              startDate: startDate ?? null,
+              targetDate: targetDate ?? null,
+              initiative: initiative ?? null,
+            },
+          },
+        })
+        emitDryRunOutput({
+          json: jsonOutput,
+          summary: `Would create project ${name}`,
+          data: previewPayload,
+          lines: [
+            `Name: ${name}`,
+            `Teams: ${teams.map((team) => team.toUpperCase()).join(", ")}`,
+            ...(status != null ? [`Status: ${status}`] : []),
+            ...(lead != null ? [`Lead: ${lead}`] : []),
+            ...(initiative != null ? [`Initiative: ${initiative}`] : []),
+          ],
+        })
+        return
       }
 
       const { Spinner } = await import("@std/cli/unstable-spinner")

@@ -11,11 +11,12 @@ Description:
 
 Options:
 
-  -h, --help                    - Show this help.                     
-  --project      <projectId>    - Project ID                (required)
-  --name         <name>         - Milestone name            (required)
-  --description  <description>  - Milestone description               
-  --target-date  <date>         - Target date (YYYY-MM-DD)            
+  -h, --help                    - Show this help.                                      
+  --project      <projectId>    - Project ID                                 (required)
+  --name         <name>         - Milestone name                             (required)
+  --description  <description>  - Milestone description                                
+  --target-date  <date>         - Target date (YYYY-MM-DD)                             
+  --dry-run                     - Preview the milestone without creating it            
 
 "
 stderr:
@@ -38,6 +39,17 @@ stdout:
 "✓ Created milestone: Simple Milestone
   ID: milestone-new-2
   Project: Another Project
+"
+stderr:
+""
+`;
+
+snapshot[`Milestone Create Command - Dry Run 1`] = `
+stdout:
+"Dry run: Would create milestone Preview Milestone
+Milestone: Preview Milestone
+Project: 550e8400-e29b-41d4-a716-446655440099
+Target date: 2026-03-31
 "
 stderr:
 ""

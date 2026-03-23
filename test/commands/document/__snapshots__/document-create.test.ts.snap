@@ -19,6 +19,7 @@ Options:
   --issue             <issue>    - Attach to issue (identifier like TC-123)  
   --icon              <icon>     - Document icon (emoji)                     
   -i, --interactive              - Interactive mode with prompts             
+  --dry-run                      - Preview the document without creating it  
 
 "
 stderr:
@@ -68,4 +69,14 @@ stderr:
 "✗ Failed to create document: Title is required
   Use --title or run with -i for interactive mode.
 "
+`;
+
+snapshot[`Document Create Command - Dry Run 1`] = `
+stdout:
+"Dry run: Would create document Preview Doc
+Title: Preview Doc
+Content: 7 chars
+"
+stderr:
+""
 `;

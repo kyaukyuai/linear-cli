@@ -56,3 +56,17 @@ await cliffySnapshotTest({
     }
   },
 })
+
+await cliffySnapshotTest({
+  name: "Project Delete Command - Dry Run",
+  meta: import.meta,
+  colors: false,
+  args: [
+    "550e8400-e29b-41d4-a716-446655440099",
+    "--dry-run",
+  ],
+  denoArgs: commonDenoArgs,
+  async fn() {
+    await deleteCommand.parse()
+  },
+})

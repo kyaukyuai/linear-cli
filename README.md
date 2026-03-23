@@ -246,6 +246,9 @@ linear team autolinks  # configure GitHub repository autolinks for Linear issues
 ```bash
 linear project list    # list projects
 linear project view    # view project details
+linear project create --name "Platform Refresh" --team ENG --dry-run --json  # preview a project create
+linear project update <projectIdOrSlug> --name "Platform Refresh" --dry-run  # preview a project update
+linear project delete <projectIdOrSlug> --dry-run  # preview a project deletion
 linear project label add <projectIdOrSlug> <labelNameOrId>     # attach a project label
 linear project label remove <projectIdOrSlug> <labelNameOrId>  # detach a project label
 ```
@@ -258,10 +261,13 @@ linear m list --project <projectId>             # list milestones (alias)
 linear milestone view <milestoneId>             # view milestone details
 linear m view <milestoneId>                     # view milestone (alias)
 linear milestone create --project <projectId> --name "Q1 Goals" --target-date "2026-03-31"  # create a milestone
+linear milestone create --project <projectId> --name "Q1 Goals" --dry-run   # preview a milestone create
 linear m create --project <projectId>           # create a milestone (interactive)
 linear milestone update <milestoneId> --name "New Name"  # update milestone name
+linear milestone update <milestoneId> --name "New Name" --dry-run           # preview a milestone update
 linear m update <milestoneId> --target-date "2026-04-15"  # update target date
 linear milestone delete <milestoneId>           # delete a milestone
+linear milestone delete <milestoneId> --dry-run                                # preview a milestone delete
 linear m delete <milestoneId> --force           # delete without confirmation
 ```
 
@@ -288,17 +294,20 @@ linear document create --title "My Doc" --content "# Hello"           # inline c
 linear document create --title "Spec" --content-file ./spec.md        # from file
 linear document create --title "Doc" --project <projectId>            # attach to project
 linear document create --title "Notes" --issue TC-123                 # attach to issue
+linear document create --title "Spec" --content "# Draft" --dry-run   # preview a document create
 cat spec.md | linear document create --title "Spec"                   # from stdin
 
 # update a document
 linear document update <slug> --title "New Title"                     # update title
 linear document update <slug> --content-file ./updated.md             # update content
 linear document update <slug> --edit                                  # open in $EDITOR
+linear document update <slug> --title "New Title" --dry-run           # preview a document update
 
 # delete a document
 linear document delete <slug>                   # soft delete (move to trash)
 linear document delete <slug> --permanent       # permanent delete
 linear document delete --bulk <slug1> <slug2>   # bulk delete
+linear document delete <slug> --dry-run         # preview a document delete
 ```
 
 ### notification commands
@@ -323,8 +332,11 @@ linear webhook list
 linear webhook list --team ENG
 linear webhook view <webhookId>
 linear webhook create --url https://example.com/linear --resource-types Issue,Comment
+linear webhook create --url https://example.com/linear --resource-types Issue,Comment --dry-run --json
 linear webhook update <webhookId> --disabled
+linear webhook update <webhookId> --disabled --dry-run --json
 linear webhook delete <webhookId> --yes
+linear webhook delete <webhookId> --dry-run --json
 linear webhook list --json
 ```
 
