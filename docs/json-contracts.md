@@ -1,8 +1,8 @@
-# Automation Contract v1
+# Automation Contract
 
 `linear-cli` exposes many `--json` modes, but only a subset is treated as a stable automation contract.
 
-This document defines the v1 contract for org-wide automation. The contract applies to:
+This document defines the stable JSON contracts for org-wide automation. Each contract version applies to:
 
 - success payload top-level shapes
 - failure payload shape for `--json`
@@ -15,6 +15,8 @@ It does not apply to:
 - `linear api`
 - commands outside the automation tier listed below
 - stderr output when `LINEAR_DEBUG=1`
+
+## Automation Contract v1
 
 ## Write Safety Rails Foundation
 
@@ -476,9 +478,125 @@ Idempotency policy:
 - partial failures are not safe to blindly retry with the same input
 - callers should use `createdIdentifiers` plus `failedStep` to resume manually or to write a higher-level reconciliation flow
 
+## Automation Contract v2
+
+Automation Contract v2 extends the stable read surface to project commands while preserving the v1 guarantees for existing issue and team commands.
+
+The v2 additions are:
+
+- `linear project list --json`
+- `linear project view --json`
+
+V2 reuses the same failure envelope, value rules, and compatibility rules defined above.
+
+### `projectStatusRef`
+
+```json
+{
+  "id": "project-status-1",
+  "name": "In Progress",
+  "color": "#f59e0b",
+  "type": "started"
+}
+```
+
+### `project list --json`
+
+Top-level shape:
+
+```json
+[
+  {
+    "id": "project-123",
+    "slugId": "platform-refresh",
+    "name": "Platform Refresh",
+    "description": "Coordinate infrastructure migration",
+    "status": {
+      "id": "project-status-1",
+      "name": "In Progress",
+      "type": "started"
+    },
+    "lead": {
+      "name": "alice.bot",
+      "displayName": "Alice Bot",
+      "initials": "AB"
+    },
+    "teams": ["ENG", "OPS"],
+    "priority": 2,
+    "health": "onTrack",
+    "startDate": "2026-03-01",
+    "targetDate": "2026-04-15",
+    "url": "https://linear.app/acme/project/platform-refresh",
+    "createdAt": "2026-02-25T00:00:00.000Z",
+    "updatedAt": "2026-03-18T00:00:00.000Z"
+  }
+]
+```
+
+### `project view --json`
+
+Top-level shape:
+
+```json
+{
+  "id": "project-123",
+  "slugId": "platform-refresh",
+  "name": "Platform Refresh",
+  "description": "Coordinate infrastructure migration",
+  "icon": null,
+  "color": "#3b82f6",
+  "url": "https://linear.app/acme/project/platform-refresh",
+  "status": {
+    "id": "project-status-1",
+    "name": "In Progress",
+    "color": "#f59e0b",
+    "type": "started"
+  },
+  "creator": {
+    "name": "alice.bot",
+    "displayName": "Alice Bot"
+  },
+  "lead": {
+    "name": "bob.dev",
+    "displayName": "Bob Dev"
+  },
+  "priority": 2,
+  "health": "onTrack",
+  "startDate": "2026-03-01",
+  "targetDate": "2026-04-15",
+  "startedAt": "2026-03-02T00:00:00.000Z",
+  "completedAt": null,
+  "canceledAt": null,
+  "createdAt": "2026-02-25T00:00:00.000Z",
+  "updatedAt": "2026-03-18T00:00:00.000Z",
+  "teams": [
+    { "id": "team-1", "key": "ENG", "name": "Engineering" }
+  ],
+  "issueSummary": {
+    "total": 3,
+    "completed": 1,
+    "started": 1,
+    "unstarted": 1,
+    "backlog": 0,
+    "triage": 0,
+    "canceled": 0
+  },
+  "lastUpdate": {
+    "id": "update-1",
+    "body": "OAuth implementation is nearly complete.",
+    "health": "onTrack",
+    "createdAt": "2026-03-17T09:00:00.000Z",
+    "user": {
+      "name": "bob.dev",
+      "displayName": "Bob Dev"
+    }
+  }
+}
+```
+
 ## Compatibility Rules
 
-Within Automation Contract v1:
+Within a given Automation Contract version:
 
 - patch and minor releases may add new fields only
 - removing a field is breaking

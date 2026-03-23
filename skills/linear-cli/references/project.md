@@ -18,12 +18,12 @@ Options:
 
 Commands:
 
-  list                  - List projects                     
-  view, v  <projectId>  - View project details              
-  create                - Create a new Linear project       
-  update   <projectId>  - Update a Linear project           
-  delete   <projectId>  - Delete (trash) a Linear project   
-  label                 - Manage project labels on a project
+  list                        - List projects                     
+  view, v  <projectIdOrSlug>  - View project details              
+  create                      - Create a new Linear project       
+  update   <projectId>        - Update a Linear project           
+  delete   <projectId>        - Delete (trash) a Linear project   
+  label                       - Manage project labels on a project
 ```
 
 ## Subcommands
@@ -57,7 +57,7 @@ Options:
 > View project details
 
 ```
-Usage:   linear project view <projectId>
+Usage:   linear project view <projectIdOrSlug>
 
 Description:
 
@@ -68,7 +68,8 @@ Options:
   -h, --help               - Show this help.                      
   -w, --workspace  <slug>  - Target workspace (uses credentials)  
   -w, --web                - Open in web browser                  
-  -a, --app                - Open in Linear.app
+  -a, --app                - Open in Linear.app                   
+  -j, --json               - Output as JSON
 ```
 
 ### create

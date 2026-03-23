@@ -16,6 +16,18 @@ await cliffySnapshotTest({
   },
 })
 
+await snapshotTest({
+  name: "Project List Command - JSON Validation Error",
+  meta: import.meta,
+  colors: false,
+  canFail: true,
+  args: ["--team", "ENG", "--all-teams", "--json"],
+  denoArgs: commonDenoArgs,
+  async fn() {
+    await listCommand.parse()
+  },
+})
+
 // Test with mock server - Projects list
 await snapshotTest({
   name: "Project List Command - With Mock Projects",

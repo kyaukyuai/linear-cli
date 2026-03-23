@@ -1,11 +1,17 @@
 import { Command } from "@cliffy/command"
 import { renderMarkdown } from "@littletof/charmd"
 import { gql } from "../../__codegen__/gql.ts"
-import { getGraphQLClient } from "../../utils/graphql.ts"
-import { formatRelativeTime } from "../../utils/display.ts"
+import type { GetProjectDetailsQuery } from "../../__codegen__/graphql.ts"
 import { openProjectPage } from "../../utils/actions.ts"
-import { shouldShowSpinner } from "../../utils/hyperlink.ts"
-import { handleError, NotFoundError } from "../../utils/errors.ts"
+import { formatRelativeTime } from "../../utils/display.ts"
+import { NotFoundError } from "../../utils/errors.ts"
+import { getGraphQLClient } from "../../utils/graphql.ts"
+import {
+  handleAutomationCommandError,
+  handleAutomationContractParseError,
+} from "../../utils/json_output.ts"
+import { resolveProjectId } from "../../utils/linear.ts"
+import { withSpinner } from "../../utils/spinner.ts"
 
 const GetProjectDetails = gql(`
   query GetProjectDetails($id: String!) {
@@ -20,6 +26,7 @@ const GetProjectDetails = gql(`
         id
         name
         color
+        type
       }
       creator {
         name
@@ -71,49 +78,154 @@ const GetProjectDetails = gql(`
   }
 `)
 
+type ProjectDetails = NonNullable<GetProjectDetailsQuery["project"]>
+
+type ProjectIssueSummary = {
+  total: number
+  completed: number
+  started: number
+  unstarted: number
+  backlog: number
+  triage: number
+  canceled: number
+}
+
+function getProjectIssueSummary(project: ProjectDetails): ProjectIssueSummary {
+  const issuesByState = project.issues.nodes.reduce(
+    (acc: Record<string, number>, issue) => {
+      const stateType = issue.state.type
+      if (!acc[stateType]) acc[stateType] = 0
+      acc[stateType]++
+      return acc
+    },
+    {} as Record<string, number>,
+  )
+
+  return {
+    total: project.issues.nodes.length,
+    completed: issuesByState.completed || 0,
+    started: issuesByState.started || 0,
+    unstarted: issuesByState.unstarted || 0,
+    backlog: issuesByState.backlog || 0,
+    triage: issuesByState.triage || 0,
+    canceled: issuesByState.canceled || 0,
+  }
+}
+
+function normalizeOptionalText(
+  value: string | null | undefined,
+): string | null {
+  if (value == null || value === "") {
+    return null
+  }
+  return value
+}
+
+function buildProjectJsonPayload(project: ProjectDetails) {
+  const issueSummary = getProjectIssueSummary(project)
+
+  return {
+    id: project.id,
+    slugId: project.slugId,
+    name: project.name,
+    description: normalizeOptionalText(project.description),
+    icon: project.icon,
+    color: project.color,
+    url: project.url,
+    status: {
+      id: project.status.id,
+      name: project.status.name,
+      color: project.status.color,
+      type: project.status.type,
+    },
+    creator: project.creator
+      ? {
+        name: project.creator.name,
+        displayName: project.creator.displayName,
+      }
+      : null,
+    lead: project.lead
+      ? {
+        name: project.lead.name,
+        displayName: project.lead.displayName,
+      }
+      : null,
+    priority: project.priority,
+    health: project.health,
+    startDate: project.startDate,
+    targetDate: project.targetDate,
+    startedAt: project.startedAt,
+    completedAt: project.completedAt,
+    canceledAt: project.canceledAt,
+    createdAt: project.createdAt,
+    updatedAt: project.updatedAt,
+    teams: project.teams.nodes.map((team) => ({
+      id: team.id,
+      key: team.key,
+      name: team.name,
+    })),
+    issueSummary,
+    lastUpdate: project.lastUpdate
+      ? {
+        id: project.lastUpdate.id,
+        body: project.lastUpdate.body,
+        health: project.lastUpdate.health,
+        createdAt: project.lastUpdate.createdAt,
+        user: project.lastUpdate.user
+          ? {
+            name: project.lastUpdate.user.name,
+            displayName: project.lastUpdate.user.displayName,
+          }
+          : null,
+      }
+      : null,
+  }
+}
+
 export const viewCommand = new Command()
   .name("view")
   .description("View project details")
   .alias("v")
-  .arguments("<projectId:string>")
+  .arguments("<projectIdOrSlug:string>")
   .option("-w, --web", "Open in web browser")
   .option("-a, --app", "Open in Linear.app")
-  .action(async (options, projectId) => {
-    const { web, app } = options
+  .option("-j, --json", "Output as JSON")
+  .error((error, cmd) =>
+    handleAutomationContractParseError(error, cmd, "Failed to view project")
+  )
+  .action(async (options, projectIdOrSlug) => {
+    const { web, app, json } = options
 
     if (web || app) {
-      await openProjectPage(projectId, { app, web: !app })
+      await openProjectPage(projectIdOrSlug, { app, web: !app })
       return
     }
 
-    const { Spinner } = await import("@std/cli/unstable-spinner")
-    const showSpinner = shouldShowSpinner()
-    const spinner = showSpinner ? new Spinner() : null
-    spinner?.start()
-
     try {
+      const resolvedProjectId = await resolveProjectId(projectIdOrSlug)
       const client = getGraphQLClient()
-      const result = await client.request(GetProjectDetails, { id: projectId })
-      spinner?.stop()
+      const result = await withSpinner(
+        () => client.request(GetProjectDetails, { id: resolvedProjectId }),
+        { enabled: !json },
+      )
 
       const project = result.project
       if (!project) {
-        throw new NotFoundError("Project", projectId)
+        throw new NotFoundError("Project", projectIdOrSlug)
       }
 
-      // Build the display
-      const lines: string[] = []
+      if (json) {
+        console.log(JSON.stringify(buildProjectJsonPayload(project), null, 2))
+        return
+      }
 
-      // Title with icon and color
+      const lines: string[] = []
       const icon = project.icon ? `${project.icon} ` : ""
       lines.push(`# ${icon}${project.name}`)
       lines.push("")
-
-      // Basic info
       lines.push(`**Slug:** ${project.slugId}`)
       lines.push(`**URL:** ${project.url}`)
 
-      // Status with color styling
       const statusLine = `**Status:** ${project.status.name}`
       if (Deno.stdout.isTerminal()) {
         console.log(`%c${statusLine}%c`, `color: ${project.status.color}`, "")
@@ -121,7 +233,6 @@ export const viewCommand = new Command()
         lines.push(statusLine)
       }
 
-      // Priority
       const priorityMap = {
         0: "None",
         1: "Urgent",
@@ -133,24 +244,19 @@ export const viewCommand = new Command()
         priorityMap[project.priority as keyof typeof priorityMap] || "None"
       lines.push(`**Priority:** ${priority}`)
 
-      // Health
       if (project.health) {
         lines.push(`**Health:** ${project.health}`)
       }
 
-      // People
       if (project.creator) {
         lines.push(
           `**Creator:** ${project.creator.displayName || project.creator.name}`,
         )
       }
       if (project.lead) {
-        lines.push(
-          `**Lead:** ${project.lead.displayName || project.lead.name}`,
-        )
+        lines.push(`**Lead:** ${project.lead.displayName || project.lead.name}`)
       }
 
-      // Dates
       if (project.startDate) {
         lines.push(`**Start Date:** ${project.startDate}`)
       }
@@ -166,12 +272,9 @@ export const viewCommand = new Command()
         )
       }
       if (project.canceledAt) {
-        lines.push(
-          `**Canceled At:** ${formatRelativeTime(project.canceledAt)}`,
-        )
+        lines.push(`**Canceled At:** ${formatRelativeTime(project.canceledAt)}`)
       }
 
-      // Teams
       if (project.teams.nodes.length > 0) {
         const teamList = project.teams.nodes
           .map((team) => `${team.name} (${team.key})`)
@@ -183,7 +286,6 @@ export const viewCommand = new Command()
       lines.push(`**Created:** ${formatRelativeTime(project.createdAt)}`)
       lines.push(`**Updated:** ${formatRelativeTime(project.updatedAt)}`)
 
-      // Description
       if (project.description) {
         lines.push("")
         lines.push("## Description")
@@ -191,13 +293,14 @@ export const viewCommand = new Command()
         lines.push(project.description)
       }
 
-      // Latest update
       if (project.lastUpdate) {
         lines.push("")
         lines.push("## Latest Update")
         lines.push("")
         const update = project.lastUpdate
-        lines.push(`**By:** ${update.user.displayName || update.user.name}`)
+        const displayName = update.user?.displayName || update.user?.name ||
+          "Unknown"
+        lines.push(`**By:** ${displayName}`)
         lines.push(`**When:** ${formatRelativeTime(update.createdAt)}`)
         if (update.health) {
           lines.push(`**Health:** ${update.health}`)
@@ -206,29 +309,20 @@ export const viewCommand = new Command()
         lines.push(update.body)
       }
 
-      // Issue summary
       if (project.issues.nodes.length > 0) {
         lines.push("")
         lines.push("## Issues Summary")
         lines.push("")
 
-        const issuesByState = project.issues.nodes.reduce(
-          (acc: Record<string, number>, issue) => {
-            const stateType = issue.state.type
-            if (!acc[stateType]) acc[stateType] = 0
-            acc[stateType]++
-            return acc
-          },
-          {} as Record<string, number>,
-        )
-
-        const total = project.issues.nodes.length
-        const completed = issuesByState.completed || 0
-        const started = issuesByState.started || 0
-        const unstarted = issuesByState.unstarted || 0
-        const canceled = issuesByState.canceled || 0
-        const backlog = issuesByState.backlog || 0
-        const triage = issuesByState.triage || 0
+        const {
+          total,
+          completed,
+          started,
+          unstarted,
+          backlog,
+          triage,
+          canceled,
+        } = getProjectIssueSummary(project)
 
         lines.push(`**Total Issues:** ${total}`)
         if (completed > 0) lines.push(`**Completed:** ${completed}`)
@@ -248,7 +342,6 @@ export const viewCommand = new Command()
         console.log(markdown)
       }
     } catch (error) {
-      spinner?.stop()
-      handleError(error, "Failed to fetch project details")
+      handleAutomationCommandError(error, "Failed to view project", json)
     }
   })
