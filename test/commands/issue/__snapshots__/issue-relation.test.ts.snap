@@ -11,8 +11,9 @@ Description:
 
 Options:
 
-  -h, --help  - Show this help.  
-  -j, --json  - Output as JSON   
+  -h, --help  - Show this help.                                    
+  -j, --json  - Output as JSON                                     
+  --dry-run   - Preview relation creation without mutating Linear  
 
 Examples:
 
@@ -63,6 +64,31 @@ stderr:
 ""
 `;
 
+snapshot[`Issue Relation Add Command - JSON Dry Run 1`] = `
+stdout:
+'{
+  "success": true,
+  "dryRun": true,
+  "summary": "Would create relation: ENG-123 blocked-by ENG-456",
+  "data": {
+    "command": "issue.relation.add",
+    "direction": "incoming",
+    "relationType": "blocked-by",
+    "issue": {
+      "id": "issue-id-123",
+      "identifier": "ENG-123"
+    },
+    "relatedIssue": {
+      "id": "issue-id-456",
+      "identifier": "ENG-456"
+    }
+  }
+}
+'
+stderr:
+""
+`;
+
 snapshot[`Issue Relation Add Command - JSON Validation Failure 1`] = `
 stdout:
 '{
@@ -94,6 +120,31 @@ stdout:
     "identifier": "ENG-456"
   },
   "relationId": "relation-id-3"
+}
+'
+stderr:
+""
+`;
+
+snapshot[`Issue Relation Delete Command - JSON Dry Run 1`] = `
+stdout:
+'{
+  "success": true,
+  "dryRun": true,
+  "summary": "Would delete relation: ENG-123 blocks ENG-456",
+  "data": {
+    "command": "issue.relation.delete",
+    "direction": "outgoing",
+    "relationType": "blocks",
+    "issue": {
+      "id": "issue-id-123",
+      "identifier": "ENG-123"
+    },
+    "relatedIssue": {
+      "id": "issue-id-456",
+      "identifier": "ENG-456"
+    }
+  }
 }
 '
 stderr:

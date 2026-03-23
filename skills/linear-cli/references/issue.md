@@ -309,6 +309,7 @@ Options:
   --milestone                <milestone>    - Name of the project milestone                                  
   --cycle                    <cycle>        - Cycle name, number, or 'active'                                
   -j, --json                                - Output as JSON                                                 
+  --dry-run                                 - Preview the created issue without creating it                  
   --no-use-default-template                 - Do not use default template for the issue                      
   --no-interactive                          - Disable interactive prompts                                    
   -t, --title                <title>        - Title of the issue
@@ -332,7 +333,8 @@ Options:
   --file           <path>     - Path to a JSON file describing the issue batch  
   --team           <team>     - Team key override for the batch file            
   --project        <project>  - Project name override for the batch file        
-  -j, --json                  - Output as JSON
+  -j, --json                  - Output as JSON                                  
+  --dry-run                   - Preview the batch without creating issues
 ```
 
 ### update
@@ -367,6 +369,7 @@ Options:
   --cycle             <cycle>        - Cycle name, number, or 'active'                                     
   --no-interactive                   - Accepted for compatibility; issue update is always non-interactive  
   -j, --json                         - Output as JSON                                                      
+  --dry-run                          - Preview the update without mutating the issue                       
   -t, --title         <title>        - Title of the issue
 ```
 
@@ -611,7 +614,8 @@ Options:
   --body-file      <path>      - Read comment body from a file (preferred for markdown content)  
   -p, --parent     <id>        - Parent comment ID for replies                                   
   -a, --attach     <filepath>  - Attach a file to the comment (can be used multiple times)       
-  -j, --json                   - Output as JSON
+  -j, --json                   - Output as JSON                                                  
+  --dry-run                    - Preview the comment without creating it
 ```
 
 ##### delete
@@ -718,9 +722,10 @@ Description:
 
 Options:
 
-  -h, --help               - Show this help.                      
-  -w, --workspace  <slug>  - Target workspace (uses credentials)  
-  -j, --json               - Output as JSON                       
+  -h, --help               - Show this help.                                    
+  -w, --workspace  <slug>  - Target workspace (uses credentials)                
+  -j, --json               - Output as JSON                                     
+  --dry-run                - Preview relation creation without mutating Linear  
 
 Examples:
 
@@ -741,9 +746,10 @@ Description:
 
 Options:
 
-  -h, --help               - Show this help.                      
-  -w, --workspace  <slug>  - Target workspace (uses credentials)  
-  -j, --json               - Output as JSON
+  -h, --help               - Show this help.                                    
+  -w, --workspace  <slug>  - Target workspace (uses credentials)                
+  -j, --json               - Output as JSON                                     
+  --dry-run                - Preview relation deletion without mutating Linear
 ```
 
 ##### list

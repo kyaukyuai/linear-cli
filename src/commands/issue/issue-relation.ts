@@ -9,6 +9,7 @@ import {
   handleAutomationCommandError,
   handleAutomationContractParseError,
 } from "../../utils/json_output.ts"
+import { emitDryRunOutput } from "../../utils/dry_run.ts"
 import { withSpinner } from "../../utils/spinner.ts"
 import {
   CliError,
@@ -17,6 +18,7 @@ import {
   NotFoundError,
   ValidationError,
 } from "../../utils/errors.ts"
+import { buildIssueRelationDryRunPayload } from "./issue-dry-run-payload.ts"
 
 const RELATION_TYPES = ["blocks", "blocked-by", "related", "duplicate"] as const
 type RelationType = (typeof RELATION_TYPES)[number]
@@ -119,6 +121,7 @@ const addRelationCommand = new Command()
   .description("Add a relation between two issues")
   .arguments("<issueId:string> <relationType:string> <relatedIssueId:string>")
   .option("-j, --json", "Output as JSON")
+  .option("--dry-run", "Preview relation creation without mutating Linear")
   .error((error, cmd) => {
     handleAutomationContractParseError(
       error,
@@ -142,22 +145,49 @@ const addRelationCommand = new Command()
     "Mark issue as duplicate",
     "linear issue relation add ENG-123 duplicate ENG-100",
   )
-  .action(async ({ json }, issueIdArg, relationTypeArg, relatedIssueIdArg) => {
-    try {
-      const relationType = relationTypeArg.toLowerCase() as RelationType
-      if (!RELATION_TYPES.includes(relationType)) {
-        throw new ValidationError(
-          `Invalid relation type: ${relationTypeArg}`,
-          { suggestion: `Must be one of: ${RELATION_TYPES.join(", ")}` },
+  .action(
+    async (
+      { json, dryRun },
+      issueIdArg,
+      relationTypeArg,
+      relatedIssueIdArg,
+    ) => {
+      try {
+        const relationType = relationTypeArg.toLowerCase() as RelationType
+        if (!RELATION_TYPES.includes(relationType)) {
+          throw new ValidationError(
+            `Invalid relation type: ${relationTypeArg}`,
+            { suggestion: `Must be one of: ${RELATION_TYPES.join(", ")}` },
+          )
+        }
+
+        const { issue, relatedIssue } = await resolveRelationIssueRefs(
+          issueIdArg,
+          relatedIssueIdArg,
         )
-      }
+        const previewPayload = buildIssueRelationDryRunPayload({
+          command: "issue.relation.add",
+          direction: relationType === "blocked-by" ? "incoming" : "outgoing",
+          relationType,
+          issue,
+          relatedIssue,
+        })
+        if (dryRun) {
+          emitDryRunOutput({
+            json,
+            summary:
+              `Would create relation: ${issue.identifier} ${relationType} ${relatedIssue.identifier}`,
+            data: previewPayload,
+            lines: [
+              `Issue: ${issue.identifier}`,
+              `Related issue: ${relatedIssue.identifier}`,
+              `Relation: ${relationType}`,
+            ],
+          })
+          return
+        }
 
-      const { issue, relatedIssue } = await resolveRelationIssueRefs(
-        issueIdArg,
-        relatedIssueIdArg,
-      )
-
-      const createRelationMutation = gql(`
+        const createRelationMutation = gql(`
         mutation CreateIssueRelation($input: IssueRelationCreateInput!) {
           issueRelationCreate(input: $input) {
             success
@@ -168,54 +198,56 @@ const addRelationCommand = new Command()
         }
       `)
 
-      const client = getGraphQLClient()
-      const data = await withSpinner(
-        () => {
-          const apiType = getApiRelationType(relationType)
-          const [fromId, toId] = relationType === "blocked-by"
-            ? [relatedIssue.id, issue.id]
-            : [issue.id, relatedIssue.id]
+        const client = getGraphQLClient()
+        const data = await withSpinner(
+          () => {
+            const apiType = getApiRelationType(relationType)
+            const [fromId, toId] = relationType === "blocked-by"
+              ? [relatedIssue.id, issue.id]
+              : [issue.id, relatedIssue.id]
 
-          return client.request(createRelationMutation, {
-            input: {
-              issueId: fromId,
-              relatedIssueId: toId,
-              type: apiType,
-            },
-          })
-        },
-        { enabled: !json },
-      )
+            return client.request(createRelationMutation, {
+              input: {
+                issueId: fromId,
+                relatedIssueId: toId,
+                type: apiType,
+              },
+            })
+          },
+          { enabled: !json },
+        )
 
-      if (!data.issueRelationCreate.success) {
-        throw new CliError("Failed to create relation")
+        if (!data.issueRelationCreate.success) {
+          throw new CliError("Failed to create relation")
+        }
+
+        const payload = buildRelationMutationPayload(
+          issue,
+          relatedIssue,
+          relationType,
+          data.issueRelationCreate.issueRelation?.id,
+        )
+
+        if (json) {
+          console.log(JSON.stringify(payload, null, 2))
+          return
+        }
+
+        console.log(
+          `✓ Created relation: ${issue.identifier} ${relationType} ${relatedIssue.identifier}`,
+        )
+      } catch (error) {
+        handleAutomationCommandError(error, "Failed to create relation", json)
       }
-
-      const payload = buildRelationMutationPayload(
-        issue,
-        relatedIssue,
-        relationType,
-        data.issueRelationCreate.issueRelation?.id,
-      )
-
-      if (json) {
-        console.log(JSON.stringify(payload, null, 2))
-        return
-      }
-
-      console.log(
-        `✓ Created relation: ${issue.identifier} ${relationType} ${relatedIssue.identifier}`,
-      )
-    } catch (error) {
-      handleAutomationCommandError(error, "Failed to create relation", json)
-    }
-  })
+    },
+  )
 
 const deleteRelationCommand = new Command()
   .name("delete")
   .description("Delete a relation between two issues")
   .arguments("<issueId:string> <relationType:string> <relatedIssueId:string>")
   .option("-j, --json", "Output as JSON")
+  .option("--dry-run", "Preview relation deletion without mutating Linear")
   .error((error, cmd) => {
     handleAutomationContractParseError(
       error,
@@ -223,21 +255,48 @@ const deleteRelationCommand = new Command()
       "Failed to delete issue relation",
     )
   })
-  .action(async ({ json }, issueIdArg, relationTypeArg, relatedIssueIdArg) => {
-    try {
-      const relationType = relationTypeArg.toLowerCase() as RelationType
-      if (!RELATION_TYPES.includes(relationType)) {
-        throw new ValidationError(
-          `Invalid relation type: ${relationTypeArg}`,
-          { suggestion: `Must be one of: ${RELATION_TYPES.join(", ")}` },
+  .action(
+    async (
+      { json, dryRun },
+      issueIdArg,
+      relationTypeArg,
+      relatedIssueIdArg,
+    ) => {
+      try {
+        const relationType = relationTypeArg.toLowerCase() as RelationType
+        if (!RELATION_TYPES.includes(relationType)) {
+          throw new ValidationError(
+            `Invalid relation type: ${relationTypeArg}`,
+            { suggestion: `Must be one of: ${RELATION_TYPES.join(", ")}` },
+          )
+        }
+        const { issue, relatedIssue } = await resolveRelationIssueRefs(
+          issueIdArg,
+          relatedIssueIdArg,
         )
-      }
-      const { issue, relatedIssue } = await resolveRelationIssueRefs(
-        issueIdArg,
-        relatedIssueIdArg,
-      )
+        const previewPayload = buildIssueRelationDryRunPayload({
+          command: "issue.relation.delete",
+          direction: relationType === "blocked-by" ? "incoming" : "outgoing",
+          relationType,
+          issue,
+          relatedIssue,
+        })
+        if (dryRun) {
+          emitDryRunOutput({
+            json,
+            summary:
+              `Would delete relation: ${issue.identifier} ${relationType} ${relatedIssue.identifier}`,
+            data: previewPayload,
+            lines: [
+              `Issue: ${issue.identifier}`,
+              `Related issue: ${relatedIssue.identifier}`,
+              `Relation: ${relationType}`,
+            ],
+          })
+          return
+        }
 
-      const findRelationQuery = gql(`
+        const findRelationQuery = gql(`
         query FindIssueRelation($issueId: String!) {
           issue(id: $issueId) {
             relations {
@@ -251,31 +310,31 @@ const deleteRelationCommand = new Command()
         }
       `)
 
-      const client = getGraphQLClient()
-      const relationId = await withSpinner(
-        async () => {
-          const apiType = getApiRelationType(relationType)
-          const [fromId, toId] = relationType === "blocked-by"
-            ? [relatedIssue.id, issue.id]
-            : [issue.id, relatedIssue.id]
+        const client = getGraphQLClient()
+        const relationId = await withSpinner(
+          async () => {
+            const apiType = getApiRelationType(relationType)
+            const [fromId, toId] = relationType === "blocked-by"
+              ? [relatedIssue.id, issue.id]
+              : [issue.id, relatedIssue.id]
 
-          const findData = await client.request(findRelationQuery, {
-            issueId: fromId,
-          })
+            const findData = await client.request(findRelationQuery, {
+              issueId: fromId,
+            })
 
-          const relation = findData.issue?.relations.nodes.find(
-            (r: { type: string; relatedIssue: { id: string } }) =>
-              r.type === apiType && r.relatedIssue.id === toId,
-          )
-
-          if (!relation) {
-            throw new NotFoundError(
-              "Relation",
-              `${relationType} between ${issue.identifier} and ${relatedIssue.identifier}`,
+            const relation = findData.issue?.relations.nodes.find(
+              (r: { type: string; relatedIssue: { id: string } }) =>
+                r.type === apiType && r.relatedIssue.id === toId,
             )
-          }
 
-          const deleteRelationMutation = gql(`
+            if (!relation) {
+              throw new NotFoundError(
+                "Relation",
+                `${relationType} between ${issue.identifier} and ${relatedIssue.identifier}`,
+              )
+            }
+
+            const deleteRelationMutation = gql(`
             mutation DeleteIssueRelation($id: String!) {
               issueRelationDelete(id: $id) {
                 success
@@ -283,38 +342,39 @@ const deleteRelationCommand = new Command()
             }
           `)
 
-          const deleteData = await client.request(deleteRelationMutation, {
-            id: relation.id,
-          })
+            const deleteData = await client.request(deleteRelationMutation, {
+              id: relation.id,
+            })
 
-          if (!deleteData.issueRelationDelete.success) {
-            throw new CliError("Failed to delete relation")
-          }
+            if (!deleteData.issueRelationDelete.success) {
+              throw new CliError("Failed to delete relation")
+            }
 
-          return relation.id
-        },
-        { enabled: !json },
-      )
+            return relation.id
+          },
+          { enabled: !json },
+        )
 
-      const payload = buildRelationMutationPayload(
-        issue,
-        relatedIssue,
-        relationType,
-        relationId,
-      )
+        const payload = buildRelationMutationPayload(
+          issue,
+          relatedIssue,
+          relationType,
+          relationId,
+        )
 
-      if (json) {
-        console.log(JSON.stringify(payload, null, 2))
-        return
+        if (json) {
+          console.log(JSON.stringify(payload, null, 2))
+          return
+        }
+
+        console.log(
+          `✓ Deleted relation: ${issue.identifier} ${relationType} ${relatedIssue.identifier}`,
+        )
+      } catch (error) {
+        handleAutomationCommandError(error, "Failed to delete relation", json)
       }
-
-      console.log(
-        `✓ Deleted relation: ${issue.identifier} ${relationType} ${relatedIssue.identifier}`,
-      )
-    } catch (error) {
-      handleAutomationCommandError(error, "Failed to delete relation", json)
-    }
-  })
+    },
+  )
 
 const listRelationsCommand = new Command()
   .name("list")

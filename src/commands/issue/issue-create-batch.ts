@@ -15,12 +15,14 @@ import {
   handleAutomationCommandError,
   handleAutomationContractParseError,
 } from "../../utils/json_output.ts"
+import { emitDryRunOutput } from "../../utils/dry_run.ts"
 import { withSpinner } from "../../utils/spinner.ts"
 import { CliError, NotFoundError, ValidationError } from "../../utils/errors.ts"
 import {
   buildIssueWritePayload,
   type IssueWritePayloadIssue,
 } from "./issue-write-payload.ts"
+import { buildIssueCreateBatchDryRunPayload } from "./issue-dry-run-payload.ts"
 
 type BatchIssueSpec = {
   title: string
@@ -320,6 +322,7 @@ export const createBatchCommand = new Command()
     "Project name override for the batch file",
   )
   .option("-j, --json", "Output as JSON")
+  .option("--dry-run", "Preview the batch without creating issues")
   .error((error, cmd) => {
     handleAutomationContractParseError(
       error,
@@ -327,7 +330,7 @@ export const createBatchCommand = new Command()
       "Failed to create issue batch",
     )
   })
-  .action(async ({ file, team, project, json }) => {
+  .action(async ({ file, team, project, json, dryRun }) => {
     const jsonOutput = json === true
 
     try {
@@ -365,16 +368,51 @@ export const createBatchCommand = new Command()
         }
       }
 
+      const parentInput = await buildIssueCreateInput(batch.parent, {
+        teamKey,
+        teamId,
+        projectId,
+      })
+      const childInputs = await Promise.all(
+        batch.children.map((child) =>
+          buildIssueCreateInput(child, {
+            teamKey,
+            teamId,
+            projectId,
+            parentId: "(resolved at execution time)",
+          })
+        ),
+      )
+      if (dryRun) {
+        emitDryRunOutput({
+          json,
+          summary: `Would create ${
+            batch.children.length + 1
+          } issues in batch for ${teamKey}`,
+          data: buildIssueCreateBatchDryRunPayload({
+            team: { id: teamId, key: teamKey },
+            project: {
+              id: projectId ?? null,
+              nameOrSlug: effectiveProject ?? null,
+            },
+            parent: parentInput,
+            children: childInputs,
+          }),
+          lines: [
+            `Team: ${teamKey}`,
+            `Parent: ${batch.parent.title}`,
+            `Children: ${batch.children.length}`,
+          ],
+        })
+        return
+      }
+
       const createdParentAndChildren: ReturnType<
         typeof buildIssueWritePayload
       >[] = []
 
       const parent = await createIssue(
-        await buildIssueCreateInput(batch.parent, {
-          teamKey,
-          teamId,
-          projectId,
-        }),
+        parentInput,
         { json: jsonOutput, message: "Creating parent issue" },
       )
       const parentPayload = buildIssueWritePayload(parent)

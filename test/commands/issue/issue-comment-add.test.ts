@@ -238,3 +238,32 @@ await snapshotTest({
     }
   },
 })
+
+await snapshotTest({
+  name: "Issue Comment Add Command - JSON Dry Run",
+  meta: import.meta,
+  colors: false,
+  args: ["TEST-123", "--body", "Tracking follow-up", "--json", "--dry-run"],
+  denoArgs: commonDenoArgs,
+  async fn() {
+    const { cleanup } = await setupMockLinearServer([
+      {
+        queryName: "GetIssueId",
+        variables: { id: "TEST-123" },
+        response: {
+          data: {
+            issue: {
+              id: "issue-uuid-123",
+            },
+          },
+        },
+      },
+    ])
+
+    try {
+      await commentAddCommand.parse()
+    } finally {
+      await cleanup()
+    }
+  },
+})

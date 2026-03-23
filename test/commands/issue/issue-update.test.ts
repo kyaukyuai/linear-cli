@@ -261,6 +261,58 @@ await snapshotTest({
 })
 
 await snapshotTest({
+  name: "Issue Update Command - JSON Dry Run",
+  meta: import.meta,
+  colors: false,
+  args: [
+    "ENG-123",
+    "--title",
+    "Updated from bot",
+    "--due-date",
+    "2026-04-01",
+    "--assignee",
+    "self",
+    "--comment",
+    "Investigating now",
+    "--json",
+    "--dry-run",
+  ],
+  denoArgs: commonDenoArgs,
+  async fn() {
+    const { cleanup } = await setupMockLinearServer([
+      {
+        queryName: "GetTeamIdByKey",
+        variables: { team: "ENG" },
+        response: {
+          data: {
+            teams: {
+              nodes: [{ id: "team-eng-id" }],
+            },
+          },
+        },
+      },
+      {
+        queryName: "GetViewerId",
+        variables: {},
+        response: {
+          data: {
+            viewer: {
+              id: "user-self-123",
+            },
+          },
+        },
+      },
+    ], { LINEAR_TEAM_ID: "ENG" })
+
+    try {
+      await updateCommand.parse()
+    } finally {
+      await cleanup()
+    }
+  },
+})
+
+await snapshotTest({
   name: "Issue Update Command - With Comment",
   meta: import.meta,
   colors: false,

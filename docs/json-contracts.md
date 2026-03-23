@@ -20,6 +20,15 @@ It does not apply to:
 
 Automation Contract v1 does not yet make `--dry-run` part of the stable command surface. However, future write commands that adopt `--dry-run` must use the same preview contract.
 
+Current adopters:
+
+- `linear issue create --dry-run`
+- `linear issue update --dry-run`
+- `linear issue comment add --dry-run`
+- `linear issue relation add --dry-run`
+- `linear issue relation delete --dry-run`
+- `linear issue create-batch --dry-run`
+
 Rules:
 
 - successful `--dry-run` exits with code `0`

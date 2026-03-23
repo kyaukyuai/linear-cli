@@ -288,6 +288,135 @@ await snapshotTest({
 })
 
 await snapshotTest({
+  name: "Issue Create Batch Command - JSON Dry Run",
+  meta: import.meta,
+  colors: false,
+  denoArgs: commonDenoArgs,
+  async fn() {
+    const batchFile = await Deno.makeTempFile({ suffix: ".json" })
+    await Deno.writeTextFile(
+      batchFile,
+      JSON.stringify({
+        team: "ENG",
+        project: "Roadmap",
+        parent: {
+          title: "Manager bot rollout",
+          description: "Coordinate rollout work",
+          assignee: "self",
+          state: "started",
+          priority: 2,
+          labels: ["automation"],
+        },
+        children: [
+          {
+            title: "Add issue list JSON",
+            description: "Expose machine-readable list output",
+            assignee: "self",
+          },
+          {
+            title: "Add issue view JSON",
+            dueDate: "2026-04-15",
+            priority: 3,
+          },
+        ],
+      }),
+    )
+
+    const { cleanup } = await setupMockLinearServer([
+      {
+        queryName: "GetTeamIdByKey",
+        variables: { team: "ENG" },
+        response: {
+          data: {
+            teams: {
+              nodes: [{ id: "team-eng-id" }],
+            },
+          },
+        },
+      },
+      {
+        queryName: "GetProjectIdByName",
+        variables: { name: "Roadmap" },
+        response: {
+          data: {
+            projects: {
+              nodes: [{ id: "project-roadmap-id" }],
+            },
+          },
+        },
+      },
+      {
+        queryName: "GetViewerId",
+        response: {
+          data: {
+            viewer: {
+              id: "user-self-123",
+            },
+          },
+        },
+      },
+      {
+        queryName: "GetWorkflowStates",
+        variables: { teamKey: "ENG" },
+        response: {
+          data: {
+            team: {
+              id: "team-eng-id",
+              key: "ENG",
+              name: "Engineering",
+              states: {
+                nodes: [
+                  {
+                    id: "state-started",
+                    name: "In Progress",
+                    type: "started",
+                    position: 1,
+                    color: "#f87462",
+                    description: null,
+                    createdAt: "2026-03-01T00:00:00Z",
+                    updatedAt: "2026-03-01T00:00:00Z",
+                    archivedAt: null,
+                    team: {
+                      id: "team-eng-id",
+                      key: "ENG",
+                      name: "Engineering",
+                    },
+                    inheritedFrom: null,
+                  },
+                ],
+              },
+            },
+          },
+        },
+      },
+      {
+        queryName: "GetIssueLabelIdByNameForTeam",
+        variables: { name: "automation", teamKey: "ENG" },
+        response: {
+          data: {
+            issueLabels: {
+              nodes: [{ id: "label-automation-id", name: "automation" }],
+            },
+          },
+        },
+      },
+    ])
+
+    try {
+      await createBatchCommand.parse([
+        "--file",
+        batchFile,
+        "--json",
+        "--dry-run",
+      ])
+    } finally {
+      await cleanup()
+      await Deno.remove(batchFile)
+    }
+  },
+})
+
+await snapshotTest({
   name: "Issue Create Batch Command - Partial Failure",
   meta: import.meta,
   colors: false,

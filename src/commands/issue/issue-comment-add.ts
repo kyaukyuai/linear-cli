@@ -1,5 +1,6 @@
 import { Command } from "@cliffy/command"
 import { Input } from "@cliffy/prompt"
+import { basename } from "@std/path"
 import {
   getIssueIdentifier,
   resolveIssueInternalId,
@@ -14,9 +15,11 @@ import {
   handleAutomationCommandError,
   handleAutomationContractParseError,
 } from "../../utils/json_output.ts"
+import { emitDryRunOutput } from "../../utils/dry_run.ts"
 import { ValidationError } from "../../utils/errors.ts"
 import { createIssueComment } from "./issue-comment-utils.ts"
 import { buildIssueCommentPayload } from "./issue-comment-payload.ts"
+import { buildIssueCommentDryRunPayload } from "./issue-dry-run-payload.ts"
 
 export const commentAddCommand = new Command()
   .name("add")
@@ -34,11 +37,12 @@ export const commentAddCommand = new Command()
     { collect: true },
   )
   .option("-j, --json", "Output as JSON")
+  .option("--dry-run", "Preview the comment without creating it")
   .error((error, cmd) => {
     handleAutomationContractParseError(error, cmd, "Failed to add comment")
   })
   .action(async (options, issueId, bodyArg) => {
-    const { body, bodyFile, parent, attach, json } = options
+    const { body, bodyFile, parent, attach, json, dryRun } = options
 
     try {
       // Validate that body sources are not both provided
@@ -97,30 +101,33 @@ export const commentAddCommand = new Command()
           await validateFilePath(filepath)
         }
 
-        // Upload files
-        for (const filepath of attachments) {
-          const result = await uploadFile(filepath, {
-            showProgress: !json && shouldShowSpinner(),
-          })
-          uploadedFiles.push({
-            filename: result.filename,
-            assetUrl: result.assetUrl,
-            isImage: result.contentType.startsWith("image/"),
-          })
-          if (!json) {
-            console.log(`✓ Uploaded ${result.filename}`)
+        if (!dryRun) {
+          // Upload files
+          for (const filepath of attachments) {
+            const result = await uploadFile(filepath, {
+              showProgress: !json && shouldShowSpinner(),
+            })
+            uploadedFiles.push({
+              filename: result.filename,
+              assetUrl: result.assetUrl,
+              isImage: result.contentType.startsWith("image/"),
+            })
+            if (!json) {
+              console.log(`✓ Uploaded ${result.filename}`)
+            }
           }
         }
       }
 
       // If no body provided and no attachments, prompt for it
       if (!commentBody && uploadedFiles.length === 0) {
-        if (json) {
+        if (json || dryRun) {
           throw new ValidationError(
             "Comment body cannot be empty",
             {
-              suggestion:
-                "Provide --body or --body-file when requesting --json output.",
+              suggestion: dryRun
+                ? "Provide --body, --body-file, or --attach when using --dry-run."
+                : "Provide --body or --body-file when requesting --json output.",
             },
           )
         }
@@ -156,6 +163,34 @@ export const commentAddCommand = new Command()
 
       if (commentBody == null) {
         throw new ValidationError("Comment body cannot be empty")
+      }
+
+      if (dryRun) {
+        const previewPayload = buildIssueCommentDryRunPayload({
+          issue: {
+            id: resolvedIssueId,
+            identifier: resolvedIdentifier,
+          },
+          body: commentBody,
+          parentId: parent,
+          attachments: attachments.map((filepath) => ({
+            path: filepath,
+            filename: basename(filepath),
+          })),
+        })
+        emitDryRunOutput({
+          json,
+          summary: `Would add comment to ${resolvedIdentifier}`,
+          data: previewPayload,
+          lines: [
+            `Issue: ${resolvedIdentifier}`,
+            ...(parent != null ? [`Reply to: ${parent}`] : []),
+            ...(attachments.length > 0
+              ? [`Attachments: ${attachments.length}`]
+              : []),
+          ],
+        })
+        return
       }
 
       const input: {
