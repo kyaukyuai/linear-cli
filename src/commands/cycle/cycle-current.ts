@@ -1,15 +1,21 @@
 import { Command } from "@cliffy/command"
 import { renderMarkdown } from "@littletof/charmd"
 import { gql } from "../../__codegen__/gql.ts"
+import { buildCycleDetailJsonPayload } from "./cycle-json.ts"
 import { getGraphQLClient } from "../../utils/graphql.ts"
 import { getTeamIdByKey, requireTeamKey } from "../../utils/linear.ts"
 import { withSpinner } from "../../utils/spinner.ts"
-import { handleError, NotFoundError } from "../../utils/errors.ts"
+import { NotFoundError } from "../../utils/errors.ts"
+import {
+  handleAutomationCommandError,
+  handleAutomationContractParseError,
+} from "../../utils/json_output.ts"
 
 const GetActiveCycle = gql(`
   query GetActiveCycle($teamId: String!) {
     team(id: $teamId) {
       id
+      key
       name
       activeCycle {
         id
@@ -19,7 +25,12 @@ const GetActiveCycle = gql(`
         startsAt
         endsAt
         completedAt
+        isActive
+        isFuture
+        isPast
         progress
+        createdAt
+        updatedAt
         issues {
           nodes {
             id
@@ -27,6 +38,8 @@ const GetActiveCycle = gql(`
             title
             state {
               name
+              type
+              color
             }
           }
         }
@@ -40,6 +53,13 @@ export const currentCommand = new Command()
   .description("Show the current active cycle for a team")
   .option("--team <team:string>", "Team key (defaults to current team)")
   .option("-j, --json", "Output as JSON")
+  .error((error, cmd) =>
+    handleAutomationContractParseError(
+      error,
+      cmd,
+      "Failed to get current cycle",
+    )
+  )
   .action(async ({ team, json }) => {
     try {
       const teamKey = requireTeamKey(team)
@@ -69,18 +89,11 @@ export const currentCommand = new Command()
 
       if (json) {
         console.log(JSON.stringify(
-          {
-            number: cycle.number,
-            name: cycle.name ?? `Cycle ${cycle.number}`,
-            startsAt: cycle.startsAt,
-            endsAt: cycle.endsAt,
-            progress: cycle.progress,
-            issues: issues.map((issue) => ({
-              identifier: issue.identifier,
-              title: issue.title,
-              state: issue.state.name,
-            })),
-          },
+          buildCycleDetailJsonPayload(cycle, {
+            id: result.team.id,
+            key: result.team.key,
+            name: result.team.name,
+          }),
           null,
           2,
         ))
@@ -121,6 +134,6 @@ export const currentCommand = new Command()
         }
       }
     } catch (error) {
-      handleError(error, "Failed to get current cycle")
+      handleAutomationCommandError(error, "Failed to get current cycle", json)
     }
   })

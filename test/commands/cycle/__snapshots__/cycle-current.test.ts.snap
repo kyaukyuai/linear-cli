@@ -46,21 +46,54 @@ stderr:
 snapshot[`Cycle Current Command - JSON Output 1`] = `
 stdout:
 '{
+  "id": "cycle-1",
   "number": 42,
   "name": "Sprint 42",
+  "description": "Working on authentication improvements",
   "startsAt": "2026-01-13T00:00:00Z",
   "endsAt": "2026-01-27T00:00:00Z",
+  "completedAt": null,
+  "status": "active",
+  "isActive": true,
+  "isFuture": false,
+  "isPast": false,
   "progress": 0.35,
+  "createdAt": "2026-01-10T00:00:00Z",
+  "updatedAt": "2026-01-20T00:00:00Z",
+  "team": {
+    "id": "team-1",
+    "key": "ENG",
+    "name": "Engineering"
+  },
+  "issueSummary": {
+    "total": 2,
+    "completed": 0,
+    "started": 1,
+    "unstarted": 1,
+    "backlog": 0,
+    "triage": 0,
+    "canceled": 0
+  },
   "issues": [
     {
+      "id": "issue-1",
       "identifier": "ENG-123",
       "title": "Fix login bug",
-      "state": "In Progress"
+      "state": {
+        "name": "In Progress",
+        "type": "started",
+        "color": "#f59e0b"
+      }
     },
     {
+      "id": "issue-2",
       "identifier": "ENG-124",
       "title": "Add SSO support",
-      "state": "Todo"
+      "state": {
+        "name": "Todo",
+        "type": "unstarted",
+        "color": "#94a3b8"
+      }
     }
   ]
 }

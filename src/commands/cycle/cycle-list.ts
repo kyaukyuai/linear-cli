@@ -2,12 +2,17 @@ import { Command } from "@cliffy/command"
 import { unicodeWidth } from "@std/cli"
 import { green } from "@std/fmt/colors"
 import { gql } from "../../__codegen__/gql.ts"
+import { buildCycleListJsonPayload, getCycleStatusLabel } from "./cycle-json.ts"
 import { getGraphQLClient } from "../../utils/graphql.ts"
 import { padDisplay } from "../../utils/display.ts"
 import { getTeamIdByKey, requireTeamKey } from "../../utils/linear.ts"
 import { withSpinner } from "../../utils/spinner.ts"
 import { header, muted } from "../../utils/styling.ts"
-import { handleError, NotFoundError } from "../../utils/errors.ts"
+import { NotFoundError } from "../../utils/errors.ts"
+import {
+  handleAutomationCommandError,
+  handleAutomationContractParseError,
+} from "../../utils/json_output.ts"
 import { pipeToUserPager, shouldUsePager } from "../../utils/pager.ts"
 
 const GetTeamCycles = gql(`
@@ -32,19 +37,6 @@ const GetTeamCycles = gql(`
   }
 `)
 
-function getCycleStatus(cycle: {
-  isActive: boolean
-  isFuture: boolean
-  isPast: boolean
-  completedAt?: string | null
-}): string {
-  if (cycle.isActive) return "Active"
-  if (cycle.isFuture) return "Upcoming"
-  if (cycle.completedAt != null) return "Completed"
-  if (cycle.isPast) return "Past"
-  return "Unknown"
-}
-
 function formatDate(dateString: string): string {
   return dateString.slice(0, 10)
 }
@@ -53,8 +45,12 @@ export const listCommand = new Command()
   .name("list")
   .description("List cycles for a team")
   .option("--team <team:string>", "Team key (defaults to current team)")
+  .option("-j, --json", "Output as JSON")
   .option("--no-pager", "Disable automatic paging for long output")
-  .action(async ({ team, pager }) => {
+  .error((error, cmd) =>
+    handleAutomationContractParseError(error, cmd, "Failed to list cycles")
+  )
+  .action(async ({ team, pager, json }) => {
     try {
       const usePager = pager !== false
       const teamKey = requireTeamKey(team)
@@ -64,20 +60,34 @@ export const listCommand = new Command()
       }
 
       const client = getGraphQLClient()
-      const result = await withSpinner(() =>
-        client.request(GetTeamCycles, { teamId })
+      const result = await withSpinner(
+        () => client.request(GetTeamCycles, { teamId }),
+        { enabled: !json },
       )
 
       const cycles = result.team?.cycles?.nodes || []
 
       if (cycles.length === 0) {
-        console.log("No cycles found for this team.")
+        if (json) {
+          console.log("[]")
+        } else {
+          console.log("No cycles found for this team.")
+        }
         return
       }
 
       const sortedCycles = [...cycles].sort((a, b) =>
         b.startsAt.localeCompare(a.startsAt)
       )
+
+      if (json) {
+        console.log(JSON.stringify(
+          sortedCycles.map(buildCycleListJsonPayload),
+          null,
+          2,
+        ))
+        return
+      }
 
       const { columns } = Deno.stdout.isTerminal()
         ? Deno.consoleSize()
@@ -114,12 +124,13 @@ export const listCommand = new Command()
       outputLines.push(header(headerCells.join(" ")))
 
       for (const cycle of sortedCycles) {
+        const cyclePayload = buildCycleListJsonPayload(cycle)
         const name = cycle.name || `Cycle ${cycle.number}`
         const truncName = name.length > nameWidth
           ? name.slice(0, nameWidth - 3) + "..."
           : padDisplay(name, nameWidth)
 
-        const status = getCycleStatus(cycle)
+        const status = getCycleStatusLabel(cyclePayload.status)
         const statusStr = padDisplay(status, STATUS_WIDTH)
         let statusDisplay: string
         if (cycle.isActive) {
@@ -145,6 +156,6 @@ export const listCommand = new Command()
         console.log(output)
       }
     } catch (error) {
-      handleError(error, "Failed to list cycles")
+      handleAutomationCommandError(error, "Failed to list cycles", json)
     }
   })

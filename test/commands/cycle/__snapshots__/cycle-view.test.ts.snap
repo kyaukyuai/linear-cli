@@ -13,8 +13,25 @@ Options:
 
   -h, --help          - Show this help.                      
   --team      <team>  - Team key (defaults to current team)  
+  -j, --json          - Output as JSON                       
 
 "
+stderr:
+""
+`;
+
+snapshot[`Cycle View Command - JSON Missing Cycle Reference 1`] = `
+stdout:
+'{
+  "success": false,
+  "error": {
+    "type": "unknown_error",
+    "message": "Missing argument(s): cycleRef",
+    "suggestion": null,
+    "context": "Failed to view cycle"
+  }
+}
+'
 stderr:
 ""
 `;
@@ -54,6 +71,65 @@ stderr:
 ""
 `;
 
+snapshot[`Cycle View Command - JSON Output 1`] = `
+stdout:
+'{
+  "id": "cycle-2",
+  "number": 13,
+  "name": "Sprint 13",
+  "description": "Focus on performance improvements",
+  "startsAt": "2026-02-24T00:00:00.000Z",
+  "endsAt": "2026-03-10T00:00:00.000Z",
+  "completedAt": null,
+  "status": "active",
+  "isActive": true,
+  "isFuture": false,
+  "isPast": false,
+  "progress": 0.5,
+  "createdAt": "2020-01-01T10:00:00Z",
+  "updatedAt": "2020-01-15T14:30:00Z",
+  "team": {
+    "id": "team-eng-id",
+    "key": "ENG",
+    "name": "Engineering"
+  },
+  "issueSummary": {
+    "total": 2,
+    "completed": 0,
+    "started": 1,
+    "unstarted": 1,
+    "backlog": 0,
+    "triage": 0,
+    "canceled": 0
+  },
+  "issues": [
+    {
+      "id": "issue-1",
+      "identifier": "ENG-412",
+      "title": "Fix auth token refresh",
+      "state": {
+        "name": "In Progress",
+        "type": "started",
+        "color": "#f59e0b"
+      }
+    },
+    {
+      "id": "issue-2",
+      "identifier": "ENG-398",
+      "title": "Add dark mode toggle",
+      "state": {
+        "name": "Todo",
+        "type": "unstarted",
+        "color": "#94a3b8"
+      }
+    }
+  ]
+}
+'
+stderr:
+""
+`;
+
 snapshot[`Cycle View Command - Cycle With No Issues 1`] = `
 stdout:
 "# Sprint 14
@@ -69,6 +145,22 @@ stdout:
 
 _No issues in this cycle yet._
 "
+stderr:
+""
+`;
+
+snapshot[`Cycle View Command - JSON Cycle Not Found 1`] = `
+stdout:
+'{
+  "success": false,
+  "error": {
+    "type": "not_found",
+    "message": "Cycle not found: missing",
+    "suggestion": null,
+    "context": "Failed to view cycle"
+  }
+}
+'
 stderr:
 ""
 `;

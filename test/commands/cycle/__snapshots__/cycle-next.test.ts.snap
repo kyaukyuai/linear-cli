@@ -13,6 +13,7 @@ Options:
 
   -h, --help          - Show this help.                      
   --team      <team>  - Team key (defaults to current team)  
+  -j, --json          - Output as JSON                       
 
 "
 stderr:
@@ -40,9 +41,66 @@ stderr:
 ""
 `;
 
+snapshot[`Cycle Next Command - JSON Output 1`] = `
+stdout:
+'{
+  "id": "cycle-2",
+  "number": 43,
+  "name": "Sprint 43",
+  "description": "Planning for Q2 features",
+  "startsAt": "2026-01-27T00:00:00Z",
+  "endsAt": "2026-02-10T00:00:00Z",
+  "completedAt": null,
+  "status": "upcoming",
+  "isActive": false,
+  "isFuture": true,
+  "isPast": false,
+  "progress": 0,
+  "createdAt": "2026-01-15T00:00:00Z",
+  "updatedAt": "2026-01-20T00:00:00Z",
+  "team": {
+    "id": "team-1",
+    "key": "ENG",
+    "name": "Engineering"
+  },
+  "issueSummary": {
+    "total": 1,
+    "completed": 0,
+    "started": 0,
+    "unstarted": 1,
+    "backlog": 0,
+    "triage": 0,
+    "canceled": 0
+  },
+  "issues": [
+    {
+      "id": "issue-1",
+      "identifier": "ENG-200",
+      "title": "Plan Q2 roadmap",
+      "state": {
+        "name": "Todo",
+        "type": "unstarted",
+        "color": "#94a3b8"
+      }
+    }
+  ]
+}
+'
+stderr:
+""
+`;
+
 snapshot[`Cycle Next Command - No Upcoming Cycle 1`] = `
 stdout:
 "No upcoming cycle found for team ENG
+"
+stderr:
+""
+`;
+
+snapshot[`Cycle Next Command - JSON No Upcoming Cycle 1`] = `
+stdout:
+"null
 "
 stderr:
 ""

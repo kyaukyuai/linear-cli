@@ -1,15 +1,21 @@
 import { Command } from "@cliffy/command"
 import { renderMarkdown } from "@littletof/charmd"
 import { gql } from "../../__codegen__/gql.ts"
+import { buildCycleDetailJsonPayload } from "./cycle-json.ts"
 import { getGraphQLClient } from "../../utils/graphql.ts"
 import { getTeamIdByKey, requireTeamKey } from "../../utils/linear.ts"
 import { withSpinner } from "../../utils/spinner.ts"
-import { handleError, NotFoundError } from "../../utils/errors.ts"
+import { NotFoundError } from "../../utils/errors.ts"
+import {
+  handleAutomationCommandError,
+  handleAutomationContractParseError,
+} from "../../utils/json_output.ts"
 
 const GetUpcomingCycles = gql(`
   query GetUpcomingCycles($teamId: String!) {
     team(id: $teamId) {
       id
+      key
       name
       cycles(filter: { startsAt: { gt: "now" } }, first: 10) {
         nodes {
@@ -19,6 +25,13 @@ const GetUpcomingCycles = gql(`
           description
           startsAt
           endsAt
+          completedAt
+          isActive
+          isFuture
+          isPast
+          progress
+          createdAt
+          updatedAt
           issues {
             nodes {
               id
@@ -26,6 +39,8 @@ const GetUpcomingCycles = gql(`
               title
               state {
                 name
+                type
+                color
               }
             }
           }
@@ -39,7 +54,11 @@ export const nextCommand = new Command()
   .name("next")
   .description("Show the next upcoming cycle for a team")
   .option("--team <team:string>", "Team key (defaults to current team)")
-  .action(async ({ team }) => {
+  .option("-j, --json", "Output as JSON")
+  .error((error, cmd) =>
+    handleAutomationContractParseError(error, cmd, "Failed to get next cycle")
+  )
+  .action(async ({ team, json }) => {
     try {
       const teamKey = requireTeamKey(team)
       const teamId = await getTeamIdByKey(teamKey)
@@ -48,8 +67,9 @@ export const nextCommand = new Command()
       }
 
       const client = getGraphQLClient()
-      const result = await withSpinner(() =>
-        client.request(GetUpcomingCycles, { teamId })
+      const result = await withSpinner(
+        () => client.request(GetUpcomingCycles, { teamId }),
+        { enabled: !json },
       )
 
       const cycles = (result.team?.cycles?.nodes || [])
@@ -59,7 +79,27 @@ export const nextCommand = new Command()
       const cycle = cycles[0]
 
       if (!cycle) {
-        console.log(`No upcoming cycle found for team ${teamKey}`)
+        if (json) {
+          console.log("null")
+        } else {
+          console.log(`No upcoming cycle found for team ${teamKey}`)
+        }
+        return
+      }
+
+      if (json) {
+        const teamRef = result.team == null
+          ? { id: teamId, key: teamKey, name: teamKey }
+          : {
+            id: result.team.id,
+            key: result.team.key,
+            name: result.team.name,
+          }
+        console.log(JSON.stringify(
+          buildCycleDetailJsonPayload(cycle, teamRef),
+          null,
+          2,
+        ))
         return
       }
 
@@ -95,6 +135,6 @@ export const nextCommand = new Command()
         }
       }
     } catch (error) {
-      handleError(error, "Failed to get next cycle")
+      handleAutomationCommandError(error, "Failed to get next cycle", json)
     }
   })

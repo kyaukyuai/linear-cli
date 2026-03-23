@@ -49,20 +49,33 @@ await snapshotTest({
                 startsAt: "2026-01-13T00:00:00Z",
                 endsAt: "2026-01-27T00:00:00Z",
                 completedAt: null,
+                isActive: true,
+                isFuture: false,
+                isPast: false,
                 progress: 0.35,
+                createdAt: "2026-01-10T00:00:00Z",
+                updatedAt: "2026-01-20T00:00:00Z",
                 issues: {
                   nodes: [
                     {
                       id: "issue-1",
                       identifier: "ENG-123",
                       title: "Fix login bug",
-                      state: { name: "In Progress" },
+                      state: {
+                        name: "In Progress",
+                        type: "started",
+                        color: "#f59e0b",
+                      },
                     },
                     {
                       id: "issue-2",
                       identifier: "ENG-124",
                       title: "Add SSO support",
-                      state: { name: "Todo" },
+                      state: {
+                        name: "Todo",
+                        type: "unstarted",
+                        color: "#94a3b8",
+                      },
                     },
                   ],
                 },
@@ -112,6 +125,7 @@ await snapshotTest({
           data: {
             team: {
               id: "team-1",
+              key: "ENG",
               name: "Engineering",
               activeCycle: {
                 id: "cycle-1",
@@ -121,20 +135,33 @@ await snapshotTest({
                 startsAt: "2026-01-13T00:00:00Z",
                 endsAt: "2026-01-27T00:00:00Z",
                 completedAt: null,
+                isActive: true,
+                isFuture: false,
+                isPast: false,
                 progress: 0.35,
+                createdAt: "2026-01-10T00:00:00Z",
+                updatedAt: "2026-01-20T00:00:00Z",
                 issues: {
                   nodes: [
                     {
                       id: "issue-1",
                       identifier: "ENG-123",
                       title: "Fix login bug",
-                      state: { name: "In Progress" },
+                      state: {
+                        name: "In Progress",
+                        type: "started",
+                        color: "#f59e0b",
+                      },
                     },
                     {
                       id: "issue-2",
                       identifier: "ENG-124",
                       title: "Add SSO support",
-                      state: { name: "Todo" },
+                      state: {
+                        name: "Todo",
+                        type: "unstarted",
+                        color: "#94a3b8",
+                      },
                     },
                   ],
                 },
@@ -184,6 +211,7 @@ await snapshotTest({
           data: {
             team: {
               id: "team-1",
+              key: "ENG",
               name: "Engineering",
               activeCycle: null,
             },
