@@ -181,13 +181,16 @@ linear issue start     # create/switch to issue branch and mark as started
 linear issue create    # create a new issue (interactive prompts)
 linear issue create -t "title" -d "description"  # create with flags
 linear issue create -t "title" --team ENG --json  # emit machine-readable created issue data
+linear issue create -t "title" --team ENG --dry-run --json  # preview the created issue payload
 linear issue create-batch --file ./issue-batch.json --json  # create a parent issue and child issues from JSON
+linear issue create-batch --file ./issue-batch.json --dry-run --json  # preview a batch without creating issues
 linear issue create --project "My Project" --milestone "Phase 1"  # create with milestone
 linear issue update    # update an issue (interactive prompts)
 linear issue update ENG-123 --due-date 2026-03-31  # set an issue due date
 linear issue update ENG-123 --clear-due-date       # clear an issue due date
 linear issue update ENG-123 --assignee self --json  # emit machine-readable updated issue data
 linear issue update ENG-123 --state started --comment "Work has started"  # update and comment in one command
+linear issue update ENG-123 --state started --comment "Work has started" --dry-run  # preview issue updates
 linear issue update ENG-123 --milestone "Phase 2"  # set milestone on existing issue
 linear issue delete    # delete an issue
 linear issue comment list          # list comments on current issue
@@ -195,8 +198,11 @@ linear issue comment add           # add a comment to current issue
 linear issue comment add ENG-123 "follow-up"  # add a comment with positional body
 linear issue comment add -p <id>   # reply to a specific comment
 linear issue comment add ENG-123 --body "follow-up" --json  # emit created comment data
+linear issue comment add ENG-123 --body "follow-up" --dry-run --json  # preview comment creation
 linear issue relation add ENG-123 blocked-by ENG-100 --json  # emit machine-readable relation creation data
+linear issue relation add ENG-123 blocked-by ENG-100 --dry-run --json  # preview relation creation
 linear issue relation delete ENG-123 blocked-by ENG-100 --json  # emit machine-readable relation deletion data
+linear issue relation delete ENG-123 blocked-by ENG-100 --dry-run --json  # preview relation deletion
 linear issue relation list ENG-123 --json  # emit dependency graph for an issue
 linear issue comment update <id>   # update a comment
 linear issue commits               # show all commits for an issue (jj only)

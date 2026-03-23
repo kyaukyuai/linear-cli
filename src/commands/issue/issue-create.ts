@@ -31,8 +31,10 @@ import {
   handleAutomationCommandError,
   handleAutomationContractParseError,
 } from "../../utils/json_output.ts"
+import { emitDryRunOutput } from "../../utils/dry_run.ts"
 import { withSpinner } from "../../utils/spinner.ts"
 import { CliError, NotFoundError, ValidationError } from "../../utils/errors.ts"
+import { buildIssueCreateDryRunPayload } from "./issue-dry-run-payload.ts"
 import { buildIssueWritePayload } from "./issue-write-payload.ts"
 
 type IssueLabel = { id: string; name: string; color: string }
@@ -507,6 +509,7 @@ export const createCommand = new Command()
     "Cycle name, number, or 'active'",
   )
   .option("-j, --json", "Output as JSON")
+  .option("--dry-run", "Preview the created issue without creating it")
   .option(
     "--no-use-default-template",
     "Do not use default template for the issue",
@@ -537,10 +540,12 @@ export const createCommand = new Command()
         interactive,
         title,
         json,
+        dryRun,
       },
     ) => {
       try {
-        interactive = interactive && Deno.stdout.isTerminal() && !json
+        interactive = interactive && Deno.stdout.isTerminal() && !json &&
+          !dryRun
 
         // Validate that description and descriptionFile are not both provided
         if (description && descriptionFile) {
@@ -548,7 +553,7 @@ export const createCommand = new Command()
             "Cannot specify both --description and --description-file",
           )
         }
-        if (json && start) {
+        if (json && start && !dryRun) {
           throw new ValidationError(
             "Cannot use --json with --start",
             {
@@ -858,6 +863,33 @@ export const createCommand = new Command()
           stateId,
           useDefaultTemplate,
           description: finalDescription,
+        }
+        const createPreviewPayload = buildIssueCreateDryRunPayload({
+          input,
+          team: { id: teamId, key: team },
+          project: {
+            id: (projectId || parentData?.projectId) ?? null,
+            nameOrSlug: effectiveProject ?? null,
+          },
+          parent: parentData == null ? null : {
+            id: parentId!,
+            identifier: parentData.identifier,
+            title: parentData.title,
+          },
+          start: start === true,
+        })
+        if (dryRun) {
+          emitDryRunOutput({
+            json,
+            summary: `Would create issue in ${team}`,
+            data: createPreviewPayload,
+            lines: [
+              `Title: ${title}`,
+              `Team: ${team}`,
+              ...(start ? ["Start work after creation: yes"] : []),
+            ],
+          })
+          return
         }
         if (!json) {
           console.log(`Creating issue in ${team}`)

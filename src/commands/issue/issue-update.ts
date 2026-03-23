@@ -17,11 +17,13 @@ import {
   handleAutomationCommandError,
   handleAutomationContractParseError,
 } from "../../utils/json_output.ts"
+import { emitDryRunOutput } from "../../utils/dry_run.ts"
 import { withSpinner } from "../../utils/spinner.ts"
 import { CliError, NotFoundError, ValidationError } from "../../utils/errors.ts"
 import { buildIssueWritePayload } from "./issue-write-payload.ts"
 import { buildIssueCommentPayload } from "./issue-comment-payload.ts"
 import { createIssueComment } from "./issue-comment-utils.ts"
+import { buildIssueUpdateDryRunPayload } from "./issue-dry-run-payload.ts"
 
 export const updateCommand = new Command()
   .name("update")
@@ -93,6 +95,7 @@ export const updateCommand = new Command()
     "Accepted for compatibility; issue update is always non-interactive",
   )
   .option("-j, --json", "Output as JSON")
+  .option("--dry-run", "Preview the update without mutating the issue")
   .option("-t, --title <title:string>", "Title of the issue")
   .error((error, cmd) => {
     handleAutomationContractParseError(error, cmd, "Failed to update issue")
@@ -117,6 +120,7 @@ export const updateCommand = new Command()
         cycle,
         title,
         json,
+        dryRun,
       },
       issueIdArg,
     ) => {
@@ -287,6 +291,12 @@ export const updateCommand = new Command()
         if (assigneeId !== undefined) input.assigneeId = assigneeId
         if (dueDate !== undefined) input.dueDate = dueDate
         if (clearDueDate) input.dueDate = null
+        let parentPreview:
+          | {
+            id: string
+            identifier: string
+          }
+          | null = null
         if (parent !== undefined) {
           const parentIdentifier = await getIssueIdentifier(parent)
           if (!parentIdentifier) {
@@ -299,6 +309,10 @@ export const updateCommand = new Command()
             throw new NotFoundError("Parent issue", parentIdentifier)
           }
           input.parentId = parentId
+          parentPreview = {
+            id: parentId,
+            identifier: parentIdentifier,
+          }
         }
         if (priority !== undefined) input.priority = priority
         if (estimate !== undefined) input.estimate = estimate
@@ -311,6 +325,24 @@ export const updateCommand = new Command()
         }
         if (cycleId !== undefined) input.cycleId = cycleId
         if (stateId !== undefined) input.stateId = stateId
+        if (dryRun) {
+          const previewPayload = buildIssueUpdateDryRunPayload({
+            issue: { identifier: issueId },
+            input,
+            parent: parentPreview,
+            comment,
+          })
+          emitDryRunOutput({
+            json,
+            summary: `Would update issue ${issueId}`,
+            data: previewPayload,
+            lines: [
+              `Issue: ${issueId}`,
+              ...(comment != null ? ["Would add comment after update"] : []),
+            ],
+          })
+          return
+        }
 
         if (!json) {
           console.log(`Updating issue ${issueId}`)

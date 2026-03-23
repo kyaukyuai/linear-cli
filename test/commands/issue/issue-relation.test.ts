@@ -152,6 +152,38 @@ await snapshotTest({
 })
 
 await snapshotTest({
+  name: "Issue Relation Add Command - JSON Dry Run",
+  meta: import.meta,
+  colors: false,
+  args: ["add", "ENG-123", "blocked-by", "ENG-456", "--json", "--dry-run"],
+  denoArgs: commonDenoArgs,
+  async fn() {
+    const { cleanup } = await setupMockLinearServer([
+      {
+        queryName: "GetIssueId",
+        variables: { id: "ENG-123" },
+        response: {
+          data: { issue: { id: "issue-id-123" } },
+        },
+      },
+      {
+        queryName: "GetIssueId",
+        variables: { id: "ENG-456" },
+        response: {
+          data: { issue: { id: "issue-id-456" } },
+        },
+      },
+    ])
+
+    try {
+      await relationCommand.parse()
+    } finally {
+      await cleanup()
+    }
+  },
+})
+
+await snapshotTest({
   name: "Issue Relation Add Command - JSON Validation Failure",
   meta: import.meta,
   colors: false,
@@ -213,6 +245,38 @@ await snapshotTest({
               success: true,
             },
           },
+        },
+      },
+    ])
+
+    try {
+      await relationCommand.parse()
+    } finally {
+      await cleanup()
+    }
+  },
+})
+
+await snapshotTest({
+  name: "Issue Relation Delete Command - JSON Dry Run",
+  meta: import.meta,
+  colors: false,
+  args: ["delete", "ENG-123", "blocks", "ENG-456", "--json", "--dry-run"],
+  denoArgs: commonDenoArgs,
+  async fn() {
+    const { cleanup } = await setupMockLinearServer([
+      {
+        queryName: "GetIssueId",
+        variables: { id: "ENG-123" },
+        response: {
+          data: { issue: { id: "issue-id-123" } },
+        },
+      },
+      {
+        queryName: "GetIssueId",
+        variables: { id: "ENG-456" },
+        response: {
+          data: { issue: { id: "issue-id-456" } },
         },
       },
     ])

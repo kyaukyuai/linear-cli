@@ -16,6 +16,7 @@ Options:
   --team      <team>     - Team key override for the batch file            
   --project   <project>  - Project name override for the batch file        
   -j, --json             - Output as JSON                                  
+  --dry-run              - Preview the batch without creating issues       
 
 "
 stderr:
@@ -101,6 +102,91 @@ stdout:
   "counts": {
     "totalCreated": 3,
     "childCount": 2
+  }
+}
+'
+stderr:
+""
+`;
+
+snapshot[`Issue Create Batch Command - JSON Dry Run 1`] = `
+stdout:
+'{
+  "success": true,
+  "dryRun": true,
+  "summary": "Would create 3 issues in batch for ENG",
+  "data": {
+    "command": "issue.create-batch",
+    "team": {
+      "id": "team-eng-id",
+      "key": "ENG"
+    },
+    "project": {
+      "id": "project-roadmap-id",
+      "nameOrSlug": "Roadmap"
+    },
+    "parent": {
+      "title": "Manager bot rollout",
+      "description": "Coordinate rollout work",
+      "assigneeId": "user-self-123",
+      "dueDate": null,
+      "parent": null,
+      "priority": 2,
+      "estimate": null,
+      "labelIds": [
+        "label-automation-id"
+      ],
+      "teamId": "team-eng-id",
+      "projectId": "project-roadmap-id",
+      "projectMilestoneId": null,
+      "cycleId": null,
+      "stateId": "state-started",
+      "useDefaultTemplate": true
+    },
+    "children": [
+      {
+        "title": "Add issue list JSON",
+        "description": "Expose machine-readable list output",
+        "assigneeId": "user-self-123",
+        "dueDate": null,
+        "parent": {
+          "id": "(created parent issue id)",
+          "identifier": "(parent issue created in batch)"
+        },
+        "priority": null,
+        "estimate": null,
+        "labelIds": [],
+        "teamId": "team-eng-id",
+        "projectId": "project-roadmap-id",
+        "projectMilestoneId": null,
+        "cycleId": null,
+        "stateId": null,
+        "useDefaultTemplate": true
+      },
+      {
+        "title": "Add issue view JSON",
+        "description": null,
+        "assigneeId": null,
+        "dueDate": "2026-04-15",
+        "parent": {
+          "id": "(created parent issue id)",
+          "identifier": "(parent issue created in batch)"
+        },
+        "priority": 3,
+        "estimate": null,
+        "labelIds": [],
+        "teamId": "team-eng-id",
+        "projectId": "project-roadmap-id",
+        "projectMilestoneId": null,
+        "cycleId": null,
+        "stateId": null,
+        "useDefaultTemplate": true
+      }
+    ],
+    "counts": {
+      "totalPlanned": 3,
+      "childCount": 2
+    }
   }
 }
 '

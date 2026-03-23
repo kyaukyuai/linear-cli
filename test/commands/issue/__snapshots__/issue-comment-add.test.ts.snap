@@ -66,3 +66,25 @@ stdout:
 stderr:
 ""
 `;
+
+snapshot[`Issue Comment Add Command - JSON Dry Run 1`] = `
+stdout:
+'{
+  "success": true,
+  "dryRun": true,
+  "summary": "Would add comment to TEST-123",
+  "data": {
+    "command": "issue.comment.add",
+    "issue": {
+      "id": "issue-uuid-123",
+      "identifier": "TEST-123"
+    },
+    "body": "Tracking follow-up",
+    "parentId": null,
+    "attachments": []
+  }
+}
+'
+stderr:
+""
+`;

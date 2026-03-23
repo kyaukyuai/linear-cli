@@ -29,6 +29,7 @@ Options:
   --cycle             <cycle>        - Cycle name, number, or 'active'                                     
   --no-interactive                   - Accepted for compatibility; issue update is always non-interactive  
   -j, --json                         - Output as JSON                                                      
+  --dry-run                          - Preview the update without mutating the issue                       
   -t, --title         <title>        - Title of the issue                                                  
 
 "
@@ -103,6 +104,32 @@ stdout:
       "name": "alice.bot",
       "displayName": "Alice Bot"
     }
+  }
+}
+'
+stderr:
+""
+`;
+
+snapshot[`Issue Update Command - JSON Dry Run 1`] = `
+stdout:
+'{
+  "success": true,
+  "dryRun": true,
+  "summary": "Would update issue ENG-123",
+  "data": {
+    "command": "issue.update",
+    "issue": {
+      "identifier": "ENG-123"
+    },
+    "changes": {
+      "title": "Updated from bot",
+      "assigneeId": "user-self-123",
+      "dueDate": "2026-04-01",
+      "teamId": "team-eng-id",
+      "parent": null
+    },
+    "comment": "Investigating now"
   }
 }
 '

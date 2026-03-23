@@ -27,6 +27,7 @@ Options:
   --milestone                <milestone>    - Name of the project milestone                                  
   --cycle                    <cycle>        - Cycle name, number, or 'active'                                
   -j, --json                                - Output as JSON                                                 
+  --dry-run                                 - Preview the created issue without creating it                  
   --no-use-default-template                 - Do not use default template for the issue                      
   --no-interactive                          - Disable interactive prompts                                    
   -t, --title                <title>        - Title of the issue                                             
@@ -74,6 +75,50 @@ stdout:
   "state": {
     "name": "In Progress",
     "color": "#f87462"
+  }
+}
+'
+stderr:
+""
+`;
+
+snapshot[`Issue Create Command - JSON Dry Run 1`] = `
+stdout:
+'{
+  "success": true,
+  "dryRun": true,
+  "summary": "Would create issue in ENG",
+  "data": {
+    "command": "issue.create",
+    "start": false,
+    "team": {
+      "id": "team-eng-id",
+      "key": "ENG"
+    },
+    "project": {
+      "id": null,
+      "nameOrSlug": null
+    },
+    "input": {
+      "title": "Bot-created issue",
+      "description": "Created from automation",
+      "assigneeId": "user-self-123",
+      "dueDate": "2026-03-31",
+      "parent": {
+        "id": "parent-issue-id",
+        "identifier": "ENG-220",
+        "title": "Parent Issue"
+      },
+      "priority": null,
+      "estimate": null,
+      "labelIds": [],
+      "teamId": "team-eng-id",
+      "projectId": null,
+      "projectMilestoneId": null,
+      "cycleId": null,
+      "stateId": "state-started",
+      "useDefaultTemplate": true
+    }
   }
 }
 '
