@@ -296,6 +296,77 @@ await snapshotTest({
 })
 
 await snapshotTest({
+  name: "Issue List Command - All Shortcut With Explicit State",
+  meta: import.meta,
+  colors: false,
+  args: ["--all", "--state", "started", "--json"],
+  denoArgs: commonDenoArgs,
+  async fn() {
+    const { cleanup } = await setupMockLinearServer([
+      {
+        queryName: "GetIssuesForState",
+        variables: {
+          sort: [
+            { workflowState: { order: "Descending" } },
+            {
+              priority: {
+                nulls: "last",
+                order: "Descending",
+              },
+            },
+            {
+              manual: {
+                nulls: "last",
+                order: "Ascending",
+              },
+            },
+          ],
+          filter: {
+            and: [
+              {
+                team: {
+                  key: {
+                    eq: "ENG",
+                  },
+                },
+              },
+              {
+                state: {
+                  type: {
+                    in: ["started"],
+                  },
+                },
+              },
+            ],
+          },
+          first: 50,
+        },
+        response: {
+          data: {
+            issues: {
+              nodes: [],
+              pageInfo: {
+                hasNextPage: false,
+                endCursor: null,
+              },
+            },
+          },
+        },
+      },
+    ], {
+      LINEAR_TEAM_ID: "ENG",
+      LINEAR_ISSUE_SORT: "priority",
+    })
+
+    try {
+      await listCommand.parse()
+    } finally {
+      await cleanup()
+    }
+  },
+})
+
+await snapshotTest({
   name: "Issue List Command - Backlog Includes Unassigned By Default",
   meta: import.meta,
   colors: false,
@@ -542,6 +613,18 @@ await snapshotTest({
   colors: false,
   canFail: true,
   args: ["--all", "--assignee", "ykakui", "--json"],
+  denoArgs: commonDenoArgs,
+  async fn() {
+    await listCommand.parse()
+  },
+})
+
+await snapshotTest({
+  name: "Issue List Command - All States State Conflict",
+  meta: import.meta,
+  colors: false,
+  canFail: true,
+  args: ["--all-states", "--state", "started", "--json"],
   denoArgs: commonDenoArgs,
   async fn() {
     await listCommand.parse()
