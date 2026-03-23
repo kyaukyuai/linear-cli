@@ -94,12 +94,16 @@ export const viewCommand = new Command()
         shouldShowSpinner() && !json,
         showComments || json,
       )
+      const normalizedDescription = normalizeIssueViewDescription(
+        issueData.description,
+      )
 
       if (json) {
         console.log(
           JSON.stringify(
             buildIssueViewJsonPayload(issueData, {
               includeComments: showComments,
+              description: normalizedDescription,
             }),
             null,
             2,
@@ -112,7 +116,7 @@ export const viewCommand = new Command()
       const shouldDownload = download && getOption("download_images") !== false
       if (shouldDownload) {
         urlToPath = await downloadIssueImages(
-          issueData.description,
+          normalizedDescription,
           issueData.comments,
         )
       }
@@ -138,7 +142,7 @@ export const viewCommand = new Command()
           ? configuredHyperlinkFormat
           : undefined
 
-      let { description } = issueData
+      let description = normalizedDescription
       let { comments: issueComments } = issueData
       const { title } = issueData
 
@@ -278,7 +282,10 @@ export const viewCommand = new Command()
 
 function buildIssueViewJsonPayload(
   issueData: IssueDetails,
-  options: { includeComments: boolean },
+  options: {
+    includeComments: boolean
+    description: string | null
+  },
 ) {
   const relationBuckets = buildRelationBuckets(issueData)
   const comments = issueData.comments ?? []
@@ -288,7 +295,7 @@ function buildIssueViewJsonPayload(
     id: issueData.id,
     identifier: issueData.identifier,
     title: issueData.title,
-    description: issueData.description ?? null,
+    description: options.description,
     url: issueData.url,
     branchName: issueData.branchName,
     dueDate: issueData.dueDate ?? null,
@@ -310,6 +317,23 @@ function buildIssueViewJsonPayload(
     commentsSummary: buildCommentsSummary(comments, commentsHasMore),
     attachments: issueData.attachments ?? [],
   }
+}
+
+function normalizeIssueViewDescription(
+  description: string | null | undefined,
+): string | null {
+  if (description == null) {
+    return null
+  }
+
+  // Older issues can contain literal "\n" sequences instead of line breaks.
+  if (description.includes("\n") || !description.includes("\\n")) {
+    return description
+  }
+
+  return description
+    .replaceAll("\\r\\n", "\n")
+    .replaceAll("\\n", "\n")
 }
 
 function buildRelationBuckets(issueData: IssueDetails) {

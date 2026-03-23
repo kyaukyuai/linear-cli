@@ -1,3 +1,5 @@
+import { assertEquals } from "@std/assert"
+import { fromFileUrl } from "@std/path"
 import { snapshotTest as cliffySnapshotTest } from "@cliffy/testing"
 import { snapshotTest } from "../../utils/snapshot_with_fake_time.ts"
 import { viewCommand } from "../../../src/commands/issue/issue-view.ts"
@@ -6,6 +8,9 @@ import { MockLinearServer } from "../../utils/mock_linear_server.ts"
 // Common Deno args for permissions
 const denoArgs = ["--allow-all", "--quiet"]
 const fakeTime = "2025-08-17T15:30:00Z"
+const repoRoot = fromFileUrl(new URL("../../../", import.meta.url))
+const denoJsonPath = fromFileUrl(new URL("../../../deno.json", import.meta.url))
+const mainPath = fromFileUrl(new URL("../../../src/main.ts", import.meta.url))
 
 // Test help output
 await cliffySnapshotTest({
@@ -871,4 +876,95 @@ await snapshotTest({
       Deno.env.delete("LINEAR_API_KEY")
     }
   },
+})
+
+Deno.test("Issue View Command - JSON output normalizes escaped description newlines", async () => {
+  const server = new MockLinearServer([
+    {
+      queryName: "GetIssueDetailsWithComments",
+      variables: { id: "TEST-902" },
+      response: {
+        data: {
+          issue: {
+            id: "issue-902",
+            identifier: "TEST-902",
+            title: "Document rollout notes",
+            description:
+              "First paragraph\\n\\n## Checklist\\n- share release note\\n- notify support",
+            url:
+              "https://linear.app/test-team/issue/TEST-902/document-rollout-notes",
+            branchName: null,
+            assignee: null,
+            dueDate: null,
+            priority: null,
+            priorityLabel: null,
+            state: {
+              name: "Todo",
+              color: "#bec2c8",
+            },
+            project: null,
+            projectMilestone: null,
+            cycle: null,
+            parent: null,
+            children: {
+              nodes: [],
+            },
+            comments: {
+              nodes: [],
+              pageInfo: {
+                hasNextPage: false,
+              },
+            },
+            relations: {
+              nodes: [],
+            },
+            inverseRelations: {
+              nodes: [],
+            },
+            attachments: {
+              nodes: [],
+            },
+          },
+        },
+      },
+    },
+  ])
+
+  try {
+    await server.start()
+
+    const output = await new Deno.Command("deno", {
+      args: [
+        "run",
+        "-c",
+        denoJsonPath,
+        "--allow-all",
+        "--quiet",
+        mainPath,
+        "issue",
+        "view",
+        "TEST-902",
+        "--json",
+      ],
+      cwd: repoRoot,
+      env: {
+        LINEAR_GRAPHQL_ENDPOINT: server.getEndpoint(),
+        LINEAR_API_KEY: "Bearer test-token",
+        NO_COLOR: "1",
+      },
+      stdout: "piped",
+      stderr: "piped",
+    }).output()
+
+    assertEquals(output.success, true)
+    assertEquals(new TextDecoder().decode(output.stderr), "")
+
+    const result = JSON.parse(new TextDecoder().decode(output.stdout))
+    assertEquals(
+      result.description,
+      "First paragraph\n\n## Checklist\n- share release note\n- notify support",
+    )
+  } finally {
+    await server.stop()
+  }
 })
