@@ -31,6 +31,16 @@ stderr:
 ""
 `;
 
+snapshot[`Cycle List Command - With No Pager Flag 1`] = `
+stdout:
+"#  NAME      START      END        STATUS   
+13 Sprint 13 2026-02-24 2026-03-10 Active   
+12 Sprint 12 2026-02-10 2026-02-24 Completed
+"
+stderr:
+""
+`;
+
 snapshot[`Cycle List Command - No Cycles Found 1`] = `
 stdout:
 "No cycles found for this team.
