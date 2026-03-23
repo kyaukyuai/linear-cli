@@ -25,6 +25,22 @@ stderr:
 ""
 `;
 
+snapshot[`Project List Command - JSON Validation Error 1`] = `
+stdout:
+'{
+  "success": false,
+  "error": {
+    "type": "validation_error",
+    "message": "Cannot use both --team and --all-teams flags",
+    "suggestion": null,
+    "context": "Failed to list projects"
+  }
+}
+'
+stderr:
+""
+`;
+
 snapshot[`Project List Command - No Projects Found 1`] = `
 stdout:
 "No projects found.

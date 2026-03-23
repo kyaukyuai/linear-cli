@@ -85,6 +85,8 @@ const AUTOMATION_CONTRACT_CONTEXT_BY_PATH = new Map<string, string>([
   ["linear issue parent", "Failed to fetch parent issue"],
   ["linear issue children", "Failed to fetch child issues"],
   ["linear issue create-batch", "Failed to create issue batch"],
+  ["linear project list", "Failed to list projects"],
+  ["linear project view", "Failed to view project"],
 ])
 
 export function maybeHandleAutomationContractParseError(

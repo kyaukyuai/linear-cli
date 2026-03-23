@@ -12,7 +12,11 @@ import { LINEAR_WEB_BASE_URL } from "../../const.ts"
 import { getTeamKey } from "../../utils/linear.ts"
 import { getOption } from "../../config.ts"
 import { shouldShowSpinner } from "../../utils/hyperlink.ts"
-import { handleError, ValidationError } from "../../utils/errors.ts"
+import { ValidationError } from "../../utils/errors.ts"
+import {
+  handleAutomationCommandError,
+  handleAutomationContractParseError,
+} from "../../utils/json_output.ts"
 
 const GetProjects = gql(`
   query GetProjects($filter: ProjectFilter, $first: Int, $after: String) {
@@ -69,6 +73,9 @@ export const listCommand = new Command()
   .option("-a, --app", "Open in Linear.app")
   .option("-j, --json", "Output as JSON")
   .option("--no-pager", "Disable automatic paging for long output")
+  .error((error, cmd) =>
+    handleAutomationContractParseError(error, cmd, "Failed to list projects")
+  )
   .action(async ({ team, allTeams, status, web, app, json }) => {
     if (web || app) {
       let workspace = getOption("workspace")
@@ -373,6 +380,6 @@ export const listCommand = new Command()
       }
     } catch (error) {
       spinner?.stop()
-      handleError(error, "Failed to fetch projects")
+      handleAutomationCommandError(error, "Failed to list projects", json)
     }
   })

@@ -100,11 +100,12 @@ compared to upstream, this fork adds and maintains several capabilities aimed at
 - workspace-aware auth management with keyring migration and default workspace support
 - generated AI-agent skill docs, Claude plugin metadata, npm publishing, and Homebrew tap release plumbing
 
-## automation contract v1
+## automation contract
 
 for bot and org-wide automation use cases, `linear-cli` defines a stable JSON contract for a focused automation tier.
 
-- in scope: `issue list/view/create/update --json`, `issue relation add/delete/list --json`, `issue comment add --json`, `team members --json`, `issue parent/children/create-batch --json`
+- v1 in scope: `issue list/view/create/update --json`, `issue relation add/delete/list --json`, `issue comment add --json`, `team members --json`, `issue parent/children/create-batch --json`
+- v2 additions: `project list --json`, `project view --json`
 - out of scope: non-JSON terminal output, `linear api`, and other `--json` commands that are not listed above
 
 the contract fixes top-level success payload shapes and requires machine-readable failure payloads for the automation tier. see [docs/json-contracts.md](docs/json-contracts.md) for the full contract, compatibility rules, and example payloads. that guarantee also covers parser and argument validation failures when `--json` is present.
@@ -245,7 +246,9 @@ linear team autolinks  # configure GitHub repository autolinks for Linear issues
 
 ```bash
 linear project list    # list projects
-linear project view    # view project details
+linear project list --json  # emit contract-stable project summaries
+linear project view <projectIdOrSlug>    # view project details
+linear project view <projectIdOrSlug> --json  # emit contract-stable project details
 linear project create --name "Platform Refresh" --team ENG --dry-run --json  # preview a project create
 linear project update <projectIdOrSlug> --name "Platform Refresh" --dry-run  # preview a project update
 linear project delete <projectIdOrSlug> --dry-run  # preview a project deletion

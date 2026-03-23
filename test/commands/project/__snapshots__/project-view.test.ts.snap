@@ -3,7 +3,7 @@ export const snapshot = {};
 snapshot[`Project View Command - Help Text 1`] = `
 stdout:
 "
-Usage: view <projectId>
+Usage: view <projectIdOrSlug>
 
 Description:
 
@@ -14,8 +14,25 @@ Options:
   -h, --help  - Show this help.      
   -w, --web   - Open in web browser  
   -a, --app   - Open in Linear.app   
+  -j, --json  - Output as JSON       
 
 "
+stderr:
+""
+`;
+
+snapshot[`Project View Command - JSON Missing Project Reference 1`] = `
+stdout:
+'{
+  "success": false,
+  "error": {
+    "type": "unknown_error",
+    "message": "Missing argument(s): projectIdOrSlug",
+    "suggestion": null,
+    "context": "Failed to view project"
+  }
+}
+'
 stderr:
 ""
 `;
@@ -97,6 +114,87 @@ stdout:
 **Created:** 1/20/2024
 **Updated:** 1/20/2024
 "
+stderr:
+""
+`;
+
+snapshot[`Project View Command - JSON Project Not Found 1`] = `
+stdout:
+'{
+  "success": false,
+  "error": {
+    "type": "not_found",
+    "message": "Project not found: missing-project",
+    "suggestion": null,
+    "context": "Failed to view project"
+  }
+}
+'
+stderr:
+""
+`;
+
+snapshot[`Project View Command - JSON Output 1`] = `
+stdout:
+'{
+  "id": "project-json-id",
+  "slugId": "auth-redesign-2024",
+  "name": "Authentication System Redesign",
+  "description": "Complete overhaul of the authentication system to improve security and user experience.",
+  "icon": "🔐",
+  "color": "#3b82f6",
+  "url": "https://linear.app/acme/project/auth-redesign-2024",
+  "status": {
+    "id": "status-started",
+    "name": "In Progress",
+    "color": "#f59e0b",
+    "type": "started"
+  },
+  "creator": {
+    "name": "john.admin",
+    "displayName": "John Admin"
+  },
+  "lead": {
+    "name": "jane.lead",
+    "displayName": "Jane Lead"
+  },
+  "priority": 2,
+  "health": "onTrack",
+  "startDate": "2024-01-15",
+  "targetDate": "2024-04-30",
+  "startedAt": "2024-01-16T09:00:00Z",
+  "completedAt": null,
+  "canceledAt": null,
+  "createdAt": "2024-01-10T10:00:00Z",
+  "updatedAt": "2024-01-25T14:30:00Z",
+  "teams": [
+    {
+      "id": "team-1",
+      "key": "BACKEND",
+      "name": "Backend Team"
+    }
+  ],
+  "issueSummary": {
+    "total": 3,
+    "completed": 1,
+    "started": 1,
+    "unstarted": 1,
+    "backlog": 0,
+    "triage": 0,
+    "canceled": 0
+  },
+  "lastUpdate": {
+    "id": "update-1",
+    "body": "OAuth implementation is nearly complete.",
+    "health": "onTrack",
+    "createdAt": "2024-01-22T16:00:00Z",
+    "user": {
+      "name": "jane.lead",
+      "displayName": "Jane Lead"
+    }
+  }
+}
+'
 stderr:
 ""
 `;
