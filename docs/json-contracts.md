@@ -16,6 +16,37 @@ It does not apply to:
 - commands outside the automation tier listed below
 - stderr output when `LINEAR_DEBUG=1`
 
+## Write Safety Rails Foundation
+
+Automation Contract v1 does not yet make `--dry-run` part of the stable command surface. However, future write commands that adopt `--dry-run` must use the same preview contract.
+
+Rules:
+
+- successful `--dry-run` exits with code `0`
+- `--dry-run` must not execute the underlying mutation
+- non-JSON mode prints preview output to stdout and does not require stderr
+- `--json --dry-run` prints exactly one JSON document to stdout
+- validation, auth, not found, and GraphQL failures during preview still use the normal failure envelope and non-zero exit codes
+
+### `--json --dry-run` Preview Shape
+
+Top-level shape:
+
+```json
+{
+  "success": true,
+  "dryRun": true,
+  "summary": "Would update issue ENG-123",
+  "data": {
+    "id": "issue-123",
+    "identifier": "ENG-123",
+    "title": "Fix auth refresh edge case"
+  }
+}
+```
+
+`data` is command-specific preview payload. When possible, it should reuse the same sub-shapes as the corresponding success payload.
+
 ## Automation Tier
 
 The Automation Contract v1 covers these commands only:

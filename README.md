@@ -109,6 +109,8 @@ for bot and org-wide automation use cases, `linear-cli` defines a stable JSON co
 
 the contract fixes top-level success payload shapes and requires machine-readable failure payloads for the automation tier. see [docs/json-contracts.md](docs/json-contracts.md) for the full contract, compatibility rules, and example payloads. that guarantee also covers parser and argument validation failures when `--json` is present.
 
+the same document also defines the shared preview contract for future `--dry-run` write commands. those commands are not all implemented yet, but the contract now fixes the expected `stdout`, `exit code`, and `--json --dry-run` envelope shape ahead of rollout.
+
 ## differences from upstream
 
 this fork is intentionally diverging from upstream in a few ways:
