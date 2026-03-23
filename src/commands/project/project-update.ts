@@ -1,12 +1,14 @@
 import { Command } from "@cliffy/command"
 import { gql } from "../../__codegen__/gql.ts"
 import { getGraphQLClient } from "../../utils/graphql.ts"
+import { emitDryRunOutput } from "../../utils/dry_run.ts"
 import {
   getTeamIdByKey,
   lookupUserId,
   resolveProjectId,
 } from "../../utils/linear.ts"
 import { shouldShowSpinner } from "../../utils/hyperlink.ts"
+import { buildWriteCommandPreview } from "../../utils/write_preview.ts"
 import {
   CliError,
   handleError,
@@ -70,6 +72,7 @@ export const updateCommand = new Command()
     "Team key (can be repeated for multiple teams)",
     { collect: true },
   )
+  .option("--dry-run", "Preview the update without mutating the project")
   .action(
     async (
       {
@@ -80,6 +83,7 @@ export const updateCommand = new Command()
         startDate,
         targetDate,
         team: teams,
+        dryRun,
       },
       projectId,
     ) => {
@@ -109,8 +113,6 @@ export const updateCommand = new Command()
           throw new ValidationError("Target date must be in YYYY-MM-DD format")
         }
 
-        spinner?.start()
-        const client = getGraphQLClient()
         const resolvedId = await resolveProjectId(projectId)
 
         const input: Record<string, unknown> = {}
@@ -121,10 +123,10 @@ export const updateCommand = new Command()
         if (targetDate) input.targetDate = targetDate
 
         if (status) {
+          const client = getGraphQLClient()
           const statusLower = status.toLowerCase()
           const apiStatusType = STATUS_TYPE_MAPPING[statusLower]
           if (!apiStatusType) {
-            spinner?.stop()
             throw new ValidationError(`Invalid status: ${status}`, {
               suggestion:
                 "Valid values: planned, started, paused, completed, canceled, backlog",
@@ -136,7 +138,6 @@ export const updateCommand = new Command()
             (s: { type: string }) => s.type === apiStatusType,
           )
           if (!matchingStatus) {
-            spinner?.stop()
             throw new NotFoundError("Project status", apiStatusType)
           }
           input.statusId = matchingStatus.id
@@ -145,7 +146,6 @@ export const updateCommand = new Command()
         if (lead) {
           const leadId = await lookupUserId(lead)
           if (!leadId) {
-            spinner?.stop()
             throw new NotFoundError("Lead", lead)
           }
           input.leadId = leadId
@@ -156,7 +156,6 @@ export const updateCommand = new Command()
           for (const teamKey of teams) {
             const teamId = await getTeamIdByKey(teamKey.toUpperCase())
             if (!teamId) {
-              spinner?.stop()
               throw new NotFoundError("Team", teamKey)
             }
             teamIds.push(teamId)
@@ -164,6 +163,43 @@ export const updateCommand = new Command()
           input.teamIds = teamIds
         }
 
+        if (dryRun) {
+          const previewPayload = buildWriteCommandPreview({
+            command: "project.update",
+            operation: "update",
+            target: {
+              resource: "project",
+              input: projectId,
+              id: resolvedId,
+            },
+            changes: {
+              name: name ?? null,
+              description: description ?? null,
+              status: status ?? null,
+              lead: lead ?? null,
+              startDate: startDate ?? null,
+              targetDate: targetDate ?? null,
+              teamKeys: teams?.map((teamKey) => teamKey.toUpperCase()) ?? [],
+              input,
+            },
+          })
+          emitDryRunOutput({
+            summary: `Would update project ${projectId}`,
+            data: previewPayload,
+            lines: [
+              `Project: ${projectId}`,
+              ...Object.entries(input).map(([key, value]) =>
+                `${key}: ${
+                  Array.isArray(value) ? value.join(", ") : String(value)
+                }`
+              ),
+            ],
+          })
+          return
+        }
+
+        spinner?.start()
+        const client = getGraphQLClient()
         const result = await client.request(UpdateProject, {
           id: resolvedId,
           input,

@@ -28,6 +28,18 @@ Current adopters:
 - `linear issue relation add --dry-run`
 - `linear issue relation delete --dry-run`
 - `linear issue create-batch --dry-run`
+- `linear project create --dry-run`
+- `linear project update --dry-run`
+- `linear project delete --dry-run`
+- `linear milestone create --dry-run`
+- `linear milestone update --dry-run`
+- `linear milestone delete --dry-run`
+- `linear document create --dry-run`
+- `linear document update --dry-run`
+- `linear document delete --dry-run`
+- `linear webhook create --dry-run`
+- `linear webhook update --dry-run`
+- `linear webhook delete --dry-run`
 
 Rules:
 
@@ -35,6 +47,7 @@ Rules:
 - `--dry-run` must not execute the underlying mutation
 - non-JSON mode prints preview output to stdout and does not require stderr
 - `--json --dry-run` prints exactly one JSON document to stdout
+- commands without `--json` still use the same preview contract internally, but only expose the human-readable preview for now
 - validation, auth, not found, and GraphQL failures during preview still use the normal failure envelope and non-zero exit codes
 
 ### `--json --dry-run` Preview Shape

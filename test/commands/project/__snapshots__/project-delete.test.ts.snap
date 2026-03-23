@@ -11,8 +11,9 @@ Description:
 
 Options:
 
-  -h, --help   - Show this help.           
-  -f, --force  - Skip confirmation prompt  
+  -h, --help   - Show this help.                                    
+  -f, --force  - Skip confirmation prompt                           
+  --dry-run    - Preview the deletion without mutating the project  
 
 "
 stderr:
@@ -22,6 +23,16 @@ stderr:
 snapshot[`Project Delete Command - With Force Flag 1`] = `
 stdout:
 "✓ Deleted project: Deleted Project
+"
+stderr:
+""
+`;
+
+snapshot[`Project Delete Command - Dry Run 1`] = `
+stdout:
+"Dry run: Would delete project 550e8400-e29b-41d4-a716-446655440099
+Project: 550e8400-e29b-41d4-a716-446655440099
+Resolved ID: 550e8400-e29b-41d4-a716-446655440099
 "
 stderr:
 ""

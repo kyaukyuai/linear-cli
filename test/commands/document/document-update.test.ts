@@ -192,4 +192,15 @@ await snapshotTest({
   },
 })
 
+await snapshotTest({
+  name: "Document Update Command - Dry Run",
+  meta: import.meta,
+  colors: false,
+  args: ["d4b93e3b2695", "--title", "Preview Title", "--dry-run"],
+  denoArgs: commonDenoArgs,
+  async fn() {
+    await updateCommand.parse()
+  },
+})
+
 // NOTE: "Permission Error" test removed - stack traces contain machine-specific paths

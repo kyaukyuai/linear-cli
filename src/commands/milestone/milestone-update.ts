@@ -1,9 +1,11 @@
 import { Command } from "@cliffy/command"
 import { gql } from "../../__codegen__/gql.ts"
+import { emitDryRunOutput } from "../../utils/dry_run.ts"
 import { getGraphQLClient } from "../../utils/graphql.ts"
 import { resolveProjectId } from "../../utils/linear.ts"
 import { shouldShowSpinner } from "../../utils/hyperlink.ts"
 import { CliError, handleError, ValidationError } from "../../utils/errors.ts"
+import { buildWriteCommandPreview } from "../../utils/write_preview.ts"
 
 const UpdateProjectMilestone = gql(`
   mutation UpdateProjectMilestone($id: String!, $input: ProjectMilestoneUpdateInput!) {
@@ -35,9 +37,17 @@ export const updateCommand = new Command()
     "Sort order relative to other milestones",
   )
   .option("--project <projectId:string>", "Move to a different project")
+  .option("--dry-run", "Preview the update without mutating the milestone")
   .action(
     async (
-      { name, description, targetDate, sortOrder, project: projectIdOrSlug },
+      {
+        name,
+        description,
+        targetDate,
+        sortOrder,
+        project: projectIdOrSlug,
+        dryRun,
+      },
       id,
     ) => {
       if (
@@ -56,10 +66,8 @@ export const updateCommand = new Command()
       const { Spinner } = await import("@std/cli/unstable-spinner")
       const showSpinner = shouldShowSpinner()
       const spinner = showSpinner ? new Spinner() : null
-      spinner?.start()
 
       try {
-        const client = getGraphQLClient()
         const input: Record<string, unknown> = {}
 
         if (name) input.name = name
@@ -71,6 +79,37 @@ export const updateCommand = new Command()
           input.projectId = await resolveProjectId(projectIdOrSlug)
         }
 
+        if (dryRun) {
+          emitDryRunOutput({
+            summary: `Would update milestone ${id}`,
+            data: buildWriteCommandPreview({
+              command: "milestone.update",
+              operation: "update",
+              target: {
+                resource: "milestone",
+                id,
+              },
+              changes: {
+                name: name ?? null,
+                description: description ?? null,
+                targetDate: targetDate ?? null,
+                sortOrder: sortOrder ?? null,
+                projectInput: projectIdOrSlug ?? null,
+                input,
+              },
+            }),
+            lines: [
+              `Milestone: ${id}`,
+              ...Object.entries(input).map(([key, value]) =>
+                `${key}: ${String(value)}`
+              ),
+            ],
+          })
+          return
+        }
+
+        spinner?.start()
+        const client = getGraphQLClient()
         const result = await client.request(UpdateProjectMilestone, {
           id,
           input,

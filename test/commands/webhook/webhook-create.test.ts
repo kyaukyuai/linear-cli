@@ -135,3 +135,22 @@ await snapshotTest({
     }
   },
 })
+
+await snapshotTest({
+  name: "Webhook Create Command - Dry Run JSON Output",
+  meta: import.meta,
+  colors: false,
+  args: [
+    "--url",
+    "https://example.com/hooks/dry-run",
+    "--resource-types",
+    "Issue",
+    "--all-public-teams",
+    "--json",
+    "--dry-run",
+  ],
+  denoArgs: commonDenoArgs,
+  async fn() {
+    await createCommand.parse()
+  },
+})

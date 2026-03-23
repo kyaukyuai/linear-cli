@@ -97,3 +97,33 @@ await snapshotTest({
     }
   },
 })
+
+await snapshotTest({
+  name: "Webhook Delete Command - Dry Run JSON Output",
+  meta: import.meta,
+  colors: false,
+  args: ["webhook-1", "--json", "--dry-run"],
+  denoArgs: commonDenoArgs,
+  async fn() {
+    const { cleanup } = await setupMockLinearServer([
+      {
+        queryName: "GetWebhookForDelete",
+        response: {
+          data: {
+            webhook: {
+              id: "webhook-1",
+              label: "Issue events",
+              url: "https://example.com/hooks/issues",
+            },
+          },
+        },
+      },
+    ])
+
+    try {
+      await deleteCommand.parse()
+    } finally {
+      await cleanup()
+    }
+  },
+})

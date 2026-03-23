@@ -16,6 +16,7 @@ Options:
   --bulk        <ids...>  - Delete multiple documents by slug or ID             
   --bulk-file   <file>    - Read document slugs/IDs from a file (one per line)  
   --bulk-stdin            - Read document slugs/IDs from stdin                  
+  --dry-run               - Preview the deletion without mutating documents     
 
 "
 stderr:
@@ -55,4 +56,14 @@ stderr:
 "✗ Failed to delete document: Document ID required
   Use --bulk for multiple documents.
 "
+`;
+
+snapshot[`Document Delete Command - Dry Run 1`] = `
+stdout:
+"Dry run: Would delete document Test Document
+Document: Test Document
+ID: doc-uuid-123
+"
+stderr:
+""
 `;

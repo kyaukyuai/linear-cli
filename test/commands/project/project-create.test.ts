@@ -72,3 +72,45 @@ await cliffySnapshotTest({
     }
   },
 })
+
+await cliffySnapshotTest({
+  name: "Project Create Command - Dry Run JSON Output",
+  meta: import.meta,
+  colors: false,
+  args: [
+    "--name",
+    "Dry Run Project",
+    "--team",
+    "ENG",
+    "--json",
+    "--dry-run",
+  ],
+  denoArgs: commonDenoArgs,
+  async fn() {
+    const server = new MockLinearServer([
+      {
+        queryName: "GetTeamIdByKey",
+        variables: { team: "ENG" },
+        response: {
+          data: {
+            teams: {
+              nodes: [{ id: "team-eng-123" }],
+            },
+          },
+        },
+      },
+    ])
+
+    try {
+      await server.start()
+      Deno.env.set("LINEAR_GRAPHQL_ENDPOINT", server.getEndpoint())
+      Deno.env.set("LINEAR_API_KEY", "Bearer test-token")
+
+      await createCommand.parse()
+    } finally {
+      await server.stop()
+      Deno.env.delete("LINEAR_GRAPHQL_ENDPOINT")
+      Deno.env.delete("LINEAR_API_KEY")
+    }
+  },
+})

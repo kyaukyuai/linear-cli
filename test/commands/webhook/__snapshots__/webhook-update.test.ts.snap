@@ -11,14 +11,15 @@ Description:
 
 Options:
 
-  -h, --help                             - Show this help.                     
-  -u, --url             <url>            - New webhook URL                     
-  -r, --resource-types  <resourceTypes>  - New comma-separated resource types  
-  -l, --label           <label>          - New webhook label                   
-  --secret              <secret>         - New secret used to sign payloads    
-  --enabled                              - Enable the webhook                  
-  --disabled                             - Disable the webhook                 
-  -j, --json                             - Output as JSON                      
+  -h, --help                             - Show this help.                                  
+  -u, --url             <url>            - New webhook URL                                  
+  -r, --resource-types  <resourceTypes>  - New comma-separated resource types               
+  -l, --label           <label>          - New webhook label                                
+  --secret              <secret>         - New secret used to sign payloads                 
+  --enabled                              - Enable the webhook                               
+  --disabled                             - Disable the webhook                              
+  -j, --json                             - Output as JSON                                   
+  --dry-run                              - Preview the update without mutating the webhook  
 
 "
 stderr:
@@ -69,6 +70,34 @@ stdout:
     "id": "user-1",
     "name": "jdoe",
     "displayName": "John Doe"
+  }
+}
+'
+stderr:
+""
+`;
+
+snapshot[`Webhook Update Command - Dry Run JSON Output 1`] = `
+stdout:
+'{
+  "success": true,
+  "dryRun": true,
+  "summary": "Would update webhook webhook-1",
+  "data": {
+    "command": "webhook.update",
+    "operation": "update",
+    "destructive": false,
+    "target": {
+      "resource": "webhook",
+      "id": "webhook-1"
+    },
+    "changes": {
+      "url": null,
+      "label": "Preview webhook",
+      "resourceTypes": [],
+      "enabled": null,
+      "secretProvided": false
+    }
   }
 }
 '

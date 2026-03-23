@@ -2,8 +2,10 @@ import { Command } from "@cliffy/command"
 import { green } from "@std/fmt/colors"
 import { gql } from "../../__codegen__/gql.ts"
 import { getGraphQLClient } from "../../utils/graphql.ts"
+import { emitDryRunOutput } from "../../utils/dry_run.ts"
 import { CliError, handleError, ValidationError } from "../../utils/errors.ts"
 import { withSpinner } from "../../utils/spinner.ts"
+import { buildWriteCommandPreview } from "../../utils/write_preview.ts"
 import {
   getWebhookDisplayLabel,
   getWebhookScope,
@@ -54,9 +56,10 @@ export const updateCommand = new Command()
   .option("--enabled", "Enable the webhook")
   .option("--disabled", "Disable the webhook")
   .option("-j, --json", "Output as JSON")
+  .option("--dry-run", "Preview the update without mutating the webhook")
   .action(
     async (
-      { url, resourceTypes, label, secret, enabled, disabled, json },
+      { url, resourceTypes, label, secret, enabled, disabled, json, dryRun },
       webhookId,
     ) => {
       try {
@@ -96,6 +99,39 @@ export const updateCommand = new Command()
             suggestion:
               "Use --label, --url, --resource-types, --secret, --enabled, or --disabled.",
           })
+        }
+
+        if (dryRun) {
+          emitDryRunOutput({
+            json,
+            summary: `Would update webhook ${webhookId}`,
+            data: buildWriteCommandPreview({
+              command: "webhook.update",
+              operation: "update",
+              target: {
+                resource: "webhook",
+                id: webhookId,
+              },
+              changes: {
+                url: input.url ?? null,
+                label: input.label ?? null,
+                resourceTypes: input.resourceTypes ?? [],
+                enabled: input.enabled ?? null,
+                secretProvided: secret != null,
+              },
+            }),
+            lines: [
+              `Webhook: ${webhookId}`,
+              ...Object.entries(input).map(([key, value]) =>
+                key === "secret"
+                  ? "secret: [provided]"
+                  : `${key}: ${
+                    Array.isArray(value) ? value.join(", ") : String(value)
+                  }`
+              ),
+            ],
+          })
+          return
         }
 
         const client = getGraphQLClient()

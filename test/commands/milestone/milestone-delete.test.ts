@@ -53,5 +53,19 @@ await cliffySnapshotTest({
   },
 })
 
+await cliffySnapshotTest({
+  name: "Milestone Delete Command - Dry Run",
+  meta: import.meta,
+  colors: false,
+  args: [
+    "milestone-preview",
+    "--dry-run",
+  ],
+  denoArgs: commonDenoArgs,
+  async fn() {
+    await deleteCommand.parse()
+  },
+})
+
 // Note: Deletion failure test not included because it calls Deno.exit(1)
 // which is not well-supported by the snapshot testing framework
