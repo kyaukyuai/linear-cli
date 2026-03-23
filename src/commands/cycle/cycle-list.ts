@@ -8,6 +8,7 @@ import { getTeamIdByKey, requireTeamKey } from "../../utils/linear.ts"
 import { withSpinner } from "../../utils/spinner.ts"
 import { header, muted } from "../../utils/styling.ts"
 import { handleError, NotFoundError } from "../../utils/errors.ts"
+import { pipeToUserPager, shouldUsePager } from "../../utils/pager.ts"
 
 const GetTeamCycles = gql(`
   query GetTeamCycles($teamId: String!) {
@@ -53,8 +54,9 @@ export const listCommand = new Command()
   .description("List cycles for a team")
   .option("--team <team:string>", "Team key (defaults to current team)")
   .option("--no-pager", "Disable automatic paging for long output")
-  .action(async ({ team }) => {
+  .action(async ({ team, pager }) => {
     try {
+      const usePager = pager !== false
       const teamKey = requireTeamKey(team)
       const teamId = await getTeamIdByKey(teamKey)
       if (!teamId) {
@@ -107,8 +109,9 @@ export const listCommand = new Command()
         padDisplay("END", END_WIDTH),
         padDisplay("STATUS", STATUS_WIDTH),
       ]
+      const outputLines: string[] = []
 
-      console.log(header(headerCells.join(" ")))
+      outputLines.push(header(headerCells.join(" ")))
 
       for (const cycle of sortedCycles) {
         const name = cycle.name || `Cycle ${cycle.number}`
@@ -132,7 +135,14 @@ export const listCommand = new Command()
         } ${truncName} ${padDisplay(formatDate(cycle.startsAt), START_WIDTH)} ${
           padDisplay(formatDate(cycle.endsAt), END_WIDTH)
         } ${statusDisplay}`
-        console.log(line)
+        outputLines.push(line)
+      }
+
+      const output = outputLines.join("\n")
+      if (shouldUsePager(outputLines, usePager)) {
+        await pipeToUserPager(output)
+      } else {
+        console.log(output)
       }
     } catch (error) {
       handleError(error, "Failed to list cycles")
