@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## [2.7.1] - 2026-03-23
+
+### Added
+
+- added working `--no-pager` support to `cycle list`
+
+### Changed
+
+- improved `issue list --all` and `--state` handling so `--all` can be combined with an explicit state filter while conflicting `--all-states` usage reports clearer guidance
+
+### Fixed
+
+- normalized `issue view --json` descriptions so escaped newlines are returned as real line breaks for `jq` and other machine-readable consumers
+
 ## [2.7.0] - 2026-03-23
 
 ### Added
@@ -553,7 +567,8 @@
 - adds a -t, --title flag to the `issue pr` command, allowing you to provide a PR title that is different than linear's issue title
 - allows linear issue identifiers to be passed in as arguments to the issue commands as an alternative to parsing the branch name, e.g. `linear issue show ABC-123`
 
-[Unreleased]: https://github.com/kyaukyuai/linear-cli/compare/v2.7.0...HEAD
+[Unreleased]: https://github.com/kyaukyuai/linear-cli/compare/v2.7.1...HEAD
+[2.7.1]: https://github.com/kyaukyuai/linear-cli/compare/v2.7.0...v2.7.1
 [2.7.0]: https://github.com/kyaukyuai/linear-cli/compare/v2.6.0...v2.7.0
 [2.6.0]: https://github.com/kyaukyuai/linear-cli/compare/v2.5.0...v2.6.0
 [2.5.0]: https://github.com/kyaukyuai/linear-cli/compare/v2.4.1...v2.5.0
