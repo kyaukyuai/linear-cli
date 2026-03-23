@@ -199,6 +199,38 @@ stdout:
 ""
 stderr:
 "✗ Failed to create issue batch: Issue batch creation failed while creating child 2 of 2
-  Already created issues: ENG-600, ENG-601
+  Already created issues: ENG-600, ENG-601. Remove already created issues from the batch file before retrying, or rerun only the remaining work.
 "
+`;
+
+snapshot[`Issue Create Batch Command - JSON Partial Failure 1`] = `
+stdout:
+'{
+  "success": false,
+  "error": {
+    "type": "cli_error",
+    "message": "Issue batch creation failed while creating child 2 of 2",
+    "suggestion": "Already created issues: ENG-600, ENG-601. Remove already created issues from the batch file before retrying, or rerun only the remaining work.",
+    "context": "Failed to create issue batch",
+    "details": {
+      "command": "issue.create-batch",
+      "createdIdentifiers": [
+        "ENG-600",
+        "ENG-601"
+      ],
+      "createdCount": 2,
+      "failedStep": {
+        "stage": "child",
+        "index": 2,
+        "total": 2,
+        "title": "Create second child"
+      },
+      "retryable": false,
+      "retryHint": "Do not rerun the same batch file unchanged after a partial failure. Remove already created issues from the input or rerun only the remaining work."
+    }
+  }
+}
+'
+stderr:
+""
 `;

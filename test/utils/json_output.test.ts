@@ -82,6 +82,34 @@ Deno.test("buildJsonErrorEnvelope maps generic CliError", () => {
   assertEquals(envelope.error.suggestion, null)
 })
 
+Deno.test("buildJsonErrorEnvelope includes CliError details when present", () => {
+  const envelope = buildJsonErrorEnvelope(
+    new CliError("Batch write failed", {
+      details: {
+        command: "issue.create-batch",
+        createdIdentifiers: ["ENG-600"],
+        createdCount: 1,
+      },
+    }),
+    "Failed to create issue batch",
+  )
+
+  assertEquals(envelope, {
+    success: false,
+    error: {
+      type: "cli_error",
+      message: "Batch write failed",
+      suggestion: null,
+      context: "Failed to create issue batch",
+      details: {
+        command: "issue.create-batch",
+        createdIdentifiers: ["ENG-600"],
+        createdCount: 1,
+      },
+    },
+  })
+})
+
 Deno.test("buildJsonErrorEnvelope maps GraphQL not found errors", () => {
   const envelope = buildJsonErrorEnvelope(
     createClientError("Issue not found: ENG-999"),

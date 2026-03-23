@@ -27,15 +27,22 @@ export class CliError extends Error {
   readonly userMessage: string
   /** Suggestion for how to fix the issue (optional) */
   readonly suggestion?: string
+  /** Optional machine-readable details for JSON output */
+  readonly details?: Record<string, unknown>
 
   constructor(
     userMessage: string,
-    options?: { suggestion?: string; cause?: unknown },
+    options?: {
+      suggestion?: string
+      cause?: unknown
+      details?: Record<string, unknown>
+    },
   ) {
     super(userMessage)
     this.name = "CliError"
     this.userMessage = userMessage
     this.suggestion = options?.suggestion
+    this.details = options?.details
     if (options?.cause) {
       this.cause = options.cause
     }
@@ -233,6 +240,7 @@ export async function withContext<T>(
       // Re-throw with context added
       throw new CliError(`${context}: ${error.userMessage}`, {
         suggestion: error.suggestion,
+        details: error.details,
         cause: error.cause ?? error,
       })
     }

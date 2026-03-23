@@ -26,6 +26,7 @@ export type JsonErrorEnvelope = {
     message: string
     suggestion: string | null
     context: string | null
+    details?: Record<string, unknown>
   }
 }
 
@@ -40,6 +41,7 @@ export function buildJsonErrorEnvelope(
       message: getJsonErrorMessage(error),
       suggestion: getJsonErrorSuggestion(error),
       context: context ?? null,
+      ...getJsonErrorDetails(error),
     },
   }
 }
@@ -161,6 +163,15 @@ function getJsonErrorSuggestion(error: unknown): string | null {
     return "Run `linear auth login` to authenticate."
   }
   return null
+}
+
+function getJsonErrorDetails(
+  error: unknown,
+): { details?: Record<string, unknown> } {
+  if (error instanceof CliError && error.details != null) {
+    return { details: error.details }
+  }
+  return {}
 }
 
 function isGraphQLAuthError(
