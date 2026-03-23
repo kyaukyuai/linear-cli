@@ -228,6 +228,8 @@ linear issue children ENG-123 --json  # emit child issues for decomposition work
 }
 ```
 
+`issue create-batch` creates the parent first and then creates each child in order. If a later child fails, already created issues are not rolled back. Use `--dry-run --json` to preview the plan first. In `--json` mode, partial failures include `error.details.createdIdentifiers` and `error.details.failedStep` so automation can resume from the remaining work instead of rerunning the same batch unchanged.
+
 ### team commands
 
 ```bash

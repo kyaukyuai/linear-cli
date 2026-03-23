@@ -42,6 +42,20 @@ type BatchCreateSpec = {
   children: BatchIssueSpec[]
 }
 
+type BatchFailureDetails = {
+  command: "issue.create-batch"
+  createdIdentifiers: string[]
+  createdCount: number
+  failedStep: {
+    stage: "child"
+    index: number
+    total: number
+    title: string
+  }
+  retryable: false
+  retryHint: string
+}
+
 const CreateIssue = gql(`
   mutation CreateIssue($input: IssueCreateInput!) {
     issueCreate(input: $input) {
@@ -303,10 +317,26 @@ async function createIssue(
   return issue
 }
 
-function formatCreatedIdentifiers(
+function buildBatchFailureDetails(
   issues: ReturnType<typeof buildIssueWritePayload>[],
-): string {
-  return issues.map((issue) => issue.identifier).join(", ")
+  child: BatchIssueSpec,
+  index: number,
+  total: number,
+): BatchFailureDetails {
+  return {
+    command: "issue.create-batch",
+    createdIdentifiers: issues.map((issue) => issue.identifier),
+    createdCount: issues.length,
+    failedStep: {
+      stage: "child",
+      index: index + 1,
+      total,
+      title: child.title,
+    },
+    retryable: false,
+    retryHint:
+      "Do not rerun the same batch file unchanged after a partial failure. Remove already created issues from the input or rerun only the remaining work.",
+  }
 }
 
 export const createBatchCommand = new Command()
@@ -440,14 +470,25 @@ export const createBatchCommand = new Command()
           createdParentAndChildren.push(childPayload)
           childPayloads.push(childPayload)
         } catch (error) {
+          const details = buildBatchFailureDetails(
+            createdParentAndChildren,
+            child,
+            index,
+            batch.children.length,
+          )
           throw new CliError(
             `Issue batch creation failed while creating child ${
               index + 1
             } of ${batch.children.length}`,
             {
-              suggestion: `Already created issues: ${
-                formatCreatedIdentifiers(createdParentAndChildren)
-              }`,
+              suggestion: `${
+                details.createdIdentifiers.length > 0
+                  ? `Already created issues: ${
+                    details.createdIdentifiers.join(", ")
+                  }. `
+                  : ""
+              }Remove already created issues from the batch file before retrying, or rerun only the remaining work.`,
+              details,
               cause: error,
             },
           )

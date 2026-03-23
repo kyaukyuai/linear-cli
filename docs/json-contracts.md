@@ -115,6 +115,8 @@ This includes parser and argument validation failures that occur before the comm
 
 `suggestion` and `context` are nullable and always present in the envelope.
 
+Commands may add an optional `error.details` object for machine-readable recovery metadata. When present, it is command-specific and additive within the current contract version.
+
 ## Common Sub-Shapes
 
 ### `stateRef`
@@ -426,6 +428,40 @@ Top-level shape:
   }
 }
 ```
+
+Partial failures use the standard JSON failure envelope with an additional `error.details` object.
+
+```json
+{
+  "success": false,
+  "error": {
+    "type": "cli_error",
+    "message": "Issue batch creation failed while creating child 2 of 3",
+    "suggestion": "Already created issues: ENG-600, ENG-601. Remove already created issues from the batch file before retrying, or rerun only the remaining work.",
+    "context": "Failed to create issue batch",
+    "details": {
+      "command": "issue.create-batch",
+      "createdIdentifiers": ["ENG-600", "ENG-601"],
+      "createdCount": 2,
+      "failedStep": {
+        "stage": "child",
+        "index": 2,
+        "total": 3,
+        "title": "Create second child"
+      },
+      "retryable": false,
+      "retryHint": "Do not rerun the same batch file unchanged after a partial failure. Remove already created issues from the input or rerun only the remaining work."
+    }
+  }
+}
+```
+
+Idempotency policy:
+
+- `issue create-batch` does not roll back already created issues
+- parent-first creation is part of the contract
+- partial failures are not safe to blindly retry with the same input
+- callers should use `createdIdentifiers` plus `failedStep` to resume manually or to write a higher-level reconciliation flow
 
 ## Compatibility Rules
 

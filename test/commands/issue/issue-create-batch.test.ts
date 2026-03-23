@@ -563,3 +563,151 @@ await snapshotTest({
     }
   },
 })
+
+await snapshotTest({
+  name: "Issue Create Batch Command - JSON Partial Failure",
+  meta: import.meta,
+  colors: false,
+  canFail: true,
+  denoArgs: commonDenoArgs,
+  async fn() {
+    const batchFile = await Deno.makeTempFile({ suffix: ".json" })
+    await Deno.writeTextFile(
+      batchFile,
+      JSON.stringify({
+        team: "ENG",
+        parent: {
+          title: "Parent rollout issue",
+        },
+        children: [
+          {
+            title: "Create first child",
+          },
+          {
+            title: "Create second child",
+          },
+        ],
+      }),
+    )
+
+    const { cleanup } = await setupMockLinearServer([
+      {
+        queryName: "GetTeamIdByKey",
+        variables: { team: "ENG" },
+        response: {
+          data: {
+            teams: {
+              nodes: [{ id: "team-eng-id" }],
+            },
+          },
+        },
+      },
+      {
+        queryName: "CreateIssue",
+        variables: {
+          input: {
+            title: "Parent rollout issue",
+            labelIds: [],
+            teamId: "team-eng-id",
+          },
+        },
+        response: {
+          data: {
+            issueCreate: {
+              success: true,
+              issue: {
+                id: "issue-parent-600",
+                identifier: "ENG-600",
+                title: "Parent rollout issue",
+                url:
+                  "https://linear.app/test-team/issue/ENG-600/parent-rollout-issue",
+                dueDate: null,
+                assignee: null,
+                parent: null,
+                state: {
+                  name: "Todo",
+                  color: "#cccccc",
+                },
+                team: {
+                  key: "ENG",
+                },
+              },
+            },
+          },
+        },
+      },
+      {
+        queryName: "CreateIssue",
+        variables: {
+          input: {
+            title: "Create first child",
+            parentId: "issue-parent-600",
+            labelIds: [],
+            teamId: "team-eng-id",
+          },
+        },
+        response: {
+          data: {
+            issueCreate: {
+              success: true,
+              issue: {
+                id: "issue-child-601",
+                identifier: "ENG-601",
+                title: "Create first child",
+                url:
+                  "https://linear.app/test-team/issue/ENG-601/create-first-child",
+                dueDate: null,
+                assignee: null,
+                parent: {
+                  id: "issue-parent-600",
+                  identifier: "ENG-600",
+                  title: "Parent rollout issue",
+                  url:
+                    "https://linear.app/test-team/issue/ENG-600/parent-rollout-issue",
+                  dueDate: null,
+                  state: {
+                    name: "Todo",
+                    color: "#cccccc",
+                  },
+                },
+                state: {
+                  name: "Todo",
+                  color: "#cccccc",
+                },
+                team: {
+                  key: "ENG",
+                },
+              },
+            },
+          },
+        },
+      },
+      {
+        queryName: "CreateIssue",
+        variables: {
+          input: {
+            title: "Create second child",
+            parentId: "issue-parent-600",
+            labelIds: [],
+            teamId: "team-eng-id",
+          },
+        },
+        response: {
+          data: {
+            issueCreate: {
+              success: false,
+              issue: null,
+            },
+          },
+        },
+      },
+    ])
+
+    try {
+      await createBatchCommand.parse(["--file", batchFile, "--json"])
+    } finally {
+      await cleanup()
+      await Deno.remove(batchFile)
+    }
+  },
+})
