@@ -11,6 +11,11 @@
 import { ClientError } from "graphql-request"
 import { gray, red, setColorEnabled } from "@std/fmt/colors"
 
+const AUTH_EXIT_CODE = 4
+const PLAN_LIMIT_EXIT_CODE = 5
+const DEFAULT_PLAN_LIMIT_SUGGESTION =
+  "Upgrade your Linear plan or archive existing items and retry."
+
 /**
  * Check if debug mode is enabled via LINEAR_DEBUG environment variable.
  */
@@ -94,6 +99,19 @@ export class AuthError extends CliError {
 }
 
 /**
+ * Error for workspace or plan limits that block further writes.
+ */
+export class PlanLimitError extends CliError {
+  constructor(message: string, options?: { suggestion?: string }) {
+    super(message, {
+      suggestion: options?.suggestion ?? DEFAULT_PLAN_LIMIT_SUGGESTION,
+      ...options,
+    })
+    this.name = "PlanLimitError"
+  }
+}
+
+/**
  * Extract a user-friendly message from a GraphQL ClientError.
  *
  * Tries to find:
@@ -151,15 +169,16 @@ export function handleError(error: unknown, context?: string): never {
     printUnknownError(error, context)
   }
 
-  Deno.exit(1)
+  Deno.exit(getExitCode(error))
 }
 
 function printCliError(error: CliError, context?: string): void {
   const prefix = context ? `${context}: ` : ""
   console.error(red(`✗ ${prefix}${error.userMessage}`))
 
-  if (error.suggestion) {
-    console.error(gray(`  ${error.suggestion}`))
+  const suggestion = getErrorSuggestion(error)
+  if (suggestion != null) {
+    console.error(gray(`  ${suggestion}`))
   }
 
   if (isDebugMode() && error.cause) {
@@ -176,6 +195,11 @@ function printGraphQLError(error: ClientError, context?: string): void {
     console.error(red(`✗ ${prefix}${message}`))
   } else {
     console.error(red(`✗ ${prefix}${message}`))
+  }
+
+  const suggestion = getErrorSuggestion(error)
+  if (suggestion != null) {
+    console.error(gray(`  ${suggestion}`))
   }
 
   if (isDebugMode()) {
@@ -253,6 +277,119 @@ export async function withContext<T>(
     }
     throw new CliError(`${context}: ${String(error)}`, { cause: error })
   }
+}
+
+export function getExitCode(error: unknown): number {
+  if (isPlanLimitError(error)) {
+    return PLAN_LIMIT_EXIT_CODE
+  }
+
+  if (isAuthFailure(error)) {
+    return AUTH_EXIT_CODE
+  }
+
+  return 1
+}
+
+export function getErrorSuggestion(error: unknown): string | undefined {
+  if (error instanceof CliError && error.suggestion != null) {
+    return error.suggestion
+  }
+
+  if (isPlanLimitError(error)) {
+    return DEFAULT_PLAN_LIMIT_SUGGESTION
+  }
+
+  if (isAuthFailure(error)) {
+    return "Run `linear auth login` to authenticate."
+  }
+
+  return undefined
+}
+
+function isAuthFailure(error: unknown): boolean {
+  for (const candidate of iterateErrorChain(error)) {
+    if (candidate instanceof AuthError) {
+      return true
+    }
+
+    if (isClientError(candidate) && isGraphQLAuthError(candidate)) {
+      return true
+    }
+  }
+
+  return false
+}
+
+export function isPlanLimitError(error: unknown): boolean {
+  for (const candidate of iterateErrorChain(error)) {
+    if (candidate instanceof PlanLimitError) {
+      return true
+    }
+
+    if (
+      candidate instanceof CliError && isPlanLimitMessage(candidate.userMessage)
+    ) {
+      return true
+    }
+
+    if (isClientError(candidate) && isGraphQLPlanLimitError(candidate)) {
+      return true
+    }
+  }
+
+  return false
+}
+
+function* iterateErrorChain(error: unknown): Generator<unknown> {
+  let current: unknown = error
+  const seen = new Set<unknown>()
+
+  while (current != null && !seen.has(current)) {
+    yield current
+    seen.add(current)
+
+    if (current instanceof Error && current.cause != null) {
+      current = current.cause
+      continue
+    }
+
+    break
+  }
+}
+
+function isGraphQLPlanLimitError(error: ClientError): boolean {
+  return isPlanLimitMessage(extractGraphQLMessage(error))
+}
+
+function isPlanLimitMessage(message: string): boolean {
+  const lowerMessage = message.toLowerCase()
+
+  if (
+    lowerMessage.includes("rate limit") ||
+    lowerMessage.includes("retry-after") ||
+    lowerMessage.includes("too many requests")
+  ) {
+    return false
+  }
+
+  return lowerMessage.includes("free plan") ||
+    lowerMessage.includes("plan limit") ||
+    lowerMessage.includes("issue limit") ||
+    lowerMessage.includes("project limit") ||
+    (lowerMessage.includes("upgrade") && lowerMessage.includes("archive")) ||
+    (lowerMessage.includes("upgrade") && lowerMessage.includes("limit"))
+}
+
+function isGraphQLAuthError(error: ClientError): boolean {
+  const status = error.response?.status
+  if (status === 401 || status === 403) {
+    return true
+  }
+
+  const message = extractGraphQLMessage(error).toLowerCase()
+  return message.includes("auth") || message.includes("unauthorized") ||
+    message.includes("forbidden") || message.includes("api key")
 }
 
 /**

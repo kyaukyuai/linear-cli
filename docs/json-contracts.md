@@ -132,6 +132,16 @@ This includes parser and argument validation failures that occur before the comm
 
 Commands may add an optional `error.details` object for machine-readable recovery metadata. When present, it is command-specific and additive within the current contract version.
 
+## Exit Codes
+
+Automation-tier commands continue to use non-zero exit codes on failure. The current reserved values are:
+
+- `1` for generic failures, validation errors, not-found errors, and other non-auth, non-plan-limit conditions
+- `4` for authentication and authorization failures
+- `5` for free-plan and workspace-plan limit failures where retry requires an upgrade or archiving existing items
+
+Plan-limit failures keep the normal failure envelope shape. They are distinguished by exit code and by a suggestion that points callers toward upgrading or archiving items before retrying.
+
 ## Common Sub-Shapes
 
 ### `stateRef`
