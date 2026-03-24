@@ -179,6 +179,7 @@ linear issue list --parent ENG-100 --json  # filter sub-issues of a parent issue
 linear issue list -w   # open issue list in web browser
 linear issue list -a   # open issue list in Linear.app
 linear issue start     # create/switch to issue branch and mark as started
+linear issue start ENG-123 --dry-run  # preview the branch and target state
 linear issue create    # create a new issue (interactive prompts)
 linear issue create -t "title" -d "description"  # create with flags
 linear issue create -t "title" --team ENG --json  # emit machine-readable created issue data
