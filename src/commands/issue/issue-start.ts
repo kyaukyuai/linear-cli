@@ -1,12 +1,16 @@
 import { Command } from "@cliffy/command"
 import { Select } from "@cliffy/prompt"
 import { getPriorityDisplay } from "../../utils/display.ts"
+import { emitDryRunOutput } from "../../utils/dry_run.ts"
 import {
   fetchIssuesForState,
   getIssueIdentifier,
   requireTeamKey,
 } from "../../utils/linear.ts"
-import { startWorkOnIssue as startIssue } from "../../utils/actions.ts"
+import {
+  buildStartWorkPlan,
+  startWorkOnIssue as startIssue,
+} from "../../utils/actions.ts"
 import {
   handleError,
   NotFoundError,
@@ -33,7 +37,14 @@ export const startCommand = new Command()
     "-b, --branch <branch:string>",
     "Custom branch name to use instead of the issue identifier",
   )
-  .action(async ({ allAssignees, unassigned, fromRef, branch }, issueId) => {
+  .option(
+    "--dry-run",
+    "Preview the branch and state transition without making changes",
+  )
+  .action(async (
+    { allAssignees, unassigned, fromRef, branch, dryRun },
+    issueId,
+  ) => {
     try {
       const teamId = requireTeamKey()
 
@@ -79,6 +90,31 @@ export const startCommand = new Command()
       if (!resolvedId) {
         throw new ValidationError("No issue ID resolved")
       }
+
+      if (dryRun) {
+        const plan = await buildStartWorkPlan(
+          resolvedId,
+          teamId,
+          fromRef,
+          branch,
+        )
+        emitDryRunOutput({
+          summary: `Would start work on issue ${resolvedId}`,
+          data: plan.preview,
+          lines: [
+            `- vcs: ${plan.preview.vcs}`,
+            plan.preview.branchName == null
+              ? "- branch: n/a (jj does not create branches)"
+              : `- branch: ${plan.preview.branchName}`,
+            plan.preview.sourceRef == null
+              ? null
+              : `- from ref: ${plan.preview.sourceRef}`,
+            `- target state: ${plan.preview.targetState.name}`,
+          ].filter((line): line is string => line != null),
+        })
+        return
+      }
+
       await startIssue(resolvedId, teamId, fromRef, branch)
     } catch (error) {
       handleError(error, "Failed to start issue")

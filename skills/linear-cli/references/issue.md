@@ -153,12 +153,13 @@ Description:
 
 Options:
 
-  -h, --help                      - Show this help.                                            
-  -w, --workspace      <slug>     - Target workspace (uses credentials)                        
-  -A, --all-assignees             - Show issues for all assignees                              
-  -U, --unassigned                - Show only unassigned issues                                
-  -f, --from-ref       <fromRef>  - Git ref to create new branch from                          
-  -b, --branch         <branch>   - Custom branch name to use instead of the issue identifier
+  -h, --help                      - Show this help.                                                 
+  -w, --workspace      <slug>     - Target workspace (uses credentials)                             
+  -A, --all-assignees             - Show issues for all assignees                                   
+  -U, --unassigned                - Show only unassigned issues                                     
+  -f, --from-ref       <fromRef>  - Git ref to create new branch from                               
+  -b, --branch         <branch>   - Custom branch name to use instead of the issue identifier       
+  --dry-run                       - Preview the branch and state transition without making changes
 ```
 
 ### view

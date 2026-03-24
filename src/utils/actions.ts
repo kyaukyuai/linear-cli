@@ -8,8 +8,31 @@ import {
 } from "./linear.ts"
 import { getOption } from "../config.ts"
 import { encodeBase64 } from "@std/encoding/base64"
-import { getNoIssueFoundMessage, startVcsWork } from "./vcs.ts"
+import { getNoIssueFoundMessage, getVcs, startVcsWork } from "./vcs.ts"
 import { LINEAR_WEB_BASE_URL } from "../const.ts"
+
+export type StartWorkDryRunPayload = {
+  command: "issue.start"
+  issue: {
+    identifier: string
+  }
+  vcs: "git" | "jj"
+  branchName: string | null
+  sourceRef: string | null
+  targetState: {
+    id: string
+    name: string
+  }
+}
+
+type StartWorkPlan = {
+  branchName: string
+  targetState: {
+    id: string
+    name: string
+  }
+  preview: StartWorkDryRunPayload
+}
 
 export async function openIssuePage(
   providedId?: string,
@@ -85,25 +108,55 @@ export async function startWorkOnIssue(
   gitSourceRef?: string,
   customBranchName?: string,
 ) {
-  const { branchName: defaultBranchName } = await fetchIssueDetails(
+  const plan = await buildStartWorkPlan(
     issueId,
-    true,
+    teamId,
+    gitSourceRef,
+    customBranchName,
   )
-  const branchName = customBranchName || defaultBranchName
 
   // Start VCS work (git or jj)
-  await startVcsWork(issueId, branchName, gitSourceRef)
+  await startVcsWork(issueId, plan.branchName, gitSourceRef)
 
   // Update issue state
   try {
-    const state = await getStartedState(teamId)
     if (!issueId) {
       console.error("No issue ID resolved")
       Deno.exit(1)
     }
-    await updateIssueState(issueId, state.id)
-    console.log(`✓ Issue state updated to '${state.name}'`)
+    await updateIssueState(issueId, plan.targetState.id)
+    console.log(`✓ Issue state updated to '${plan.targetState.name}'`)
   } catch (error) {
     console.error("Failed to update issue state:", error)
+  }
+}
+
+export async function buildStartWorkPlan(
+  issueId: string,
+  teamId: string,
+  gitSourceRef?: string,
+  customBranchName?: string,
+): Promise<StartWorkPlan> {
+  const [{ branchName: defaultBranchName }, targetState] = await Promise.all([
+    fetchIssueDetails(issueId, false),
+    getStartedState(teamId),
+  ])
+
+  const vcs = getVcs()
+  const branchName = customBranchName || defaultBranchName
+
+  return {
+    branchName,
+    targetState,
+    preview: {
+      command: "issue.start",
+      issue: {
+        identifier: issueId,
+      },
+      vcs,
+      branchName: vcs === "git" ? branchName : null,
+      sourceRef: vcs === "git" ? gitSourceRef || "HEAD" : null,
+      targetState,
+    },
   }
 }

@@ -1,0 +1,36 @@
+export const snapshot = {};
+
+snapshot[`Issue Start Command - Help Text 1`] = `
+stdout:
+"
+Usage: start [issueId]
+
+Description:
+
+  Start working on an issue
+
+Options:
+
+  -h, --help                      - Show this help.                                                 
+  -A, --all-assignees             - Show issues for all assignees                                   
+  -U, --unassigned                - Show only unassigned issues                                     
+  -f, --from-ref       <fromRef>  - Git ref to create new branch from                               
+  -b, --branch         <branch>   - Custom branch name to use instead of the issue identifier       
+  --dry-run                       - Preview the branch and state transition without making changes  
+
+"
+stderr:
+""
+`;
+
+snapshot[`Issue Start Command - Dry Run 1`] = `
+stdout:
+"Dry run: Would start work on issue ENG-123
+- vcs: git
+- branch: feature/eng-123-auth-hardening
+- from ref: origin/main
+- target state: In Progress
+"
+stderr:
+""
+`;
