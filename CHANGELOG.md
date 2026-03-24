@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## [2.8.0] - 2026-03-24
+
+### Added
+
+- added a shared `--dry-run` contract and preview output for automation-safe write workflows
+- added `--dry-run` support to issue, project, milestone, document, and webhook write commands
+- added Automation Contract v2 coverage for `project list/view --json`
+- added Automation Contract v2 coverage for `cycle list/view/current/next --json`
+- added Automation Contract v2 coverage for `milestone list/view --json`
+
+### Changed
+
+- structured `issue create-batch --json` partial-failure responses with created identifiers, retry hints, and failure-step metadata for safer retries
+
 ## [2.7.1] - 2026-03-23
 
 ### Added
