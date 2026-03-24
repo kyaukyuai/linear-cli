@@ -480,7 +480,7 @@ Idempotency policy:
 
 ## Automation Contract v2
 
-Automation Contract v2 extends the stable read surface to project and cycle commands while preserving the v1 guarantees for existing issue and team commands.
+Automation Contract v2 extends the stable read surface to project, cycle, and milestone commands while preserving the v1 guarantees for existing issue and team commands.
 
 The v2 additions are:
 
@@ -490,6 +490,8 @@ The v2 additions are:
 - `linear cycle view --json`
 - `linear cycle current --json`
 - `linear cycle next --json`
+- `linear milestone list --json`
+- `linear milestone view --json`
 
 V2 reuses the same failure envelope, value rules, and compatibility rules defined above.
 
@@ -727,6 +729,122 @@ Top-level shape:
 
 - the same object shape as `cycle view --json`
 - `null` when no upcoming cycle exists
+
+### `milestoneRef`
+
+```json
+{
+  "id": "milestone-123",
+  "name": "Phase 1",
+  "description": "Coordinate rollout readiness",
+  "targetDate": "2026-04-15",
+  "sortOrder": 1,
+  "createdAt": "2026-03-01T00:00:00.000Z",
+  "updatedAt": "2026-03-18T00:00:00.000Z",
+  "project": {
+    "id": "project-123",
+    "name": "Platform Refresh",
+    "slugId": "platform-refresh",
+    "url": "https://linear.app/acme/project/platform-refresh"
+  }
+}
+```
+
+### `milestoneIssueRef`
+
+```json
+{
+  "id": "issue-123",
+  "identifier": "ENG-123",
+  "title": "Close rollout blockers",
+  "state": {
+    "name": "In Progress",
+    "type": "started",
+    "color": "#f59e0b"
+  }
+}
+```
+
+### `milestoneIssueSummary`
+
+```json
+{
+  "total": 3,
+  "completed": 1,
+  "started": 1,
+  "unstarted": 1,
+  "backlog": 0,
+  "triage": 0,
+  "canceled": 0
+}
+```
+
+### `milestone list --json`
+
+Top-level shape:
+
+```json
+[
+  {
+    "id": "milestone-123",
+    "name": "Phase 1",
+    "description": "Coordinate rollout readiness",
+    "targetDate": "2026-04-15",
+    "sortOrder": 1,
+    "createdAt": "2026-03-01T00:00:00.000Z",
+    "updatedAt": "2026-03-18T00:00:00.000Z",
+    "project": {
+      "id": "project-123",
+      "name": "Platform Refresh",
+      "slugId": "platform-refresh",
+      "url": "https://linear.app/acme/project/platform-refresh"
+    }
+  }
+]
+```
+
+### `milestone view --json`
+
+Top-level shape:
+
+```json
+{
+  "id": "milestone-123",
+  "name": "Phase 1",
+  "description": "Coordinate rollout readiness",
+  "targetDate": "2026-04-15",
+  "sortOrder": 1,
+  "createdAt": "2026-03-01T00:00:00.000Z",
+  "updatedAt": "2026-03-18T00:00:00.000Z",
+  "project": {
+    "id": "project-123",
+    "name": "Platform Refresh",
+    "slugId": "platform-refresh",
+    "url": "https://linear.app/acme/project/platform-refresh"
+  },
+  "issueSummary": {
+    "total": 3,
+    "completed": 1,
+    "started": 1,
+    "unstarted": 1,
+    "backlog": 0,
+    "triage": 0,
+    "canceled": 0
+  },
+  "issues": [
+    {
+      "id": "issue-1",
+      "identifier": "ENG-123",
+      "title": "Close rollout blockers",
+      "state": {
+        "name": "In Progress",
+        "type": "started",
+        "color": "#f59e0b"
+      }
+    }
+  ]
+}
+```
 
 ## Compatibility Rules
 

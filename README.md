@@ -105,7 +105,7 @@ compared to upstream, this fork adds and maintains several capabilities aimed at
 for bot and org-wide automation use cases, `linear-cli` defines a stable JSON contract for a focused automation tier.
 
 - v1 in scope: `issue list/view/create/update --json`, `issue relation add/delete/list --json`, `issue comment add --json`, `team members --json`, `issue parent/children/create-batch --json`
-- v2 additions: `project list/view --json`, `cycle list/view/current/next --json`
+- v2 additions: `project list/view --json`, `cycle list/view/current/next --json`, `milestone list/view --json`
 - out of scope: non-JSON terminal output, `linear api`, and other `--json` commands that are not listed above
 
 the contract fixes top-level success payload shapes and requires machine-readable failure payloads for the automation tier. see [docs/json-contracts.md](docs/json-contracts.md) for the full contract, compatibility rules, and example payloads. that guarantee also covers parser and argument validation failures when `--json` is present.
@@ -270,8 +270,10 @@ linear project label remove <projectIdOrSlug> <labelNameOrId>  # detach a projec
 
 ```bash
 linear milestone list --project <projectId>     # list milestones for a project
+linear milestone list --project <projectId> --json  # emit contract-stable milestone summaries
 linear m list --project <projectId>             # list milestones (alias)
 linear milestone view <milestoneId>             # view milestone details
+linear milestone view <milestoneId> --json      # emit contract-stable milestone details
 linear m view <milestoneId>                     # view milestone (alias)
 linear milestone create --project <projectId> --name "Q1 Goals" --target-date "2026-03-31"  # create a milestone
 linear milestone create --project <projectId> --name "Q1 Goals" --dry-run   # preview a milestone create
