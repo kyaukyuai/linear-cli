@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [2.8.1] - 2026-03-24
+
+### Added
+
+- added `--dry-run` support to `issue start` so agents and scripts can preview branch naming and target state transitions before mutating Linear or local VCS state
+
 ## [2.8.0] - 2026-03-24
 
 ### Added
