@@ -1,10 +1,21 @@
 import { Command } from "@cliffy/command"
 import { renderMarkdown } from "@littletof/charmd"
 import { gql } from "../../__codegen__/gql.ts"
+import type { GetMilestoneDetailsQuery } from "../../__codegen__/graphql.ts"
 import { getGraphQLClient } from "../../utils/graphql.ts"
 import { formatRelativeTime } from "../../utils/display.ts"
-import { shouldShowSpinner } from "../../utils/hyperlink.ts"
-import { handleError, NotFoundError } from "../../utils/errors.ts"
+import { NotFoundError } from "../../utils/errors.ts"
+import {
+  handleAutomationCommandError,
+  handleAutomationContractParseError,
+} from "../../utils/json_output.ts"
+import { withSpinner } from "../../utils/spinner.ts"
+import { buildMilestoneDetailJsonPayload } from "./milestone-json.ts"
+
+type MilestoneDetails = NonNullable<
+  GetMilestoneDetailsQuery["projectMilestone"]
+>
+type MilestoneIssue = MilestoneDetails["issues"]["nodes"][number]
 
 const GetMilestoneDetails = gql(`
   query GetMilestoneDetails($id: String!) {
@@ -30,6 +41,7 @@ const GetMilestoneDetails = gql(`
           state {
             name
             type
+            color
           }
         }
       }
@@ -42,22 +54,28 @@ export const viewCommand = new Command()
   .description("View milestone details")
   .alias("v")
   .arguments("<milestoneId:string>")
-  .action(async (_options, milestoneId) => {
-    const { Spinner } = await import("@std/cli/unstable-spinner")
-    const showSpinner = shouldShowSpinner()
-    const spinner = showSpinner ? new Spinner() : null
-    spinner?.start()
-
+  .option("-j, --json", "Output as JSON")
+  .error((error, cmd) =>
+    handleAutomationContractParseError(error, cmd, "Failed to view milestone")
+  )
+  .action(async ({ json }, milestoneId) => {
     try {
       const client = getGraphQLClient()
-      const result = await client.request(GetMilestoneDetails, {
-        id: milestoneId,
-      })
-      spinner?.stop()
+      const result = await withSpinner(
+        () => client.request(GetMilestoneDetails, { id: milestoneId }),
+        { enabled: !json },
+      )
 
       const milestone = result.projectMilestone
       if (!milestone) {
         throw new NotFoundError("Milestone", milestoneId)
+      }
+
+      if (json) {
+        console.log(
+          JSON.stringify(buildMilestoneDetailJsonPayload(milestone), null, 2),
+        )
+        return
       }
 
       // Build the display
@@ -100,7 +118,7 @@ export const viewCommand = new Command()
         lines.push("")
 
         const issuesByState = milestone.issues.nodes.reduce(
-          (acc: Record<string, number>, issue) => {
+          (acc: Record<string, number>, issue: MilestoneIssue) => {
             const stateType = issue.state.type
             if (!acc[stateType]) acc[stateType] = 0
             acc[stateType]++
@@ -129,7 +147,7 @@ export const viewCommand = new Command()
         lines.push("")
         lines.push("**Recent Issues:**")
         lines.push("")
-        milestone.issues.nodes.slice(0, 10).forEach((issue) => {
+        milestone.issues.nodes.slice(0, 10).forEach((issue: MilestoneIssue) => {
           lines.push(
             `- ${issue.identifier}: ${issue.title} (${issue.state.name})`,
           )
@@ -155,7 +173,6 @@ export const viewCommand = new Command()
         console.log(markdown)
       }
     } catch (error) {
-      spinner?.stop()
-      handleError(error, "Failed to fetch milestone details")
+      handleAutomationCommandError(error, "Failed to view milestone", json)
     }
   })

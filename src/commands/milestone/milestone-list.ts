@@ -1,11 +1,20 @@
 import { Command } from "@cliffy/command"
 import { unicodeWidth } from "@std/cli"
 import { gql } from "../../__codegen__/gql.ts"
+import type { GetProjectMilestonesQuery } from "../../__codegen__/graphql.ts"
 import { getGraphQLClient } from "../../utils/graphql.ts"
 import { padDisplay } from "../../utils/display.ts"
 import { resolveProjectId } from "../../utils/linear.ts"
-import { shouldShowSpinner } from "../../utils/hyperlink.ts"
-import { handleError } from "../../utils/errors.ts"
+import {
+  handleAutomationCommandError,
+  handleAutomationContractParseError,
+} from "../../utils/json_output.ts"
+import { withSpinner } from "../../utils/spinner.ts"
+import { buildMilestoneListJsonPayload } from "./milestone-json.ts"
+
+type ProjectMilestone = NonNullable<
+  GetProjectMilestonesQuery["project"]
+>["projectMilestones"]["nodes"][number]
 
 const GetProjectMilestones = gql(`
   query GetProjectMilestones($projectId: String!) {
@@ -16,11 +25,16 @@ const GetProjectMilestones = gql(`
         nodes {
           id
           name
+          description
           targetDate
           sortOrder
+          createdAt
+          updatedAt
           project {
             id
             name
+            slugId
+            url
           }
         }
       }
@@ -32,40 +46,57 @@ export const listCommand = new Command()
   .name("list")
   .description("List milestones for a project")
   .option("--project <projectId:string>", "Project ID", { required: true })
+  .option("-j, --json", "Output as JSON")
   .option("--no-pager", "Disable automatic paging for long output")
-  .action(async ({ project: projectIdOrSlug }) => {
-    const { Spinner } = await import("@std/cli/unstable-spinner")
-    const showSpinner = shouldShowSpinner()
-    const spinner = showSpinner ? new Spinner() : null
-    spinner?.start()
-
+  .error((error, cmd) =>
+    handleAutomationContractParseError(error, cmd, "Failed to list milestones")
+  )
+  .action(async ({ project: projectIdOrSlug, json }) => {
     try {
-      // Resolve project slug to full UUID
       const projectId = await resolveProjectId(projectIdOrSlug)
-
       const client = getGraphQLClient()
-      const result = await client.request(GetProjectMilestones, {
-        projectId,
-      })
-      spinner?.stop()
+      const result = await withSpinner(
+        () => client.request(GetProjectMilestones, { projectId }),
+        { enabled: !json },
+      )
 
-      const milestones = result.project?.projectMilestones?.nodes || []
+      const milestones: ProjectMilestone[] =
+        result.project?.projectMilestones?.nodes || []
 
       if (milestones.length === 0) {
-        console.log("No milestones found for this project.")
+        if (json) {
+          console.log("[]")
+        } else {
+          console.log("No milestones found for this project.")
+        }
         return
       }
 
       // Sort milestones by targetDate (nulls last) then by name
-      const sortedMilestones = milestones.sort((a, b) => {
-        if (!a.targetDate && !b.targetDate) return a.name.localeCompare(b.name)
-        if (!a.targetDate) return 1
-        if (!b.targetDate) return -1
-        const dateComparison = a.targetDate.localeCompare(b.targetDate)
-        return dateComparison !== 0
-          ? dateComparison
-          : a.name.localeCompare(b.name)
-      })
+      const sortedMilestones = milestones.sort(
+        (a: ProjectMilestone, b: ProjectMilestone) => {
+          if (!a.targetDate && !b.targetDate) {
+            return a.name.localeCompare(b.name)
+          }
+          if (!a.targetDate) return 1
+          if (!b.targetDate) return -1
+          const dateComparison = a.targetDate.localeCompare(b.targetDate)
+          return dateComparison !== 0
+            ? dateComparison
+            : a.name.localeCompare(b.name)
+        },
+      )
+
+      if (json) {
+        console.log(
+          JSON.stringify(
+            sortedMilestones.map(buildMilestoneListJsonPayload),
+            null,
+            2,
+          ),
+        )
+        return
+      }
 
       // Calculate column widths
       const { columns } = Deno.stdout.isTerminal()
@@ -78,7 +109,9 @@ export const listCommand = new Command()
         30,
         Math.max(
           7, // minimum width for "PROJECT" header
-          ...sortedMilestones.map((m) => unicodeWidth(m.project.name)),
+          ...sortedMilestones.map((m: ProjectMilestone) =>
+            unicodeWidth(m.project.name)
+          ),
         ),
       )
 
@@ -86,7 +119,7 @@ export const listCommand = new Command()
       const fixed = ID_WIDTH + TARGET_DATE_WIDTH + PROJECT_WIDTH + SPACE_WIDTH
       const PADDING = 1
       const maxNameWidth = Math.max(
-        ...sortedMilestones.map((m) => unicodeWidth(m.name)),
+        ...sortedMilestones.map((m: ProjectMilestone) => unicodeWidth(m.name)),
       )
       const availableWidth = Math.max(columns - PADDING - fixed, 0)
       const nameWidth = Math.min(maxNameWidth, availableWidth)
@@ -130,7 +163,6 @@ export const listCommand = new Command()
         )
       }
     } catch (error) {
-      spinner?.stop()
-      handleError(error, "Failed to fetch milestones")
+      handleAutomationCommandError(error, "Failed to list milestones", json)
     }
   })
