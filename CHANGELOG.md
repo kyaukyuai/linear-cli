@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## [2.8.2] - 2026-03-24
+
+### Added
+
+- added rate-limit retry guidance and `error.details.rateLimit` metadata for automation consumers when issue creation hits API throttling
+
+### Changed
+
+- distinguished plan-limit failures from generic automation errors with exit code `5` and clearer upgrade/archive guidance
+
 ## [2.8.1] - 2026-03-24
 
 ### Added
