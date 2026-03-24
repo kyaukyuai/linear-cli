@@ -3,7 +3,9 @@ import {
   AuthError,
   CliError,
   extractGraphQLMessage,
+  getErrorSuggestion,
   getExitCode,
+  getRateLimitDetails,
   isClientError,
   isDebugMode,
   isNotFoundError,
@@ -68,12 +70,15 @@ Deno.test("ValidationError - stores message and suggestion", () => {
 function createClientError(
   message: string,
   options?: {
+    headers?: Headers
     status?: number
     userPresentableMessage?: string
   },
 ): ClientError {
   const response = {
     status: options?.status ?? 200,
+    headers: options?.headers ?? new Headers(),
+    body: JSON.stringify({ errors: [{ message }] }),
     errors: [
       {
         message,
@@ -143,4 +148,37 @@ Deno.test("getExitCode - returns 5 for plan limit errors", () => {
 Deno.test("getExitCode - returns 1 for generic errors", () => {
   assertEquals(getExitCode(new Error("boom")), 1)
   assertEquals(getExitCode(new CliError("Something went wrong")), 1)
+})
+
+Deno.test("getRateLimitDetails - extracts rate limit headers", () => {
+  const error = createClientError("Too many requests", {
+    status: 429,
+    headers: new Headers({
+      "Retry-After": "60",
+      "X-RateLimit-Limit": "5",
+      "X-RateLimit-Remaining": "0",
+      "X-RateLimit-Reset": "1711260000",
+    }),
+  })
+
+  assertEquals(getRateLimitDetails(error), {
+    retryAfter: "60",
+    limit: "5",
+    remaining: "0",
+    reset: "1711260000",
+  })
+})
+
+Deno.test("getErrorSuggestion - uses Retry-After for rate limits", () => {
+  const error = createClientError("Too many requests", {
+    status: 429,
+    headers: new Headers({
+      "Retry-After": "60",
+    }),
+  })
+
+  assertEquals(
+    getErrorSuggestion(error),
+    "Retry after 60 seconds before creating more issues.",
+  )
 })

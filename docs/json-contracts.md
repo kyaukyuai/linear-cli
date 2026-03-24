@@ -142,6 +142,8 @@ Automation-tier commands continue to use non-zero exit codes on failure. The cur
 
 Plan-limit failures keep the normal failure envelope shape. They are distinguished by exit code and by a suggestion that points callers toward upgrading or archiving items before retrying.
 
+Rate-limited failures keep exit code `1`, but may include `error.details.rateLimit` with any available `Retry-After`, `X-RateLimit-Limit`, `X-RateLimit-Remaining`, and `X-RateLimit-Reset` header values. When `Retry-After` is present, the suggestion should point callers toward retry timing.
+
 ## Common Sub-Shapes
 
 ### `stateRef`

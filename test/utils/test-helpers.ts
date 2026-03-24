@@ -9,6 +9,8 @@ export async function setupMockLinearServer(
     queryName: string
     variables?: Record<string, unknown>
     response: Record<string, unknown>
+    status?: number
+    headers?: Record<string, string>
   }>,
   envVars?: Record<string, string>,
 ): Promise<{ server: MockLinearServer; cleanup: () => Promise<void> }> {

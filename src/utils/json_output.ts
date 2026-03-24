@@ -5,6 +5,7 @@ import {
   extractGraphQLMessage,
   getErrorSuggestion,
   getExitCode,
+  getRateLimitDetails,
   handleError,
   isClientError,
   isDebugMode,
@@ -176,9 +177,20 @@ function getJsonErrorSuggestion(error: unknown): string | null {
 function getJsonErrorDetails(
   error: unknown,
 ): { details?: Record<string, unknown> } {
+  const rateLimitDetails = getRateLimitDetails(error)
+
   if (error instanceof CliError && error.details != null) {
-    return { details: error.details }
+    return {
+      details: rateLimitDetails == null
+        ? error.details
+        : { ...error.details, rateLimit: rateLimitDetails },
+    }
   }
+
+  if (rateLimitDetails != null) {
+    return { details: { rateLimit: rateLimitDetails } }
+  }
+
   return {}
 }
 

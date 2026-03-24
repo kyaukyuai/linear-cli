@@ -12,11 +12,14 @@ import { buildJsonErrorEnvelope } from "../../src/utils/json_output.ts"
 function createClientError(
   message: string,
   options?: {
+    headers?: Headers
     status?: number
     userPresentableMessage?: string
   },
 ): ClientError {
   const response = {
+    body: JSON.stringify({ errors: [{ message }] }),
+    headers: options?.headers ?? new Headers(),
     status: options?.status ?? 200,
     errors: [{
       message,
@@ -154,6 +157,37 @@ Deno.test("buildJsonErrorEnvelope maps GraphQL plan limit errors", () => {
     "Upgrade your Linear plan or archive existing items and retry.",
   )
   assertEquals(envelope.error.context, "Failed to create issue")
+})
+
+Deno.test("buildJsonErrorEnvelope includes rate limit details", () => {
+  const envelope = buildJsonErrorEnvelope(
+    createClientError("Too many requests", {
+      status: 429,
+      headers: new Headers({
+        "Retry-After": "60",
+        "X-RateLimit-Limit": "5",
+        "X-RateLimit-Remaining": "0",
+        "X-RateLimit-Reset": "1711260000",
+      }),
+    }),
+    "Failed to create issue",
+  )
+
+  assertEquals(envelope.error.type, "graphql_error")
+  assertEquals(envelope.error.message, "Too many requests")
+  assertEquals(
+    envelope.error.suggestion,
+    "Retry after 60 seconds before creating more issues.",
+  )
+  assertEquals(envelope.error.context, "Failed to create issue")
+  assertEquals(envelope.error.details, {
+    rateLimit: {
+      retryAfter: "60",
+      limit: "5",
+      remaining: "0",
+      reset: "1711260000",
+    },
+  })
 })
 
 Deno.test("buildJsonErrorEnvelope maps generic GraphQL errors", () => {

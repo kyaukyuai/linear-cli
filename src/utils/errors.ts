@@ -15,6 +15,15 @@ const AUTH_EXIT_CODE = 4
 const PLAN_LIMIT_EXIT_CODE = 5
 const DEFAULT_PLAN_LIMIT_SUGGESTION =
   "Upgrade your Linear plan or archive existing items and retry."
+const DEFAULT_RATE_LIMIT_SUGGESTION =
+  "Wait for the rate limit window to reset and retry."
+
+export type RateLimitDetails = {
+  retryAfter?: string
+  limit?: string
+  remaining?: string
+  reset?: string
+}
 
 /**
  * Check if debug mode is enabled via LINEAR_DEBUG environment variable.
@@ -300,6 +309,10 @@ export function getErrorSuggestion(error: unknown): string | undefined {
     return DEFAULT_PLAN_LIMIT_SUGGESTION
   }
 
+  if (isRateLimitError(error)) {
+    return buildRateLimitSuggestion(getRateLimitDetails(error))
+  }
+
   if (isAuthFailure(error)) {
     return "Run `linear auth login` to authenticate."
   }
@@ -341,6 +354,28 @@ export function isPlanLimitError(error: unknown): boolean {
   return false
 }
 
+export function getRateLimitDetails(
+  error: unknown,
+): RateLimitDetails | undefined {
+  for (const candidate of iterateErrorChain(error)) {
+    if (candidate instanceof CliError) {
+      const rateLimitDetails = extractRateLimitDetails(candidate.details)
+      if (rateLimitDetails != null) {
+        return rateLimitDetails
+      }
+    }
+
+    if (isClientError(candidate)) {
+      const details = getGraphQLRateLimitDetails(candidate)
+      if (details != null) {
+        return details
+      }
+    }
+  }
+
+  return undefined
+}
+
 function* iterateErrorChain(error: unknown): Generator<unknown> {
   let current: unknown = error
   const seen = new Set<unknown>()
@@ -362,6 +397,10 @@ function isGraphQLPlanLimitError(error: ClientError): boolean {
   return isPlanLimitMessage(extractGraphQLMessage(error))
 }
 
+function isRateLimitError(error: unknown): boolean {
+  return getRateLimitDetails(error) != null
+}
+
 function isPlanLimitMessage(message: string): boolean {
   const lowerMessage = message.toLowerCase()
 
@@ -379,6 +418,104 @@ function isPlanLimitMessage(message: string): boolean {
     lowerMessage.includes("project limit") ||
     (lowerMessage.includes("upgrade") && lowerMessage.includes("archive")) ||
     (lowerMessage.includes("upgrade") && lowerMessage.includes("limit"))
+}
+
+function isRateLimitMessage(message: string): boolean {
+  const lowerMessage = message.toLowerCase()
+  return lowerMessage.includes("rate limit") ||
+    lowerMessage.includes("too many requests") ||
+    lowerMessage.includes("retry-after")
+}
+
+function getGraphQLRateLimitDetails(
+  error: ClientError,
+): RateLimitDetails | undefined {
+  const status = error.response?.status
+  const message = extractGraphQLMessage(error)
+  const headers = error.response?.headers
+
+  if (status !== 429 && !isRateLimitMessage(message)) {
+    return undefined
+  }
+
+  if (!(headers instanceof Headers)) {
+    return {}
+  }
+
+  const details: RateLimitDetails = {}
+
+  const retryAfter = headers.get("Retry-After") ??
+    headers.get("retry-after") ?? undefined
+  const limit = headers.get("X-RateLimit-Limit") ??
+    headers.get("x-ratelimit-limit") ?? undefined
+  const remaining = headers.get("X-RateLimit-Remaining") ??
+    headers.get("x-ratelimit-remaining") ?? undefined
+  const reset = headers.get("X-RateLimit-Reset") ??
+    headers.get("x-ratelimit-reset") ?? undefined
+
+  if (retryAfter != null) {
+    details.retryAfter = retryAfter
+  }
+
+  if (limit != null) {
+    details.limit = limit
+  }
+
+  if (remaining != null) {
+    details.remaining = remaining
+  }
+
+  if (reset != null) {
+    details.reset = reset
+  }
+
+  return Object.keys(details).length > 0 ? details : {}
+}
+
+function extractRateLimitDetails(
+  details: Record<string, unknown> | undefined,
+): RateLimitDetails | undefined {
+  const rateLimit = details?.rateLimit
+  if (rateLimit == null || typeof rateLimit !== "object") {
+    return undefined
+  }
+
+  const candidate = rateLimit as Record<string, unknown>
+  const extracted: RateLimitDetails = {}
+
+  for (const key of ["retryAfter", "limit", "remaining", "reset"] as const) {
+    const value = candidate[key]
+    if (typeof value === "string" && value.length > 0) {
+      extracted[key] = value
+    }
+  }
+
+  return Object.keys(extracted).length > 0 ? extracted : undefined
+}
+
+function buildRateLimitSuggestion(
+  details: RateLimitDetails | undefined,
+): string {
+  const retryAfter = details?.retryAfter
+  if (retryAfter == null) {
+    return DEFAULT_RATE_LIMIT_SUGGESTION
+  }
+
+  const retryAfterSeconds = parseRetryAfterSeconds(retryAfter)
+  if (retryAfterSeconds != null) {
+    const unit = retryAfterSeconds === 1 ? "second" : "seconds"
+    return `Retry after ${retryAfterSeconds} ${unit} before creating more issues.`
+  }
+
+  return `Retry after ${retryAfter} before creating more issues.`
+}
+
+function parseRetryAfterSeconds(value: string): number | undefined {
+  if (/^\d+$/.test(value)) {
+    return Number(value)
+  }
+
+  return undefined
 }
 
 function isGraphQLAuthError(error: ClientError): boolean {

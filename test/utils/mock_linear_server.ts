@@ -16,6 +16,7 @@ interface MockResponse {
   variables?: Record<string, unknown>
   response: Record<string, unknown>
   status?: number
+  headers?: Record<string, string>
 }
 
 export class MockLinearServer {
@@ -79,7 +80,7 @@ export class MockLinearServer {
   }
 
   private async handleGraphQL(request: Request): Promise<Response> {
-    const headers = {
+    const defaultHeaders = {
       "Content-Type": "application/json",
       "Access-Control-Allow-Origin": "*",
       // Use fixed date header for deterministic snapshot tests
@@ -94,6 +95,10 @@ export class MockLinearServer {
       const mockResponse = this.findMatchingResponse(query, variables)
 
       if (mockResponse) {
+        const headers = {
+          ...defaultHeaders,
+          ...mockResponse.headers,
+        }
         return new Response(
           JSON.stringify(mockResponse.response),
           { status: mockResponse.status ?? 200, headers },
@@ -112,7 +117,7 @@ export class MockLinearServer {
             },
           }],
         }),
-        { status: 200, headers },
+        { status: 200, headers: defaultHeaders },
       )
     } catch (_error) {
       return new Response(
@@ -122,7 +127,7 @@ export class MockLinearServer {
             extensions: { code: "BAD_REQUEST" },
           }],
         }),
-        { status: 400, headers },
+        { status: 400, headers: defaultHeaders },
       )
     }
   }
