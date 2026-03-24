@@ -429,6 +429,106 @@ await snapshotTest({
   },
 })
 
+await snapshotTest({
+  name: "Issue Create Command - JSON Rate Limit Failure",
+  meta: import.meta,
+  colors: false,
+  canFail: true,
+  args: [
+    "--title",
+    "Blocked by rate limit",
+    "--team",
+    "ENG",
+    "--json",
+    "--no-interactive",
+  ],
+  denoArgs: commonDenoArgs,
+  async fn() {
+    const { cleanup } = await setupMockLinearServer([
+      {
+        queryName: "GetTeamIdByKey",
+        variables: { team: "ENG" },
+        response: {
+          data: {
+            teams: {
+              nodes: [{ id: "team-eng-id" }],
+            },
+          },
+        },
+      },
+      {
+        queryName: "CreateIssue",
+        status: 429,
+        headers: {
+          "Retry-After": "60",
+          "X-RateLimit-Limit": "5",
+          "X-RateLimit-Remaining": "0",
+          "X-RateLimit-Reset": "1711260000",
+        },
+        response: {
+          errors: [{
+            message: "Too many requests",
+          }],
+        },
+      },
+    ], { LINEAR_TEAM_ID: "ENG" })
+
+    try {
+      await createCommand.parse()
+    } finally {
+      await cleanup()
+    }
+  },
+})
+
+await snapshotTest({
+  name: "Issue Create Command - Rate Limit Failure",
+  meta: import.meta,
+  colors: false,
+  canFail: true,
+  args: [
+    "--title",
+    "Blocked by rate limit",
+    "--team",
+    "ENG",
+    "--no-interactive",
+  ],
+  denoArgs: commonDenoArgs,
+  async fn() {
+    const { cleanup } = await setupMockLinearServer([
+      {
+        queryName: "GetTeamIdByKey",
+        variables: { team: "ENG" },
+        response: {
+          data: {
+            teams: {
+              nodes: [{ id: "team-eng-id" }],
+            },
+          },
+        },
+      },
+      {
+        queryName: "CreateIssue",
+        status: 429,
+        headers: {
+          "Retry-After": "60",
+        },
+        response: {
+          errors: [{
+            message: "Too many requests",
+          }],
+        },
+      },
+    ], { LINEAR_TEAM_ID: "ENG" })
+
+    try {
+      await createCommand.parse()
+    } finally {
+      await cleanup()
+    }
+  },
+})
+
 // Test creating an issue with milestone
 await snapshotTest({
   name: "Issue Create Command - With Milestone",

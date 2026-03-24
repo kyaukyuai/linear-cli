@@ -158,6 +158,41 @@ stderr:
 ""
 `;
 
+snapshot[`Issue Create Command - JSON Rate Limit Failure 1`] = `
+stdout:
+'{
+  "success": false,
+  "error": {
+    "type": "graphql_error",
+    "message": "GraphQL Error (Code: 429): {\\\\"response\\\\":{\\\\"status\\\\":429,\\\\"headers\\\\":{}},\\\\"request\\\\":{\\\\"query\\\\":\\\\"mutation CreateIssue(\$input: IssueCreateInput!) {\\\\\\\\n  issueCreate(input: \$input) {\\\\\\\\n    success\\\\\\\\n    issue {\\\\\\\\n      id\\\\\\\\n      identifier\\\\\\\\n      title\\\\\\\\n      url\\\\\\\\n      dueDate\\\\\\\\n      assignee {\\\\\\\\n        id\\\\\\\\n        name\\\\\\\\n        displayName\\\\\\\\n        initials\\\\\\\\n      }\\\\\\\\n      parent {\\\\\\\\n        id\\\\\\\\n        identifier\\\\\\\\n        title\\\\\\\\n        url\\\\\\\\n        dueDate\\\\\\\\n        state {\\\\\\\\n          name\\\\\\\\n          color\\\\\\\\n        }\\\\\\\\n      }\\\\\\\\n      state {\\\\\\\\n        name\\\\\\\\n        color\\\\\\\\n      }\\\\\\\\n      team {\\\\\\\\n        key\\\\\\\\n      }\\\\\\\\n    }\\\\\\\\n  }\\\\\\\\n}\\\\",\\\\"variables\\\\":{\\\\"input\\\\":{\\\\"title\\\\":\\\\"Blocked by rate limit\\\\",\\\\"labelIds\\\\":[],\\\\"teamId\\\\":\\\\"team-eng-id\\\\",\\\\"useDefaultTemplate\\\\":true}}}}",
+    "suggestion": "Retry after 60 seconds before creating more issues.",
+    "context": "Failed to create issue",
+    "details": {
+      "rateLimit": {
+        "retryAfter": "60",
+        "limit": "5",
+        "remaining": "0",
+        "reset": "1711260000"
+      }
+    }
+  }
+}
+'
+stderr:
+""
+`;
+
+snapshot[`Issue Create Command - Rate Limit Failure 1`] = `
+stdout:
+"Creating issue in ENG
+
+"
+stderr:
+'✗ Failed to create issue: GraphQL Error (Code: 429): {"response":{"status":429,"headers":{}},"request":{"query":"mutation CreateIssue(\$input: IssueCreateInput!) {\\\\n  issueCreate(input: \$input) {\\\\n    success\\\\n    issue {\\\\n      id\\\\n      identifier\\\\n      title\\\\n      url\\\\n      dueDate\\\\n      assignee {\\\\n        id\\\\n        name\\\\n        displayName\\\\n        initials\\\\n      }\\\\n      parent {\\\\n        id\\\\n        identifier\\\\n        title\\\\n        url\\\\n        dueDate\\\\n        state {\\\\n          name\\\\n          color\\\\n        }\\\\n      }\\\\n      state {\\\\n        name\\\\n        color\\\\n      }\\\\n      team {\\\\n        key\\\\n      }\\\\n    }\\\\n  }\\\\n}","variables":{"input":{"title":"Blocked by rate limit","labelIds":[],"teamId":"team-eng-id","useDefaultTemplate":true}}}}
+  Retry after 60 seconds before creating more issues.
+'
+`;
+
 snapshot[`Issue Create Command - With Milestone 1`] = `
 stdout:
 "Creating issue in ENG
