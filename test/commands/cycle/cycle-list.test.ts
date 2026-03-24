@@ -295,9 +295,32 @@ await cliffySnapshotTest({
   meta: import.meta,
   colors: false,
   canFail: true,
-  args: ["--json"],
+  args: ["--team", "CLI", "--json"],
   denoArgs: commonDenoArgs,
   async fn() {
-    await listCommand.parse()
+    const server = new MockLinearServer([
+      {
+        queryName: "GetTeamIdByKey",
+        response: {
+          data: {
+            teams: {
+              nodes: [],
+            },
+          },
+        },
+      },
+    ])
+
+    try {
+      await server.start()
+      Deno.env.set("LINEAR_GRAPHQL_ENDPOINT", server.getEndpoint())
+      Deno.env.set("LINEAR_API_KEY", "Bearer test-token")
+
+      await listCommand.parse()
+    } finally {
+      await server.stop()
+      Deno.env.delete("LINEAR_GRAPHQL_ENDPOINT")
+      Deno.env.delete("LINEAR_API_KEY")
+    }
   },
 })
