@@ -142,6 +142,22 @@ stderr:
 ""
 `;
 
+snapshot[`Issue Create Command - JSON Plan Limit Failure 1`] = `
+stdout:
+\`{
+  "success": false,
+  "error": {
+    "type": "graphql_error",
+    "message": "You've reached the issue limit for the free plan. Upgrade or archive issues to continue.",
+    "suggestion": "Upgrade your Linear plan or archive existing items and retry.",
+    "context": "Failed to create issue"
+  }
+}
+\`
+stderr:
+""
+`;
+
 snapshot[`Issue Create Command - With Milestone 1`] = `
 stdout:
 "Creating issue in ENG

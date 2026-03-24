@@ -1,11 +1,14 @@
 import { assertEquals } from "@std/assert"
 import {
+  AuthError,
   CliError,
   extractGraphQLMessage,
+  getExitCode,
   isClientError,
   isDebugMode,
   isNotFoundError,
   NotFoundError,
+  PlanLimitError,
   ValidationError,
 } from "../../src/utils/errors.ts"
 import { ClientError, type GraphQLResponse } from "graphql-request"
@@ -64,15 +67,18 @@ Deno.test("ValidationError - stores message and suggestion", () => {
 // Helper to create test ClientError instances
 function createClientError(
   message: string,
-  userPresentableMessage?: string,
+  options?: {
+    status?: number
+    userPresentableMessage?: string
+  },
 ): ClientError {
   const response = {
-    status: 200,
+    status: options?.status ?? 200,
     errors: [
       {
         message,
-        extensions: userPresentableMessage
-          ? { userPresentableMessage }
+        extensions: options?.userPresentableMessage
+          ? { userPresentableMessage: options.userPresentableMessage }
           : undefined,
       },
     ],
@@ -81,7 +87,9 @@ function createClientError(
 }
 
 Deno.test("extractGraphQLMessage - extracts userPresentableMessage", () => {
-  const error = createClientError("Internal error", "Issue not found")
+  const error = createClientError("Internal error", {
+    userPresentableMessage: "Issue not found",
+  })
   assertEquals(extractGraphQLMessage(error), "Issue not found")
 })
 
@@ -108,4 +116,31 @@ Deno.test("isClientError - returns true for ClientError", () => {
 Deno.test("isClientError - returns false for other errors", () => {
   const error = new Error("Some error")
   assertEquals(isClientError(error), false)
+})
+
+Deno.test("getExitCode - returns 4 for auth errors", () => {
+  assertEquals(getExitCode(new AuthError("Authentication required")), 4)
+  assertEquals(
+    getExitCode(createClientError("Authentication required", { status: 401 })),
+    4,
+  )
+})
+
+Deno.test("getExitCode - returns 5 for plan limit errors", () => {
+  const error = createClientError("Internal error", {
+    userPresentableMessage:
+      "You've reached the issue limit for the free plan. Upgrade or archive issues to continue.",
+  })
+
+  assertEquals(getExitCode(error), 5)
+  assertEquals(getExitCode(new PlanLimitError("Issue limit reached")), 5)
+  assertEquals(
+    getExitCode(new CliError("Create failed", { cause: error })),
+    5,
+  )
+})
+
+Deno.test("getExitCode - returns 1 for generic errors", () => {
+  assertEquals(getExitCode(new Error("boom")), 1)
+  assertEquals(getExitCode(new CliError("Something went wrong")), 1)
 })

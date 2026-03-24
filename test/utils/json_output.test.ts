@@ -135,6 +135,27 @@ Deno.test("buildJsonErrorEnvelope maps GraphQL auth errors", () => {
   )
 })
 
+Deno.test("buildJsonErrorEnvelope maps GraphQL plan limit errors", () => {
+  const envelope = buildJsonErrorEnvelope(
+    createClientError("Internal error", {
+      userPresentableMessage:
+        "You've reached the issue limit for the free plan. Upgrade or archive issues to continue.",
+    }),
+    "Failed to create issue",
+  )
+
+  assertEquals(envelope.error.type, "graphql_error")
+  assertEquals(
+    envelope.error.message,
+    "You've reached the issue limit for the free plan. Upgrade or archive issues to continue.",
+  )
+  assertEquals(
+    envelope.error.suggestion,
+    "Upgrade your Linear plan or archive existing items and retry.",
+  )
+  assertEquals(envelope.error.context, "Failed to create issue")
+})
+
 Deno.test("buildJsonErrorEnvelope maps generic GraphQL errors", () => {
   const envelope = buildJsonErrorEnvelope(
     createClientError("Mutation failed"),
@@ -211,6 +232,68 @@ handleJsonError(
           suggestion:
             "Provide --query with at least one non-whitespace character.",
           context: "Failed to list issues",
+        },
+      },
+    )
+  } finally {
+    await Deno.remove(scriptPath)
+  }
+})
+
+Deno.test("handleJsonError uses exit code 5 for plan limit errors", async () => {
+  const scriptPath = await Deno.makeTempFile({ suffix: ".ts" })
+  const repoRoot = fromFileUrl(new URL("../../", import.meta.url))
+  const denoJsonPath = fromFileUrl(new URL("../../deno.json", import.meta.url))
+  const jsonOutputPath = new URL(
+    "../../src/utils/json_output.ts",
+    import.meta.url,
+  ).href
+  const graphqlRequestPath = "npm:graphql-request@^7.2.0"
+
+  await Deno.writeTextFile(
+    scriptPath,
+    `import { ClientError } from "${graphqlRequestPath}"
+import { handleJsonError } from "${jsonOutputPath}"
+
+const response = {
+  status: 200,
+  errors: [{
+    message: "Internal error",
+    extensions: {
+      userPresentableMessage:
+        "You've reached the issue limit for the free plan. Upgrade or archive issues to continue.",
+    },
+  }],
+}
+
+handleJsonError(
+  new ClientError(response, { query: "mutation {}", variables: {} }),
+  "Failed to create issue",
+)`,
+  )
+
+  try {
+    const output = await new Deno.Command("deno", {
+      args: ["run", "-c", denoJsonPath, "--allow-all", scriptPath],
+      cwd: repoRoot,
+      stdout: "piped",
+      stderr: "piped",
+    }).output()
+
+    assertEquals(output.success, false)
+    assertEquals(output.code, 5)
+    assertEquals(new TextDecoder().decode(output.stderr), "")
+    assertEquals(
+      JSON.parse(new TextDecoder().decode(output.stdout)),
+      {
+        success: false,
+        error: {
+          type: "graphql_error",
+          message:
+            "You've reached the issue limit for the free plan. Upgrade or archive issues to continue.",
+          suggestion:
+            "Upgrade your Linear plan or archive existing items and retry.",
+          context: "Failed to create issue",
         },
       },
     )

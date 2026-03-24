@@ -380,6 +380,55 @@ await snapshotTest({
   },
 })
 
+await snapshotTest({
+  name: "Issue Create Command - JSON Plan Limit Failure",
+  meta: import.meta,
+  colors: false,
+  canFail: true,
+  args: [
+    "--title",
+    "Blocked by plan limit",
+    "--team",
+    "ENG",
+    "--json",
+    "--no-interactive",
+  ],
+  denoArgs: commonDenoArgs,
+  async fn() {
+    const { cleanup } = await setupMockLinearServer([
+      {
+        queryName: "GetTeamIdByKey",
+        variables: { team: "ENG" },
+        response: {
+          data: {
+            teams: {
+              nodes: [{ id: "team-eng-id" }],
+            },
+          },
+        },
+      },
+      {
+        queryName: "CreateIssue",
+        response: {
+          errors: [{
+            message: "Internal error",
+            extensions: {
+              userPresentableMessage:
+                "You've reached the issue limit for the free plan. Upgrade or archive issues to continue.",
+            },
+          }],
+        },
+      },
+    ], { LINEAR_TEAM_ID: "ENG" })
+
+    try {
+      await createCommand.parse()
+    } finally {
+      await cleanup()
+    }
+  },
+})
+
 // Test creating an issue with milestone
 await snapshotTest({
   name: "Issue Create Command - With Milestone",

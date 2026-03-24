@@ -3,11 +3,14 @@ import {
   AuthError,
   CliError,
   extractGraphQLMessage,
+  getErrorSuggestion,
+  getExitCode,
   handleError,
   isClientError,
   isDebugMode,
   isNotFoundError,
   NotFoundError,
+  PlanLimitError,
   ValidationError,
 } from "./errors.ts"
 
@@ -53,7 +56,7 @@ export function handleJsonError(error: unknown, context?: string): never {
     printJsonDebugInfo(error)
   }
 
-  Deno.exit(1)
+  Deno.exit(getExitCode(error))
 }
 
 export function handleAutomationCommandError(
@@ -132,6 +135,9 @@ function getJsonErrorType(error: unknown): JsonErrorType {
   if (error instanceof AuthError) {
     return "auth_error"
   }
+  if (error instanceof PlanLimitError) {
+    return "cli_error"
+  }
   if (error instanceof CliError) {
     return "cli_error"
   }
@@ -164,13 +170,7 @@ function getJsonErrorMessage(error: unknown): string {
 }
 
 function getJsonErrorSuggestion(error: unknown): string | null {
-  if (error instanceof CliError) {
-    return error.suggestion ?? null
-  }
-  if (isClientError(error) && isGraphQLAuthError(error)) {
-    return "Run `linear auth login` to authenticate."
-  }
-  return null
+  return getErrorSuggestion(error) ?? null
 }
 
 function getJsonErrorDetails(
