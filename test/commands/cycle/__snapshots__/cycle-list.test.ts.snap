@@ -13,6 +13,7 @@ Options:
 
   -h, --help          - Show this help.                           
   --team      <team>  - Team key (defaults to current team)       
+  -j, --json          - Output as JSON                            
   --no-pager          - Disable automatic paging for long output  
 
 "
@@ -41,10 +42,59 @@ stderr:
 ""
 `;
 
+snapshot[`Cycle List Command - JSON Output 1`] = `
+stdout:
+'[
+  {
+    "id": "cycle-2",
+    "number": 13,
+    "name": "Sprint 13",
+    "startsAt": "2026-02-24T00:00:00.000Z",
+    "endsAt": "2026-03-10T00:00:00.000Z",
+    "completedAt": null,
+    "status": "active",
+    "isActive": true,
+    "isFuture": false,
+    "isPast": false
+  },
+  {
+    "id": "cycle-1",
+    "number": 12,
+    "name": "Sprint 12",
+    "startsAt": "2026-02-10T00:00:00.000Z",
+    "endsAt": "2026-02-24T00:00:00.000Z",
+    "completedAt": "2026-02-24T00:00:00.000Z",
+    "status": "completed",
+    "isActive": false,
+    "isFuture": false,
+    "isPast": true
+  }
+]
+'
+stderr:
+""
+`;
+
 snapshot[`Cycle List Command - No Cycles Found 1`] = `
 stdout:
 "No cycles found for this team.
 "
+stderr:
+""
+`;
+
+snapshot[`Cycle List Command - JSON Missing Team Reference 1`] = `
+stdout:
+'{
+  "success": false,
+  "error": {
+    "type": "not_found",
+    "message": "Team not found: CLI",
+    "suggestion": null,
+    "context": "Failed to list cycles"
+  }
+}
+'
 stderr:
 ""
 `;

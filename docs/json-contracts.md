@@ -480,12 +480,16 @@ Idempotency policy:
 
 ## Automation Contract v2
 
-Automation Contract v2 extends the stable read surface to project commands while preserving the v1 guarantees for existing issue and team commands.
+Automation Contract v2 extends the stable read surface to project and cycle commands while preserving the v1 guarantees for existing issue and team commands.
 
 The v2 additions are:
 
 - `linear project list --json`
 - `linear project view --json`
+- `linear cycle list --json`
+- `linear cycle view --json`
+- `linear cycle current --json`
+- `linear cycle next --json`
 
 V2 reuses the same failure envelope, value rules, and compatibility rules defined above.
 
@@ -593,6 +597,136 @@ Top-level shape:
   }
 }
 ```
+
+### `cycleRef`
+
+```json
+{
+  "id": "cycle-123",
+  "number": 42,
+  "name": "Sprint 42",
+  "startsAt": "2026-03-16T00:00:00.000Z",
+  "endsAt": "2026-03-29T23:59:59.000Z",
+  "completedAt": null,
+  "status": "active",
+  "isActive": true,
+  "isFuture": false,
+  "isPast": false
+}
+```
+
+### `cycleIssueRef`
+
+```json
+{
+  "id": "issue-123",
+  "identifier": "ENG-123",
+  "title": "Close rollout blockers",
+  "state": {
+    "name": "In Progress",
+    "type": "started",
+    "color": "#f59e0b"
+  }
+}
+```
+
+### `cycleIssueSummary`
+
+```json
+{
+  "total": 3,
+  "completed": 1,
+  "started": 1,
+  "unstarted": 1,
+  "backlog": 0,
+  "triage": 0,
+  "canceled": 0
+}
+```
+
+### `cycle list --json`
+
+Top-level shape:
+
+```json
+[
+  {
+    "id": "cycle-123",
+    "number": 42,
+    "name": "Sprint 42",
+    "startsAt": "2026-03-16T00:00:00.000Z",
+    "endsAt": "2026-03-29T23:59:59.000Z",
+    "completedAt": null,
+    "status": "active",
+    "isActive": true,
+    "isFuture": false,
+    "isPast": false
+  }
+]
+```
+
+### `cycle view --json`
+
+Top-level shape:
+
+```json
+{
+  "id": "cycle-123",
+  "number": 42,
+  "name": "Sprint 42",
+  "description": "Coordinate rollout readiness",
+  "startsAt": "2026-03-16T00:00:00.000Z",
+  "endsAt": "2026-03-29T23:59:59.000Z",
+  "completedAt": null,
+  "status": "active",
+  "isActive": true,
+  "isFuture": false,
+  "isPast": false,
+  "progress": 0.33,
+  "createdAt": "2026-03-01T00:00:00.000Z",
+  "updatedAt": "2026-03-18T00:00:00.000Z",
+  "team": {
+    "id": "team-1",
+    "key": "ENG",
+    "name": "Engineering"
+  },
+  "issueSummary": {
+    "total": 3,
+    "completed": 1,
+    "started": 1,
+    "unstarted": 1,
+    "backlog": 0,
+    "triage": 0,
+    "canceled": 0
+  },
+  "issues": [
+    {
+      "id": "issue-1",
+      "identifier": "ENG-123",
+      "title": "Close rollout blockers",
+      "state": {
+        "name": "In Progress",
+        "type": "started",
+        "color": "#f59e0b"
+      }
+    }
+  ]
+}
+```
+
+### `cycle current --json`
+
+Top-level shape:
+
+- the same object shape as `cycle view --json`
+- `null` when no active cycle exists
+
+### `cycle next --json`
+
+Top-level shape:
+
+- the same object shape as `cycle view --json`
+- `null` when no upcoming cycle exists
 
 ## Compatibility Rules
 

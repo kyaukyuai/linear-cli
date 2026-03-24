@@ -105,7 +105,7 @@ compared to upstream, this fork adds and maintains several capabilities aimed at
 for bot and org-wide automation use cases, `linear-cli` defines a stable JSON contract for a focused automation tier.
 
 - v1 in scope: `issue list/view/create/update --json`, `issue relation add/delete/list --json`, `issue comment add --json`, `team members --json`, `issue parent/children/create-batch --json`
-- v2 additions: `project list --json`, `project view --json`
+- v2 additions: `project list/view --json`, `cycle list/view/current/next --json`
 - out of scope: non-JSON terminal output, `linear api`, and other `--json` commands that are not listed above
 
 the contract fixes top-level success payload shapes and requires machine-readable failure payloads for the automation tier. see [docs/json-contracts.md](docs/json-contracts.md) for the full contract, compatibility rules, and example payloads. that guarantee also covers parser and argument validation failures when `--json` is present.
@@ -240,6 +240,16 @@ linear team members    # list team members
 linear team members ENG --json  # emit assignable candidates for a team
 linear team create     # create a new team
 linear team autolinks  # configure GitHub repository autolinks for Linear issues
+```
+
+### cycle commands
+
+```bash
+linear cycle list --team ENG
+linear cycle list --team ENG --json  # emit cycle summaries for automation
+linear cycle view "Sprint 42" --team ENG --json  # emit detailed cycle payload
+linear cycle current --team ENG --json  # emit active cycle or null
+linear cycle next --team ENG --json  # emit next cycle or null
 ```
 
 ### project commands

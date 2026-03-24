@@ -1,6 +1,10 @@
 import { Command } from "@cliffy/command"
 import { renderMarkdown } from "@littletof/charmd"
 import { gql } from "../../__codegen__/gql.ts"
+import {
+  buildCycleDetailJsonPayload,
+  getCycleStatusLabel,
+} from "./cycle-json.ts"
 import { getGraphQLClient } from "../../utils/graphql.ts"
 import { formatRelativeTime } from "../../utils/display.ts"
 import {
@@ -9,7 +13,11 @@ import {
   requireTeamKey,
 } from "../../utils/linear.ts"
 import { withSpinner } from "../../utils/spinner.ts"
-import { handleError, NotFoundError } from "../../utils/errors.ts"
+import { NotFoundError } from "../../utils/errors.ts"
+import {
+  handleAutomationCommandError,
+  handleAutomationContractParseError,
+} from "../../utils/json_output.ts"
 
 const GetCycleDetails = gql(`
   query GetCycleDetails($id: String!) {
@@ -24,6 +32,7 @@ const GetCycleDetails = gql(`
       isActive
       isFuture
       isPast
+      progress
       createdAt
       updatedAt
       team {
@@ -39,6 +48,7 @@ const GetCycleDetails = gql(`
           state {
             name
             type
+            color
           }
         }
       }
@@ -52,7 +62,11 @@ export const viewCommand = new Command()
   .alias("v")
   .arguments("<cycleRef:string>")
   .option("--team <team:string>", "Team key (defaults to current team)")
-  .action(async ({ team }, cycleRef) => {
+  .option("-j, --json", "Output as JSON")
+  .error((error, cmd) =>
+    handleAutomationContractParseError(error, cmd, "Failed to view cycle")
+  )
+  .action(async ({ team, json }, cycleRef) => {
     try {
       const teamKey = requireTeamKey(team)
       const teamId = await getTeamIdByKey(teamKey)
@@ -63,13 +77,20 @@ export const viewCommand = new Command()
       const cycleId = await getCycleIdByNameOrNumber(cycleRef, teamId)
 
       const client = getGraphQLClient()
-      const result = await withSpinner(() =>
-        client.request(GetCycleDetails, { id: cycleId })
+      const result = await withSpinner(
+        () => client.request(GetCycleDetails, { id: cycleId }),
+        { enabled: !json },
       )
 
       const cycle = result.cycle
       if (!cycle) {
         throw new NotFoundError("Cycle", cycleRef)
+      }
+      const cyclePayload = buildCycleDetailJsonPayload(cycle, cycle.team)
+
+      if (json) {
+        console.log(JSON.stringify(cyclePayload, null, 2))
+        return
       }
 
       const lines: string[] = []
@@ -82,11 +103,7 @@ export const viewCommand = new Command()
       lines.push(`**Start:** ${cycle.startsAt.slice(0, 10)}`)
       lines.push(`**End:** ${cycle.endsAt.slice(0, 10)}`)
 
-      let status = "Unknown"
-      if (cycle.isActive) status = "Active"
-      else if (cycle.isFuture) status = "Upcoming"
-      else if (cycle.completedAt != null) status = "Completed"
-      else if (cycle.isPast) status = "Past"
+      const status = getCycleStatusLabel(cyclePayload.status)
       lines.push(`**Status:** ${status}`)
 
       lines.push(
@@ -166,6 +183,6 @@ export const viewCommand = new Command()
         console.log(markdown)
       }
     } catch (error) {
-      handleError(error, "Failed to fetch cycle details")
+      handleAutomationCommandError(error, "Failed to view cycle", json)
     }
   })
