@@ -328,6 +328,7 @@ Top-level shape:
 ```json
 {
   "success": true,
+  "noOp": false,
   "direction": "incoming",
   "relationType": "blocked-by",
   "issue": {
@@ -342,7 +343,19 @@ Top-level shape:
 }
 ```
 
-For delete, `relationId` is the deleted relation ID.
+`noOp` is always present:
+
+- `false` when the command changed Linear state
+- `true` when the command returned success without mutating because the desired relation state already existed
+
+For delete, `relationId` is the deleted relation ID when a relation was removed, or `null` when the relation was already absent.
+
+Idempotency policy:
+
+- `issue relation add` is retry-safe and idempotent by relation pair
+- rerunning `issue relation add` for an already-existing relation returns success with `noOp: true`
+- `issue relation delete` is retry-safe and idempotent by relation pair
+- rerunning `issue relation delete` for an already-absent relation returns success with `noOp: true`
 
 ### `issue relation list --json`
 
@@ -489,6 +502,17 @@ Idempotency policy:
 - parent-first creation is part of the contract
 - partial failures are not safe to blindly retry with the same input
 - callers should use `createdIdentifiers` plus `failedStep` to resume manually or to write a higher-level reconciliation flow
+
+## High-Value Write Retry Semantics
+
+These rules are intended for automation and agent callers.
+
+- `issue create` is non-idempotent. Do not blindly rerun after an unknown failure without first checking whether the issue was already created.
+- `issue update` is retry-safe for explicit set-style fields such as `state`, `assignee`, `priority`, `estimate`, `dueDate`, `project`, `milestone`, and `cycle`.
+- `issue update --comment` is not idempotent because the comment side effect may be duplicated on retry.
+- `issue comment add` is non-idempotent. Callers should not blindly retry without checking whether the comment was already posted.
+- `issue relation add` and `issue relation delete` are idempotent and return success with `noOp: true` when the requested relation state is already satisfied.
+- `issue create-batch` is non-idempotent as a whole. Use `error.details.createdIdentifiers` and `failedStep` to resume manually instead of rerunning the same batch unchanged.
 
 ## Automation Contract v2
 
