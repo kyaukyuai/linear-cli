@@ -333,8 +333,9 @@ Options:
 
 Examples:
 
-  Create an issue as JSON linear issue create --title "Fix auth expiry bug" --team ENG --json                   
-  Preview issue creation  linear issue create --title "Fix auth expiry bug" --team ENG --state started --dry-run
+  Create an issue as JSON                  linear issue create --title "Fix auth expiry bug" --team ENG --json                   
+  Create an issue with a piped description cat description.md | linear issue create --title "Fix auth expiry bug" --team ENG     
+  Preview issue creation                   linear issue create --title "Fix auth expiry bug" --team ENG --state started --dry-run
 ```
 
 ### create-batch
@@ -401,9 +402,10 @@ Options:
 
 Examples:
 
-  Update state and assignee        linear issue update ENG-123 --state started --assignee self                         
-  Preview an update with a comment linear issue update ENG-123 --state completed --comment "Ready for review" --dry-run
-  Return the updated issue as JSON linear issue update ENG-123 --title "Fix auth timeout edge case" --json
+  Update state and assignee         linear issue update ENG-123 --state started --assignee self                         
+  Preview an update with a comment  linear issue update ENG-123 --state completed --comment "Ready for review" --dry-run
+  Pipe a description into an update cat description.md | linear issue update ENG-123 --state started --dry-run --json   
+  Return the updated issue as JSON  linear issue update ENG-123 --title "Fix auth timeout edge case" --json
 ```
 
 ### move
@@ -654,6 +656,7 @@ Examples:
 
   Add a comment with a positional body linear issue comment add ENG-123 "Ready for review"                               
   Preview a comment from a file        linear issue comment add ENG-123 --body-file review.md --dry-run                  
+  Pipe a comment body from stdin       printf "Ready for review\n" | linear issue comment add ENG-123                    
   Reply to a comment as JSON           linear issue comment add ENG-123 --parent comment_123 --body "Following up" --json
 ```
 
@@ -686,7 +689,11 @@ Options:
   -h, --help               - Show this help.                                                 
   -w, --workspace  <slug>  - Target workspace (uses credentials)                             
   -b, --body       <text>  - New comment body text                                           
-  --body-file      <path>  - Read comment body from a file (preferred for markdown content)
+  --body-file      <path>  - Read comment body from a file (preferred for markdown content)  
+
+Examples:
+
+  Update a comment from stdin printf "Updated comment\n" | linear issue comment update comment_123
 ```
 
 ##### list

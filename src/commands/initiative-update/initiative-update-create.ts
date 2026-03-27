@@ -1,7 +1,6 @@
 import { Command } from "@cliffy/command"
 import { Input, Select } from "@cliffy/prompt"
 import { gql } from "../../__codegen__/gql.ts"
-import { readIdsFromStdin } from "../../utils/bulk.ts"
 import { getEditor, openEditor } from "../../utils/editor.ts"
 import {
   CliError,
@@ -11,28 +10,10 @@ import {
 } from "../../utils/errors.ts"
 import { getGraphQLClient } from "../../utils/graphql.ts"
 import { shouldShowSpinner } from "../../utils/hyperlink.ts"
+import { readTextFromStdin } from "../../utils/stdin.ts"
 
 const HEALTH_VALUES = ["onTrack", "atRisk", "offTrack"] as const
 type HealthValue = (typeof HEALTH_VALUES)[number]
-
-/**
- * Read content from stdin if available (piped input)
- */
-async function readContentFromStdin(): Promise<string | undefined> {
-  // Check if stdin has data (not a TTY)
-  if (Deno.stdin.isTerminal()) {
-    return undefined
-  }
-
-  try {
-    const lines = await readIdsFromStdin()
-    // Join back with newlines since it's content, not IDs
-    const content = lines.join("\n")
-    return content.length > 0 ? content : undefined
-  } catch {
-    return undefined
-  }
-}
 
 /**
  * Resolve initiative ID from UUID, slug, or name
@@ -181,7 +162,7 @@ export const createCommand = new Command()
         }
       } else if (!Deno.stdin.isTerminal()) {
         // Try reading from stdin if piped
-        const stdinContent = await readContentFromStdin()
+        const stdinContent = await readTextFromStdin()
         if (stdinContent) {
           finalBody = stdinContent
         }

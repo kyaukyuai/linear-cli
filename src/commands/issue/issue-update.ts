@@ -20,6 +20,7 @@ import {
 import { emitDryRunOutput } from "../../utils/dry_run.ts"
 import { withSpinner } from "../../utils/spinner.ts"
 import { CliError, NotFoundError, ValidationError } from "../../utils/errors.ts"
+import { readTextFromStdin } from "../../utils/stdin.ts"
 import { buildIssueWritePayload } from "./issue-write-payload.ts"
 import { buildIssueCommentPayload } from "./issue-comment-payload.ts"
 import { createIssueComment } from "./issue-comment-utils.ts"
@@ -106,6 +107,10 @@ export const updateCommand = new Command()
     'linear issue update ENG-123 --state completed --comment "Ready for review" --dry-run',
   )
   .example(
+    "Pipe a description into an update",
+    "cat description.md | linear issue update ENG-123 --state started --dry-run --json",
+  )
+  .example(
     "Return the updated issue as JSON",
     'linear issue update ENG-123 --title "Fix auth timeout edge case" --json',
   )
@@ -143,9 +148,6 @@ export const updateCommand = new Command()
             "Cannot specify both --description and --description-file",
           )
         }
-        if (comment != null && comment.trim().length === 0) {
-          throw new ValidationError("Comment body cannot be empty")
-        }
         if (dueDate != null && clearDueDate) {
           throw new ValidationError(
             "Cannot specify both --due-date and --clear-due-date",
@@ -155,31 +157,6 @@ export const updateCommand = new Command()
             },
           )
         }
-        const hasIssueUpdates = assignee != null ||
-          dueDate != null ||
-          clearDueDate ||
-          parent != null ||
-          (priority != null && !Number.isNaN(priority)) ||
-          (estimate != null && !Number.isNaN(estimate)) ||
-          description != null ||
-          descriptionFile != null ||
-          (labels != null && labels.length > 0) ||
-          team != null ||
-          project != null ||
-          state != null ||
-          milestone != null ||
-          cycle != null ||
-          title != null
-        if (comment != null && !hasIssueUpdates) {
-          throw new ValidationError(
-            "Cannot use --comment without any issue updates",
-            {
-              suggestion:
-                "Use `linear issue comment add <ISSUE> --body <text>` to add a standalone comment.",
-            },
-          )
-        }
-
         // Read description from file if provided
         let finalDescription = description
         if (descriptionFile) {
@@ -195,6 +172,39 @@ export const updateCommand = new Command()
               },
             )
           }
+        } else if (finalDescription == null) {
+          const stdinDescription = await readTextFromStdin()
+          if (stdinDescription != null) {
+            finalDescription = stdinDescription
+          }
+        }
+
+        if (comment != null && comment.trim().length === 0) {
+          throw new ValidationError("Comment body cannot be empty")
+        }
+
+        const hasIssueUpdates = assignee != null ||
+          dueDate != null ||
+          clearDueDate ||
+          parent != null ||
+          (priority != null && !Number.isNaN(priority)) ||
+          (estimate != null && !Number.isNaN(estimate)) ||
+          finalDescription != null ||
+          (labels != null && labels.length > 0) ||
+          team != null ||
+          project != null ||
+          state != null ||
+          milestone != null ||
+          cycle != null ||
+          title != null
+        if (comment != null && !hasIssueUpdates) {
+          throw new ValidationError(
+            "Cannot use --comment without any issue updates",
+            {
+              suggestion:
+                "Use `linear issue comment add <ISSUE> --body <text>` or pipe the comment body to `linear issue comment add` for a standalone comment.",
+            },
+          )
         }
 
         // Get the issue ID - either from argument or infer from current context

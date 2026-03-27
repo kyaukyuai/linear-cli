@@ -21,17 +21,18 @@ https://github.com/kyaukyuai/linear-cli?tab=readme-ov-file#install
 
 ## Best Practices for Markdown Content
 
-When working with issue descriptions or comment bodies that contain markdown, **always prefer using file-based flags** instead of passing content as command-line arguments:
+When working with issue descriptions or comment bodies that contain markdown, prefer file-based flags for existing files and stdin for generated pipeline content:
 
-- Use `--description-file` for `issue create` and `issue update` commands
-- Use `--body-file` for `comment add` and `comment update` commands
+- Use `--description-file` for `issue create` and `issue update` commands when the content already exists on disk
+- Use `--body-file` for `comment add` and `comment update` commands when the content already exists on disk
+- Pipe stdin for generated markdown, for example `cat description.md | linear issue create --title "My Issue" --team ENG`
 
-**Why use file-based flags:**
+**Why avoid large inline flags:**
 
 - Ensures proper formatting in the Linear web UI
 - Avoids shell escaping issues with newlines and special characters
 - Prevents literal `\n` sequences from appearing in markdown
-- Makes it easier to work with multi-line content
+- Makes it easier to work with multi-line content in scripts and pipelines
 
 **Example workflow:**
 
@@ -50,6 +51,9 @@ EOF
 
 # Create issue using the file
 linear issue create --title "My Issue" --description-file /tmp/description.md
+
+# Or pipe generated markdown directly
+cat /tmp/description.md | linear issue create --title "My Issue" --team ENG
 
 # Or for comments
 linear issue comment add ENG-123 --body-file /tmp/comment.md

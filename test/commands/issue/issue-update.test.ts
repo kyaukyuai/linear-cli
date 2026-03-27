@@ -1,9 +1,11 @@
+import { assertEquals } from "@std/assert"
 import { snapshotTest } from "@cliffy/testing"
 import { updateCommand } from "../../../src/commands/issue/issue-update.ts"
 import {
   commonDenoArgs,
   setupMockLinearServer,
 } from "../../utils/test-helpers.ts"
+import { runSnapshotCommand } from "../../utils/snapshot_with_fake_time.ts"
 
 // Test help output
 await snapshotTest({
@@ -310,6 +312,89 @@ await snapshotTest({
       await cleanup()
     }
   },
+})
+
+await snapshotTest({
+  name: "Issue Update Command - JSON Dry Run From Stdin",
+  meta: import.meta,
+  colors: false,
+  ignore: true,
+  args: [
+    "ENG-123",
+    "--state",
+    "started",
+    "--json",
+    "--dry-run",
+  ],
+  stdin: ["Updated from piped stdin\n\nWith markdown.\n"],
+  denoArgs: commonDenoArgs,
+  async fn() {
+    const { cleanup } = await setupMockLinearServer([
+      {
+        queryName: "GetTeamIdByKey",
+        variables: { team: "ENG" },
+        response: {
+          data: {
+            teams: {
+              nodes: [{ id: "team-eng-id" }],
+            },
+          },
+        },
+      },
+      {
+        queryName: "GetWorkflowStates",
+        variables: { teamKey: "ENG" },
+        response: {
+          data: {
+            team: {
+              states: {
+                nodes: [
+                  {
+                    id: "state-started-id",
+                    name: "In Progress",
+                    type: "started",
+                  },
+                ],
+              },
+            },
+          },
+        },
+      },
+    ], { LINEAR_TEAM_ID: "ENG" })
+
+    try {
+      await updateCommand.parse()
+    } finally {
+      await cleanup()
+    }
+  },
+})
+
+Deno.test("Issue Update Command - JSON Dry Run From Stdin", async () => {
+  const { stdout, stderr, code } = await runSnapshotCommand({
+    meta: import.meta,
+    name: "Issue Update Command - JSON Dry Run From Stdin",
+    args: [
+      "ENG-123",
+      "--state",
+      "started",
+      "--json",
+      "--dry-run",
+    ],
+    stdin: ["Updated from piped stdin\n\nWith markdown.\n"],
+    denoArgs: commonDenoArgs,
+  })
+
+  assertEquals(code, 0)
+  assertEquals(stderr, "")
+
+  const payload = JSON.parse(stdout)
+  assertEquals(payload.success, true)
+  assertEquals(payload.dryRun, true)
+  assertEquals(
+    payload.data.changes.description,
+    "Updated from piped stdin\n\nWith markdown.\n",
+  )
 })
 
 await snapshotTest({

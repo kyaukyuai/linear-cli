@@ -3,6 +3,7 @@ import { Input } from "@cliffy/prompt"
 import { gql } from "../../__codegen__/gql.ts"
 import { getGraphQLClient } from "../../utils/graphql.ts"
 import { CliError, handleError, ValidationError } from "../../utils/errors.ts"
+import { readTextFromStdin } from "../../utils/stdin.ts"
 
 export const commentUpdateCommand = new Command()
   .name("update")
@@ -12,6 +13,10 @@ export const commentUpdateCommand = new Command()
   .option(
     "--body-file <path:string>",
     "Read comment body from a file (preferred for markdown content)",
+  )
+  .example(
+    "Update a comment from stdin",
+    'printf "Updated comment\\n" | linear issue comment update comment_123',
   )
   .action(async (options, commentId) => {
     const { body, bodyFile } = options
@@ -39,12 +44,23 @@ export const commentUpdateCommand = new Command()
             },
           )
         }
+      } else if (newBody == null) {
+        const stdinBody = await readTextFromStdin()
+        if (stdinBody != null) {
+          newBody = stdinBody
+        }
       }
 
       let existingBody = ""
 
       // If no body provided, fetch existing comment to show as default
       if (!newBody) {
+        if (!Deno.stdin.isTerminal()) {
+          throw new ValidationError("Comment body cannot be empty", {
+            suggestion:
+              "Provide --body, --body-file, or pipe the updated comment body on stdin.",
+          })
+        }
         const getCommentQuery = gql(`
           query GetComment($id: String!) {
             comment(id: $id) {

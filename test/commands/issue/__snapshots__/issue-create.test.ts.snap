@@ -34,8 +34,9 @@ Options:
 
 Examples:
 
-  Create an issue as JSON linear issue create --title "Fix auth expiry bug" --team ENG --json                   
-  Preview issue creation  linear issue create --title "Fix auth expiry bug" --team ENG --state started --dry-run
+  Create an issue as JSON                  linear issue create --title "Fix auth expiry bug" --team ENG --json                   
+  Create an issue with a piped description cat description.md | linear issue create --title "Fix auth expiry bug" --team ENG     
+  Preview issue creation                   linear issue create --title "Fix auth expiry bug" --team ENG --state started --dry-run
 
 \`
 stderr:

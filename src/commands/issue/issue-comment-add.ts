@@ -17,6 +17,7 @@ import {
 } from "../../utils/json_output.ts"
 import { emitDryRunOutput } from "../../utils/dry_run.ts"
 import { ValidationError } from "../../utils/errors.ts"
+import { readTextFromStdin } from "../../utils/stdin.ts"
 import { createIssueComment } from "./issue-comment-utils.ts"
 import { buildIssueCommentPayload } from "./issue-comment-payload.ts"
 import { buildIssueCommentDryRunPayload } from "./issue-dry-run-payload.ts"
@@ -45,6 +46,10 @@ export const commentAddCommand = new Command()
   .example(
     "Preview a comment from a file",
     "linear issue comment add ENG-123 --body-file review.md --dry-run",
+  )
+  .example(
+    "Pipe a comment body from stdin",
+    'printf "Ready for review\\n" | linear issue comment add ENG-123',
   )
   .example(
     "Reply to a comment as JSON",
@@ -87,6 +92,11 @@ export const commentAddCommand = new Command()
               }`,
             },
           )
+        }
+      } else if (commentBody == null) {
+        const stdinBody = await readTextFromStdin()
+        if (stdinBody != null) {
+          commentBody = stdinBody
         }
       }
 
@@ -133,6 +143,15 @@ export const commentAddCommand = new Command()
 
       // If no body provided and no attachments, prompt for it
       if (!commentBody && uploadedFiles.length === 0) {
+        if (!Deno.stdin.isTerminal()) {
+          throw new ValidationError(
+            "Comment body cannot be empty",
+            {
+              suggestion:
+                "Provide --body, --body-file, or pipe the comment body on stdin.",
+            },
+          )
+        }
         if (json || dryRun) {
           throw new ValidationError(
             "Comment body cannot be empty",
