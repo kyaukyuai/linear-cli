@@ -37,6 +37,7 @@ await snapshotTest({
     "3",
     "--team",
     "ENG",
+    "--no-pager",
     "--no-interactive",
   ],
   denoArgs: commonDenoArgs,
