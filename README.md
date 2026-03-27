@@ -116,6 +116,12 @@ the same document also defines the shared preview contract for future `--dry-run
 
 destructive commands use `--yes` as the canonical confirmation-bypass flag. legacy `--force` and `--confirm` flags are still accepted where older workflows already depended on them.
 
+for retry behavior, prefer treating write commands in three buckets:
+
+- retry-safe set-style writes: `issue update` without `--comment`, plus relation add/delete
+- non-idempotent writes: `issue create`, `issue comment add`, and `issue update --comment`
+- resumable but non-idempotent batch writes: `issue create-batch`, which reports `error.details.createdIdentifiers` and `failedStep` on partial failure
+
 ## differences from upstream
 
 this fork is intentionally diverging from upstream in a few ways:

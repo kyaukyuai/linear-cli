@@ -41,6 +41,19 @@ await snapshotTest({
         },
       },
       {
+        queryName: "FindIssueRelation",
+        variables: { issueId: "issue-id-123" },
+        response: {
+          data: {
+            issue: {
+              relations: {
+                nodes: [],
+              },
+            },
+          },
+        },
+      },
+      {
         queryName: "CreateIssueRelation",
         response: {
           data: {
@@ -83,6 +96,19 @@ await snapshotTest({
         variables: { id: "ENG-456" },
         response: {
           data: { issue: { id: "issue-id-456" } },
+        },
+      },
+      {
+        queryName: "FindIssueRelation",
+        variables: { issueId: "issue-id-456" },
+        response: {
+          data: {
+            issue: {
+              relations: {
+                nodes: [],
+              },
+            },
+          },
         },
       },
       {
@@ -131,12 +157,76 @@ await snapshotTest({
         },
       },
       {
+        queryName: "FindIssueRelation",
+        variables: { issueId: "issue-id-456" },
+        response: {
+          data: {
+            issue: {
+              relations: {
+                nodes: [],
+              },
+            },
+          },
+        },
+      },
+      {
         queryName: "CreateIssueRelation",
         response: {
           data: {
             issueRelationCreate: {
               success: true,
               issueRelation: { id: "relation-id-2" },
+            },
+          },
+        },
+      },
+    ])
+
+    try {
+      await relationCommand.parse()
+    } finally {
+      await cleanup()
+    }
+  },
+})
+
+await snapshotTest({
+  name: "Issue Relation Add Command - JSON No-op When Already Present",
+  meta: import.meta,
+  colors: false,
+  args: ["add", "ENG-123", "blocks", "ENG-456", "--json"],
+  denoArgs: commonDenoArgs,
+  async fn() {
+    const { cleanup } = await setupMockLinearServer([
+      {
+        queryName: "GetIssueId",
+        variables: { id: "ENG-123" },
+        response: {
+          data: { issue: { id: "issue-id-123" } },
+        },
+      },
+      {
+        queryName: "GetIssueId",
+        variables: { id: "ENG-456" },
+        response: {
+          data: { issue: { id: "issue-id-456" } },
+        },
+      },
+      {
+        queryName: "FindIssueRelation",
+        variables: { issueId: "issue-id-123" },
+        response: {
+          data: {
+            issue: {
+              relations: {
+                nodes: [
+                  {
+                    id: "relation-id-existing",
+                    type: "blocks",
+                    relatedIssue: { id: "issue-id-456" },
+                  },
+                ],
+              },
             },
           },
         },
@@ -243,6 +333,51 @@ await snapshotTest({
           data: {
             issueRelationDelete: {
               success: true,
+            },
+          },
+        },
+      },
+    ])
+
+    try {
+      await relationCommand.parse()
+    } finally {
+      await cleanup()
+    }
+  },
+})
+
+await snapshotTest({
+  name: "Issue Relation Delete Command - JSON No-op When Already Absent",
+  meta: import.meta,
+  colors: false,
+  args: ["delete", "ENG-123", "blocks", "ENG-456", "--json"],
+  denoArgs: commonDenoArgs,
+  async fn() {
+    const { cleanup } = await setupMockLinearServer([
+      {
+        queryName: "GetIssueId",
+        variables: { id: "ENG-123" },
+        response: {
+          data: { issue: { id: "issue-id-123" } },
+        },
+      },
+      {
+        queryName: "GetIssueId",
+        variables: { id: "ENG-456" },
+        response: {
+          data: { issue: { id: "issue-id-456" } },
+        },
+      },
+      {
+        queryName: "FindIssueRelation",
+        variables: { issueId: "issue-id-123" },
+        response: {
+          data: {
+            issue: {
+              relations: {
+                nodes: [],
+              },
             },
           },
         },

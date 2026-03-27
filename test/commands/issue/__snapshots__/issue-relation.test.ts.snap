@@ -47,6 +47,7 @@ snapshot[`Issue Relation Add Command - JSON Output 1`] = `
 stdout:
 '{
   "success": true,
+  "noOp": false,
   "direction": "incoming",
   "relationType": "blocked-by",
   "issue": {
@@ -58,6 +59,28 @@ stdout:
     "identifier": "ENG-456"
   },
   "relationId": "relation-id-2"
+}
+'
+stderr:
+""
+`;
+
+snapshot[`Issue Relation Add Command - JSON No-op When Already Present 1`] = `
+stdout:
+'{
+  "success": true,
+  "noOp": true,
+  "direction": "outgoing",
+  "relationType": "blocks",
+  "issue": {
+    "id": "issue-id-123",
+    "identifier": "ENG-123"
+  },
+  "relatedIssue": {
+    "id": "issue-id-456",
+    "identifier": "ENG-456"
+  },
+  "relationId": "relation-id-existing"
 }
 '
 stderr:
@@ -109,6 +132,7 @@ snapshot[`Issue Relation Delete Command - JSON Output 1`] = `
 stdout:
 '{
   "success": true,
+  "noOp": false,
   "direction": "outgoing",
   "relationType": "blocks",
   "issue": {
@@ -120,6 +144,28 @@ stdout:
     "identifier": "ENG-456"
   },
   "relationId": "relation-id-3"
+}
+'
+stderr:
+""
+`;
+
+snapshot[`Issue Relation Delete Command - JSON No-op When Already Absent 1`] = `
+stdout:
+'{
+  "success": true,
+  "noOp": true,
+  "direction": "outgoing",
+  "relationType": "blocks",
+  "issue": {
+    "id": "issue-id-123",
+    "identifier": "ENG-123"
+  },
+  "relatedIssue": {
+    "id": "issue-id-456",
+    "identifier": "ENG-456"
+  },
+  "relationId": null
 }
 '
 stderr:

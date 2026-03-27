@@ -49,12 +49,60 @@ type RelationIssueRef = {
 
 type RelationMutationPayload = {
   success: boolean
+  noOp: boolean
   direction: "outgoing" | "incoming"
   relationType: RelationType
   issue: RelationIssueRef
   relatedIssue: RelationIssueRef
-  relationId?: string
+  relationId: string | null
 }
+
+type FindRelationQueryResult = {
+  issue: {
+    relations: {
+      nodes: Array<{
+        id: string
+        type: string
+        relatedIssue: {
+          id: string
+        }
+      }>
+    }
+  } | null
+}
+
+const FindIssueRelation = gql(`
+  query FindIssueRelation($issueId: String!) {
+    issue(id: $issueId) {
+      relations {
+        nodes {
+          id
+          type
+          relatedIssue { id }
+        }
+      }
+    }
+  }
+`)
+
+const CreateIssueRelation = gql(`
+  mutation CreateIssueRelation($input: IssueRelationCreateInput!) {
+    issueRelationCreate(input: $input) {
+      success
+      issueRelation {
+        id
+      }
+    }
+  }
+`)
+
+const DeleteIssueRelation = gql(`
+  mutation DeleteIssueRelation($id: String!) {
+    issueRelationDelete(id: $id) {
+      success
+    }
+  }
+`)
 
 async function resolveRelationIssueRefs(
   issueIdArg: string,
@@ -104,16 +152,43 @@ function buildRelationMutationPayload(
   issue: RelationIssueRef,
   relatedIssue: RelationIssueRef,
   relationType: RelationType,
-  relationId?: string,
+  relationId: string | null,
+  noOp: boolean,
 ): RelationMutationPayload {
   return {
     success: true,
+    noOp,
     direction: relationType === "blocked-by" ? "incoming" : "outgoing",
     relationType,
     issue,
     relatedIssue,
     relationId,
   }
+}
+
+async function findExistingRelation(
+  issueId: string,
+  relatedIssueId: string,
+  relationType: RelationType,
+): Promise<string | null> {
+  const client = getGraphQLClient()
+  const apiType = getApiRelationType(relationType)
+  const [fromId, toId] = relationType === "blocked-by"
+    ? [relatedIssueId, issueId]
+    : [issueId, relatedIssueId]
+
+  const data = await client.request<FindRelationQueryResult>(
+    FindIssueRelation,
+    {
+      issueId: fromId,
+    },
+  )
+
+  const relation = data.issue?.relations.nodes.find((candidate) =>
+    candidate.type === apiType && candidate.relatedIssue.id === toId
+  )
+
+  return relation?.id ?? null
 }
 
 const addRelationCommand = new Command()
@@ -187,49 +262,63 @@ const addRelationCommand = new Command()
           return
         }
 
-        const createRelationMutation = gql(`
-        mutation CreateIssueRelation($input: IssueRelationCreateInput!) {
-          issueRelationCreate(input: $input) {
-            success
-            issueRelation {
-              id
-            }
-          }
-        }
-      `)
-
-        const client = getGraphQLClient()
         const data = await withSpinner(
           () => {
-            const apiType = getApiRelationType(relationType)
-            const [fromId, toId] = relationType === "blocked-by"
-              ? [relatedIssue.id, issue.id]
-              : [issue.id, relatedIssue.id]
-
-            return client.request(createRelationMutation, {
-              input: {
-                issueId: fromId,
-                relatedIssueId: toId,
-                type: apiType,
-              },
-            })
+            return findExistingRelation(issue.id, relatedIssue.id, relationType)
           },
           { enabled: !json },
         )
 
-        if (!data.issueRelationCreate.success) {
-          throw new CliError("Failed to create relation")
-        }
+        let payload: RelationMutationPayload
+        if (data != null) {
+          payload = buildRelationMutationPayload(
+            issue,
+            relatedIssue,
+            relationType,
+            data,
+            true,
+          )
+        } else {
+          const client = getGraphQLClient()
+          const apiType = getApiRelationType(relationType)
+          const [fromId, toId] = relationType === "blocked-by"
+            ? [relatedIssue.id, issue.id]
+            : [issue.id, relatedIssue.id]
 
-        const payload = buildRelationMutationPayload(
-          issue,
-          relatedIssue,
-          relationType,
-          data.issueRelationCreate.issueRelation?.id,
-        )
+          const createData = await withSpinner(
+            () =>
+              client.request(CreateIssueRelation, {
+                input: {
+                  issueId: fromId,
+                  relatedIssueId: toId,
+                  type: apiType,
+                },
+              }),
+            { enabled: !json },
+          )
+
+          if (!createData.issueRelationCreate.success) {
+            throw new CliError("Failed to create relation")
+          }
+
+          payload = buildRelationMutationPayload(
+            issue,
+            relatedIssue,
+            relationType,
+            createData.issueRelationCreate.issueRelation?.id ?? null,
+            false,
+          )
+        }
 
         if (json) {
           console.log(JSON.stringify(payload, null, 2))
+          return
+        }
+
+        if (payload.noOp) {
+          console.log(
+            `✓ Relation already exists: ${issue.identifier} ${relationType} ${relatedIssue.identifier}`,
+          )
           return
         }
 
@@ -296,74 +385,49 @@ const deleteRelationCommand = new Command()
           return
         }
 
-        const findRelationQuery = gql(`
-        query FindIssueRelation($issueId: String!) {
-          issue(id: $issueId) {
-            relations {
-              nodes {
-                id
-                type
-                relatedIssue { id }
-              }
-            }
-          }
-        }
-      `)
-
-        const client = getGraphQLClient()
         const relationId = await withSpinner(
-          async () => {
-            const apiType = getApiRelationType(relationType)
-            const [fromId, toId] = relationType === "blocked-by"
-              ? [relatedIssue.id, issue.id]
-              : [issue.id, relatedIssue.id]
-
-            const findData = await client.request(findRelationQuery, {
-              issueId: fromId,
-            })
-
-            const relation = findData.issue?.relations.nodes.find(
-              (r: { type: string; relatedIssue: { id: string } }) =>
-                r.type === apiType && r.relatedIssue.id === toId,
-            )
-
-            if (!relation) {
-              throw new NotFoundError(
-                "Relation",
-                `${relationType} between ${issue.identifier} and ${relatedIssue.identifier}`,
-              )
-            }
-
-            const deleteRelationMutation = gql(`
-            mutation DeleteIssueRelation($id: String!) {
-              issueRelationDelete(id: $id) {
-                success
-              }
-            }
-          `)
-
-            const deleteData = await client.request(deleteRelationMutation, {
-              id: relation.id,
-            })
-
-            if (!deleteData.issueRelationDelete.success) {
-              throw new CliError("Failed to delete relation")
-            }
-
-            return relation.id
-          },
+          () => findExistingRelation(issue.id, relatedIssue.id, relationType),
           { enabled: !json },
         )
 
-        const payload = buildRelationMutationPayload(
-          issue,
-          relatedIssue,
-          relationType,
-          relationId,
-        )
+        let payload: RelationMutationPayload
+        if (relationId == null) {
+          payload = buildRelationMutationPayload(
+            issue,
+            relatedIssue,
+            relationType,
+            null,
+            true,
+          )
+        } else {
+          const client = getGraphQLClient()
+          const deleteData = await withSpinner(
+            () => client.request(DeleteIssueRelation, { id: relationId }),
+            { enabled: !json },
+          )
+
+          if (!deleteData.issueRelationDelete.success) {
+            throw new CliError("Failed to delete relation")
+          }
+
+          payload = buildRelationMutationPayload(
+            issue,
+            relatedIssue,
+            relationType,
+            relationId,
+            false,
+          )
+        }
 
         if (json) {
           console.log(JSON.stringify(payload, null, 2))
+          return
+        }
+
+        if (payload.noOp) {
+          console.log(
+            `✓ Relation already absent: ${issue.identifier} ${relationType} ${relatedIssue.identifier}`,
+          )
           return
         }
 
