@@ -34,6 +34,7 @@ import {
 import { emitDryRunOutput } from "../../utils/dry_run.ts"
 import { withSpinner } from "../../utils/spinner.ts"
 import { CliError, NotFoundError, ValidationError } from "../../utils/errors.ts"
+import { readTextFromStdin } from "../../utils/stdin.ts"
 import { buildIssueCreateDryRunPayload } from "./issue-dry-run-payload.ts"
 import { buildIssueWritePayload } from "./issue-write-payload.ts"
 
@@ -521,6 +522,10 @@ export const createCommand = new Command()
     'linear issue create --title "Fix auth expiry bug" --team ENG --json',
   )
   .example(
+    "Create an issue with a piped description",
+    'cat description.md | linear issue create --title "Fix auth expiry bug" --team ENG',
+  )
+  .example(
     "Preview issue creation",
     'linear issue create --title "Fix auth expiry bug" --team ENG --state started --dry-run',
   )
@@ -585,6 +590,11 @@ export const createCommand = new Command()
                 }`,
               },
             )
+          }
+        } else if (finalDescription == null) {
+          const stdinDescription = await readTextFromStdin()
+          if (stdinDescription != null) {
+            finalDescription = stdinDescription
           }
         }
 

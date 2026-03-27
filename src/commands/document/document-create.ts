@@ -4,39 +4,14 @@ import { gql } from "../../__codegen__/gql.ts"
 import { emitDryRunOutput } from "../../utils/dry_run.ts"
 import { getGraphQLClient } from "../../utils/graphql.ts"
 import { getEditor, openEditor } from "../../utils/editor.ts"
-import { readIdsFromStdin } from "../../utils/bulk.ts"
 import {
   CliError,
   handleError,
   NotFoundError,
   ValidationError,
 } from "../../utils/errors.ts"
+import { readTextFromStdin } from "../../utils/stdin.ts"
 import { buildWriteCommandPreview } from "../../utils/write_preview.ts"
-
-/**
- * Read content from stdin if available (piped input, with timeout)
- */
-async function readContentFromStdin(): Promise<string | undefined> {
-  // Check if stdin has data (not a TTY)
-  if (Deno.stdin.isTerminal()) {
-    return undefined
-  }
-
-  try {
-    // Use timeout to avoid hanging when stdin is not a terminal but has no data
-    // (e.g., in test subprocess environments)
-    const timeoutPromise = new Promise<never>((_, reject) => {
-      setTimeout(() => reject(new Error("stdin timeout")), 100)
-    })
-
-    const lines = await Promise.race([readIdsFromStdin(), timeoutPromise])
-    // Join back with newlines since it's content, not IDs
-    const content = lines.join("\n")
-    return content.length > 0 ? content : undefined
-  } catch {
-    return undefined
-  }
-}
 
 export const createCommand = new Command()
   .name("create")
@@ -136,7 +111,7 @@ export const createCommand = new Command()
           }
         } else if (!Deno.stdin.isTerminal()) {
           // Try reading from stdin if piped
-          const stdinContent = await readContentFromStdin()
+          const stdinContent = await readTextFromStdin()
           if (stdinContent) {
             finalContent = stdinContent
           }

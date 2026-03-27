@@ -34,9 +34,10 @@ Options:
 
 Examples:
 
-  Update state and assignee        linear issue update ENG-123 --state started --assignee self                         
-  Preview an update with a comment linear issue update ENG-123 --state completed --comment "Ready for review" --dry-run
-  Return the updated issue as JSON linear issue update ENG-123 --title "Fix auth timeout edge case" --json             
+  Update state and assignee         linear issue update ENG-123 --state started --assignee self                         
+  Preview an update with a comment  linear issue update ENG-123 --state completed --comment "Ready for review" --dry-run
+  Pipe a description into an update cat description.md | linear issue update ENG-123 --state started --dry-run --json   
+  Return the updated issue as JSON  linear issue update ENG-123 --title "Fix auth timeout edge case" --json             
 
 \`
 stderr:
@@ -243,7 +244,7 @@ stdout:
   "error": {
     "type": "validation_error",
     "message": "Cannot use --comment without any issue updates",
-    "suggestion": "Use \`linear issue comment add <ISSUE> --body <text>\` to add a standalone comment.",
+    "suggestion": "Use \`linear issue comment add <ISSUE> --body <text>\` or pipe the comment body to \`linear issue comment add\` for a standalone comment.",
     "context": "Failed to update issue"
   }
 }

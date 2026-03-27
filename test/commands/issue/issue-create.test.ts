@@ -1,9 +1,11 @@
+import { assertEquals } from "@std/assert"
 import { snapshotTest } from "@cliffy/testing"
 import { createCommand } from "../../../src/commands/issue/issue-create.ts"
 import {
   commonDenoArgs,
   setupMockLinearServer,
 } from "../../utils/test-helpers.ts"
+import { runSnapshotCommand } from "../../utils/snapshot_with_fake_time.ts"
 
 // Test help output
 await snapshotTest({
@@ -366,6 +368,74 @@ await snapshotTest({
       await cleanup()
     }
   },
+})
+
+await snapshotTest({
+  name: "Issue Create Command - JSON Dry Run From Stdin",
+  meta: import.meta,
+  colors: false,
+  ignore: true,
+  args: [
+    "--title",
+    "Bot-created issue",
+    "--team",
+    "ENG",
+    "--json",
+    "--dry-run",
+    "--no-interactive",
+  ],
+  stdin: ["Created from piped stdin\n\nWith markdown.\n"],
+  denoArgs: commonDenoArgs,
+  async fn() {
+    const { cleanup } = await setupMockLinearServer([
+      {
+        queryName: "GetTeamIdByKey",
+        variables: { team: "ENG" },
+        response: {
+          data: {
+            teams: {
+              nodes: [{ id: "team-eng-id" }],
+            },
+          },
+        },
+      },
+    ], { LINEAR_TEAM_ID: "ENG" })
+
+    try {
+      await createCommand.parse()
+    } finally {
+      await cleanup()
+    }
+  },
+})
+
+Deno.test("Issue Create Command - JSON Dry Run From Stdin", async () => {
+  const { stdout, stderr, code } = await runSnapshotCommand({
+    meta: import.meta,
+    name: "Issue Create Command - JSON Dry Run From Stdin",
+    args: [
+      "--title",
+      "Bot-created issue",
+      "--team",
+      "ENG",
+      "--json",
+      "--dry-run",
+      "--no-interactive",
+    ],
+    stdin: ["Created from piped stdin\n\nWith markdown.\n"],
+    denoArgs: commonDenoArgs,
+  })
+
+  assertEquals(code, 0)
+  assertEquals(stderr, "")
+
+  const payload = JSON.parse(stdout)
+  assertEquals(payload.success, true)
+  assertEquals(payload.dryRun, true)
+  assertEquals(
+    payload.data.input.description,
+    "Created from piped stdin\n\nWith markdown.\n",
+  )
 })
 
 await snapshotTest({

@@ -119,6 +119,67 @@ export async function snapshotTest(
   }
 }
 
+export async function runSnapshotCommand(options: {
+  meta: ImportMeta
+  name: string
+  args?: string[]
+  stdin?: Array<string> | string
+  denoArgs?: string[]
+  colors?: boolean
+  fakeTime?: string | number | Date
+}): Promise<{ code: number; stdout: string; stderr: string }> {
+  const denoArgs = options.denoArgs ?? ["--allow-all", "--quiet"]
+  const env: Record<string, string> = {
+    SNAPSHOT_TEST_NAME: options.name,
+    TZ: Deno.env.get("TZ") ?? "UTC",
+    ...options.colors ? {} : { NO_COLOR: "true" },
+  }
+
+  if (options.fakeTime) {
+    env.CLIFFY_SNAPSHOT_FAKE_TIME = options.fakeTime instanceof Date
+      ? options.fakeTime.toISOString()
+      : String(options.fakeTime)
+  }
+  if (options.stdin != null) {
+    env.LINEAR_SNAPSHOT_STDIN = "1"
+  }
+
+  const stdin = Array.isArray(options.stdin)
+    ? options.stdin
+    : options.stdin != null
+    ? [options.stdin]
+    : []
+
+  const cmd = new Deno.Command("deno", {
+    stdin: "piped",
+    stdout: "piped",
+    stderr: "piped",
+    args: [
+      "run",
+      ...denoArgs,
+      options.meta.url,
+      ...options.args ?? [],
+    ],
+    env,
+  })
+
+  const child = cmd.spawn()
+  const writer = child.stdin.getWriter()
+
+  for (const data of stdin) {
+    await writer.write(encoder.encode(data))
+  }
+
+  await writer.close()
+
+  const output = await child.output()
+  return {
+    code: output.code,
+    stdout: addLineBreaks(new TextDecoder().decode(output.stdout)),
+    stderr: addLineBreaks(new TextDecoder().decode(output.stderr)),
+  }
+}
+
 function registerTest(options: SnapshotTestWithFakeTimeOptions) {
   const fileName = options.meta.url.split("/").at(-1) ?? ""
 
@@ -219,6 +280,16 @@ async function executeTest(
       env.CLIFFY_SNAPSHOT_FAKE_TIME = fakeTimeValue
     }
 
+    const stdinInput = step?.stdin ?? options.stdin
+    if (stdinInput != null) {
+      env.LINEAR_SNAPSHOT_STDIN = "1"
+    }
+    const stdin = Array.isArray(stdinInput)
+      ? stdinInput
+      : stdinInput != null
+      ? [stdinInput]
+      : []
+
     const cmd = new Deno.Command("deno", {
       stdin: "piped",
       stdout: "piped",
@@ -234,31 +305,22 @@ async function executeTest(
     })
     const child: Deno.ChildProcess = cmd.spawn()
     const writer = child.stdin.getWriter()
+    const delay = Number(
+      await getEnvIfGranted("CLIFFY_SNAPSHOT_DELAY") ||
+        (options.timeout ?? Deno.build.os === "windows" ? 1200 : 300),
+    )
 
-    const stdin = [
-      ...options?.stdin ?? [],
-      ...step?.stdin ?? [],
-    ]
-
-    if (stdin.length) {
-      const delay = Number(
-        await getEnvIfGranted("CLIFFY_SNAPSHOT_DELAY") ||
-          (options.timeout ?? Deno.build.os === "windows" ? 1200 : 300),
-      )
-
-      for (const data of stdin) {
-        await writer.write(encoder.encode(data))
-        // Workaround to ensure all inputs are processed and rendered separately.
-        await new Promise((resolve) => setTimeout(resolve, delay))
-      }
+    for (const data of stdin) {
+      await writer.write(encoder.encode(data))
+      // Workaround to ensure all inputs are processed and rendered separately.
+      await new Promise((resolve) => setTimeout(resolve, delay))
     }
+
+    await writer.close()
 
     output = await child.output()
     stdout = addLineBreaks(new TextDecoder().decode(output.stdout))
     stderr = addLineBreaks(new TextDecoder().decode(output.stderr))
-
-    writer.releaseLock()
-    await child.stdin.close()
   } catch (error: unknown) {
     const assertionError = new AssertionError(
       `Snapshot test failed: ${options.meta.url}.\n${red(stderr ?? "")}`,
