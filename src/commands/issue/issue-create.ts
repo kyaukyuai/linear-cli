@@ -512,6 +512,10 @@ export const createCommand = new Command()
   .option("-j, --json", "Output as JSON")
   .option("--dry-run", "Preview the created issue without creating it")
   .option(
+    "--no-pager",
+    "Accepted for compatibility; issue create does not use a pager",
+  )
+  .option(
     "--no-use-default-template",
     "Do not use default template for the issue",
   )
