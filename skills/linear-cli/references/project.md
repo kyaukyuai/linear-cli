@@ -49,7 +49,12 @@ Options:
   -w, --web                  - Open in web browser                       
   -a, --app                  - Open in Linear.app                        
   -j, --json                 - Output as JSON                            
-  --no-pager                 - Disable automatic paging for long output
+  --no-pager                 - Disable automatic paging for long output  
+
+Examples:
+
+  List all projects as JSON        linear project list --all-teams --json         
+  List started projects for a team linear project list --team ENG --status started
 ```
 
 ### view
@@ -69,7 +74,12 @@ Options:
   -w, --workspace  <slug>  - Target workspace (uses credentials)  
   -w, --web                - Open in web browser                  
   -a, --app                - Open in Linear.app                   
-  -j, --json               - Output as JSON
+  -j, --json               - Output as JSON                       
+
+Examples:
+
+  View a project as JSON        linear project view auth-refresh --json
+  Open a project in the browser linear project view auth-refresh --web
 ```
 
 ### create
@@ -97,7 +107,12 @@ Options:
   --initiative       <initiative>   - Add to initiative immediately (ID, slug, or name)                        
   -i, --interactive                 - Interactive mode (default if no flags provided)                          
   -j, --json                        - Output created project as JSON                                           
-  --dry-run                         - Preview the project without creating it
+  --dry-run                         - Preview the project without creating it                                  
+
+Examples:
+
+  Create a project as JSON linear project create --name "Auth refresh" --team ENG --json                    
+  Preview project creation linear project create --name "Auth refresh" --team ENG --status planned --dry-run
 ```
 
 ### update
@@ -122,7 +137,12 @@ Options:
   --start-date       <startDate>    - Start date (YYYY-MM-DD)                                          
   --target-date      <targetDate>   - Target date (YYYY-MM-DD)                                         
   -t, --team         <team>         - Team key (can be repeated for multiple teams)                    
-  --dry-run                         - Preview the update without mutating the project
+  --dry-run                         - Preview the update without mutating the project                  
+
+Examples:
+
+  Update status and target date linear project update auth-refresh --status started --target-date 2026-04-30
+  Preview team changes          linear project update auth-refresh --team ENG --team PLATFORM --dry-run
 ```
 
 ### delete
@@ -142,7 +162,12 @@ Options:
   -w, --workspace  <slug>  - Target workspace (uses credentials)                
   -y, --yes                - Skip confirmation prompt                           
   -f, --force              - Deprecated alias for --yes                         
-  --dry-run                - Preview the deletion without mutating the project
+  --dry-run                - Preview the deletion without mutating the project  
+
+Examples:
+
+  Preview deleting a project         linear project delete auth-refresh --dry-run
+  Delete a project without prompting linear project delete auth-refresh --yes
 ```
 
 ### label

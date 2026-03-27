@@ -144,6 +144,14 @@ export const createCommand = new Command()
   )
   .option("-j, --json", "Output created project as JSON")
   .option("--dry-run", "Preview the project without creating it")
+  .example(
+    "Create a project as JSON",
+    'linear project create --name "Auth refresh" --team ENG --json',
+  )
+  .example(
+    "Preview project creation",
+    'linear project create --name "Auth refresh" --team ENG --status planned --dry-run',
+  )
   .action(
     async (options) => {
       const {

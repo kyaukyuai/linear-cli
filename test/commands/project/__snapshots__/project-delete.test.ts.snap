@@ -16,6 +16,11 @@ Options:
   -f, --force  - Deprecated alias for --yes                         
   --dry-run    - Preview the deletion without mutating the project  
 
+Examples:
+
+  Preview deleting a project         linear project delete auth-refresh --dry-run
+  Delete a project without prompting linear project delete auth-refresh --yes    
+
 "
 stderr:
 ""

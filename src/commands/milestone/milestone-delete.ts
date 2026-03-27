@@ -26,6 +26,14 @@ export const deleteCommand = new Command()
   .option("-y, --yes", "Skip confirmation prompt")
   .option("-f, --force", "Deprecated alias for --yes")
   .option("--dry-run", "Preview the deletion without mutating the milestone")
+  .example(
+    "Preview deleting a milestone",
+    "linear milestone delete milestone-123 --dry-run",
+  )
+  .example(
+    "Delete a milestone without prompting",
+    "linear milestone delete milestone-123 --yes",
+  )
   .action(async ({ yes, force, dryRun }, id) => {
     if (!shouldSkipConfirmation({ yes, force }) && !dryRun) {
       if (!Deno.stdin.isTerminal()) {

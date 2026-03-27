@@ -63,6 +63,11 @@ export const viewCommand = new Command()
   .arguments("<cycleRef:string>")
   .option("--team <team:string>", "Team key (defaults to current team)")
   .option("-j, --json", "Output as JSON")
+  .example("View a cycle as JSON", "linear cycle view 42 --team ENG --json")
+  .example(
+    "View a cycle by name",
+    'linear cycle view "Cycle 42" --team ENG',
+  )
   .error((error, cmd) =>
     handleAutomationContractParseError(error, cmd, "Failed to view cycle")
   )

@@ -2,7 +2,7 @@ export const snapshot = {};
 
 snapshot[`Cycle View Command - Help Text 1`] = `
 stdout:
-"
+'
 Usage: view <cycleRef>
 
 Description:
@@ -15,7 +15,12 @@ Options:
   --team      <team>  - Team key (defaults to current team)  
   -j, --json          - Output as JSON                       
 
-"
+Examples:
+
+  View a cycle as JSON linear cycle view 42 --team ENG --json 
+  View a cycle by name linear cycle view "Cycle 42" --team ENG
+
+'
 stderr:
 ""
 `;

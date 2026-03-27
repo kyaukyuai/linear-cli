@@ -73,6 +73,14 @@ export const updateCommand = new Command()
     { collect: true },
   )
   .option("--dry-run", "Preview the update without mutating the project")
+  .example(
+    "Update status and target date",
+    "linear project update auth-refresh --status started --target-date 2026-04-30",
+  )
+  .example(
+    "Preview team changes",
+    "linear project update auth-refresh --team ENG --team PLATFORM --dry-run",
+  )
   .action(
     async (
       {

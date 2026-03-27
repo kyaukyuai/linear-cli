@@ -190,6 +190,14 @@ export const viewCommand = new Command()
   .option("-w, --web", "Open in web browser")
   .option("-a, --app", "Open in Linear.app")
   .option("-j, --json", "Output as JSON")
+  .example(
+    "View a project as JSON",
+    "linear project view auth-refresh --json",
+  )
+  .example(
+    "Open a project in the browser",
+    "linear project view auth-refresh --web",
+  )
   .error((error, cmd) =>
     handleAutomationContractParseError(error, cmd, "Failed to view project")
   )

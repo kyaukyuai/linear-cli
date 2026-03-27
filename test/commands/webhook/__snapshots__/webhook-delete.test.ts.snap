@@ -16,6 +16,11 @@ Options:
   -j, --json  - Output as JSON                                     
   --dry-run   - Preview the deletion without mutating the webhook  
 
+Examples:
+
+  Preview deleting a webhook         linear webhook delete webhook_123 --dry-run   
+  Delete a webhook without prompting linear webhook delete webhook_123 --yes --json
+
 "
 stderr:
 ""

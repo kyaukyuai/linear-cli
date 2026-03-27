@@ -67,6 +67,11 @@ export const viewCommand = new Command()
   .option("--no-pager", "Disable automatic paging for long output")
   .option("-j, --json", "Output issue data as JSON")
   .option("--no-download", "Keep remote URLs instead of downloading files")
+  .example("View issue as JSON", "linear issue view ENG-123 --json")
+  .example(
+    "View issue without comments",
+    "linear issue view ENG-123 --no-comments --no-pager",
+  )
   .error((error, cmd) => {
     handleAutomationContractParseError(error, cmd, "Failed to view issue")
   })

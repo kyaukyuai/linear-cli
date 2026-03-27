@@ -19,6 +19,11 @@ Options:
   -j, --json     - Output issue data as JSON                      
   --no-download  - Keep remote URLs instead of downloading files  
 
+Examples:
+
+  View issue as JSON          linear issue view ENG-123 --json                  
+  View issue without comments linear issue view ENG-123 --no-comments --no-pager
+
 "
 stderr:
 ""

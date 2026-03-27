@@ -38,6 +38,14 @@ export const updateCommand = new Command()
   )
   .option("--project <projectId:string>", "Move to a different project")
   .option("--dry-run", "Preview the update without mutating the milestone")
+  .example(
+    "Rename a milestone",
+    'linear milestone update milestone-123 --name "GA launch"',
+  )
+  .example(
+    "Preview a milestone date change",
+    "linear milestone update milestone-123 --target-date 2026-05-15 --dry-run",
+  )
   .action(
     async (
       {

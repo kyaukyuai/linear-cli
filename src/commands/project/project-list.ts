@@ -73,6 +73,14 @@ export const listCommand = new Command()
   .option("-a, --app", "Open in Linear.app")
   .option("-j, --json", "Output as JSON")
   .option("--no-pager", "Disable automatic paging for long output")
+  .example(
+    "List all projects as JSON",
+    "linear project list --all-teams --json",
+  )
+  .example(
+    "List started projects for a team",
+    "linear project list --team ENG --status started",
+  )
   .error((error, cmd) =>
     handleAutomationContractParseError(error, cmd, "Failed to list projects")
   )

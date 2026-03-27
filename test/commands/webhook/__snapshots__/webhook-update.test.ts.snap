@@ -2,7 +2,7 @@ export const snapshot = {};
 
 snapshot[`Webhook Update Command - Help Text 1`] = `
 stdout:
-"
+'
 Usage: update <webhookId>
 
 Description:
@@ -21,7 +21,12 @@ Options:
   -j, --json                             - Output as JSON                                   
   --dry-run                              - Preview the update without mutating the webhook  
 
-"
+Examples:
+
+  Preview a webhook update  linear webhook update webhook_123 --label "Primary webhook" --resource-types Issue,Comment --dry-run
+  Disable a webhook as JSON linear webhook update webhook_123 --disabled --json                                                 
+
+'
 stderr:
 ""
 `;

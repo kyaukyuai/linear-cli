@@ -353,6 +353,14 @@ export const createBatchCommand = new Command()
   )
   .option("-j, --json", "Output as JSON")
   .option("--dry-run", "Preview the batch without creating issues")
+  .example(
+    "Preview a parent and child issue batch",
+    "linear issue create-batch --file rollout.json --dry-run",
+  )
+  .example(
+    "Create a batch and return JSON",
+    "linear issue create-batch --file rollout.json --json",
+  )
   .error((error, cmd) => {
     handleAutomationContractParseError(
       error,

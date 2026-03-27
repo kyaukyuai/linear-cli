@@ -38,6 +38,18 @@ export const commentAddCommand = new Command()
   )
   .option("-j, --json", "Output as JSON")
   .option("--dry-run", "Preview the comment without creating it")
+  .example(
+    "Add a comment with a positional body",
+    'linear issue comment add ENG-123 "Ready for review"',
+  )
+  .example(
+    "Preview a comment from a file",
+    "linear issue comment add ENG-123 --body-file review.md --dry-run",
+  )
+  .example(
+    "Reply to a comment as JSON",
+    'linear issue comment add ENG-123 --parent comment_123 --body "Following up" --json',
+  )
   .error((error, cmd) => {
     handleAutomationContractParseError(error, cmd, "Failed to add comment")
   })

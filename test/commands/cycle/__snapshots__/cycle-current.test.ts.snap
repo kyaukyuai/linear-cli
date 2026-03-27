@@ -15,6 +15,11 @@ Options:
   --team      <team>  - Team key (defaults to current team)  
   -j, --json          - Output as JSON                       
 
+Examples:
+
+  Show the current cycle as JSON              linear cycle current --team ENG --json
+  Show the current cycle for the default team linear cycle current                  
+
 "
 stderr:
 ""

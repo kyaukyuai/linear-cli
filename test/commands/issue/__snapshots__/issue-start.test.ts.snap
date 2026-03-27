@@ -18,6 +18,11 @@ Options:
   -b, --branch         <branch>   - Custom branch name to use instead of the issue identifier       
   --dry-run                       - Preview the branch and state transition without making changes  
 
+Examples:
+
+  Preview the branch and state transition linear issue start ENG-123 --dry-run
+  Pick from all unstarted issues          linear issue start --all-assignees  
+
 "
 stderr:
 ""

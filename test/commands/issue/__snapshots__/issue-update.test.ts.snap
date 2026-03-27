@@ -2,7 +2,7 @@ export const snapshot = {};
 
 snapshot[`Issue Update Command - Help Text 1`] = `
 stdout:
-"
+\`
 Usage: update [issueId]
 
 Description:
@@ -32,7 +32,13 @@ Options:
   --dry-run                          - Preview the update without mutating the issue                       
   -t, --title         <title>        - Title of the issue                                                  
 
-"
+Examples:
+
+  Update state and assignee        linear issue update ENG-123 --state started --assignee self                         
+  Preview an update with a comment linear issue update ENG-123 --state completed --comment "Ready for review" --dry-run
+  Return the updated issue as JSON linear issue update ENG-123 --title "Fix auth timeout edge case" --json             
+
+\`
 stderr:
 ""
 `;

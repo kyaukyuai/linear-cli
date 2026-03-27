@@ -2,7 +2,7 @@ export const snapshot = {};
 
 snapshot[`Project Create Command - Help Text 1`] = `
 stdout:
-"
+'
 Usage: create
 
 Description:
@@ -24,7 +24,12 @@ Options:
   -j, --json                        - Output created project as JSON                                           
   --dry-run                         - Preview the project without creating it                                  
 
-"
+Examples:
+
+  Create a project as JSON linear project create --name "Auth refresh" --team ENG --json                    
+  Preview project creation linear project create --name "Auth refresh" --team ENG --status planned --dry-run
+
+'
 stderr:
 ""
 `;

@@ -46,7 +46,12 @@ Options:
   -w, --workspace  <slug>  - Target workspace (uses credentials)       
   --team           <team>  - Team key (defaults to current team)       
   -j, --json               - Output as JSON                            
-  --no-pager               - Disable automatic paging for long output
+  --no-pager               - Disable automatic paging for long output  
+
+Examples:
+
+  List cycles as JSON         linear cycle list --team ENG --json    
+  List cycles without a pager linear cycle list --team ENG --no-pager
 ```
 
 ### view
@@ -65,7 +70,12 @@ Options:
   -h, --help               - Show this help.                      
   -w, --workspace  <slug>  - Target workspace (uses credentials)  
   --team           <team>  - Team key (defaults to current team)  
-  -j, --json               - Output as JSON
+  -j, --json               - Output as JSON                       
+
+Examples:
+
+  View a cycle as JSON linear cycle view 42 --team ENG --json 
+  View a cycle by name linear cycle view "Cycle 42" --team ENG
 ```
 
 ### current
@@ -84,7 +94,12 @@ Options:
   -h, --help               - Show this help.                      
   -w, --workspace  <slug>  - Target workspace (uses credentials)  
   --team           <team>  - Team key (defaults to current team)  
-  -j, --json               - Output as JSON
+  -j, --json               - Output as JSON                       
+
+Examples:
+
+  Show the current cycle as JSON              linear cycle current --team ENG --json
+  Show the current cycle for the default team linear cycle current
 ```
 
 ### next
@@ -103,7 +118,12 @@ Options:
   -h, --help               - Show this help.                      
   -w, --workspace  <slug>  - Target workspace (uses credentials)  
   --team           <team>  - Team key (defaults to current team)  
-  -j, --json               - Output as JSON
+  -j, --json               - Output as JSON                       
+
+Examples:
+
+  Show the next cycle as JSON              linear cycle next --team ENG --json
+  Show the next cycle for the default team linear cycle next
 ```
 
 ### create

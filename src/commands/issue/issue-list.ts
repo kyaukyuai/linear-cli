@@ -128,6 +128,11 @@ export const listCommand = new Command()
   .option("-w, --web", "Open in web browser")
   .option("-a, --app", "Open in Linear.app")
   .option("--no-pager", "Disable automatic paging for long output")
+  .example("List all issues as JSON", "linear issue list --all --json")
+  .example(
+    "List todo issues for a project across all assignees",
+    "linear issue list --state todo --project auth-refresh --all-assignees",
+  )
   .error((error, cmd) => {
     handleAutomationContractParseError(error, cmd, "Failed to list issues")
   })
