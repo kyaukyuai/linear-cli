@@ -252,3 +252,28 @@ stdout:
 stderr:
 ""
 `;
+
+snapshot[`Issue Update Command - Description Parse Guidance 1`] = `
+stdout:
+""
+stderr:
+\`✗ Failed to update issue: Missing value for option "--description".
+  If you're passing long Markdown, prefer --description-file <path> or pipe content on stdin.
+\`
+`;
+
+snapshot[`Issue Update Command - JSON Description Parse Guidance 1`] = `
+stdout:
+\`{
+  "success": false,
+  "error": {
+    "type": "validation_error",
+    "message": "Missing value for option \\\\"--description\\\\".",
+    "suggestion": "If you're passing long Markdown, prefer --description-file <path> or pipe content on stdin.",
+    "context": "Failed to update issue"
+  }
+}
+\`
+stderr:
+""
+`;
