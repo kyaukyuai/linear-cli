@@ -1,6 +1,10 @@
 import { Command } from "@cliffy/command"
 import { Confirm, Select } from "@cliffy/prompt"
 import { gql } from "../../__codegen__/gql.ts"
+import {
+  shouldSkipConfirmation,
+  USE_YES_SUGGESTION,
+} from "../../utils/confirmation.ts"
 import { getGraphQLClient } from "../../utils/graphql.ts"
 import { getTeamKey } from "../../utils/linear.ts"
 import { shouldShowSpinner } from "../../utils/hyperlink.ts"
@@ -145,8 +149,9 @@ export const deleteCommand = new Command()
     "-t, --team <teamKey:string>",
     "Team key to disambiguate labels with same name",
   )
-  .option("-f, --force", "Skip confirmation prompt")
-  .action(async ({ team: teamKey, force }, nameOrId) => {
+  .option("-y, --yes", "Skip confirmation prompt")
+  .option("-f, --force", "Deprecated alias for --yes")
+  .action(async ({ team: teamKey, yes, force }, nameOrId) => {
     try {
       const client = getGraphQLClient()
 
@@ -165,11 +170,11 @@ export const deleteCommand = new Command()
 
       const labelDisplay = `${label.name} (${label.team?.key || "Workspace"})`
 
-      // Confirmation prompt unless --force is used
-      if (!force) {
+      // Confirmation prompt unless a bypass flag is used
+      if (!shouldSkipConfirmation({ yes, force })) {
         if (!Deno.stdin.isTerminal()) {
           throw new ValidationError("Interactive confirmation required", {
-            suggestion: "Use --force to skip confirmation.",
+            suggestion: USE_YES_SUGGESTION,
           })
         }
         const confirmed = await Confirm.prompt({

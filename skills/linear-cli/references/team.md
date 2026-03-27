@@ -66,7 +66,8 @@ Options:
   -h, --help                     - Show this help.                                  
   -w, --workspace  <slug>        - Target workspace (uses credentials)              
   --move-issues    <targetTeam>  - Move all issues to another team before deletion  
-  -y, --force                    - Skip confirmation prompt
+  -y, --yes                      - Skip confirmation prompt                         
+  --force                        - Deprecated alias for --yes
 ```
 
 ### list

@@ -1,0 +1,40 @@
+export const snapshot = {};
+
+snapshot[`Issue Delete Command - Help Text 1`] = `
+stdout:
+"
+Usage: delete [issueId]
+
+Description:
+
+  Delete an issue
+
+Options:
+
+  -h, --help              - Show this help.                                             
+  -y, --yes               - Skip confirmation prompt                                    
+  --confirm               - Deprecated alias for --yes                                  
+  --bulk        <ids...>  - Delete multiple issues by identifier (e.g., TC-123 TC-124)  
+  --bulk-file   <file>    - Read issue identifiers from a file (one per line)           
+  --bulk-stdin            - Read issue identifiers from stdin                           
+
+"
+stderr:
+""
+`;
+
+snapshot[`Issue Delete Command - With Yes Flag 1`] = `
+stdout:
+"✓ Successfully deleted issue: ENG-123: Delete me
+"
+stderr:
+""
+`;
+
+snapshot[`Issue Delete Command - Legacy Confirm Alias 1`] = `
+stdout:
+"✓ Successfully deleted issue: ENG-123: Delete me
+"
+stderr:
+""
+`;

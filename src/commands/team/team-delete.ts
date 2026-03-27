@@ -1,6 +1,10 @@
 import { Command } from "@cliffy/command"
 import { Confirm, Select } from "@cliffy/prompt"
 import { gql } from "../../__codegen__/gql.ts"
+import {
+  shouldSkipConfirmation,
+  USE_YES_SUGGESTION,
+} from "../../utils/confirmation.ts"
 import { getGraphQLClient } from "../../utils/graphql.ts"
 import { getAllTeams, getTeamIdByKey } from "../../utils/linear.ts"
 import {
@@ -35,8 +39,9 @@ export const deleteCommand = new Command()
     "--move-issues <targetTeam:string>",
     "Move all issues to another team before deletion",
   )
-  .option("-y, --force", "Skip confirmation prompt")
-  .action(async ({ moveIssues, force }, teamKey) => {
+  .option("-y, --yes", "Skip confirmation prompt")
+  .option("--force", "Deprecated alias for --yes")
+  .action(async ({ moveIssues, yes, force }, teamKey) => {
     try {
       const client = getGraphQLClient()
 
@@ -122,11 +127,11 @@ export const deleteCommand = new Command()
       }
 
       // Confirm deletion
-      if (!force) {
+      if (!shouldSkipConfirmation({ yes, force })) {
         if (!Deno.stdin.isTerminal()) {
           throw new ValidationError(
             "Interactive confirmation required",
-            { suggestion: "Use --force to skip." },
+            { suggestion: USE_YES_SUGGESTION },
           )
         }
         const confirmed = await Confirm.prompt({

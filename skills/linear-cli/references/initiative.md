@@ -116,7 +116,8 @@ Options:
 
   -h, --help                 - Show this help.                                    
   -w, --workspace  <slug>    - Target workspace (uses credentials)                
-  -y, --force                - Skip confirmation prompt                           
+  -y, --yes                  - Skip confirmation prompt                           
+  --force                    - Deprecated alias for --yes                         
   --bulk           <ids...>  - Archive multiple initiatives by ID, slug, or name  
   --bulk-file      <file>    - Read initiative IDs from a file (one per line)     
   --bulk-stdin               - Read initiative IDs from stdin
@@ -162,7 +163,8 @@ Options:
 
   -h, --help               - Show this help.                      
   -w, --workspace  <slug>  - Target workspace (uses credentials)  
-  -y, --force              - Skip confirmation prompt
+  -y, --yes                - Skip confirmation prompt             
+  --force                  - Deprecated alias for --yes
 ```
 
 ### delete
@@ -180,7 +182,8 @@ Options:
 
   -h, --help                 - Show this help.                                   
   -w, --workspace  <slug>    - Target workspace (uses credentials)               
-  -y, --force                - Skip confirmation prompt                          
+  -y, --yes                  - Skip confirmation prompt                          
+  --force                    - Deprecated alias for --yes                        
   --bulk           <ids...>  - Delete multiple initiatives by ID, slug, or name  
   --bulk-file      <file>    - Read initiative IDs from a file (one per line)    
   --bulk-stdin               - Read initiative IDs from stdin
@@ -219,5 +222,6 @@ Options:
 
   -h, --help               - Show this help.                      
   -w, --workspace  <slug>  - Target workspace (uses credentials)  
-  -y, --force              - Skip confirmation prompt
+  -y, --yes                - Skip confirmation prompt             
+  --force                  - Deprecated alias for --yes
 ```

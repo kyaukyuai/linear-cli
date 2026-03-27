@@ -1,6 +1,10 @@
 import { Command } from "@cliffy/command"
 import { Confirm } from "@cliffy/prompt"
 import { gql } from "../../__codegen__/gql.ts"
+import {
+  shouldSkipConfirmation,
+  USE_YES_SUGGESTION,
+} from "../../utils/confirmation.ts"
 import { emitDryRunOutput } from "../../utils/dry_run.ts"
 import { getGraphQLClient } from "../../utils/graphql.ts"
 import {
@@ -121,10 +125,10 @@ async function handleSingleDelete(
   }
 
   // Confirm deletion
-  if (!yes) {
+  if (!shouldSkipConfirmation({ yes })) {
     if (!Deno.stdin.isTerminal()) {
       throw new ValidationError("Interactive confirmation required", {
-        suggestion: "Use --yes to skip.",
+        suggestion: USE_YES_SUGGESTION,
       })
     }
     const confirmed = await Confirm.prompt({
@@ -203,10 +207,10 @@ async function handleBulkDelete(
   console.log(`Found ${ids.length} document(s) to delete.`)
 
   // Confirm bulk operation
-  if (!yes) {
+  if (!shouldSkipConfirmation({ yes })) {
     if (!Deno.stdin.isTerminal()) {
       throw new ValidationError("Interactive confirmation required", {
-        suggestion: "Use --yes to skip.",
+        suggestion: USE_YES_SUGGESTION,
       })
     }
     const confirmed = await Confirm.prompt({

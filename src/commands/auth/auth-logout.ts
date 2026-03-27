@@ -6,13 +6,15 @@ import {
   hasWorkspace,
   removeCredential,
 } from "../../credentials.ts"
+import { shouldSkipConfirmation } from "../../utils/confirmation.ts"
 import { AuthError, handleError, NotFoundError } from "../../utils/errors.ts"
 
 export const logoutCommand = new Command()
   .name("logout")
   .description("Remove a workspace credential")
   .arguments("[workspace:string]")
-  .option("-f, --force", "Skip confirmation prompt")
+  .option("-y, --yes", "Skip confirmation prompt")
+  .option("-f, --force", "Deprecated alias for --yes")
   .action(async (options, workspace?: string) => {
     try {
       const workspaces = getWorkspaces()
@@ -41,8 +43,8 @@ export const logoutCommand = new Command()
         throw new NotFoundError("Workspace", workspace)
       }
 
-      // Confirm removal unless --force is specified
-      if (!options.force) {
+      // Confirm removal unless a bypass flag is specified
+      if (!shouldSkipConfirmation(options)) {
         const confirmed = await Confirm.prompt({
           message: `Remove credentials for workspace "${workspace}"?`,
           default: false,

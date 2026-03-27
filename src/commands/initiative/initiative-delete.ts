@@ -1,6 +1,10 @@
 import { Command } from "@cliffy/command"
 import { Confirm, Input } from "@cliffy/prompt"
 import { gql } from "../../__codegen__/gql.ts"
+import {
+  shouldSkipConfirmation,
+  USE_YES_SUGGESTION,
+} from "../../utils/confirmation.ts"
 import { getGraphQLClient } from "../../utils/graphql.ts"
 import {
   type BulkOperationResult,
@@ -25,7 +29,8 @@ export const deleteCommand = new Command()
   .name("delete")
   .description("Permanently delete a Linear initiative")
   .arguments("[initiativeId:string]")
-  .option("-y, --force", "Skip confirmation prompt")
+  .option("-y, --yes", "Skip confirmation prompt")
+  .option("--force", "Deprecated alias for --yes")
   .option(
     "--bulk <ids...:string>",
     "Delete multiple initiatives by ID, slug, or name",
@@ -37,7 +42,7 @@ export const deleteCommand = new Command()
   .option("--bulk-stdin", "Read initiative IDs from stdin")
   .action(
     async (
-      { force, bulk, bulkFile, bulkStdin },
+      { yes, force, bulk, bulkFile, bulkStdin },
       initiativeId,
     ) => {
       const client = getGraphQLClient()
@@ -48,6 +53,7 @@ export const deleteCommand = new Command()
           bulk,
           bulkFile,
           bulkStdin,
+          yes,
           force,
         })
         return
@@ -60,7 +66,7 @@ export const deleteCommand = new Command()
         )
       }
 
-      await handleSingleDelete(client, initiativeId, { force })
+      await handleSingleDelete(client, initiativeId, { yes, force })
     },
   )
 
@@ -68,9 +74,9 @@ async function handleSingleDelete(
   // deno-lint-ignore no-explicit-any
   client: any,
   initiativeId: string,
-  options: { force?: boolean },
+  options: { yes?: boolean; force?: boolean },
 ): Promise<void> {
-  const { force } = options
+  const { yes, force } = options
 
   // Resolve initiative ID
   const resolvedId = await resolveInitiativeId(client, initiativeId)
@@ -117,10 +123,11 @@ async function handleSingleDelete(
   }
 
   // Confirm deletion with typed confirmation for safety
-  if (!force) {
+  if (!shouldSkipConfirmation({ yes, force })) {
     if (!Deno.stdin.isTerminal()) {
       throw new ValidationError(
-        "Interactive confirmation required. Use --force to skip.",
+        "Interactive confirmation required.",
+        { suggestion: USE_YES_SUGGESTION },
       )
     }
     console.log(`\n⚠️  This action is PERMANENT and cannot be undone.\n`)
@@ -184,10 +191,11 @@ async function handleBulkDelete(
     bulk?: string[]
     bulkFile?: string
     bulkStdin?: boolean
+    yes?: boolean
     force?: boolean
   },
 ): Promise<void> {
-  const { force } = options
+  const { yes, force } = options
 
   // Collect all IDs
   const ids = await collectBulkIds({
@@ -204,10 +212,11 @@ async function handleBulkDelete(
   console.log(`\n⚠️  This action is PERMANENT and cannot be undone.\n`)
 
   // Confirm bulk operation
-  if (!force) {
+  if (!shouldSkipConfirmation({ yes, force })) {
     if (!Deno.stdin.isTerminal()) {
       throw new ValidationError(
-        "Interactive confirmation required. Use --force to skip.",
+        "Interactive confirmation required.",
+        { suggestion: USE_YES_SUGGESTION },
       )
     }
     const confirmed = await Confirm.prompt({

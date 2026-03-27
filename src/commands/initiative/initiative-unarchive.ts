@@ -1,6 +1,10 @@
 import { Command } from "@cliffy/command"
 import { Confirm } from "@cliffy/prompt"
 import { gql } from "../../__codegen__/gql.ts"
+import {
+  shouldSkipConfirmation,
+  USE_YES_SUGGESTION,
+} from "../../utils/confirmation.ts"
 import { getGraphQLClient } from "../../utils/graphql.ts"
 import { shouldShowSpinner } from "../../utils/hyperlink.ts"
 import {
@@ -14,8 +18,9 @@ export const unarchiveCommand = new Command()
   .name("unarchive")
   .description("Unarchive a Linear initiative")
   .arguments("<initiativeId:string>")
-  .option("-y, --force", "Skip confirmation prompt")
-  .action(async ({ force }, initiativeId) => {
+  .option("-y, --yes", "Skip confirmation prompt")
+  .option("--force", "Deprecated alias for --yes")
+  .action(async ({ yes, force }, initiativeId) => {
     const client = getGraphQLClient()
 
     // Resolve initiative ID
@@ -60,10 +65,11 @@ export const unarchiveCommand = new Command()
     }
 
     // Confirm unarchive
-    if (!force) {
+    if (!shouldSkipConfirmation({ yes, force })) {
       if (!Deno.stdin.isTerminal()) {
         throw new ValidationError(
-          "Interactive confirmation required. Use --force to skip.",
+          "Interactive confirmation required.",
+          { suggestion: USE_YES_SUGGESTION },
         )
       }
       const confirmed = await Confirm.prompt({

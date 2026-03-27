@@ -15,9 +15,46 @@ await cliffySnapshotTest({
   },
 })
 
-// Test successful milestone deletion with --force flag
+// Test successful milestone deletion with --yes flag
 await cliffySnapshotTest({
-  name: "Milestone Delete Command - With Force Flag",
+  name: "Milestone Delete Command - With Yes Flag",
+  meta: import.meta,
+  colors: false,
+  args: [
+    "milestone-123",
+    "--yes",
+  ],
+  denoArgs: commonDenoArgs,
+  async fn() {
+    const server = new MockLinearServer([
+      {
+        queryName: "DeleteProjectMilestone",
+        response: {
+          data: {
+            projectMilestoneDelete: {
+              success: true,
+            },
+          },
+        },
+      },
+    ])
+
+    try {
+      await server.start()
+      Deno.env.set("LINEAR_GRAPHQL_ENDPOINT", server.getEndpoint())
+      Deno.env.set("LINEAR_API_KEY", "Bearer test-token")
+
+      await deleteCommand.parse()
+    } finally {
+      await server.stop()
+      Deno.env.delete("LINEAR_GRAPHQL_ENDPOINT")
+      Deno.env.delete("LINEAR_API_KEY")
+    }
+  },
+})
+
+await cliffySnapshotTest({
+  name: "Milestone Delete Command - Legacy Force Alias",
   meta: import.meta,
   colors: false,
   args: [

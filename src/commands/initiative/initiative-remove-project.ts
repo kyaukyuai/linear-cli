@@ -1,6 +1,10 @@
 import { Command } from "@cliffy/command"
 import { Confirm } from "@cliffy/prompt"
 import { gql } from "../../__codegen__/gql.ts"
+import {
+  shouldSkipConfirmation,
+  USE_YES_SUGGESTION,
+} from "../../utils/confirmation.ts"
 import { getGraphQLClient } from "../../utils/graphql.ts"
 import { shouldShowSpinner } from "../../utils/hyperlink.ts"
 import {
@@ -196,10 +200,11 @@ export const removeProjectCommand = new Command()
   .name("remove-project")
   .description("Unlink a project from an initiative")
   .arguments("<initiative:string> <project:string>")
-  .option("-y, --force", "Skip confirmation prompt")
+  .option("-y, --yes", "Skip confirmation prompt")
+  .option("--force", "Deprecated alias for --yes")
   .action(
     async (
-      { force },
+      { yes, force },
       initiativeArg,
       projectArg,
     ) => {
@@ -246,10 +251,11 @@ export const removeProjectCommand = new Command()
       }
 
       // Confirm removal
-      if (!force) {
+      if (!shouldSkipConfirmation({ yes, force })) {
         if (!Deno.stdin.isTerminal()) {
           throw new ValidationError(
-            "Interactive confirmation required. Use --force to skip.",
+            "Interactive confirmation required.",
+            { suggestion: USE_YES_SUGGESTION },
           )
         }
         const confirmed = await Confirm.prompt({

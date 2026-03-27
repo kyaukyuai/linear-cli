@@ -2,6 +2,10 @@ import { Command } from "@cliffy/command"
 import { Confirm } from "@cliffy/prompt"
 import { green } from "@std/fmt/colors"
 import { gql } from "../../__codegen__/gql.ts"
+import {
+  shouldSkipConfirmation,
+  USE_YES_SUGGESTION,
+} from "../../utils/confirmation.ts"
 import { getGraphQLClient } from "../../utils/graphql.ts"
 import { emitDryRunOutput } from "../../utils/dry_run.ts"
 import { CliError, handleError, ValidationError } from "../../utils/errors.ts"
@@ -68,10 +72,10 @@ export const deleteCommand = new Command()
         return
       }
 
-      if (!yes) {
+      if (!shouldSkipConfirmation({ yes })) {
         if (!Deno.stdin.isTerminal()) {
           throw new ValidationError("Interactive confirmation required", {
-            suggestion: "Use --yes to skip confirmation.",
+            suggestion: USE_YES_SUGGESTION,
           })
         }
 

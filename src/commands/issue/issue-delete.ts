@@ -1,6 +1,10 @@
 import { Command } from "@cliffy/command"
 import { Confirm } from "@cliffy/prompt"
 import { gql } from "../../__codegen__/gql.ts"
+import {
+  shouldSkipConfirmation,
+  USE_YES_SUGGESTION,
+} from "../../utils/confirmation.ts"
 import { getGraphQLClient } from "../../utils/graphql.ts"
 import { getIssueIdentifier } from "../../utils/linear.ts"
 import {
@@ -26,7 +30,8 @@ export const deleteCommand = new Command()
   .description("Delete an issue")
   .alias("d")
   .arguments("[issueId:string]")
-  .option("-y, --confirm", "Skip confirmation prompt")
+  .option("-y, --yes", "Skip confirmation prompt")
+  .option("--confirm", "Deprecated alias for --yes")
   .option(
     "--bulk <ids...:string>",
     "Delete multiple issues by identifier (e.g., TC-123 TC-124)",
@@ -38,7 +43,7 @@ export const deleteCommand = new Command()
   .option("--bulk-stdin", "Read issue identifiers from stdin")
   .action(
     async (
-      { confirm, bulk, bulkFile, bulkStdin },
+      { yes, confirm, bulk, bulkFile, bulkStdin },
       issueId,
     ) => {
       try {
@@ -50,6 +55,7 @@ export const deleteCommand = new Command()
             bulk,
             bulkFile,
             bulkStdin,
+            yes,
             confirm,
           })
           return
@@ -63,7 +69,7 @@ export const deleteCommand = new Command()
           )
         }
 
-        await handleSingleDelete(client, issueId, { confirm })
+        await handleSingleDelete(client, issueId, { yes, confirm })
       } catch (error) {
         handleError(error, "Failed to delete issue")
       }
@@ -74,9 +80,9 @@ async function handleSingleDelete(
   // deno-lint-ignore no-explicit-any
   client: any,
   issueId: string,
-  options: { confirm?: boolean },
+  options: { yes?: boolean; confirm?: boolean },
 ): Promise<void> {
-  const { confirm } = options
+  const { yes, confirm } = options
 
   // First resolve the issue ID to get the issue details
   const resolvedId = await getIssueIdentifier(issueId)
@@ -99,12 +105,12 @@ async function handleSingleDelete(
 
   const { title, identifier } = issueDetails.issue
 
-  // Show confirmation prompt unless --confirm flag is used
-  if (!confirm) {
+  // Show confirmation prompt unless a bypass flag is used
+  if (!shouldSkipConfirmation({ yes, confirm })) {
     if (!Deno.stdin.isTerminal()) {
       throw new ValidationError(
         "Interactive confirmation required",
-        { suggestion: "Use --confirm to skip." },
+        { suggestion: USE_YES_SUGGESTION },
       )
     }
     const confirmed = await Confirm.prompt({
@@ -147,10 +153,11 @@ async function handleBulkDelete(
     bulk?: string[]
     bulkFile?: string
     bulkStdin?: boolean
+    yes?: boolean
     confirm?: boolean
   },
 ): Promise<void> {
-  const { confirm } = options
+  const { yes, confirm } = options
 
   // Collect all IDs
   const ids = await collectBulkIds({
@@ -166,11 +173,11 @@ async function handleBulkDelete(
   console.log(`Found ${ids.length} issue(s) to delete.`)
 
   // Confirm bulk operation
-  if (!confirm) {
+  if (!shouldSkipConfirmation({ yes, confirm })) {
     if (!Deno.stdin.isTerminal()) {
       throw new ValidationError(
         "Interactive confirmation required",
-        { suggestion: "Use --confirm to skip." },
+        { suggestion: USE_YES_SUGGESTION },
       )
     }
     const confirmed = await Confirm.prompt({
