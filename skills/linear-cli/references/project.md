@@ -140,7 +140,8 @@ Options:
 
   -h, --help               - Show this help.                                    
   -w, --workspace  <slug>  - Target workspace (uses credentials)                
-  -f, --force              - Skip confirmation prompt                           
+  -y, --yes                - Skip confirmation prompt                           
+  -f, --force              - Deprecated alias for --yes                         
   --dry-run                - Preview the deletion without mutating the project
 ```
 

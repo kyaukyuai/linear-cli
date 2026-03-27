@@ -274,7 +274,8 @@ Options:
 
   -h, --help                 - Show this help.                                             
   -w, --workspace  <slug>    - Target workspace (uses credentials)                         
-  -y, --confirm              - Skip confirmation prompt                                    
+  -y, --yes                  - Skip confirmation prompt                                    
+  --confirm                  - Deprecated alias for --yes                                  
   --bulk           <ids...>  - Delete multiple issues by identifier (e.g., TC-123 TC-124)  
   --bulk-file      <file>    - Read issue identifiers from a file (one per line)           
   --bulk-stdin               - Read issue identifiers from stdin

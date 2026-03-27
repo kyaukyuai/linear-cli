@@ -84,5 +84,6 @@ Options:
   -h, --help                  - Show this help.                                 
   -w, --workspace  <slug>     - Target workspace (uses credentials)             
   -t, --team       <teamKey>  - Team key to disambiguate labels with same name  
-  -f, --force                 - Skip confirmation prompt
+  -y, --yes                   - Skip confirmation prompt                        
+  -f, --force                 - Deprecated alias for --yes
 ```

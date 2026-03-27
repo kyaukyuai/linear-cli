@@ -1,6 +1,10 @@
 import { Command } from "@cliffy/command"
 import { Confirm } from "@cliffy/prompt"
 import { gql } from "../../__codegen__/gql.ts"
+import {
+  shouldSkipConfirmation,
+  USE_YES_SUGGESTION,
+} from "../../utils/confirmation.ts"
 import { emitDryRunOutput } from "../../utils/dry_run.ts"
 import { getGraphQLClient } from "../../utils/graphql.ts"
 import { shouldShowSpinner } from "../../utils/hyperlink.ts"
@@ -19,14 +23,14 @@ export const deleteCommand = new Command()
   .name("delete")
   .description("Delete a project milestone")
   .arguments("<id:string>")
-  .option("-f, --force", "Skip confirmation prompt")
+  .option("-y, --yes", "Skip confirmation prompt")
+  .option("-f, --force", "Deprecated alias for --yes")
   .option("--dry-run", "Preview the deletion without mutating the milestone")
-  .action(async ({ force, dryRun }, id) => {
-    // Confirmation prompt unless --force is used
-    if (!force && !dryRun) {
+  .action(async ({ yes, force, dryRun }, id) => {
+    if (!shouldSkipConfirmation({ yes, force }) && !dryRun) {
       if (!Deno.stdin.isTerminal()) {
         throw new ValidationError("Interactive confirmation required", {
-          suggestion: "Use --force to skip confirmation.",
+          suggestion: USE_YES_SUGGESTION,
         })
       }
       const confirmed = await Confirm.prompt({

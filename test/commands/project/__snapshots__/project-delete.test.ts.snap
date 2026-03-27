@@ -12,7 +12,8 @@ Description:
 Options:
 
   -h, --help   - Show this help.                                    
-  -f, --force  - Skip confirmation prompt                           
+  -y, --yes    - Skip confirmation prompt                           
+  -f, --force  - Deprecated alias for --yes                         
   --dry-run    - Preview the deletion without mutating the project  
 
 "
@@ -20,7 +21,15 @@ stderr:
 ""
 `;
 
-snapshot[`Project Delete Command - With Force Flag 1`] = `
+snapshot[`Project Delete Command - With Yes Flag 1`] = `
+stdout:
+"✓ Deleted project: Deleted Project
+"
+stderr:
+""
+`;
+
+snapshot[`Project Delete Command - Legacy Force Alias 1`] = `
 stdout:
 "✓ Deleted project: Deleted Project
 "

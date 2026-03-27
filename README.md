@@ -114,6 +114,8 @@ for automation consumers, auth and authorization failures now use exit code `4`,
 
 the same document also defines the shared preview contract for future `--dry-run` write commands. those commands are not all implemented yet, but the contract now fixes the expected `stdout`, `exit code`, and `--json --dry-run` envelope shape ahead of rollout.
 
+destructive commands use `--yes` as the canonical confirmation-bypass flag. legacy `--force` and `--confirm` flags are still accepted where older workflows already depended on them.
+
 ## differences from upstream
 
 this fork is intentionally diverging from upstream in a few ways:
@@ -286,7 +288,7 @@ linear milestone update <milestoneId> --name "New Name" --dry-run           # pr
 linear m update <milestoneId> --target-date "2026-04-15"  # update target date
 linear milestone delete <milestoneId>           # delete a milestone
 linear milestone delete <milestoneId> --dry-run                                # preview a milestone delete
-linear m delete <milestoneId> --force           # delete without confirmation
+linear m delete <milestoneId> --yes             # delete without confirmation
 ```
 
 ### document commands
