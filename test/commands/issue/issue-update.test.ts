@@ -873,3 +873,34 @@ await snapshotTest({
     await updateCommand.parse()
   },
 })
+
+await snapshotTest({
+  name: "Issue Update Command - Description Parse Guidance",
+  meta: import.meta,
+  colors: false,
+  canFail: true,
+  args: [
+    "ENG-123",
+    "-d",
+  ],
+  denoArgs: commonDenoArgs,
+  async fn() {
+    await updateCommand.parse()
+  },
+})
+
+await snapshotTest({
+  name: "Issue Update Command - JSON Description Parse Guidance",
+  meta: import.meta,
+  colors: false,
+  canFail: true,
+  args: [
+    "ENG-123",
+    "--json",
+    "-d",
+  ],
+  denoArgs: commonDenoArgs,
+  async fn() {
+    await updateCommand.parse()
+  },
+})

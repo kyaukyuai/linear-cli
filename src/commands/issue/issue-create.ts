@@ -37,6 +37,7 @@ import { CliError, NotFoundError, ValidationError } from "../../utils/errors.ts"
 import { readTextFromStdin } from "../../utils/stdin.ts"
 import { buildIssueCreateDryRunPayload } from "./issue-dry-run-payload.ts"
 import { buildIssueWritePayload } from "./issue-write-payload.ts"
+import { maybeHandleIssueDescriptionParseError } from "./issue-description-parse.ts"
 
 type IssueLabel = { id: string; name: string; color: string }
 
@@ -534,6 +535,15 @@ export const createCommand = new Command()
     'linear issue create --title "Fix auth expiry bug" --team ENG --state started --dry-run',
   )
   .error((error, cmd) => {
+    if (
+      maybeHandleIssueDescriptionParseError(
+        error,
+        cmd,
+        "Failed to create issue",
+      )
+    ) {
+      return
+    }
     handleAutomationContractParseError(error, cmd, "Failed to create issue")
   })
   .action(

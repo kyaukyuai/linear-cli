@@ -452,6 +452,43 @@ await snapshotTest({
 })
 
 await snapshotTest({
+  name: "Issue Create Command - Description Parse Guidance",
+  meta: import.meta,
+  colors: false,
+  canFail: true,
+  args: [
+    "--title",
+    "Broken markdown",
+    "--team",
+    "ENG",
+    "-d",
+  ],
+  denoArgs: commonDenoArgs,
+  async fn() {
+    await createCommand.parse()
+  },
+})
+
+await snapshotTest({
+  name: "Issue Create Command - JSON Description Parse Guidance",
+  meta: import.meta,
+  colors: false,
+  canFail: true,
+  args: [
+    "--json",
+    "--title",
+    "Broken markdown",
+    "--team",
+    "ENG",
+    "-d",
+  ],
+  denoArgs: commonDenoArgs,
+  async fn() {
+    await createCommand.parse()
+  },
+})
+
+await snapshotTest({
   name: "Issue Create Command - JSON Plan Limit Failure",
   meta: import.meta,
   colors: false,

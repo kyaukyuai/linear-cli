@@ -149,6 +149,31 @@ stderr:
 ""
 `;
 
+snapshot[`Issue Create Command - Description Parse Guidance 1`] = `
+stdout:
+""
+stderr:
+\`✗ Failed to create issue: Missing value for option "--description".
+  If you're passing long Markdown, prefer --description-file <path> or pipe content on stdin.
+\`
+`;
+
+snapshot[`Issue Create Command - JSON Description Parse Guidance 1`] = `
+stdout:
+\`{
+  "success": false,
+  "error": {
+    "type": "validation_error",
+    "message": "Missing value for option \\\\"--description\\\\".",
+    "suggestion": "If you're passing long Markdown, prefer --description-file <path> or pipe content on stdin.",
+    "context": "Failed to create issue"
+  }
+}
+\`
+stderr:
+""
+`;
+
 snapshot[`Issue Create Command - JSON Plan Limit Failure 1`] = `
 stdout:
 \`{

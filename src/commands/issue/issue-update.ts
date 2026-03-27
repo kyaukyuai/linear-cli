@@ -25,6 +25,7 @@ import { buildIssueWritePayload } from "./issue-write-payload.ts"
 import { buildIssueCommentPayload } from "./issue-comment-payload.ts"
 import { createIssueComment } from "./issue-comment-utils.ts"
 import { buildIssueUpdateDryRunPayload } from "./issue-dry-run-payload.ts"
+import { maybeHandleIssueDescriptionParseError } from "./issue-description-parse.ts"
 
 export const updateCommand = new Command()
   .name("update")
@@ -115,6 +116,15 @@ export const updateCommand = new Command()
     'linear issue update ENG-123 --title "Fix auth timeout edge case" --json',
   )
   .error((error, cmd) => {
+    if (
+      maybeHandleIssueDescriptionParseError(
+        error,
+        cmd,
+        "Failed to update issue",
+      )
+    ) {
+      return
+    }
     handleAutomationContractParseError(error, cmd, "Failed to update issue")
   })
   .action(
