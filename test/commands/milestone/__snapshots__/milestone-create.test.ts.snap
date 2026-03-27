@@ -2,7 +2,7 @@ export const snapshot = {};
 
 snapshot[`Milestone Create Command - Help Text 1`] = `
 stdout:
-"
+'
 Usage: create --project <projectId> --name <name>
 
 Description:
@@ -18,7 +18,12 @@ Options:
   --target-date  <date>         - Target date (YYYY-MM-DD)                             
   --dry-run                     - Preview the milestone without creating it            
 
-"
+Examples:
+
+  Create a milestone         linear milestone create --project auth-refresh --name "Beta launch"                                   
+  Preview milestone creation linear milestone create --project auth-refresh --name "Beta launch" --target-date 2026-05-01 --dry-run
+
+'
 stderr:
 ""
 `;

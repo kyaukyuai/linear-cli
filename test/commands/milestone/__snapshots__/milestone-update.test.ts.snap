@@ -2,7 +2,7 @@ export const snapshot = {};
 
 snapshot[`Milestone Update Command - Help Text 1`] = `
 stdout:
-"
+'
 Usage: update <id>
 
 Description:
@@ -19,7 +19,12 @@ Options:
   --project      <projectId>    - Move to a different project                        
   --dry-run                     - Preview the update without mutating the milestone  
 
-"
+Examples:
+
+  Rename a milestone              linear milestone update milestone-123 --name "GA launch"                
+  Preview a milestone date change linear milestone update milestone-123 --target-date 2026-05-15 --dry-run
+
+'
 stderr:
 ""
 `;

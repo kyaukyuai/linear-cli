@@ -47,6 +47,11 @@ export const listCommand = new Command()
   .option("--team <team:string>", "Team key (defaults to current team)")
   .option("-j, --json", "Output as JSON")
   .option("--no-pager", "Disable automatic paging for long output")
+  .example("List cycles as JSON", "linear cycle list --team ENG --json")
+  .example(
+    "List cycles without a pager",
+    "linear cycle list --team ENG --no-pager",
+  )
   .error((error, cmd) =>
     handleAutomationContractParseError(error, cmd, "Failed to list cycles")
   )

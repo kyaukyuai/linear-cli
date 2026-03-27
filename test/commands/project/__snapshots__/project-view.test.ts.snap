@@ -16,6 +16,11 @@ Options:
   -a, --app   - Open in Linear.app   
   -j, --json  - Output as JSON       
 
+Examples:
+
+  View a project as JSON        linear project view auth-refresh --json
+  Open a project in the browser linear project view auth-refresh --web 
+
 "
 stderr:
 ""

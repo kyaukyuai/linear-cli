@@ -32,6 +32,14 @@ export const createCommand = new Command()
   .option("--description <description:string>", "Milestone description")
   .option("--target-date <date:string>", "Target date (YYYY-MM-DD)")
   .option("--dry-run", "Preview the milestone without creating it")
+  .example(
+    "Create a milestone",
+    'linear milestone create --project auth-refresh --name "Beta launch"',
+  )
+  .example(
+    "Preview milestone creation",
+    'linear milestone create --project auth-refresh --name "Beta launch" --target-date 2026-05-01 --dry-run',
+  )
   .action(
     async (
       { project: projectIdOrSlug, name, description, targetDate, dryRun },

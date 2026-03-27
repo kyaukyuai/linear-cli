@@ -2,7 +2,7 @@ export const snapshot = {};
 
 snapshot[`Issue Create Command - Help Text 1`] = `
 stdout:
-"
+\`
 Usage: create
 
 Description:
@@ -32,7 +32,12 @@ Options:
   --no-interactive                          - Disable interactive prompts                                    
   -t, --title                <title>        - Title of the issue                                             
 
-"
+Examples:
+
+  Create an issue as JSON linear issue create --title "Fix auth expiry bug" --team ENG --json                   
+  Preview issue creation  linear issue create --title "Fix auth expiry bug" --team ENG --state started --dry-run
+
+\`
 stderr:
 ""
 `;

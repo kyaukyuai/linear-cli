@@ -516,6 +516,14 @@ export const createCommand = new Command()
   )
   .option("--no-interactive", "Disable interactive prompts")
   .option("-t, --title <title:string>", "Title of the issue")
+  .example(
+    "Create an issue as JSON",
+    'linear issue create --title "Fix auth expiry bug" --team ENG --json',
+  )
+  .example(
+    "Preview issue creation",
+    'linear issue create --title "Fix auth expiry bug" --team ENG --state started --dry-run',
+  )
   .error((error, cmd) => {
     handleAutomationContractParseError(error, cmd, "Failed to create issue")
   })

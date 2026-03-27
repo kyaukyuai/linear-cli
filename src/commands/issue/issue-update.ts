@@ -97,6 +97,18 @@ export const updateCommand = new Command()
   .option("-j, --json", "Output as JSON")
   .option("--dry-run", "Preview the update without mutating the issue")
   .option("-t, --title <title:string>", "Title of the issue")
+  .example(
+    "Update state and assignee",
+    "linear issue update ENG-123 --state started --assignee self",
+  )
+  .example(
+    "Preview an update with a comment",
+    'linear issue update ENG-123 --state completed --comment "Ready for review" --dry-run',
+  )
+  .example(
+    "Return the updated issue as JSON",
+    'linear issue update ENG-123 --title "Fix auth timeout edge case" --json',
+  )
   .error((error, cmd) => {
     handleAutomationContractParseError(error, cmd, "Failed to update issue")
   })

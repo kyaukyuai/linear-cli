@@ -96,6 +96,14 @@ export const listCommand = new Command()
   .option("--include-archived", "Include archived webhooks")
   .option("-j, --json", "Output as JSON")
   .option("--no-pager", "Disable automatic paging for long output")
+  .example(
+    "List team webhooks as JSON",
+    "linear webhook list --team ENG --json",
+  )
+  .example(
+    "List archived webhooks",
+    "linear webhook list --include-archived --limit 50",
+  )
   .action(async ({ limit, team, includeArchived, json }) => {
     try {
       if (limit < 1 || limit > 100) {

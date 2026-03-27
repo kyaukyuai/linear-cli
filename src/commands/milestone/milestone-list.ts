@@ -48,6 +48,14 @@ export const listCommand = new Command()
   .option("--project <projectId:string>", "Project ID", { required: true })
   .option("-j, --json", "Output as JSON")
   .option("--no-pager", "Disable automatic paging for long output")
+  .example(
+    "List milestones as JSON",
+    "linear milestone list --project auth-refresh --json",
+  )
+  .example(
+    "List milestones without a pager",
+    "linear milestone list --project auth-refresh --no-pager",
+  )
   .error((error, cmd) =>
     handleAutomationContractParseError(error, cmd, "Failed to list milestones")
   )

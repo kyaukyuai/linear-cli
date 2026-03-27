@@ -44,7 +44,12 @@ Options:
   -w, --workspace  <slug>       - Target workspace (uses credentials)                 
   --project        <projectId>  - Project ID                                (required)
   -j, --json                    - Output as JSON                                      
-  --no-pager                    - Disable automatic paging for long output
+  --no-pager                    - Disable automatic paging for long output            
+
+Examples:
+
+  List milestones as JSON         linear milestone list --project auth-refresh --json    
+  List milestones without a pager linear milestone list --project auth-refresh --no-pager
 ```
 
 ### view
@@ -62,7 +67,12 @@ Options:
 
   -h, --help               - Show this help.                      
   -w, --workspace  <slug>  - Target workspace (uses credentials)  
-  -j, --json               - Output as JSON
+  -j, --json               - Output as JSON                       
+
+Examples:
+
+  View a milestone as JSON         linear milestone view milestone-123 --json
+  View a milestone in the terminal linear milestone view milestone-123
 ```
 
 ### create
@@ -84,7 +94,12 @@ Options:
   --name           <name>         - Milestone name                             (required)
   --description    <description>  - Milestone description                                
   --target-date    <date>         - Target date (YYYY-MM-DD)                             
-  --dry-run                       - Preview the milestone without creating it
+  --dry-run                       - Preview the milestone without creating it            
+
+Examples:
+
+  Create a milestone         linear milestone create --project auth-refresh --name "Beta launch"                                   
+  Preview milestone creation linear milestone create --project auth-refresh --name "Beta launch" --target-date 2026-05-01 --dry-run
 ```
 
 ### update
@@ -107,7 +122,12 @@ Options:
   --target-date    <date>         - Target date (YYYY-MM-DD)                           
   --sort-order     <value>        - Sort order relative to other milestones            
   --project        <projectId>    - Move to a different project                        
-  --dry-run                       - Preview the update without mutating the milestone
+  --dry-run                       - Preview the update without mutating the milestone  
+
+Examples:
+
+  Rename a milestone              linear milestone update milestone-123 --name "GA launch"                
+  Preview a milestone date change linear milestone update milestone-123 --target-date 2026-05-15 --dry-run
 ```
 
 ### delete
@@ -127,5 +147,10 @@ Options:
   -w, --workspace  <slug>  - Target workspace (uses credentials)                  
   -y, --yes                - Skip confirmation prompt                             
   -f, --force              - Deprecated alias for --yes                           
-  --dry-run                - Preview the deletion without mutating the milestone
+  --dry-run                - Preview the deletion without mutating the milestone  
+
+Examples:
+
+  Preview deleting a milestone         linear milestone delete milestone-123 --dry-run
+  Delete a milestone without prompting linear milestone delete milestone-123 --yes
 ```

@@ -55,6 +55,14 @@ export const nextCommand = new Command()
   .description("Show the next upcoming cycle for a team")
   .option("--team <team:string>", "Team key (defaults to current team)")
   .option("-j, --json", "Output as JSON")
+  .example(
+    "Show the next cycle as JSON",
+    "linear cycle next --team ENG --json",
+  )
+  .example(
+    "Show the next cycle for the default team",
+    "linear cycle next",
+  )
   .error((error, cmd) =>
     handleAutomationContractParseError(error, cmd, "Failed to get next cycle")
   )

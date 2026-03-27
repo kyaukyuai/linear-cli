@@ -41,6 +41,14 @@ export const viewCommand = new Command()
   .description("View a webhook")
   .arguments("<webhookId:string>")
   .option("-j, --json", "Output as JSON")
+  .example(
+    "View a webhook as JSON",
+    "linear webhook view webhook_123 --json",
+  )
+  .example(
+    "View a webhook in the terminal",
+    "linear webhook view webhook_123",
+  )
   .action(async ({ json }, webhookId) => {
     try {
       const client = getGraphQLClient()

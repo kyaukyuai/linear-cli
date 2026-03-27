@@ -57,6 +57,14 @@ export const updateCommand = new Command()
   .option("--disabled", "Disable the webhook")
   .option("-j, --json", "Output as JSON")
   .option("--dry-run", "Preview the update without mutating the webhook")
+  .example(
+    "Preview a webhook update",
+    'linear webhook update webhook_123 --label "Primary webhook" --resource-types Issue,Comment --dry-run',
+  )
+  .example(
+    "Disable a webhook as JSON",
+    "linear webhook update webhook_123 --disabled --json",
+  )
   .action(
     async (
       { url, resourceTypes, label, secret, enabled, disabled, json, dryRun },

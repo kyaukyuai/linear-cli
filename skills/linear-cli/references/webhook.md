@@ -46,7 +46,12 @@ Options:
   --team              <teamKey>  - Filter by team key                                     
   --include-archived             - Include archived webhooks                              
   -j, --json                     - Output as JSON                                         
-  --no-pager                     - Disable automatic paging for long output
+  --no-pager                     - Disable automatic paging for long output               
+
+Examples:
+
+  List team webhooks as JSON linear webhook list --team ENG --json            
+  List archived webhooks     linear webhook list --include-archived --limit 50
 ```
 
 ### view
@@ -64,7 +69,12 @@ Options:
 
   -h, --help               - Show this help.                      
   -w, --workspace  <slug>  - Target workspace (uses credentials)  
-  -j, --json               - Output as JSON
+  -j, --json               - Output as JSON                       
+
+Examples:
+
+  View a webhook as JSON         linear webhook view webhook_123 --json
+  View a webhook in the terminal linear webhook view webhook_123
 ```
 
 ### create
@@ -90,7 +100,12 @@ Options:
   --secret              <secret>         - Secret used to sign webhook payloads                                
   --disabled                             - Create the webhook disabled                                         
   -j, --json                             - Output as JSON                                                      
-  --dry-run                              - Preview the webhook without creating it
+  --dry-run                              - Preview the webhook without creating it                             
+
+Examples:
+
+  Preview creating a team webhook            linear webhook create --url https://example.com/hooks/linear --resource-types Issue,Comment --team ENG --dry-run
+  Create an all-public-teams webhook as JSON linear webhook create --url https://example.com/hooks/linear --resource-types Issue --all-public-teams --json
 ```
 
 ### update
@@ -115,7 +130,12 @@ Options:
   --enabled                              - Enable the webhook                               
   --disabled                             - Disable the webhook                              
   -j, --json                             - Output as JSON                                   
-  --dry-run                              - Preview the update without mutating the webhook
+  --dry-run                              - Preview the update without mutating the webhook  
+
+Examples:
+
+  Preview a webhook update  linear webhook update webhook_123 --label "Primary webhook" --resource-types Issue,Comment --dry-run
+  Disable a webhook as JSON linear webhook update webhook_123 --disabled --json
 ```
 
 ### delete
@@ -135,5 +155,10 @@ Options:
   -w, --workspace  <slug>  - Target workspace (uses credentials)                
   -y, --yes                - Skip confirmation prompt                           
   -j, --json               - Output as JSON                                     
-  --dry-run                - Preview the deletion without mutating the webhook
+  --dry-run                - Preview the deletion without mutating the webhook  
+
+Examples:
+
+  Preview deleting a webhook         linear webhook delete webhook_123 --dry-run   
+  Delete a webhook without prompting linear webhook delete webhook_123 --yes --json
 ```

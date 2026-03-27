@@ -39,6 +39,14 @@ export const deleteCommand = new Command()
   .option("-y, --yes", "Skip confirmation prompt")
   .option("-j, --json", "Output as JSON")
   .option("--dry-run", "Preview the deletion without mutating the webhook")
+  .example(
+    "Preview deleting a webhook",
+    "linear webhook delete webhook_123 --dry-run",
+  )
+  .example(
+    "Delete a webhook without prompting",
+    "linear webhook delete webhook_123 --yes --json",
+  )
   .action(async ({ yes, json, dryRun }, webhookId) => {
     try {
       const client = getGraphQLClient()

@@ -14,6 +14,11 @@ Options:
   -h, --help  - Show this help.  
   -j, --json  - Output as JSON   
 
+Examples:
+
+  View a milestone as JSON         linear milestone view milestone-123 --json
+  View a milestone in the terminal linear milestone view milestone-123       
+
 "
 stderr:
 ""

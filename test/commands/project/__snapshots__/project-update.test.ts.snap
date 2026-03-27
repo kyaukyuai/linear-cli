@@ -21,6 +21,11 @@ Options:
   -t, --team         <team>         - Team key (can be repeated for multiple teams)                    
   --dry-run                         - Preview the update without mutating the project                  
 
+Examples:
+
+  Update status and target date linear project update auth-refresh --status started --target-date 2026-04-30
+  Preview team changes          linear project update auth-refresh --team ENG --team PLATFORM --dry-run     
+
 "
 stderr:
 ""

@@ -100,7 +100,12 @@ Options:
   -j, --json                            - Output as JSON                                                                                                 
   -w, --web                             - Open in web browser                                                                                            
   -a, --app                             - Open in Linear.app                                                                                             
-  --no-pager                            - Disable automatic paging for long output
+  --no-pager                            - Disable automatic paging for long output                                                                       
+
+Examples:
+
+  List all issues as JSON                             linear issue list --all --json                                       
+  List todo issues for a project across all assignees linear issue list --state todo --project auth-refresh --all-assignees
 ```
 
 ### search
@@ -159,7 +164,12 @@ Options:
   -U, --unassigned                - Show only unassigned issues                                     
   -f, --from-ref       <fromRef>  - Git ref to create new branch from                               
   -b, --branch         <branch>   - Custom branch name to use instead of the issue identifier       
-  --dry-run                       - Preview the branch and state transition without making changes
+  --dry-run                       - Preview the branch and state transition without making changes  
+
+Examples:
+
+  Preview the branch and state transition linear issue start ENG-123 --dry-run
+  Pick from all unstarted issues          linear issue start --all-assignees
 ```
 
 ### view
@@ -182,7 +192,12 @@ Options:
   --no-comments            - Exclude comments from the output               
   --no-pager               - Disable automatic paging for long output       
   -j, --json               - Output issue data as JSON                      
-  --no-download            - Keep remote URLs instead of downloading files
+  --no-download            - Keep remote URLs instead of downloading files  
+
+Examples:
+
+  View issue as JSON          linear issue view ENG-123 --json                  
+  View issue without comments linear issue view ENG-123 --no-comments --no-pager
 ```
 
 ### url
@@ -314,7 +329,12 @@ Options:
   --dry-run                                 - Preview the created issue without creating it                  
   --no-use-default-template                 - Do not use default template for the issue                      
   --no-interactive                          - Disable interactive prompts                                    
-  -t, --title                <title>        - Title of the issue
+  -t, --title                <title>        - Title of the issue                                             
+
+Examples:
+
+  Create an issue as JSON linear issue create --title "Fix auth expiry bug" --team ENG --json                   
+  Preview issue creation  linear issue create --title "Fix auth expiry bug" --team ENG --state started --dry-run
 ```
 
 ### create-batch
@@ -336,7 +356,12 @@ Options:
   --team           <team>     - Team key override for the batch file            
   --project        <project>  - Project name override for the batch file        
   -j, --json                  - Output as JSON                                  
-  --dry-run                   - Preview the batch without creating issues
+  --dry-run                   - Preview the batch without creating issues       
+
+Examples:
+
+  Preview a parent and child issue batch linear issue create-batch --file rollout.json --dry-run
+  Create a batch and return JSON         linear issue create-batch --file rollout.json --json
 ```
 
 ### update
@@ -372,7 +397,13 @@ Options:
   --no-interactive                   - Accepted for compatibility; issue update is always non-interactive  
   -j, --json                         - Output as JSON                                                      
   --dry-run                          - Preview the update without mutating the issue                       
-  -t, --title         <title>        - Title of the issue
+  -t, --title         <title>        - Title of the issue                                                  
+
+Examples:
+
+  Update state and assignee        linear issue update ENG-123 --state started --assignee self                         
+  Preview an update with a comment linear issue update ENG-123 --state completed --comment "Ready for review" --dry-run
+  Return the updated issue as JSON linear issue update ENG-123 --title "Fix auth timeout edge case" --json
 ```
 
 ### move
@@ -617,7 +648,13 @@ Options:
   -p, --parent     <id>        - Parent comment ID for replies                                   
   -a, --attach     <filepath>  - Attach a file to the comment (can be used multiple times)       
   -j, --json                   - Output as JSON                                                  
-  --dry-run                    - Preview the comment without creating it
+  --dry-run                    - Preview the comment without creating it                         
+
+Examples:
+
+  Add a comment with a positional body linear issue comment add ENG-123 "Ready for review"                               
+  Preview a comment from a file        linear issue comment add ENG-123 --body-file review.md --dry-run                  
+  Reply to a comment as JSON           linear issue comment add ENG-123 --parent comment_123 --body "Following up" --json
 ```
 
 ##### delete

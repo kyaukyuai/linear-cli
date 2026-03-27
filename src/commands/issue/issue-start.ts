@@ -41,6 +41,14 @@ export const startCommand = new Command()
     "--dry-run",
     "Preview the branch and state transition without making changes",
   )
+  .example(
+    "Preview the branch and state transition",
+    "linear issue start ENG-123 --dry-run",
+  )
+  .example(
+    "Pick from all unstarted issues",
+    "linear issue start --all-assignees",
+  )
   .action(async (
     { allAssignees, unassigned, fromRef, branch, dryRun },
     issueId,

@@ -53,6 +53,14 @@ export const currentCommand = new Command()
   .description("Show the current active cycle for a team")
   .option("--team <team:string>", "Team key (defaults to current team)")
   .option("-j, --json", "Output as JSON")
+  .example(
+    "Show the current cycle as JSON",
+    "linear cycle current --team ENG --json",
+  )
+  .example(
+    "Show the current cycle for the default team",
+    "linear cycle current",
+  )
   .error((error, cmd) =>
     handleAutomationContractParseError(
       error,

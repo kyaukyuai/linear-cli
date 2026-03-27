@@ -31,6 +31,14 @@ export const deleteCommand = new Command()
   .option("-y, --yes", "Skip confirmation prompt")
   .option("-f, --force", "Deprecated alias for --yes")
   .option("--dry-run", "Preview the deletion without mutating the project")
+  .example(
+    "Preview deleting a project",
+    "linear project delete auth-refresh --dry-run",
+  )
+  .example(
+    "Delete a project without prompting",
+    "linear project delete auth-refresh --yes",
+  )
   .action(async ({ yes, force, dryRun }, projectId) => {
     if (!shouldSkipConfirmation({ yes, force }) && !dryRun) {
       if (!Deno.stdin.isTerminal()) {

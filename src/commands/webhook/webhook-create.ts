@@ -69,6 +69,14 @@ export const createCommand = new Command()
   .option("--disabled", "Create the webhook disabled")
   .option("-j, --json", "Output as JSON")
   .option("--dry-run", "Preview the webhook without creating it")
+  .example(
+    "Preview creating a team webhook",
+    "linear webhook create --url https://example.com/hooks/linear --resource-types Issue,Comment --team ENG --dry-run",
+  )
+  .example(
+    "Create an all-public-teams webhook as JSON",
+    "linear webhook create --url https://example.com/hooks/linear --resource-types Issue --all-public-teams --json",
+  )
   .action(
     async (
       {

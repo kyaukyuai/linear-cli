@@ -16,6 +16,11 @@ Options:
   -f, --force  - Deprecated alias for --yes                           
   --dry-run    - Preview the deletion without mutating the milestone  
 
+Examples:
+
+  Preview deleting a milestone         linear milestone delete milestone-123 --dry-run
+  Delete a milestone without prompting linear milestone delete milestone-123 --yes    
+
 "
 stderr:
 ""

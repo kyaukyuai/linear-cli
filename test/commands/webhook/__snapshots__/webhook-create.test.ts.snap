@@ -22,6 +22,11 @@ Options:
   -j, --json                             - Output as JSON                                                      
   --dry-run                              - Preview the webhook without creating it                             
 
+Examples:
+
+  Preview creating a team webhook            linear webhook create --url https://example.com/hooks/linear --resource-types Issue,Comment --team ENG --dry-run
+  Create an all-public-teams webhook as JSON linear webhook create --url https://example.com/hooks/linear --resource-types Issue --all-public-teams --json   
+
 "
 stderr:
 ""

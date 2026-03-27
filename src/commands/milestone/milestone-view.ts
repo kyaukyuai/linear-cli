@@ -55,6 +55,14 @@ export const viewCommand = new Command()
   .alias("v")
   .arguments("<milestoneId:string>")
   .option("-j, --json", "Output as JSON")
+  .example(
+    "View a milestone as JSON",
+    "linear milestone view milestone-123 --json",
+  )
+  .example(
+    "View a milestone in the terminal",
+    "linear milestone view milestone-123",
+  )
   .error((error, cmd) =>
     handleAutomationContractParseError(error, cmd, "Failed to view milestone")
   )

@@ -14,6 +14,11 @@ Options:
   -h, --help  - Show this help.  
   -j, --json  - Output as JSON   
 
+Examples:
+
+  View a webhook as JSON         linear webhook view webhook_123 --json
+  View a webhook in the terminal linear webhook view webhook_123       
+
 "
 stderr:
 ""
