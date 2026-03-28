@@ -2,6 +2,23 @@
 
 ## [Unreleased]
 
+## [2.9.0] - 2026-03-28
+
+### Added
+
+- added stdin / pipeline support to high-value issue write commands and documented the stdin policy for automation use
+- added retry-safe relation semantics so repeated `issue relation add/delete` operations can return no-op success instead of failing
+- added `--no-pager` compatibility support to `issue create`
+
+### Changed
+
+- standardized confirmation bypass flags on destructive commands around `--yes`, while keeping legacy aliases for compatibility
+- expanded agent-focused `--help` examples across automation-tier and major write commands
+
+### Fixed
+
+- improved `-d/--description` parse failures to recommend `--description-file` or stdin for markdown content, and documented the same guidance in help and README
+
 ## [2.8.2] - 2026-03-24
 
 ### Added
