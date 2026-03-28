@@ -479,7 +479,7 @@ export const createCommand = new Command()
   )
   .option(
     "-d, --description <description:string>",
-    "Description of the issue",
+    "Description of the issue (prefer --description-file for markdown)",
   )
   .option(
     "--description-file <path:string>",

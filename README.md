@@ -228,6 +228,8 @@ linear issue parent ENG-123 --json    # emit the parent issue, or null when abse
 linear issue children ENG-123 --json  # emit child issues for decomposition workflows
 ```
 
+For short inline text, `-d/--description` is fine. For Markdown content, prefer `--description-file <path>` or pipe content on stdin to avoid shell escaping issues.
+
 `issue create-batch` expects a JSON file shaped like:
 
 ```json

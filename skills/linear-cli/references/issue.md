@@ -309,28 +309,28 @@ Description:
 
 Options:
 
-  -h, --help                                - Show this help.                                                
-  -w, --workspace            <slug>         - Target workspace (uses credentials)                            
-  --start                                   - Start the issue after creation                                 
-  -a, --assignee             <assignee>     - Assign the issue to 'self' or someone (by username or name)    
-  --due-date                 <dueDate>      - Due date of the issue                                          
-  --parent                   <parent>       - Parent issue (if any) as a team_number code                    
-  -p, --priority             <priority>     - Priority of the issue (1-4, descending priority)               
-  --estimate                 <estimate>     - Points estimate of the issue                                   
-  -d, --description          <description>  - Description of the issue                                       
-  --description-file         <path>         - Read description from a file (preferred for markdown content)  
-  -l, --label                <label>        - Issue label associated with the issue. May be repeated.        
-  --team                     <team>         - Team associated with the issue (if not your default team)      
-  --project                  <project>      - Name or slug ID of the project with the issue                  
-  -s, --state                <state>        - Workflow state for the issue (by name or type)                 
-  --milestone                <milestone>    - Name of the project milestone                                  
-  --cycle                    <cycle>        - Cycle name, number, or 'active'                                
-  -j, --json                                - Output as JSON                                                 
-  --dry-run                                 - Preview the created issue without creating it                  
-  --no-pager                                - Accepted for compatibility; issue create does not use a pager  
-  --no-use-default-template                 - Do not use default template for the issue                      
-  --no-interactive                          - Disable interactive prompts                                    
-  -t, --title                <title>        - Title of the issue                                             
+  -h, --help                                - Show this help.                                                    
+  -w, --workspace            <slug>         - Target workspace (uses credentials)                                
+  --start                                   - Start the issue after creation                                     
+  -a, --assignee             <assignee>     - Assign the issue to 'self' or someone (by username or name)        
+  --due-date                 <dueDate>      - Due date of the issue                                              
+  --parent                   <parent>       - Parent issue (if any) as a team_number code                        
+  -p, --priority             <priority>     - Priority of the issue (1-4, descending priority)                   
+  --estimate                 <estimate>     - Points estimate of the issue                                       
+  -d, --description          <description>  - Description of the issue (prefer --description-file for markdown)  
+  --description-file         <path>         - Read description from a file (preferred for markdown content)      
+  -l, --label                <label>        - Issue label associated with the issue. May be repeated.            
+  --team                     <team>         - Team associated with the issue (if not your default team)          
+  --project                  <project>      - Name or slug ID of the project with the issue                      
+  -s, --state                <state>        - Workflow state for the issue (by name or type)                     
+  --milestone                <milestone>    - Name of the project milestone                                      
+  --cycle                    <cycle>        - Cycle name, number, or 'active'                                    
+  -j, --json                                - Output as JSON                                                     
+  --dry-run                                 - Preview the created issue without creating it                      
+  --no-pager                                - Accepted for compatibility; issue create does not use a pager      
+  --no-use-default-template                 - Do not use default template for the issue                          
+  --no-interactive                          - Disable interactive prompts                                        
+  -t, --title                <title>        - Title of the issue                                                 
 
 Examples:
 
@@ -387,7 +387,7 @@ Options:
   --parent            <parent>       - Parent issue (if any) as a team_number code                         
   -p, --priority      <priority>     - Priority of the issue (1-4, descending priority)                    
   --estimate          <estimate>     - Points estimate of the issue                                        
-  -d, --description   <description>  - Description of the issue                                            
+  -d, --description   <description>  - Description of the issue (prefer --description-file for markdown)   
   --comment           <comment>      - Add a comment after successfully updating the issue                 
   --description-file  <path>         - Read description from a file (preferred for markdown content)       
   -l, --label         <label>        - Issue label associated with the issue. May be repeated.             
