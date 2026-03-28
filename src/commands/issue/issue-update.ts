@@ -57,7 +57,7 @@ export const updateCommand = new Command()
   )
   .option(
     "-d, --description <description:string>",
-    "Description of the issue",
+    "Description of the issue (prefer --description-file for markdown)",
   )
   .option(
     "--comment <comment:string>",
