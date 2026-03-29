@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [2.9.1] - 2026-03-29
+
+### Fixed
+
+- stabilized `issue update --comment --json` so the combined update-and-comment path returns reliably to callers and reports machine-readable partial-success details when only the comment step fails
+
 ## [2.9.0] - 2026-03-28
 
 ### Added
