@@ -1,3 +1,4 @@
+import type { GraphQLClient } from "graphql-request"
 import type { CommentCreateInput } from "../../__codegen__/graphql.ts"
 import { CliError } from "../../utils/errors.ts"
 import { getGraphQLClient } from "../../utils/graphql.ts"
@@ -38,11 +39,16 @@ type AddCommentMutationResponse = {
   }
 }
 
+export type CreateIssueCommentOptions = {
+  spinnerEnabled?: boolean
+  client?: GraphQLClient
+}
+
 export async function createIssueComment(
   input: CommentCreateInput,
-  options?: { spinnerEnabled?: boolean },
+  options?: CreateIssueCommentOptions,
 ): Promise<IssueCommentPayloadComment> {
-  const client = getGraphQLClient()
+  const client = options?.client ?? getGraphQLClient()
   const data = await withSpinner(
     () =>
       client.request<AddCommentMutationResponse, { input: CommentCreateInput }>(

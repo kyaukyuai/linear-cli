@@ -1,11 +1,17 @@
 import { assertEquals } from "@std/assert"
+import { fromFileUrl } from "@std/path"
 import { snapshotTest } from "@cliffy/testing"
 import { updateCommand } from "../../../src/commands/issue/issue-update.ts"
+import { MockLinearServer } from "../../utils/mock_linear_server.ts"
 import {
   commonDenoArgs,
   setupMockLinearServer,
 } from "../../utils/test-helpers.ts"
 import { runSnapshotCommand } from "../../utils/snapshot_with_fake_time.ts"
+
+const repoRoot = fromFileUrl(new URL("../../../", import.meta.url))
+const denoJsonPath = fromFileUrl(new URL("../../../deno.json", import.meta.url))
+const mainPath = fromFileUrl(new URL("../../../src/main.ts", import.meta.url))
 
 // Test help output
 await snapshotTest({
@@ -397,6 +403,202 @@ Deno.test("Issue Update Command - JSON Dry Run From Stdin", async () => {
   )
 })
 
+Deno.test(
+  "Issue Update Command - JSON Output Returns From Subprocess Combined Path",
+  async () => {
+    const server = new MockLinearServer([
+      {
+        queryName: "GetTeamIdByKey",
+        variables: { team: "ENG" },
+        response: {
+          data: {
+            teams: {
+              nodes: [{ id: "team-eng-id" }],
+            },
+          },
+        },
+      },
+      {
+        queryName: "UpdateIssue",
+        response: {
+          data: {
+            issueUpdate: {
+              success: true,
+              issue: {
+                id: "issue-existing-123",
+                identifier: "ENG-123",
+                title: "Updated from subprocess",
+                url:
+                  "https://linear.app/test-team/issue/ENG-123/updated-from-subprocess",
+                dueDate: null,
+                assignee: null,
+                parent: null,
+                state: {
+                  name: "Todo",
+                  color: "#bec2c8",
+                },
+              },
+            },
+          },
+        },
+      },
+      {
+        queryName: "AddComment",
+        response: {
+          data: {
+            commentCreate: {
+              success: true,
+              comment: {
+                id: "comment-subprocess-123",
+                body: "Investigating now",
+                createdAt: "2026-03-29T12:00:00Z",
+                url:
+                  "https://linear.app/test-team/issue/ENG-123/updated-from-subprocess#comment-subprocess-123",
+                parent: null,
+                issue: {
+                  id: "issue-existing-123",
+                  identifier: "ENG-123",
+                  title: "Updated from subprocess",
+                  url:
+                    "https://linear.app/test-team/issue/ENG-123/updated-from-subprocess",
+                },
+                user: {
+                  name: "alice.bot",
+                  displayName: "Alice Bot",
+                },
+              },
+            },
+          },
+        },
+      },
+    ])
+
+    try {
+      await server.start()
+
+      const output = await runIssueUpdateSubprocess([
+        "ENG-123",
+        "--title",
+        "Updated from subprocess",
+        "--comment",
+        "Investigating now",
+        "--json",
+      ], {
+        LINEAR_GRAPHQL_ENDPOINT: server.getEndpoint(),
+        LINEAR_API_KEY: "Bearer test-token",
+        NO_COLOR: "1",
+      })
+
+      assertEquals(output.success, true)
+      assertEquals(new TextDecoder().decode(output.stderr), "")
+
+      const result = JSON.parse(new TextDecoder().decode(output.stdout))
+      assertEquals(result.identifier, "ENG-123")
+      assertEquals(result.comment.body, "Investigating now")
+    } finally {
+      await server.stop()
+    }
+  },
+)
+
+Deno.test(
+  "Issue Update Command - JSON Output Reports Partial Success When Comment Fails",
+  async () => {
+    const server = new MockLinearServer([
+      {
+        queryName: "GetTeamIdByKey",
+        variables: { team: "ENG" },
+        response: {
+          data: {
+            teams: {
+              nodes: [{ id: "team-eng-id" }],
+            },
+          },
+        },
+      },
+      {
+        queryName: "UpdateIssue",
+        response: {
+          data: {
+            issueUpdate: {
+              success: true,
+              issue: {
+                id: "issue-existing-123",
+                identifier: "ENG-123",
+                title: "Updated with partial success",
+                url:
+                  "https://linear.app/test-team/issue/ENG-123/updated-with-partial-success",
+                dueDate: null,
+                assignee: null,
+                parent: null,
+                state: {
+                  name: "Todo",
+                  color: "#bec2c8",
+                },
+              },
+            },
+          },
+        },
+      },
+      {
+        queryName: "AddComment",
+        response: {
+          data: {
+            commentCreate: {
+              success: false,
+              comment: null,
+            },
+          },
+        },
+      },
+    ])
+
+    try {
+      await server.start()
+
+      const output = await runIssueUpdateSubprocess([
+        "ENG-123",
+        "--title",
+        "Updated with partial success",
+        "--comment",
+        "Investigating now",
+        "--json",
+      ], {
+        LINEAR_GRAPHQL_ENDPOINT: server.getEndpoint(),
+        LINEAR_API_KEY: "Bearer test-token",
+        NO_COLOR: "1",
+      })
+
+      assertEquals(output.success, false)
+      assertEquals(output.code, 1)
+      assertEquals(new TextDecoder().decode(output.stderr), "")
+
+      const result = JSON.parse(new TextDecoder().decode(output.stdout))
+      assertEquals(result.success, false)
+      assertEquals(result.error.type, "cli_error")
+      assertEquals(
+        result.error.message,
+        "Issue ENG-123 was updated, but adding the comment failed.",
+      )
+      assertEquals(result.error.details.failureStage, "comment_create")
+      assertEquals(result.error.details.failureMode, "error")
+      assertEquals(result.error.details.retryable, true)
+      assertEquals(
+        result.error.details.retryCommand,
+        'linear issue comment add ENG-123 --body "Investigating now"',
+      )
+      assertEquals(result.error.details.partialSuccess.issueUpdated, true)
+      assertEquals(result.error.details.partialSuccess.commentAttempted, true)
+      assertEquals(
+        result.error.details.partialSuccess.issue.identifier,
+        "ENG-123",
+      )
+    } finally {
+      await server.stop()
+    }
+  },
+)
+
 await snapshotTest({
   name: "Issue Update Command - With Comment",
   meta: import.meta,
@@ -487,6 +689,51 @@ await snapshotTest({
     }
   },
 })
+
+async function runIssueUpdateSubprocess(
+  args: string[],
+  env: Record<string, string>,
+): Promise<Deno.CommandOutput> {
+  const child = new Deno.Command("deno", {
+    args: [
+      "run",
+      "-c",
+      denoJsonPath,
+      "--allow-all",
+      "--quiet",
+      mainPath,
+      "issue",
+      "update",
+      ...args,
+    ],
+    cwd: repoRoot,
+    env,
+    stdout: "piped",
+    stderr: "piped",
+  }).spawn()
+
+  let timeoutId: ReturnType<typeof setTimeout> | null = null
+
+  try {
+    return await Promise.race([
+      child.output(),
+      new Promise<never>((_, reject) => {
+        timeoutId = setTimeout(() => {
+          child.kill()
+          reject(
+            new Error(
+              "issue update subprocess did not exit within 5000ms",
+            ),
+          )
+        }, 5000)
+      }),
+    ])
+  } finally {
+    if (timeoutId != null) {
+      clearTimeout(timeoutId)
+    }
+  }
+}
 
 // Test updating an issue with milestone
 await snapshotTest({

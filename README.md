@@ -122,6 +122,8 @@ for retry behavior, prefer treating write commands in three buckets:
 - non-idempotent writes: `issue create`, `issue comment add`, and `issue update --comment`
 - resumable but non-idempotent batch writes: `issue create-batch`, which reports `error.details.createdIdentifiers` and `failedStep` on partial failure
 
+when `issue update --comment --json` updates the issue but the follow-up comment fails, the command exits non-zero and includes `error.details.partialSuccess.issueUpdated = true` plus a standalone retry command for `issue comment add`.
+
 For stdin and pipeline behavior, see [docs/stdin-policy.md](docs/stdin-policy.md).
 
 ## differences from upstream
