@@ -321,6 +321,14 @@ Top-level shape:
 
 When `issue update --json` is called with `--comment`, the same top-level object is returned with an additional `comment` field shaped like `issue comment add --json`.
 
+If the issue update succeeds but the follow-up comment fails or times out, the command exits non-zero with the normal failure envelope and adds:
+
+- `error.details.failureStage = "comment_create"`
+- `error.details.partialSuccess.issueUpdated = true`
+- `error.details.partialSuccess.commentAttempted = true`
+- `error.details.partialSuccess.issue` with the same shape as the successful `issue update --json` payload
+- `error.details.retryCommand` with a standalone `issue comment add` retry command
+
 ### `issue relation add --json` and `issue relation delete --json`
 
 Top-level shape:

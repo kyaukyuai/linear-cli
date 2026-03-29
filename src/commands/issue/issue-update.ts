@@ -22,10 +22,18 @@ import { withSpinner } from "../../utils/spinner.ts"
 import { CliError, NotFoundError, ValidationError } from "../../utils/errors.ts"
 import { readTextFromStdin } from "../../utils/stdin.ts"
 import { buildIssueWritePayload } from "./issue-write-payload.ts"
-import { buildIssueCommentPayload } from "./issue-comment-payload.ts"
-import { createIssueComment } from "./issue-comment-utils.ts"
+import {
+  buildIssueCommentPayload,
+  type IssueCommentPayloadComment,
+} from "./issue-comment-payload.ts"
+import {
+  createIssueComment,
+  type CreateIssueCommentOptions,
+} from "./issue-comment-utils.ts"
 import { buildIssueUpdateDryRunPayload } from "./issue-dry-run-payload.ts"
 import { maybeHandleIssueDescriptionParseError } from "./issue-description-parse.ts"
+
+const COMMENT_CREATE_TIMEOUT_MS = 15_000
 
 export const updateCommand = new Command()
   .name("update")
@@ -435,36 +443,32 @@ export const updateCommand = new Command()
         if (!issue) {
           throw new CliError("Issue update failed - no issue returned")
         }
+        const issuePayload = buildIssueWritePayload(issue)
 
         let createdComment = null
         if (comment != null) {
           try {
-            createdComment = await createIssueComment(
+            createdComment = await createIssueCommentWithTimeout(
+              issue.id,
+              comment,
               {
-                issueId: issue.id,
-                body: comment,
+                client,
+                spinnerEnabled: !json,
               },
-              { spinnerEnabled: !json },
             )
           } catch (error) {
-            throw new CliError(
-              `Issue ${issue.identifier} was updated, but adding the comment failed.`,
-              {
-                suggestion:
-                  `Retry with \`linear issue comment add ${issue.identifier} --body ${
-                    JSON.stringify(comment)
-                  }\`.`,
-                cause: error,
-              },
+            throw buildIssueUpdateCommentFailureError(
+              issuePayload,
+              comment,
+              error,
             )
           }
         }
 
         if (json) {
-          const payload = buildIssueWritePayload(issue)
           console.log(JSON.stringify(
-            createdComment == null ? payload : {
-              ...payload,
+            createdComment == null ? issuePayload : {
+              ...issuePayload,
               comment: buildIssueCommentPayload(createdComment, {
                 id: issue.id,
                 identifier: issue.identifier,
@@ -489,3 +493,80 @@ export const updateCommand = new Command()
       }
     },
   )
+
+class CommentCreateTimeoutError extends Error {
+  constructor(timeoutMs: number) {
+    super(`Adding the comment did not complete within ${timeoutMs}ms.`)
+    this.name = "CommentCreateTimeoutError"
+  }
+}
+
+type IssueUpdateCommentFailureIssue = ReturnType<typeof buildIssueWritePayload>
+
+async function createIssueCommentWithTimeout(
+  issueId: string,
+  body: string,
+  options: {
+    client: NonNullable<CreateIssueCommentOptions["client"]>
+    spinnerEnabled: boolean
+  },
+): Promise<IssueCommentPayloadComment> {
+  let timeoutId: ReturnType<typeof setTimeout> | null = null
+
+  const timeoutPromise = new Promise<never>((_, reject) => {
+    timeoutId = setTimeout(() => {
+      reject(new CommentCreateTimeoutError(COMMENT_CREATE_TIMEOUT_MS))
+    }, COMMENT_CREATE_TIMEOUT_MS)
+  })
+
+  try {
+    return await Promise.race([
+      createIssueComment(
+        {
+          issueId,
+          body,
+        },
+        options,
+      ),
+      timeoutPromise,
+    ])
+  } finally {
+    if (timeoutId != null) {
+      clearTimeout(timeoutId)
+    }
+  }
+}
+
+function buildIssueUpdateCommentFailureError(
+  issue: IssueUpdateCommentFailureIssue,
+  comment: string,
+  error: unknown,
+): CliError {
+  const retryCommand = `linear issue comment add ${issue.identifier} --body ${
+    JSON.stringify(comment)
+  }`
+  const failureMode = error instanceof CommentCreateTimeoutError
+    ? "timeout"
+    : "error"
+
+  return new CliError(
+    error instanceof CommentCreateTimeoutError
+      ? `Issue ${issue.identifier} was updated, but adding the comment did not complete in time.`
+      : `Issue ${issue.identifier} was updated, but adding the comment failed.`,
+    {
+      suggestion: `Retry with \`${retryCommand}\`.`,
+      cause: error,
+      details: {
+        failureStage: "comment_create",
+        failureMode,
+        retryable: true,
+        retryCommand,
+        partialSuccess: {
+          issueUpdated: true,
+          commentAttempted: true,
+          issue,
+        },
+      },
+    },
+  )
+}
