@@ -1,24 +1,19 @@
-# kyaukyuai/linear-cli
+# linear-cli
 
-`kyaukyuai/linear-cli` is a fork of [`schpet/linear-cli`](https://github.com/schpet/linear-cli) for teams that want a git-first Linear CLI with additional automation, scripting, and documentation support. it remains git and [jj](https://www.jj-vcs.dev/) aware so you can stay in the right Linear context without leaving the terminal.
+`linear-cli` is an agent-first Linear CLI for Claude Code, Codex, and other automation that needs a stable command surface instead of screen scraping or ad-hoc GraphQL scripts. this fork of [`schpet/linear-cli`](https://github.com/schpet/linear-cli) keeps the git and [jj](https://www.jj-vcs.dev/) workflow ergonomics from upstream, then adds stable JSON contracts, dry-run previews, retry-safe error semantics, and pipeline-friendly command behavior for automation-heavy teams.
 
-**works great with AI agents** — the CLI includes a [skill](#skills) that lets agents create issues, update status, and manage your Linear workflow alongside your code.
-
-here's how it works:
+if you want an agent to read Linear state, preview a write, apply it, and return structured output without leaving the shell, this repo is designed for that path first.
 
 ```bash
-linear config               # setup your repo, it writes a config file
-
-linear issue list           # list unstarted issues assigned to you
-linear issue list -A        # include unassigned and other assignees
-linear issue start          # choose an issue to start, creates a branch
-linear issue start ABC-123  # start a specific issue
-linear issue view           # see current branch's issue as markdown
-linear issue pr             # makes a PR with title/body preset, using gh cli
-linear issue create         # create a new issue
+linear issue list --json
+linear issue view ENG-123 --json
+linear issue create -t "Backfill webhook contract docs" --team ENG --dry-run --json
+linear issue update ENG-123 --state done --comment "Shipped in v2.10.0" --json
+linear project view "Automation Contract v3" --json
+linear notification list --json
 ```
 
-it aims to be a complement to the web and desktop apps that lets you stay on the command line in an interactive or scripted way.
+interactive commands still exist for humans, but the primary design goal is that an agent can discover commands incrementally, pass all important input as flags or stdin, and get machine-readable success or failure back.
 
 ## screencast demos
 
@@ -38,21 +33,11 @@ it aims to be a complement to the web and desktop apps that lets you stay on the
 
 ## install
 
-### homebrew
-
-```
-brew install kyaukyuai/tap/linear
-```
-
-### deno via jsr
-
-```bash
-deno install -A --reload -f -g -n linear jsr:@kyaukyuai/linear-cli
-```
+for agents and scripts, prefer a pinned install in the repo or runtime you control.
 
 ### npm / bun / pnpm
 
-install as a dev dependency to pin a version in your project:
+install as a dependency to pin a version in your project:
 
 ```bash
 npm install -D @kyaukyuai/linear-cli
@@ -73,6 +58,18 @@ bunx linear issue list
 
 package on npm: [@kyaukyuai/linear-cli](https://www.npmjs.com/package/@kyaukyuai/linear-cli)
 
+### deno via jsr
+
+```bash
+deno install -A --reload -f -g -n linear jsr:@kyaukyuai/linear-cli
+```
+
+### homebrew
+
+```bash
+brew install kyaukyuai/tap/linear
+```
+
 ### binaries
 
 https://github.com/kyaukyuai/linear-cli/releases/latest
@@ -85,10 +82,16 @@ cd linear-cli
 deno task install
 ```
 
-## fork-specific features
+## agent-facing capabilities
 
-compared to upstream, this fork adds and maintains several capabilities aimed at automation-heavy workflows:
+compared to upstream, this fork adds and maintains capabilities aimed at automation-heavy workflows:
 
+- stable JSON contracts for the automation tier, with machine-readable failures for parser, validation, and runtime errors
+- `--dry-run` previews for high-value write commands, including `issue start`, issue writes, and non-issue writes
+- stdin and pipeline support for high-value write paths
+- retry-safe semantics for relation add/delete and structured partial-failure details for batch writes
+- canonical `--yes` confirmation bypass handling for destructive commands
+- agent-focused help examples across automation-tier and major write commands
 - cycle workflows beyond listing and viewing, including `cycle current`, `cycle next`, `cycle create`, `cycle add`, and `cycle remove`
 - issue workflow commands for `search`, `assign`, `move`, `priority`, `estimate`, `label add/remove`, comment delete, relations, and attachments
 - inbox notification commands for `list`, `count`, `read`, and `archive`
@@ -96,7 +99,7 @@ compared to upstream, this fork adds and maintains several capabilities aimed at
 - workflow state commands for `list` and `view`
 - user commands for `list` and `view`
 - project label commands for `list` and `project label add/remove`
-- JSON output for scripting across issue, cycle, project, and document commands
+- JSON output for scripting across issue, cycle, project, milestone, document, webhook, and notification commands
 - workspace-aware auth management with keyring migration and default workspace support
 - generated AI-agent skill docs, Claude plugin metadata, npm publishing, and Homebrew tap release plumbing
 
