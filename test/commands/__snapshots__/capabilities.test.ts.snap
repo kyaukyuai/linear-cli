@@ -2908,6 +2908,13 @@ stdout:
             "required": false,
             "valueType": "boolean",
             "description": "Emit machine-readable JSON output."
+          },
+          {
+            "name": "--timeout-ms",
+            "short": null,
+            "required": false,
+            "valueType": "integer",
+            "description": "Override the write confirmation timeout in milliseconds."
           }
         ],
         "inputModes": [
@@ -2938,6 +2945,10 @@ stdout:
             {
               "code": 4,
               "meaning": "auth_error"
+            },
+            {
+              "code": 6,
+              "meaning": "timeout_error"
             }
           ]
         }
@@ -3110,6 +3121,13 @@ stdout:
             "required": false,
             "valueType": "boolean",
             "description": "Emit machine-readable JSON output."
+          },
+          {
+            "name": "--timeout-ms",
+            "short": null,
+            "required": false,
+            "valueType": "integer",
+            "description": "Override the write confirmation timeout in milliseconds."
           }
         ],
         "inputModes": [
@@ -3140,6 +3158,10 @@ stdout:
             {
               "code": 4,
               "meaning": "auth_error"
+            },
+            {
+              "code": 6,
+              "meaning": "timeout_error"
             }
           ]
         }

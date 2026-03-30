@@ -79,9 +79,10 @@ Description:
 
 Options:
 
-  -h, --help               - Show this help.                      
-  -w, --workspace  <slug>  - Target workspace (uses credentials)  
-  -j, --json               - Output as JSON
+  -h, --help                    - Show this help.                                 
+  -w, --workspace  <slug>       - Target workspace (uses credentials)             
+  -j, --json                    - Output as JSON                                  
+  --timeout-ms     <timeoutMs>  - Timeout for write confirmation in milliseconds
 ```
 
 ### archive
@@ -97,7 +98,8 @@ Description:
 
 Options:
 
-  -h, --help               - Show this help.                      
-  -w, --workspace  <slug>  - Target workspace (uses credentials)  
-  -j, --json               - Output as JSON
+  -h, --help                    - Show this help.                                 
+  -w, --workspace  <slug>       - Target workspace (uses credentials)             
+  -j, --json                    - Output as JSON                                  
+  --timeout-ms     <timeoutMs>  - Timeout for write confirmation in milliseconds
 ```

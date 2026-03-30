@@ -18,6 +18,7 @@ interface MockResponse {
   status?: number
   headers?: Record<string, string>
   delayMs?: number
+  consume?: boolean
 }
 
 export class MockLinearServer {
@@ -144,22 +145,35 @@ export class MockLinearServer {
   ): MockResponse | undefined {
     const queryName = this.extractQueryName(query)
 
-    return this.mockResponses.find((mock) => {
+    for (const [index, mock] of this.mockResponses.entries()) {
       // Check if query name matches
       if (mock.queryName !== queryName) {
-        return false
+        continue
       }
 
       // If no variables specified in mock, match any variables
       if (!mock.variables) {
-        return true
+        if (mock.consume) {
+          return this.mockResponses.splice(index, 1)[0]
+        }
+        return mock
       }
 
       // Check if all mock variables match the request variables (deep comparison)
-      return Object.entries(mock.variables).every(([key, value]) => {
+      const matches = Object.entries(mock.variables).every(([key, value]) => {
         return this.deepEqual(variables[key], value)
       })
-    })
+      if (!matches) {
+        continue
+      }
+
+      if (mock.consume) {
+        return this.mockResponses.splice(index, 1)[0]
+      }
+      return mock
+    }
+
+    return undefined
   }
 
   private deepEqual(a: unknown, b: unknown): boolean {

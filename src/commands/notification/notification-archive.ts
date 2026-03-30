@@ -2,8 +2,18 @@ import { Command } from "@cliffy/command"
 import { green } from "@std/fmt/colors"
 import { gql } from "../../__codegen__/gql.ts"
 import { getGraphQLClient } from "../../utils/graphql.ts"
-import { handleError } from "../../utils/errors.ts"
+import {
+  handleAutomationCommandError,
+  handleAutomationContractParseError,
+} from "../../utils/json_output.ts"
 import { withSpinner } from "../../utils/spinner.ts"
+import {
+  buildWriteTimeoutSuggestion,
+  resolveWriteTimeoutMs,
+  withWriteTimeout,
+} from "../../utils/write_timeout.ts"
+import { isWriteTimeoutError } from "../../utils/errors.ts"
+import { reconcileWriteTimeoutError } from "../../utils/write_reconciliation.ts"
 
 const GetNotificationForArchive = gql(`
   query GetNotificationForArchive($id: String!) {
@@ -35,8 +45,20 @@ export const archiveCommand = new Command()
   .description("Archive a notification")
   .arguments("<notificationId:string>")
   .option("-j, --json", "Output as JSON")
-  .action(async ({ json }, notificationId) => {
+  .option(
+    "--timeout-ms <timeoutMs:number>",
+    "Timeout for write confirmation in milliseconds",
+  )
+  .error((error, cmd) =>
+    handleAutomationContractParseError(
+      error,
+      cmd,
+      "Failed to archive notification",
+    )
+  )
+  .action(async ({ json, timeoutMs }, notificationId) => {
     try {
+      const writeTimeoutMs = resolveWriteTimeoutMs(timeoutMs)
       const client = getGraphQLClient()
       const result = await withSpinner(
         async () => {
@@ -51,9 +73,66 @@ export const archiveCommand = new Command()
             }
           }
 
-          const mutation = await client.request(ArchiveNotification, {
-            id: notificationId,
-          })
+          let mutation
+          try {
+            mutation = await withWriteTimeout(
+              (signal) =>
+                client.request({
+                  document: ArchiveNotification,
+                  variables: { id: notificationId },
+                  signal,
+                }),
+              {
+                operation: "notification archive",
+                timeoutMs: writeTimeoutMs,
+                suggestion: buildWriteTimeoutSuggestion(),
+              },
+            )
+          } catch (error) {
+            if (isWriteTimeoutError(error)) {
+              await reconcileWriteTimeoutError(error, async () => {
+                const reconciled = await client.request(
+                  GetNotificationForArchive,
+                  {
+                    id: notificationId,
+                  },
+                )
+
+                if (reconciled.notification?.archivedAt != null) {
+                  return {
+                    outcome: "probably_succeeded",
+                    suggestion:
+                      "Linear now shows the notification as archived. Treat this write as succeeded; retrying it would be a no-op.",
+                    details: {
+                      notification: {
+                        id: reconciled.notification.id,
+                        title: reconciled.notification.title,
+                        archivedAt: reconciled.notification.archivedAt,
+                        readAt: reconciled.notification.readAt,
+                      },
+                      noOp: false,
+                    },
+                  }
+                }
+
+                return {
+                  outcome: "definitely_failed",
+                  suggestion:
+                    "Linear does not yet show the notification as archived. Re-check it before retrying this write.",
+                  details: {
+                    notification: {
+                      id: reconciled.notification?.id ?? notificationId,
+                      title: reconciled.notification?.title ?? null,
+                      archivedAt: reconciled.notification?.archivedAt ?? null,
+                      readAt: reconciled.notification?.readAt ?? null,
+                    },
+                    noOp: false,
+                  },
+                }
+              })
+            }
+            throw error
+          }
 
           if (
             !mutation.notificationArchive.success ||
@@ -97,6 +176,10 @@ export const archiveCommand = new Command()
         green("✓") + ` Archived notification: ${notification.id}`,
       )
     } catch (error) {
-      handleError(error, "Failed to archive notification")
+      handleAutomationCommandError(
+        error,
+        "Failed to archive notification",
+        json,
+      )
     }
   })

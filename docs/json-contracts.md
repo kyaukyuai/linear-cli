@@ -301,7 +301,7 @@ Automation-tier commands continue to use non-zero exit codes on failure. The cur
 - `1` for generic failures, validation errors, not-found errors, and other non-auth, non-plan-limit conditions
 - `4` for authentication and authorization failures
 - `5` for free-plan and workspace-plan limit failures where retry requires an upgrade or archiving existing items
-- `6` for client-side write confirmation timeouts where the mutation outcome is still unknown
+- `6` for client-side write confirmation timeouts that require post-timeout reconciliation
 
 Plan-limit failures keep the normal failure envelope shape. They are distinguished by exit code and by a suggestion that points callers toward upgrading or archiving items before retrying.
 
@@ -312,9 +312,10 @@ Write confirmation timeouts use `error.type = "timeout_error"` and should includ
 - `error.details.failureMode = "timeout_waiting_for_confirmation"`
 - `error.details.timeoutMs`
 - `error.details.operation`
-- `error.details.outcome = "unknown"`
+- `error.details.outcome`, which may be `"unknown"`, `"definitely_failed"`, `"probably_succeeded"`, or `"partial_success"`
+- `error.details.reconciliationAttempted = true` when the CLI successfully checked Linear after the timeout
 
-High-value issue write commands honor `LINEAR_WRITE_TIMEOUT_MS` and accept `--timeout-ms` for per-command overrides.
+High-value write commands honor `LINEAR_WRITE_TIMEOUT_MS` and accept `--timeout-ms` for per-command overrides. Today that includes issue create/update/comment/relation/create-batch flows and notification read/archive.
 
 ## Common Sub-Shapes
 
@@ -719,7 +720,7 @@ These rules are intended for automation and agent callers.
 - `project label add` and `project label remove` are retry-safe no-op writes. They return success with `changed: false` when the requested label state is already satisfied.
 - `notification read` and `notification archive` are retry-safe no-op writes. They return success with `noOp: true` when the notification is already in the requested state.
 - `issue create-batch` is non-idempotent as a whole. Use `error.details.createdIdentifiers` and `failedStep` to resume manually instead of rerunning the same batch unchanged.
-- write confirmation timeouts do not prove that a mutation failed. Callers should treat `timeout_error` as an unknown-outcome write and reconcile against Linear before retrying non-idempotent commands.
+- write confirmation timeouts do not prove that a mutation failed. Callers should use `error.details.outcome` when present, and only fall back to treating `timeout_error` as unknown-outcome when reconciliation could not reach a stronger conclusion.
 
 ## Automation Contract v2
 

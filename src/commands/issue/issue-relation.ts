@@ -15,6 +15,7 @@ import {
   CliError,
   isClientError,
   isNotFoundError,
+  isWriteTimeoutError,
   NotFoundError,
   ValidationError,
 } from "../../utils/errors.ts"
@@ -23,6 +24,7 @@ import {
   resolveWriteTimeoutMs,
   withWriteTimeout,
 } from "../../utils/write_timeout.ts"
+import { reconcileWriteTimeoutError } from "../../utils/write_reconciliation.ts"
 import { buildIssueRelationDryRunPayload } from "./issue-dry-run-payload.ts"
 
 const RELATION_TYPES = ["blocks", "blocked-by", "related", "duplicate"] as const
@@ -295,29 +297,64 @@ const addRelationCommand = new Command()
             ? [relatedIssue.id, issue.id]
             : [issue.id, relatedIssue.id]
 
-          const createData = await withSpinner(
-            () =>
-              withWriteTimeout(
-                (signal) =>
-                  client.request({
-                    document: CreateIssueRelation,
-                    variables: {
-                      input: {
-                        issueId: fromId,
-                        relatedIssueId: toId,
-                        type: apiType,
+          let createData
+          try {
+            createData = await withSpinner(
+              () =>
+                withWriteTimeout(
+                  (signal) =>
+                    client.request({
+                      document: CreateIssueRelation,
+                      variables: {
+                        input: {
+                          issueId: fromId,
+                          relatedIssueId: toId,
+                          type: apiType,
+                        },
                       },
+                      signal,
+                    }),
+                  {
+                    operation: "issue relation creation",
+                    timeoutMs: writeTimeoutMs,
+                    suggestion: buildWriteTimeoutSuggestion(),
+                  },
+                ),
+              { enabled: !json },
+            )
+          } catch (error) {
+            if (isWriteTimeoutError(error)) {
+              await reconcileWriteTimeoutError(error, async () => {
+                const reconciledRelationId = await findExistingRelation(
+                  issue.id,
+                  relatedIssue.id,
+                  relationType,
+                )
+
+                if (reconciledRelationId != null) {
+                  return {
+                    outcome: "probably_succeeded",
+                    suggestion:
+                      "Linear now shows the relation. Treat this write as succeeded; retrying it would be a no-op.",
+                    details: {
+                      relationId: reconciledRelationId,
+                      relationObserved: true,
                     },
-                    signal,
-                  }),
-                {
-                  operation: "issue relation creation",
-                  timeoutMs: writeTimeoutMs,
-                  suggestion: buildWriteTimeoutSuggestion(),
-                },
-              ),
-            { enabled: !json },
-          )
+                  }
+                }
+
+                return {
+                  outcome: "definitely_failed",
+                  suggestion:
+                    "Linear does not yet show the relation. Re-check the issues before retrying this write.",
+                  details: {
+                    relationObserved: false,
+                  },
+                }
+              })
+            }
+            throw error
+          }
 
           if (!createData.issueRelationCreate.success) {
             throw new CliError("Failed to create relation")
@@ -428,23 +465,58 @@ const deleteRelationCommand = new Command()
           )
         } else {
           const client = getGraphQLClient()
-          const deleteData = await withSpinner(
-            () =>
-              withWriteTimeout(
-                (signal) =>
-                  client.request({
-                    document: DeleteIssueRelation,
-                    variables: { id: relationId },
-                    signal,
-                  }),
-                {
-                  operation: "issue relation deletion",
-                  timeoutMs: writeTimeoutMs,
-                  suggestion: buildWriteTimeoutSuggestion(),
-                },
-              ),
-            { enabled: !json },
-          )
+          let deleteData
+          try {
+            deleteData = await withSpinner(
+              () =>
+                withWriteTimeout(
+                  (signal) =>
+                    client.request({
+                      document: DeleteIssueRelation,
+                      variables: { id: relationId },
+                      signal,
+                    }),
+                  {
+                    operation: "issue relation deletion",
+                    timeoutMs: writeTimeoutMs,
+                    suggestion: buildWriteTimeoutSuggestion(),
+                  },
+                ),
+              { enabled: !json },
+            )
+          } catch (error) {
+            if (isWriteTimeoutError(error)) {
+              await reconcileWriteTimeoutError(error, async () => {
+                const reconciledRelationId = await findExistingRelation(
+                  issue.id,
+                  relatedIssue.id,
+                  relationType,
+                )
+
+                if (reconciledRelationId == null) {
+                  return {
+                    outcome: "probably_succeeded",
+                    suggestion:
+                      "Linear no longer shows the relation. Treat this write as succeeded; retrying it would be a no-op.",
+                    details: {
+                      relationObserved: false,
+                    },
+                  }
+                }
+
+                return {
+                  outcome: "definitely_failed",
+                  suggestion:
+                    "Linear still shows the relation. Re-check the issues before retrying this write.",
+                  details: {
+                    relationId: reconciledRelationId,
+                    relationObserved: true,
+                  },
+                }
+              })
+            }
+            throw error
+          }
 
           if (!deleteData.issueRelationDelete.success) {
             throw new CliError("Failed to delete relation")

@@ -278,6 +278,8 @@ const WRITE_TIMEOUT_COMMANDS = new Set<string>([
   "linear issue relation add",
   "linear issue relation delete",
   "linear issue update",
+  "linear notification archive",
+  "linear notification read",
 ])
 
 const PLAN_LIMIT_COMMANDS = new Set<string>([

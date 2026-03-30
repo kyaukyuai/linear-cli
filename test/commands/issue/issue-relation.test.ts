@@ -1,9 +1,16 @@
+import { assertEquals } from "@std/assert"
+import { fromFileUrl } from "@std/path"
 import { snapshotTest } from "@cliffy/testing"
 import { relationCommand } from "../../../src/commands/issue/issue-relation.ts"
+import { MockLinearServer } from "../../utils/mock_linear_server.ts"
 import {
   commonDenoArgs,
   setupMockLinearServer,
 } from "../../utils/test-helpers.ts"
+
+const repoRoot = fromFileUrl(new URL("../../../", import.meta.url))
+const denoJsonPath = fromFileUrl(new URL("../../../deno.json", import.meta.url))
+const mainPath = fromFileUrl(new URL("../../../src/main.ts", import.meta.url))
 
 // Test help output
 await snapshotTest({
@@ -16,6 +23,221 @@ await snapshotTest({
     await relationCommand.parse()
   },
 })
+
+Deno.test(
+  "Issue Relation Add Command - JSON Timeout Reconciles To Probably Succeeded",
+  async () => {
+    const server = new MockLinearServer([
+      {
+        queryName: "GetIssueId",
+        variables: { id: "ENG-123" },
+        response: {
+          data: { issue: { id: "issue-id-123" } },
+        },
+      },
+      {
+        queryName: "GetIssueId",
+        variables: { id: "ENG-456" },
+        response: {
+          data: { issue: { id: "issue-id-456" } },
+        },
+      },
+      {
+        queryName: "FindIssueRelation",
+        variables: { issueId: "issue-id-123" },
+        consume: true,
+        response: {
+          data: {
+            issue: {
+              relations: {
+                nodes: [],
+              },
+            },
+          },
+        },
+      },
+      {
+        queryName: "CreateIssueRelation",
+        delayMs: 250,
+        response: {
+          data: {
+            issueRelationCreate: {
+              success: true,
+              issueRelation: { id: "relation-id-1" },
+            },
+          },
+        },
+      },
+      {
+        queryName: "FindIssueRelation",
+        variables: { issueId: "issue-id-123" },
+        consume: true,
+        response: {
+          data: {
+            issue: {
+              relations: {
+                nodes: [
+                  {
+                    id: "relation-id-1",
+                    type: "blocks",
+                    relatedIssue: { id: "issue-id-456" },
+                  },
+                ],
+              },
+            },
+          },
+        },
+      },
+    ])
+
+    try {
+      await server.start()
+
+      const output = await runIssueRelationSubprocess([
+        "add",
+        "ENG-123",
+        "blocks",
+        "ENG-456",
+        "--json",
+        "--timeout-ms",
+        "50",
+      ], {
+        LINEAR_GRAPHQL_ENDPOINT: server.getEndpoint(),
+        LINEAR_API_KEY: "Bearer test-token",
+        NO_COLOR: "1",
+      })
+
+      assertEquals(output.success, false)
+      assertEquals(output.code, 6)
+
+      const payload = JSON.parse(new TextDecoder().decode(output.stdout))
+      assertEquals(payload.error.type, "timeout_error")
+      assertEquals(payload.error.details.outcome, "probably_succeeded")
+      assertEquals(payload.error.details.relationObserved, true)
+      assertEquals(payload.error.details.relationId, "relation-id-1")
+    } finally {
+      await server.stop()
+    }
+  },
+)
+
+Deno.test(
+  "Issue Relation Delete Command - JSON Timeout Reconciles To Probably Succeeded",
+  async () => {
+    const server = new MockLinearServer([
+      {
+        queryName: "GetIssueId",
+        variables: { id: "ENG-123" },
+        response: {
+          data: { issue: { id: "issue-id-123" } },
+        },
+      },
+      {
+        queryName: "GetIssueId",
+        variables: { id: "ENG-456" },
+        response: {
+          data: { issue: { id: "issue-id-456" } },
+        },
+      },
+      {
+        queryName: "FindIssueRelation",
+        variables: { issueId: "issue-id-123" },
+        consume: true,
+        response: {
+          data: {
+            issue: {
+              relations: {
+                nodes: [
+                  {
+                    id: "relation-id-existing",
+                    type: "blocks",
+                    relatedIssue: { id: "issue-id-456" },
+                  },
+                ],
+              },
+            },
+          },
+        },
+      },
+      {
+        queryName: "DeleteIssueRelation",
+        delayMs: 250,
+        response: {
+          data: {
+            issueRelationDelete: {
+              success: true,
+            },
+          },
+        },
+      },
+      {
+        queryName: "FindIssueRelation",
+        variables: { issueId: "issue-id-123" },
+        consume: true,
+        response: {
+          data: {
+            issue: {
+              relations: {
+                nodes: [],
+              },
+            },
+          },
+        },
+      },
+    ])
+
+    try {
+      await server.start()
+
+      const output = await runIssueRelationSubprocess([
+        "delete",
+        "ENG-123",
+        "blocks",
+        "ENG-456",
+        "--json",
+        "--timeout-ms",
+        "50",
+      ], {
+        LINEAR_GRAPHQL_ENDPOINT: server.getEndpoint(),
+        LINEAR_API_KEY: "Bearer test-token",
+        NO_COLOR: "1",
+      })
+
+      assertEquals(output.success, false)
+      assertEquals(output.code, 6)
+
+      const payload = JSON.parse(new TextDecoder().decode(output.stdout))
+      assertEquals(payload.error.type, "timeout_error")
+      assertEquals(payload.error.details.outcome, "probably_succeeded")
+      assertEquals(payload.error.details.relationObserved, false)
+    } finally {
+      await server.stop()
+    }
+  },
+)
+
+async function runIssueRelationSubprocess(
+  args: string[],
+  env: Record<string, string>,
+): Promise<Deno.CommandOutput> {
+  return await new Deno.Command("deno", {
+    args: [
+      "run",
+      "-c",
+      denoJsonPath,
+      "--allow-all",
+      "--quiet",
+      mainPath,
+      "issue",
+      "relation",
+      ...args,
+    ],
+    cwd: repoRoot,
+    env,
+    stdout: "piped",
+    stderr: "piped",
+  }).output()
+}
 
 // Test: relation add with "blocks" - success message shows original order
 await snapshotTest({

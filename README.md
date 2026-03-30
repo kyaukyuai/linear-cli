@@ -123,7 +123,7 @@ the contract fixes top-level success payload shapes and requires machine-readabl
 
 for automation consumers, auth and authorization failures now use exit code `4`, free-plan or workspace-plan limit failures use exit code `5`, and client-side write confirmation timeouts use exit code `6`. other contract failures remain non-zero and currently use `1`. rate-limited responses remain on exit code `1`, but now include retry guidance and, when available, `error.details.rateLimit` metadata.
 
-high-value issue write commands also honor `LINEAR_WRITE_TIMEOUT_MS` and accept `--timeout-ms` for per-command overrides. timeout failures return a distinct machine-readable failure mode, `timeout_error`, with `error.details.failureMode = "timeout_waiting_for_confirmation"`.
+high-value write commands honor `LINEAR_WRITE_TIMEOUT_MS` and accept `--timeout-ms` for per-command overrides. timeout failures return a distinct machine-readable failure mode, `timeout_error`, with `error.details.failureMode = "timeout_waiting_for_confirmation"`. when reconciliation runs after the timeout, `error.details.outcome` now distinguishes `definitely_failed`, `probably_succeeded`, and `partial_success` from the fallback `unknown` state. notification `read` and `archive` now use the same timeout contract as issue write commands.
 
 the same document also defines the shared preview contract for future `--dry-run` write commands. those commands are not all implemented yet, but the contract now fixes the expected `stdout`, `exit code`, and `--json --dry-run` envelope shape ahead of rollout.
 
