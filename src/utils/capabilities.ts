@@ -1,9 +1,91 @@
 export type AutomationContractVersion = "v1" | "v2" | "v3" | "v4"
 export type DryRunContractVersion = "v1"
 export type StdinPolicyVersion = "v1"
-export type CapabilitiesSchemaVersion = "v1"
+export type CapabilitiesSchemaVersion = "v1" | "v2"
 
 export type CapabilityStdinMode = "none" | "implicit_text" | "explicit_bulk"
+export type CapabilityInputMode = "flags" | "stdin" | "file"
+export type CapabilitySchemaCoverage = "curated_primary_inputs"
+export type CapabilityValueType =
+  | "boolean"
+  | "string"
+  | "integer"
+  | "path"
+  | "json_file"
+  | "issue_ref"
+  | "team_key"
+  | "state_ref"
+  | "cycle_ref"
+  | "project_ref"
+  | "milestone_ref"
+  | "document_id"
+  | "webhook_id"
+  | "notification_id"
+  | "user_ref"
+  | "workflow_state_id"
+  | "label_ref"
+  | "relation_type"
+  | "url"
+
+export type CapabilityArgumentSchema = {
+  name: string
+  required: boolean
+  valueType: CapabilityValueType
+  description: string
+}
+
+export type CapabilityFlagSchema = {
+  name: string
+  short: string | null
+  required: boolean
+  valueType: CapabilityValueType
+  description: string
+}
+
+export type CapabilityCommandSchema = {
+  coverage: CapabilitySchemaCoverage
+  arguments: CapabilityArgumentSchema[]
+  flags: CapabilityFlagSchema[]
+  inputModes: CapabilityInputMode[]
+}
+
+export type CapabilityOutputCategory =
+  | "automation_contract"
+  | "curated_json"
+  | "json_default"
+  | "terminal_only"
+
+export type CapabilityOutputShape = "object" | "array" | "unknown"
+export type CapabilityExitCodeMeaning =
+  | "generic_failure"
+  | "auth_error"
+  | "plan_limit"
+  | "timeout_error"
+
+export type CapabilityExitCode = {
+  code: number
+  meaning: CapabilityExitCodeMeaning
+}
+
+export type CapabilityOutputSemantics = {
+  success: {
+    category: CapabilityOutputCategory
+    contractTarget: string | null
+    shape: CapabilityOutputShape
+    exitCode: 0
+  }
+  preview: {
+    supported: boolean
+    contractTarget: string | null
+    shape: CapabilityOutputShape | null
+    exitCode: 0 | null
+  }
+  failure: {
+    jsonWhenRequested: boolean
+    parseErrorsJsonWhenRequested: boolean
+    exitCodes: CapabilityExitCode[]
+  }
+}
 
 export type CapabilityIdempotencyCategory =
   | "read_only"
@@ -33,8 +115,12 @@ export type CapabilityCommand = {
     category: CapabilityIdempotencyCategory
     notes: string | null
   }
+  schema: CapabilityCommandSchema
+  output: CapabilityOutputSemantics
   notes: string | null
 }
+
+type CapabilityRegistryEntry = Omit<CapabilityCommand, "schema" | "output">
 
 export type CapabilitiesPayload = {
   schemaVersion: CapabilitiesSchemaVersion
@@ -71,21 +157,21 @@ const STDIN_POLICY_VERSIONS = ["v1"] as const
 
 function jsonContract(
   contractVersion: AutomationContractVersion | null,
-): CapabilityCommand["json"] {
+): CapabilityRegistryEntry["json"] {
   return {
     supported: contractVersion != null,
     contractVersion,
   }
 }
 
-function jsonOptional(): CapabilityCommand["json"] {
+function jsonOptional(): CapabilityRegistryEntry["json"] {
   return {
     supported: true,
     contractVersion: null,
   }
 }
 
-function noJson(): CapabilityCommand["json"] {
+function noJson(): CapabilityRegistryEntry["json"] {
   return {
     supported: false,
     contractVersion: null,
@@ -94,14 +180,14 @@ function noJson(): CapabilityCommand["json"] {
 
 function dryRunContract(
   contractVersion: DryRunContractVersion | null,
-): CapabilityCommand["dryRun"] {
+): CapabilityRegistryEntry["dryRun"] {
   return {
     supported: contractVersion != null,
     contractVersion,
   }
 }
 
-function stdin(mode: CapabilityStdinMode): CapabilityCommand["stdin"] {
+function stdin(mode: CapabilityStdinMode): CapabilityRegistryEntry["stdin"] {
   return { mode }
 }
 
@@ -112,7 +198,347 @@ function idempotency(
   return { category, notes }
 }
 
-const COMMANDS: CapabilityCommand[] = [
+function argument(
+  name: string,
+  valueType: CapabilityValueType,
+  description: string,
+  required = true,
+): CapabilityArgumentSchema {
+  return {
+    name,
+    required,
+    valueType,
+    description,
+  }
+}
+
+function flag(
+  name: string,
+  short: string | null,
+  valueType: CapabilityValueType,
+  description: string,
+  required = false,
+): CapabilityFlagSchema {
+  return {
+    name,
+    short,
+    required,
+    valueType,
+    description,
+  }
+}
+
+const JSON_FAILURE_COMMANDS = new Set<string>([
+  "linear capabilities",
+  "linear cycle current",
+  "linear cycle list",
+  "linear cycle next",
+  "linear cycle view",
+  "linear document list",
+  "linear document view",
+  "linear issue children",
+  "linear issue comment add",
+  "linear issue create",
+  "linear issue create-batch",
+  "linear issue list",
+  "linear issue parent",
+  "linear issue relation add",
+  "linear issue relation delete",
+  "linear issue relation list",
+  "linear issue update",
+  "linear issue view",
+  "linear label list",
+  "linear milestone list",
+  "linear milestone view",
+  "linear notification count",
+  "linear notification list",
+  "linear project list",
+  "linear project view",
+  "linear project-label list",
+  "linear team list",
+  "linear team members",
+  "linear team view",
+  "linear user list",
+  "linear user view",
+  "linear webhook list",
+  "linear webhook view",
+  "linear workflow-state list",
+  "linear workflow-state view",
+])
+
+const WRITE_TIMEOUT_COMMANDS = new Set<string>([
+  "linear issue comment add",
+  "linear issue comment update",
+  "linear issue create",
+  "linear issue create-batch",
+  "linear issue relation add",
+  "linear issue relation delete",
+  "linear issue update",
+])
+
+const PLAN_LIMIT_COMMANDS = new Set<string>([
+  "linear document create",
+  "linear issue create",
+  "linear issue create-batch",
+  "linear milestone create",
+  "linear project create",
+  "linear webhook create",
+])
+
+const PRIMARY_ARGUMENTS: Record<string, CapabilityArgumentSchema[]> = {
+  "linear document delete": [
+    argument("documentIds", "document_id", "One or more document IDs.", false),
+  ],
+  "linear document view": [
+    argument("document", "document_id", "Document ID."),
+  ],
+  "linear issue children": [
+    argument(
+      "issue",
+      "issue_ref",
+      "Issue identifier or internal ID. Defaults to the current issue.",
+      false,
+    ),
+  ],
+  "linear issue comment add": [
+    argument(
+      "issue",
+      "issue_ref",
+      "Issue identifier or internal ID. Defaults to the current issue.",
+      false,
+    ),
+    argument(
+      "body",
+      "string",
+      "Inline comment body. Omit to provide it with --body, --body-file, or stdin.",
+      false,
+    ),
+  ],
+  "linear issue comment update": [
+    argument("comment", "string", "Comment ID."),
+  ],
+  "linear issue parent": [
+    argument(
+      "issue",
+      "issue_ref",
+      "Issue identifier or internal ID. Defaults to the current issue.",
+      false,
+    ),
+  ],
+  "linear issue relation add": [
+    argument("issue", "issue_ref", "Source issue identifier or internal ID."),
+    argument("relationType", "relation_type", "Relation type keyword."),
+    argument(
+      "relatedIssue",
+      "issue_ref",
+      "Related issue identifier or internal ID.",
+    ),
+  ],
+  "linear issue relation delete": [
+    argument("issue", "issue_ref", "Source issue identifier or internal ID."),
+    argument("relationType", "relation_type", "Relation type keyword."),
+    argument(
+      "relatedIssue",
+      "issue_ref",
+      "Related issue identifier or internal ID.",
+    ),
+  ],
+  "linear issue relation list": [
+    argument(
+      "issue",
+      "issue_ref",
+      "Issue identifier or internal ID. Defaults to the current issue.",
+      false,
+    ),
+  ],
+  "linear issue start": [
+    argument(
+      "issue",
+      "issue_ref",
+      "Issue identifier or internal ID. Defaults to the current issue.",
+      false,
+    ),
+  ],
+  "linear issue update": [
+    argument(
+      "issue",
+      "issue_ref",
+      "Issue identifier or internal ID. Defaults to the current issue.",
+      false,
+    ),
+  ],
+  "linear issue view": [
+    argument(
+      "issue",
+      "issue_ref",
+      "Issue identifier or internal ID. Defaults to the current issue.",
+      false,
+    ),
+  ],
+  "linear milestone view": [
+    argument("milestone", "milestone_ref", "Milestone ID, slug, or name."),
+  ],
+  "linear notification archive": [
+    argument("notification", "notification_id", "Notification ID."),
+  ],
+  "linear notification read": [
+    argument("notification", "notification_id", "Notification ID."),
+  ],
+  "linear project delete": [
+    argument("project", "project_ref", "Project ID or slug."),
+  ],
+  "linear project view": [
+    argument("project", "project_ref", "Project ID or slug."),
+  ],
+  "linear team members": [
+    argument(
+      "team",
+      "team_key",
+      "Team key. Defaults to the configured current team.",
+      false,
+    ),
+  ],
+  "linear team view": [
+    argument(
+      "team",
+      "team_key",
+      "Team key. Defaults to the configured current team.",
+      false,
+    ),
+  ],
+  "linear user view": [
+    argument("user", "user_ref", "User ID, email, or username."),
+  ],
+  "linear webhook delete": [
+    argument("webhook", "webhook_id", "Webhook ID."),
+  ],
+  "linear webhook view": [
+    argument("webhook", "webhook_id", "Webhook ID."),
+  ],
+  "linear workflow-state view": [
+    argument("workflowState", "workflow_state_id", "Workflow state ID."),
+  ],
+  "linear cycle view": [
+    argument("cycle", "cycle_ref", "Cycle number, ID, or reference."),
+  ],
+}
+
+const FLAG_OVERRIDES: Record<string, CapabilityFlagSchema[]> = {
+  "linear cycle current": [
+    flag(
+      "--team",
+      null,
+      "team_key",
+      "Team key. Falls back to the configured current team.",
+    ),
+  ],
+  "linear cycle list": [
+    flag(
+      "--team",
+      null,
+      "team_key",
+      "Team key. Falls back to the configured current team.",
+    ),
+  ],
+  "linear cycle next": [
+    flag(
+      "--team",
+      null,
+      "team_key",
+      "Team key. Falls back to the configured current team.",
+    ),
+  ],
+  "linear document list": [
+    flag(
+      "--issue",
+      null,
+      "issue_ref",
+      "Filter documents attached to a specific issue.",
+    ),
+  ],
+  "linear issue comment add": [
+    flag("--body", null, "string", "Comment body as inline text."),
+    flag("--body-file", null, "path", "Read the comment body from a file."),
+  ],
+  "linear issue comment update": [
+    flag("--body", null, "string", "Replacement comment body as inline text."),
+    flag("--body-file", null, "path", "Read the replacement body from a file."),
+  ],
+  "linear issue create": [
+    flag("--title", "-t", "string", "Issue title.", true),
+    flag("--team", null, "team_key", "Team key.", true),
+    flag("--description", "-d", "string", "Issue description as inline text."),
+    flag(
+      "--description-file",
+      null,
+      "path",
+      "Read the description from a file.",
+    ),
+    flag("--state", null, "state_ref", "Initial workflow state."),
+  ],
+  "linear issue create-batch": [
+    flag(
+      "--file",
+      "-f",
+      "json_file",
+      "Path to the JSON batch description.",
+      true,
+    ),
+  ],
+  "linear issue list": [
+    flag("--all", null, "boolean", "List all assignees and all states."),
+    flag("--state", "-s", "state_ref", "Filter by workflow state."),
+    flag("--query", null, "string", "Filter by search text."),
+    flag(
+      "--team",
+      null,
+      "team_key",
+      "Resolve team-scoped filters and aliases.",
+    ),
+    flag(
+      "--parent",
+      null,
+      "issue_ref",
+      "Filter child issues of a parent issue.",
+    ),
+  ],
+  "linear issue update": [
+    flag("--state", null, "state_ref", "Target workflow state."),
+    flag("--comment", null, "string", "Comment to append after the update."),
+    flag("--description", "-d", "string", "Replacement description text."),
+    flag(
+      "--description-file",
+      null,
+      "path",
+      "Read the replacement description from a file.",
+    ),
+  ],
+  "linear issue view": [
+    flag("--no-comments", null, "boolean", "Skip raw comments in JSON output."),
+  ],
+  "linear project list": [
+    flag("--team", null, "team_key", "Filter by team key."),
+  ],
+}
+
+const ARRAY_RESULT_COMMANDS = new Set<string>([
+  "linear cycle list",
+  "linear document list",
+  "linear issue children",
+  "linear issue list",
+  "linear issue relation list",
+  "linear label list",
+  "linear milestone list",
+  "linear notification list",
+  "linear project list",
+  "linear project-label list",
+  "linear team list",
+  "linear user list",
+  "linear webhook list",
+  "linear workflow-state list",
+])
+
+const COMMANDS: CapabilityRegistryEntry[] = [
   {
     path: "linear api",
     summary: "Run a raw GraphQL API query",
@@ -687,6 +1113,152 @@ const CAPABILITY_COMMANDS = [...COMMANDS].sort((a, b) =>
   a.path.localeCompare(b.path)
 )
 
+function uniqueFlags(flags: CapabilityFlagSchema[]): CapabilityFlagSchema[] {
+  const seen = new Set<string>()
+  const deduped: CapabilityFlagSchema[] = []
+
+  for (const entry of flags) {
+    if (seen.has(entry.name)) {
+      continue
+    }
+
+    seen.add(entry.name)
+    deduped.push(entry)
+  }
+
+  return deduped
+}
+
+function buildCommandSchema(
+  command: CapabilityRegistryEntry,
+): CapabilityCommandSchema {
+  const flags = [
+    ...(command.json.supported
+      ? [flag("--json", "-j", "boolean", "Emit machine-readable JSON output.")]
+      : []),
+    ...(command.dryRun.supported
+      ? [
+        flag(
+          "--dry-run",
+          null,
+          "boolean",
+          "Preview the command without mutating Linear.",
+        ),
+      ]
+      : []),
+    ...(command.confirmationBypass != null
+      ? [
+        flag(
+          command.confirmationBypass,
+          null,
+          "boolean",
+          "Skip the confirmation prompt.",
+        ),
+      ]
+      : []),
+    ...(WRITE_TIMEOUT_COMMANDS.has(command.path)
+      ? [
+        flag(
+          "--timeout-ms",
+          null,
+          "integer",
+          "Override the write confirmation timeout in milliseconds.",
+        ),
+      ]
+      : []),
+    ...(FLAG_OVERRIDES[command.path] ?? []),
+  ]
+
+  const inputModes: CapabilityInputMode[] = ["flags"]
+  if (command.stdin.mode !== "none") {
+    inputModes.push("stdin")
+  }
+  if (
+    flags.some((entry) =>
+      entry.valueType === "path" || entry.valueType === "json_file"
+    )
+  ) {
+    inputModes.push("file")
+  }
+
+  return {
+    coverage: "curated_primary_inputs",
+    arguments: PRIMARY_ARGUMENTS[command.path] ?? [],
+    flags: uniqueFlags(flags),
+    inputModes,
+  }
+}
+
+function buildFailureExitCodes(
+  command: CapabilityRegistryEntry,
+): CapabilityExitCode[] {
+  const exitCodes: CapabilityExitCode[] = [
+    { code: 1, meaning: "generic_failure" },
+  ]
+
+  if (command.path !== "linear capabilities") {
+    exitCodes.push({ code: 4, meaning: "auth_error" })
+  }
+
+  if (PLAN_LIMIT_COMMANDS.has(command.path)) {
+    exitCodes.push({ code: 5, meaning: "plan_limit" })
+  }
+
+  if (WRITE_TIMEOUT_COMMANDS.has(command.path)) {
+    exitCodes.push({ code: 6, meaning: "timeout_error" })
+  }
+
+  return exitCodes
+}
+
+function buildCommandOutput(
+  command: CapabilityRegistryEntry,
+): CapabilityOutputSemantics {
+  const shape: CapabilityOutputShape = ARRAY_RESULT_COMMANDS.has(command.path)
+    ? "array"
+    : command.path === "linear api"
+    ? "unknown"
+    : "object"
+
+  let category: CapabilityOutputCategory = "terminal_only"
+  let contractTarget: string | null = null
+
+  if (command.path === "linear api") {
+    category = "json_default"
+    contractTarget = "raw_graphql_response"
+  } else if (command.path === "linear capabilities") {
+    category = "curated_json"
+    contractTarget = "capabilities_discovery:v2"
+  } else if (command.json.contractVersion != null) {
+    category = "automation_contract"
+    contractTarget = `automation_contract:${command.json.contractVersion}`
+  } else if (command.json.supported) {
+    category = "curated_json"
+  }
+
+  return {
+    success: {
+      category,
+      contractTarget,
+      shape,
+      exitCode: 0,
+    },
+    preview: {
+      supported: command.dryRun.supported,
+      contractTarget: command.dryRun.contractVersion == null
+        ? null
+        : `dry_run_preview:${command.dryRun.contractVersion}`,
+      shape: command.dryRun.supported ? "object" : null,
+      exitCode: command.dryRun.supported ? 0 : null,
+    },
+    failure: {
+      jsonWhenRequested: JSON_FAILURE_COMMANDS.has(command.path),
+      parseErrorsJsonWhenRequested: JSON_FAILURE_COMMANDS.has(command.path),
+      exitCodes: buildFailureExitCodes(command),
+    },
+  }
+}
+
 function buildAutomationTier() {
   const byVersion = {
     v1: [] as string[],
@@ -716,7 +1288,7 @@ function buildAutomationTier() {
 
 export function buildCapabilitiesPayload(version: string): CapabilitiesPayload {
   return {
-    schemaVersion: "v1",
+    schemaVersion: "v2",
     cli: {
       name: "linear-cli",
       binary: "linear",
@@ -743,6 +1315,8 @@ export function buildCapabilitiesPayload(version: string): CapabilitiesPayload {
       dryRun: { ...command.dryRun },
       stdin: { ...command.stdin },
       idempotency: { ...command.idempotency },
+      schema: buildCommandSchema(command),
+      output: buildCommandOutput(command),
     })),
   }
 }

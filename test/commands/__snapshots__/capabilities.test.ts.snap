@@ -27,7 +27,7 @@ stderr:
 snapshot[`Capabilities Command - Human Summary 1`] = `
 stdout:
 "linear-cli 2.11.0
-capabilities schema: v1
+capabilities schema: v2
 automation contract latest: v4
 dry-run preview contract: v1
 stdin policy: v1
@@ -38,70 +38,70 @@ automation tier
   v3: linear document list, linear document view, linear notification count, linear notification list, linear webhook list, linear webhook view
 
 agent-facing commands
-  linear api :: json=no dry-run=no stdin=implicit_text confirm=none idempotency=read_only
+  linear api :: json=no dry-run=no inputs=flags,stdin success=json_default confirm=none idempotency=read_only
     note: Outputs JSON by default and accepts stdin, but does not use a --json flag.
-  linear capabilities :: json=yes dry-run=no stdin=none confirm=none idempotency=read_only
-  linear cycle current :: json=v2 dry-run=no stdin=none confirm=none idempotency=read_only
-  linear cycle list :: json=v2 dry-run=no stdin=none confirm=none idempotency=read_only
-  linear cycle next :: json=v2 dry-run=no stdin=none confirm=none idempotency=read_only
-  linear cycle view :: json=v2 dry-run=no stdin=none confirm=none idempotency=read_only
-  linear document create :: json=no dry-run=v1 stdin=implicit_text confirm=none idempotency=non_idempotent
-  linear document delete :: json=no dry-run=v1 stdin=explicit_bulk confirm=--yes idempotency=destructive
-  linear document list :: json=v3 dry-run=no stdin=none confirm=none idempotency=read_only
-  linear document update :: json=no dry-run=v1 stdin=implicit_text confirm=none idempotency=retry_safe_update
-  linear document view :: json=v3 dry-run=no stdin=none confirm=none idempotency=read_only
-  linear issue children :: json=v1 dry-run=no stdin=none confirm=none idempotency=read_only
-  linear issue comment add :: json=v1 dry-run=v1 stdin=implicit_text confirm=none idempotency=non_idempotent
-  linear issue comment update :: json=no dry-run=no stdin=implicit_text confirm=none idempotency=retry_safe_update
-  linear issue create :: json=v1 dry-run=v1 stdin=implicit_text confirm=none idempotency=non_idempotent
-  linear issue create-batch :: json=v1 dry-run=v1 stdin=none confirm=none idempotency=resumable_batch
+  linear capabilities :: json=yes dry-run=no inputs=flags success=curated_json confirm=none idempotency=read_only
+  linear cycle current :: json=v2 dry-run=no inputs=flags success=automation_contract confirm=none idempotency=read_only
+  linear cycle list :: json=v2 dry-run=no inputs=flags success=automation_contract confirm=none idempotency=read_only
+  linear cycle next :: json=v2 dry-run=no inputs=flags success=automation_contract confirm=none idempotency=read_only
+  linear cycle view :: json=v2 dry-run=no inputs=flags success=automation_contract confirm=none idempotency=read_only
+  linear document create :: json=no dry-run=v1 inputs=flags,stdin success=terminal_only confirm=none idempotency=non_idempotent
+  linear document delete :: json=no dry-run=v1 inputs=flags,stdin success=terminal_only confirm=--yes idempotency=destructive
+  linear document list :: json=v3 dry-run=no inputs=flags success=automation_contract confirm=none idempotency=read_only
+  linear document update :: json=no dry-run=v1 inputs=flags,stdin success=terminal_only confirm=none idempotency=retry_safe_update
+  linear document view :: json=v3 dry-run=no inputs=flags success=automation_contract confirm=none idempotency=read_only
+  linear issue children :: json=v1 dry-run=no inputs=flags success=automation_contract confirm=none idempotency=read_only
+  linear issue comment add :: json=v1 dry-run=v1 inputs=flags,stdin,file success=automation_contract confirm=none idempotency=non_idempotent
+  linear issue comment update :: json=no dry-run=no inputs=flags,stdin,file success=terminal_only confirm=none idempotency=retry_safe_update
+  linear issue create :: json=v1 dry-run=v1 inputs=flags,stdin,file success=automation_contract confirm=none idempotency=non_idempotent
+  linear issue create-batch :: json=v1 dry-run=v1 inputs=flags,file success=automation_contract confirm=none idempotency=resumable_batch
     retry: Partial failures return createdIdentifiers and failedStep details.
-  linear issue list :: json=v1 dry-run=no stdin=none confirm=none idempotency=read_only
-  linear issue parent :: json=v1 dry-run=no stdin=none confirm=none idempotency=read_only
-  linear issue relation add :: json=v1 dry-run=v1 stdin=none confirm=none idempotency=retry_safe_no_op
+  linear issue list :: json=v1 dry-run=no inputs=flags success=automation_contract confirm=none idempotency=read_only
+  linear issue parent :: json=v1 dry-run=no inputs=flags success=automation_contract confirm=none idempotency=read_only
+  linear issue relation add :: json=v1 dry-run=v1 inputs=flags success=automation_contract confirm=none idempotency=retry_safe_no_op
     retry: Adding an existing relation succeeds with noOp: true.
-  linear issue relation delete :: json=v1 dry-run=v1 stdin=none confirm=none idempotency=retry_safe_no_op
+  linear issue relation delete :: json=v1 dry-run=v1 inputs=flags success=automation_contract confirm=none idempotency=retry_safe_no_op
     retry: Deleting a missing relation succeeds with noOp: true.
-  linear issue relation list :: json=v1 dry-run=no stdin=none confirm=none idempotency=read_only
-  linear issue start :: json=no dry-run=v1 stdin=none confirm=none idempotency=conditional
+  linear issue relation list :: json=v1 dry-run=no inputs=flags success=automation_contract confirm=none idempotency=read_only
+  linear issue start :: json=no dry-run=v1 inputs=flags success=terminal_only confirm=none idempotency=conditional
     retry: The dry-run is safe to repeat; the live path mutates both Linear state and local VCS state.
-  linear issue update :: json=v1 dry-run=v1 stdin=implicit_text confirm=none idempotency=conditional
+  linear issue update :: json=v1 dry-run=v1 inputs=flags,stdin,file success=automation_contract confirm=none idempotency=conditional
     retry: Field-only updates are retry-safe; adding --comment makes the command non-idempotent.
-  linear issue view :: json=v1 dry-run=no stdin=none confirm=none idempotency=read_only
-  linear label list :: json=v4 dry-run=no stdin=none confirm=none idempotency=read_only
-  linear milestone create :: json=no dry-run=v1 stdin=none confirm=none idempotency=non_idempotent
-  linear milestone delete :: json=no dry-run=v1 stdin=none confirm=--yes idempotency=destructive
-  linear milestone list :: json=v2 dry-run=no stdin=none confirm=none idempotency=read_only
-  linear milestone update :: json=no dry-run=v1 stdin=none confirm=none idempotency=retry_safe_update
-  linear milestone view :: json=v2 dry-run=no stdin=none confirm=none idempotency=read_only
-  linear notification archive :: json=yes dry-run=no stdin=none confirm=none idempotency=retry_safe_no_op
+  linear issue view :: json=v1 dry-run=no inputs=flags success=automation_contract confirm=none idempotency=read_only
+  linear label list :: json=v4 dry-run=no inputs=flags success=automation_contract confirm=none idempotency=read_only
+  linear milestone create :: json=no dry-run=v1 inputs=flags success=terminal_only confirm=none idempotency=non_idempotent
+  linear milestone delete :: json=no dry-run=v1 inputs=flags success=terminal_only confirm=--yes idempotency=destructive
+  linear milestone list :: json=v2 dry-run=no inputs=flags success=automation_contract confirm=none idempotency=read_only
+  linear milestone update :: json=no dry-run=v1 inputs=flags success=terminal_only confirm=none idempotency=retry_safe_update
+  linear milestone view :: json=v2 dry-run=no inputs=flags success=automation_contract confirm=none idempotency=read_only
+  linear notification archive :: json=yes dry-run=no inputs=flags success=curated_json confirm=none idempotency=retry_safe_no_op
     retry: Archiving an already-archived notification succeeds with noOp: true.
-  linear notification count :: json=v3 dry-run=no stdin=none confirm=none idempotency=read_only
-  linear notification list :: json=v3 dry-run=no stdin=none confirm=none idempotency=read_only
-  linear notification read :: json=yes dry-run=no stdin=none confirm=none idempotency=retry_safe_no_op
+  linear notification count :: json=v3 dry-run=no inputs=flags success=automation_contract confirm=none idempotency=read_only
+  linear notification list :: json=v3 dry-run=no inputs=flags success=automation_contract confirm=none idempotency=read_only
+  linear notification read :: json=yes dry-run=no inputs=flags success=curated_json confirm=none idempotency=retry_safe_no_op
     retry: Reading an already-read notification succeeds with noOp: true.
-  linear project create :: json=yes dry-run=v1 stdin=none confirm=none idempotency=non_idempotent
-  linear project delete :: json=no dry-run=v1 stdin=none confirm=--yes idempotency=destructive
-  linear project label add :: json=yes dry-run=no stdin=none confirm=none idempotency=retry_safe_no_op
+  linear project create :: json=yes dry-run=v1 inputs=flags success=curated_json confirm=none idempotency=non_idempotent
+  linear project delete :: json=no dry-run=v1 inputs=flags success=terminal_only confirm=--yes idempotency=destructive
+  linear project label add :: json=yes dry-run=no inputs=flags success=curated_json confirm=none idempotency=retry_safe_no_op
     retry: Adding an already-attached label succeeds with changed: false.
-  linear project label remove :: json=yes dry-run=no stdin=none confirm=none idempotency=retry_safe_no_op
+  linear project label remove :: json=yes dry-run=no inputs=flags success=curated_json confirm=none idempotency=retry_safe_no_op
     retry: Removing a missing label succeeds with changed: false.
-  linear project list :: json=v2 dry-run=no stdin=none confirm=none idempotency=read_only
-  linear project update :: json=no dry-run=v1 stdin=none confirm=none idempotency=retry_safe_update
-  linear project view :: json=v2 dry-run=no stdin=none confirm=none idempotency=read_only
-  linear project-label list :: json=v4 dry-run=no stdin=none confirm=none idempotency=read_only
-  linear team list :: json=v4 dry-run=no stdin=none confirm=none idempotency=read_only
-  linear team members :: json=v1 dry-run=no stdin=none confirm=none idempotency=read_only
-  linear team view :: json=v4 dry-run=no stdin=none confirm=none idempotency=read_only
-  linear user list :: json=v4 dry-run=no stdin=none confirm=none idempotency=read_only
-  linear user view :: json=v4 dry-run=no stdin=none confirm=none idempotency=read_only
-  linear webhook create :: json=yes dry-run=v1 stdin=none confirm=none idempotency=non_idempotent
-  linear webhook delete :: json=yes dry-run=v1 stdin=none confirm=--yes idempotency=destructive
-  linear webhook list :: json=v3 dry-run=no stdin=none confirm=none idempotency=read_only
-  linear webhook update :: json=yes dry-run=v1 stdin=none confirm=none idempotency=retry_safe_update
-  linear webhook view :: json=v3 dry-run=no stdin=none confirm=none idempotency=read_only
-  linear workflow-state list :: json=v4 dry-run=no stdin=none confirm=none idempotency=read_only
-  linear workflow-state view :: json=v4 dry-run=no stdin=none confirm=none idempotency=read_only
+  linear project list :: json=v2 dry-run=no inputs=flags success=automation_contract confirm=none idempotency=read_only
+  linear project update :: json=no dry-run=v1 inputs=flags success=terminal_only confirm=none idempotency=retry_safe_update
+  linear project view :: json=v2 dry-run=no inputs=flags success=automation_contract confirm=none idempotency=read_only
+  linear project-label list :: json=v4 dry-run=no inputs=flags success=automation_contract confirm=none idempotency=read_only
+  linear team list :: json=v4 dry-run=no inputs=flags success=automation_contract confirm=none idempotency=read_only
+  linear team members :: json=v1 dry-run=no inputs=flags success=automation_contract confirm=none idempotency=read_only
+  linear team view :: json=v4 dry-run=no inputs=flags success=automation_contract confirm=none idempotency=read_only
+  linear user list :: json=v4 dry-run=no inputs=flags success=automation_contract confirm=none idempotency=read_only
+  linear user view :: json=v4 dry-run=no inputs=flags success=automation_contract confirm=none idempotency=read_only
+  linear webhook create :: json=yes dry-run=v1 inputs=flags success=curated_json confirm=none idempotency=non_idempotent
+  linear webhook delete :: json=yes dry-run=v1 inputs=flags success=curated_json confirm=--yes idempotency=destructive
+  linear webhook list :: json=v3 dry-run=no inputs=flags success=automation_contract confirm=none idempotency=read_only
+  linear webhook update :: json=yes dry-run=v1 inputs=flags success=curated_json confirm=none idempotency=retry_safe_update
+  linear webhook view :: json=v3 dry-run=no inputs=flags success=automation_contract confirm=none idempotency=read_only
+  linear workflow-state list :: json=v4 dry-run=no inputs=flags success=automation_contract confirm=none idempotency=read_only
+  linear workflow-state view :: json=v4 dry-run=no inputs=flags success=automation_contract confirm=none idempotency=read_only
 "
 stderr:
 ""
@@ -110,7 +110,7 @@ stderr:
 snapshot[`Capabilities Command - JSON Output 1`] = `
 stdout:
 \`{
-  "schemaVersion": "v1",
+  "schemaVersion": "v2",
   "cli": {
     "name": "linear-cli",
     "binary": "linear",
@@ -242,7 +242,44 @@ stdout:
         "category": "read_only",
         "notes": null
       },
-      "notes": "Outputs JSON by default and accepts stdin, but does not use a --json flag."
+      "notes": "Outputs JSON by default and accepts stdin, but does not use a --json flag.",
+      "schema": {
+        "coverage": "curated_primary_inputs",
+        "arguments": [],
+        "flags": [],
+        "inputModes": [
+          "flags",
+          "stdin"
+        ]
+      },
+      "output": {
+        "success": {
+          "category": "json_default",
+          "contractTarget": "raw_graphql_response",
+          "shape": "unknown",
+          "exitCode": 0
+        },
+        "preview": {
+          "supported": false,
+          "contractTarget": null,
+          "shape": null,
+          "exitCode": null
+        },
+        "failure": {
+          "jsonWhenRequested": false,
+          "parseErrorsJsonWhenRequested": false,
+          "exitCodes": [
+            {
+              "code": 1,
+              "meaning": "generic_failure"
+            },
+            {
+              "code": 4,
+              "meaning": "auth_error"
+            }
+          ]
+        }
+      }
     },
     {
       "path": "linear capabilities",
@@ -263,7 +300,47 @@ stdout:
         "category": "read_only",
         "notes": null
       },
-      "notes": null
+      "notes": null,
+      "schema": {
+        "coverage": "curated_primary_inputs",
+        "arguments": [],
+        "flags": [
+          {
+            "name": "--json",
+            "short": "-j",
+            "required": false,
+            "valueType": "boolean",
+            "description": "Emit machine-readable JSON output."
+          }
+        ],
+        "inputModes": [
+          "flags"
+        ]
+      },
+      "output": {
+        "success": {
+          "category": "curated_json",
+          "contractTarget": "capabilities_discovery:v2",
+          "shape": "object",
+          "exitCode": 0
+        },
+        "preview": {
+          "supported": false,
+          "contractTarget": null,
+          "shape": null,
+          "exitCode": null
+        },
+        "failure": {
+          "jsonWhenRequested": true,
+          "parseErrorsJsonWhenRequested": true,
+          "exitCodes": [
+            {
+              "code": 1,
+              "meaning": "generic_failure"
+            }
+          ]
+        }
+      }
     },
     {
       "path": "linear cycle current",
@@ -284,7 +361,58 @@ stdout:
         "category": "read_only",
         "notes": null
       },
-      "notes": null
+      "notes": null,
+      "schema": {
+        "coverage": "curated_primary_inputs",
+        "arguments": [],
+        "flags": [
+          {
+            "name": "--json",
+            "short": "-j",
+            "required": false,
+            "valueType": "boolean",
+            "description": "Emit machine-readable JSON output."
+          },
+          {
+            "name": "--team",
+            "short": null,
+            "required": false,
+            "valueType": "team_key",
+            "description": "Team key. Falls back to the configured current team."
+          }
+        ],
+        "inputModes": [
+          "flags"
+        ]
+      },
+      "output": {
+        "success": {
+          "category": "automation_contract",
+          "contractTarget": "automation_contract:v2",
+          "shape": "object",
+          "exitCode": 0
+        },
+        "preview": {
+          "supported": false,
+          "contractTarget": null,
+          "shape": null,
+          "exitCode": null
+        },
+        "failure": {
+          "jsonWhenRequested": true,
+          "parseErrorsJsonWhenRequested": true,
+          "exitCodes": [
+            {
+              "code": 1,
+              "meaning": "generic_failure"
+            },
+            {
+              "code": 4,
+              "meaning": "auth_error"
+            }
+          ]
+        }
+      }
     },
     {
       "path": "linear cycle list",
@@ -305,7 +433,58 @@ stdout:
         "category": "read_only",
         "notes": null
       },
-      "notes": null
+      "notes": null,
+      "schema": {
+        "coverage": "curated_primary_inputs",
+        "arguments": [],
+        "flags": [
+          {
+            "name": "--json",
+            "short": "-j",
+            "required": false,
+            "valueType": "boolean",
+            "description": "Emit machine-readable JSON output."
+          },
+          {
+            "name": "--team",
+            "short": null,
+            "required": false,
+            "valueType": "team_key",
+            "description": "Team key. Falls back to the configured current team."
+          }
+        ],
+        "inputModes": [
+          "flags"
+        ]
+      },
+      "output": {
+        "success": {
+          "category": "automation_contract",
+          "contractTarget": "automation_contract:v2",
+          "shape": "array",
+          "exitCode": 0
+        },
+        "preview": {
+          "supported": false,
+          "contractTarget": null,
+          "shape": null,
+          "exitCode": null
+        },
+        "failure": {
+          "jsonWhenRequested": true,
+          "parseErrorsJsonWhenRequested": true,
+          "exitCodes": [
+            {
+              "code": 1,
+              "meaning": "generic_failure"
+            },
+            {
+              "code": 4,
+              "meaning": "auth_error"
+            }
+          ]
+        }
+      }
     },
     {
       "path": "linear cycle next",
@@ -326,7 +505,58 @@ stdout:
         "category": "read_only",
         "notes": null
       },
-      "notes": null
+      "notes": null,
+      "schema": {
+        "coverage": "curated_primary_inputs",
+        "arguments": [],
+        "flags": [
+          {
+            "name": "--json",
+            "short": "-j",
+            "required": false,
+            "valueType": "boolean",
+            "description": "Emit machine-readable JSON output."
+          },
+          {
+            "name": "--team",
+            "short": null,
+            "required": false,
+            "valueType": "team_key",
+            "description": "Team key. Falls back to the configured current team."
+          }
+        ],
+        "inputModes": [
+          "flags"
+        ]
+      },
+      "output": {
+        "success": {
+          "category": "automation_contract",
+          "contractTarget": "automation_contract:v2",
+          "shape": "object",
+          "exitCode": 0
+        },
+        "preview": {
+          "supported": false,
+          "contractTarget": null,
+          "shape": null,
+          "exitCode": null
+        },
+        "failure": {
+          "jsonWhenRequested": true,
+          "parseErrorsJsonWhenRequested": true,
+          "exitCodes": [
+            {
+              "code": 1,
+              "meaning": "generic_failure"
+            },
+            {
+              "code": 4,
+              "meaning": "auth_error"
+            }
+          ]
+        }
+      }
     },
     {
       "path": "linear cycle view",
@@ -347,7 +577,58 @@ stdout:
         "category": "read_only",
         "notes": null
       },
-      "notes": null
+      "notes": null,
+      "schema": {
+        "coverage": "curated_primary_inputs",
+        "arguments": [
+          {
+            "name": "cycle",
+            "required": true,
+            "valueType": "cycle_ref",
+            "description": "Cycle number, ID, or reference."
+          }
+        ],
+        "flags": [
+          {
+            "name": "--json",
+            "short": "-j",
+            "required": false,
+            "valueType": "boolean",
+            "description": "Emit machine-readable JSON output."
+          }
+        ],
+        "inputModes": [
+          "flags"
+        ]
+      },
+      "output": {
+        "success": {
+          "category": "automation_contract",
+          "contractTarget": "automation_contract:v2",
+          "shape": "object",
+          "exitCode": 0
+        },
+        "preview": {
+          "supported": false,
+          "contractTarget": null,
+          "shape": null,
+          "exitCode": null
+        },
+        "failure": {
+          "jsonWhenRequested": true,
+          "parseErrorsJsonWhenRequested": true,
+          "exitCodes": [
+            {
+              "code": 1,
+              "meaning": "generic_failure"
+            },
+            {
+              "code": 4,
+              "meaning": "auth_error"
+            }
+          ]
+        }
+      }
     },
     {
       "path": "linear document create",
@@ -368,7 +649,56 @@ stdout:
         "category": "non_idempotent",
         "notes": null
       },
-      "notes": null
+      "notes": null,
+      "schema": {
+        "coverage": "curated_primary_inputs",
+        "arguments": [],
+        "flags": [
+          {
+            "name": "--dry-run",
+            "short": null,
+            "required": false,
+            "valueType": "boolean",
+            "description": "Preview the command without mutating Linear."
+          }
+        ],
+        "inputModes": [
+          "flags",
+          "stdin"
+        ]
+      },
+      "output": {
+        "success": {
+          "category": "terminal_only",
+          "contractTarget": null,
+          "shape": "object",
+          "exitCode": 0
+        },
+        "preview": {
+          "supported": true,
+          "contractTarget": "dry_run_preview:v1",
+          "shape": "object",
+          "exitCode": 0
+        },
+        "failure": {
+          "jsonWhenRequested": false,
+          "parseErrorsJsonWhenRequested": false,
+          "exitCodes": [
+            {
+              "code": 1,
+              "meaning": "generic_failure"
+            },
+            {
+              "code": 4,
+              "meaning": "auth_error"
+            },
+            {
+              "code": 5,
+              "meaning": "plan_limit"
+            }
+          ]
+        }
+      }
     },
     {
       "path": "linear document delete",
@@ -389,7 +719,66 @@ stdout:
         "category": "destructive",
         "notes": null
       },
-      "notes": null
+      "notes": null,
+      "schema": {
+        "coverage": "curated_primary_inputs",
+        "arguments": [
+          {
+            "name": "documentIds",
+            "required": false,
+            "valueType": "document_id",
+            "description": "One or more document IDs."
+          }
+        ],
+        "flags": [
+          {
+            "name": "--dry-run",
+            "short": null,
+            "required": false,
+            "valueType": "boolean",
+            "description": "Preview the command without mutating Linear."
+          },
+          {
+            "name": "--yes",
+            "short": null,
+            "required": false,
+            "valueType": "boolean",
+            "description": "Skip the confirmation prompt."
+          }
+        ],
+        "inputModes": [
+          "flags",
+          "stdin"
+        ]
+      },
+      "output": {
+        "success": {
+          "category": "terminal_only",
+          "contractTarget": null,
+          "shape": "object",
+          "exitCode": 0
+        },
+        "preview": {
+          "supported": true,
+          "contractTarget": "dry_run_preview:v1",
+          "shape": "object",
+          "exitCode": 0
+        },
+        "failure": {
+          "jsonWhenRequested": false,
+          "parseErrorsJsonWhenRequested": false,
+          "exitCodes": [
+            {
+              "code": 1,
+              "meaning": "generic_failure"
+            },
+            {
+              "code": 4,
+              "meaning": "auth_error"
+            }
+          ]
+        }
+      }
     },
     {
       "path": "linear document list",
@@ -410,7 +799,58 @@ stdout:
         "category": "read_only",
         "notes": null
       },
-      "notes": null
+      "notes": null,
+      "schema": {
+        "coverage": "curated_primary_inputs",
+        "arguments": [],
+        "flags": [
+          {
+            "name": "--json",
+            "short": "-j",
+            "required": false,
+            "valueType": "boolean",
+            "description": "Emit machine-readable JSON output."
+          },
+          {
+            "name": "--issue",
+            "short": null,
+            "required": false,
+            "valueType": "issue_ref",
+            "description": "Filter documents attached to a specific issue."
+          }
+        ],
+        "inputModes": [
+          "flags"
+        ]
+      },
+      "output": {
+        "success": {
+          "category": "automation_contract",
+          "contractTarget": "automation_contract:v3",
+          "shape": "array",
+          "exitCode": 0
+        },
+        "preview": {
+          "supported": false,
+          "contractTarget": null,
+          "shape": null,
+          "exitCode": null
+        },
+        "failure": {
+          "jsonWhenRequested": true,
+          "parseErrorsJsonWhenRequested": true,
+          "exitCodes": [
+            {
+              "code": 1,
+              "meaning": "generic_failure"
+            },
+            {
+              "code": 4,
+              "meaning": "auth_error"
+            }
+          ]
+        }
+      }
     },
     {
       "path": "linear document update",
@@ -431,7 +871,52 @@ stdout:
         "category": "retry_safe_update",
         "notes": null
       },
-      "notes": null
+      "notes": null,
+      "schema": {
+        "coverage": "curated_primary_inputs",
+        "arguments": [],
+        "flags": [
+          {
+            "name": "--dry-run",
+            "short": null,
+            "required": false,
+            "valueType": "boolean",
+            "description": "Preview the command without mutating Linear."
+          }
+        ],
+        "inputModes": [
+          "flags",
+          "stdin"
+        ]
+      },
+      "output": {
+        "success": {
+          "category": "terminal_only",
+          "contractTarget": null,
+          "shape": "object",
+          "exitCode": 0
+        },
+        "preview": {
+          "supported": true,
+          "contractTarget": "dry_run_preview:v1",
+          "shape": "object",
+          "exitCode": 0
+        },
+        "failure": {
+          "jsonWhenRequested": false,
+          "parseErrorsJsonWhenRequested": false,
+          "exitCodes": [
+            {
+              "code": 1,
+              "meaning": "generic_failure"
+            },
+            {
+              "code": 4,
+              "meaning": "auth_error"
+            }
+          ]
+        }
+      }
     },
     {
       "path": "linear document view",
@@ -452,7 +937,58 @@ stdout:
         "category": "read_only",
         "notes": null
       },
-      "notes": null
+      "notes": null,
+      "schema": {
+        "coverage": "curated_primary_inputs",
+        "arguments": [
+          {
+            "name": "document",
+            "required": true,
+            "valueType": "document_id",
+            "description": "Document ID."
+          }
+        ],
+        "flags": [
+          {
+            "name": "--json",
+            "short": "-j",
+            "required": false,
+            "valueType": "boolean",
+            "description": "Emit machine-readable JSON output."
+          }
+        ],
+        "inputModes": [
+          "flags"
+        ]
+      },
+      "output": {
+        "success": {
+          "category": "automation_contract",
+          "contractTarget": "automation_contract:v3",
+          "shape": "object",
+          "exitCode": 0
+        },
+        "preview": {
+          "supported": false,
+          "contractTarget": null,
+          "shape": null,
+          "exitCode": null
+        },
+        "failure": {
+          "jsonWhenRequested": true,
+          "parseErrorsJsonWhenRequested": true,
+          "exitCodes": [
+            {
+              "code": 1,
+              "meaning": "generic_failure"
+            },
+            {
+              "code": 4,
+              "meaning": "auth_error"
+            }
+          ]
+        }
+      }
     },
     {
       "path": "linear issue children",
@@ -473,7 +1009,58 @@ stdout:
         "category": "read_only",
         "notes": null
       },
-      "notes": null
+      "notes": null,
+      "schema": {
+        "coverage": "curated_primary_inputs",
+        "arguments": [
+          {
+            "name": "issue",
+            "required": false,
+            "valueType": "issue_ref",
+            "description": "Issue identifier or internal ID. Defaults to the current issue."
+          }
+        ],
+        "flags": [
+          {
+            "name": "--json",
+            "short": "-j",
+            "required": false,
+            "valueType": "boolean",
+            "description": "Emit machine-readable JSON output."
+          }
+        ],
+        "inputModes": [
+          "flags"
+        ]
+      },
+      "output": {
+        "success": {
+          "category": "automation_contract",
+          "contractTarget": "automation_contract:v1",
+          "shape": "array",
+          "exitCode": 0
+        },
+        "preview": {
+          "supported": false,
+          "contractTarget": null,
+          "shape": null,
+          "exitCode": null
+        },
+        "failure": {
+          "jsonWhenRequested": true,
+          "parseErrorsJsonWhenRequested": true,
+          "exitCodes": [
+            {
+              "code": 1,
+              "meaning": "generic_failure"
+            },
+            {
+              "code": 4,
+              "meaning": "auth_error"
+            }
+          ]
+        }
+      }
     },
     {
       "path": "linear issue comment add",
@@ -494,7 +1081,98 @@ stdout:
         "category": "non_idempotent",
         "notes": null
       },
-      "notes": null
+      "notes": null,
+      "schema": {
+        "coverage": "curated_primary_inputs",
+        "arguments": [
+          {
+            "name": "issue",
+            "required": false,
+            "valueType": "issue_ref",
+            "description": "Issue identifier or internal ID. Defaults to the current issue."
+          },
+          {
+            "name": "body",
+            "required": false,
+            "valueType": "string",
+            "description": "Inline comment body. Omit to provide it with --body, --body-file, or stdin."
+          }
+        ],
+        "flags": [
+          {
+            "name": "--json",
+            "short": "-j",
+            "required": false,
+            "valueType": "boolean",
+            "description": "Emit machine-readable JSON output."
+          },
+          {
+            "name": "--dry-run",
+            "short": null,
+            "required": false,
+            "valueType": "boolean",
+            "description": "Preview the command without mutating Linear."
+          },
+          {
+            "name": "--timeout-ms",
+            "short": null,
+            "required": false,
+            "valueType": "integer",
+            "description": "Override the write confirmation timeout in milliseconds."
+          },
+          {
+            "name": "--body",
+            "short": null,
+            "required": false,
+            "valueType": "string",
+            "description": "Comment body as inline text."
+          },
+          {
+            "name": "--body-file",
+            "short": null,
+            "required": false,
+            "valueType": "path",
+            "description": "Read the comment body from a file."
+          }
+        ],
+        "inputModes": [
+          "flags",
+          "stdin",
+          "file"
+        ]
+      },
+      "output": {
+        "success": {
+          "category": "automation_contract",
+          "contractTarget": "automation_contract:v1",
+          "shape": "object",
+          "exitCode": 0
+        },
+        "preview": {
+          "supported": true,
+          "contractTarget": "dry_run_preview:v1",
+          "shape": "object",
+          "exitCode": 0
+        },
+        "failure": {
+          "jsonWhenRequested": true,
+          "parseErrorsJsonWhenRequested": true,
+          "exitCodes": [
+            {
+              "code": 1,
+              "meaning": "generic_failure"
+            },
+            {
+              "code": 4,
+              "meaning": "auth_error"
+            },
+            {
+              "code": 6,
+              "meaning": "timeout_error"
+            }
+          ]
+        }
+      }
     },
     {
       "path": "linear issue comment update",
@@ -515,7 +1193,78 @@ stdout:
         "category": "retry_safe_update",
         "notes": null
       },
-      "notes": null
+      "notes": null,
+      "schema": {
+        "coverage": "curated_primary_inputs",
+        "arguments": [
+          {
+            "name": "comment",
+            "required": true,
+            "valueType": "string",
+            "description": "Comment ID."
+          }
+        ],
+        "flags": [
+          {
+            "name": "--timeout-ms",
+            "short": null,
+            "required": false,
+            "valueType": "integer",
+            "description": "Override the write confirmation timeout in milliseconds."
+          },
+          {
+            "name": "--body",
+            "short": null,
+            "required": false,
+            "valueType": "string",
+            "description": "Replacement comment body as inline text."
+          },
+          {
+            "name": "--body-file",
+            "short": null,
+            "required": false,
+            "valueType": "path",
+            "description": "Read the replacement body from a file."
+          }
+        ],
+        "inputModes": [
+          "flags",
+          "stdin",
+          "file"
+        ]
+      },
+      "output": {
+        "success": {
+          "category": "terminal_only",
+          "contractTarget": null,
+          "shape": "object",
+          "exitCode": 0
+        },
+        "preview": {
+          "supported": false,
+          "contractTarget": null,
+          "shape": null,
+          "exitCode": null
+        },
+        "failure": {
+          "jsonWhenRequested": false,
+          "parseErrorsJsonWhenRequested": false,
+          "exitCodes": [
+            {
+              "code": 1,
+              "meaning": "generic_failure"
+            },
+            {
+              "code": 4,
+              "meaning": "auth_error"
+            },
+            {
+              "code": 6,
+              "meaning": "timeout_error"
+            }
+          ]
+        }
+      }
     },
     {
       "path": "linear issue create",
@@ -536,7 +1285,110 @@ stdout:
         "category": "non_idempotent",
         "notes": null
       },
-      "notes": null
+      "notes": null,
+      "schema": {
+        "coverage": "curated_primary_inputs",
+        "arguments": [],
+        "flags": [
+          {
+            "name": "--json",
+            "short": "-j",
+            "required": false,
+            "valueType": "boolean",
+            "description": "Emit machine-readable JSON output."
+          },
+          {
+            "name": "--dry-run",
+            "short": null,
+            "required": false,
+            "valueType": "boolean",
+            "description": "Preview the command without mutating Linear."
+          },
+          {
+            "name": "--timeout-ms",
+            "short": null,
+            "required": false,
+            "valueType": "integer",
+            "description": "Override the write confirmation timeout in milliseconds."
+          },
+          {
+            "name": "--title",
+            "short": "-t",
+            "required": true,
+            "valueType": "string",
+            "description": "Issue title."
+          },
+          {
+            "name": "--team",
+            "short": null,
+            "required": true,
+            "valueType": "team_key",
+            "description": "Team key."
+          },
+          {
+            "name": "--description",
+            "short": "-d",
+            "required": false,
+            "valueType": "string",
+            "description": "Issue description as inline text."
+          },
+          {
+            "name": "--description-file",
+            "short": null,
+            "required": false,
+            "valueType": "path",
+            "description": "Read the description from a file."
+          },
+          {
+            "name": "--state",
+            "short": null,
+            "required": false,
+            "valueType": "state_ref",
+            "description": "Initial workflow state."
+          }
+        ],
+        "inputModes": [
+          "flags",
+          "stdin",
+          "file"
+        ]
+      },
+      "output": {
+        "success": {
+          "category": "automation_contract",
+          "contractTarget": "automation_contract:v1",
+          "shape": "object",
+          "exitCode": 0
+        },
+        "preview": {
+          "supported": true,
+          "contractTarget": "dry_run_preview:v1",
+          "shape": "object",
+          "exitCode": 0
+        },
+        "failure": {
+          "jsonWhenRequested": true,
+          "parseErrorsJsonWhenRequested": true,
+          "exitCodes": [
+            {
+              "code": 1,
+              "meaning": "generic_failure"
+            },
+            {
+              "code": 4,
+              "meaning": "auth_error"
+            },
+            {
+              "code": 5,
+              "meaning": "plan_limit"
+            },
+            {
+              "code": 6,
+              "meaning": "timeout_error"
+            }
+          ]
+        }
+      }
     },
     {
       "path": "linear issue create-batch",
@@ -557,7 +1409,81 @@ stdout:
         "category": "resumable_batch",
         "notes": "Partial failures return createdIdentifiers and failedStep details."
       },
-      "notes": null
+      "notes": null,
+      "schema": {
+        "coverage": "curated_primary_inputs",
+        "arguments": [],
+        "flags": [
+          {
+            "name": "--json",
+            "short": "-j",
+            "required": false,
+            "valueType": "boolean",
+            "description": "Emit machine-readable JSON output."
+          },
+          {
+            "name": "--dry-run",
+            "short": null,
+            "required": false,
+            "valueType": "boolean",
+            "description": "Preview the command without mutating Linear."
+          },
+          {
+            "name": "--timeout-ms",
+            "short": null,
+            "required": false,
+            "valueType": "integer",
+            "description": "Override the write confirmation timeout in milliseconds."
+          },
+          {
+            "name": "--file",
+            "short": "-f",
+            "required": true,
+            "valueType": "json_file",
+            "description": "Path to the JSON batch description."
+          }
+        ],
+        "inputModes": [
+          "flags",
+          "file"
+        ]
+      },
+      "output": {
+        "success": {
+          "category": "automation_contract",
+          "contractTarget": "automation_contract:v1",
+          "shape": "object",
+          "exitCode": 0
+        },
+        "preview": {
+          "supported": true,
+          "contractTarget": "dry_run_preview:v1",
+          "shape": "object",
+          "exitCode": 0
+        },
+        "failure": {
+          "jsonWhenRequested": true,
+          "parseErrorsJsonWhenRequested": true,
+          "exitCodes": [
+            {
+              "code": 1,
+              "meaning": "generic_failure"
+            },
+            {
+              "code": 4,
+              "meaning": "auth_error"
+            },
+            {
+              "code": 5,
+              "meaning": "plan_limit"
+            },
+            {
+              "code": 6,
+              "meaning": "timeout_error"
+            }
+          ]
+        }
+      }
     },
     {
       "path": "linear issue list",
@@ -578,7 +1504,86 @@ stdout:
         "category": "read_only",
         "notes": null
       },
-      "notes": null
+      "notes": null,
+      "schema": {
+        "coverage": "curated_primary_inputs",
+        "arguments": [],
+        "flags": [
+          {
+            "name": "--json",
+            "short": "-j",
+            "required": false,
+            "valueType": "boolean",
+            "description": "Emit machine-readable JSON output."
+          },
+          {
+            "name": "--all",
+            "short": null,
+            "required": false,
+            "valueType": "boolean",
+            "description": "List all assignees and all states."
+          },
+          {
+            "name": "--state",
+            "short": "-s",
+            "required": false,
+            "valueType": "state_ref",
+            "description": "Filter by workflow state."
+          },
+          {
+            "name": "--query",
+            "short": null,
+            "required": false,
+            "valueType": "string",
+            "description": "Filter by search text."
+          },
+          {
+            "name": "--team",
+            "short": null,
+            "required": false,
+            "valueType": "team_key",
+            "description": "Resolve team-scoped filters and aliases."
+          },
+          {
+            "name": "--parent",
+            "short": null,
+            "required": false,
+            "valueType": "issue_ref",
+            "description": "Filter child issues of a parent issue."
+          }
+        ],
+        "inputModes": [
+          "flags"
+        ]
+      },
+      "output": {
+        "success": {
+          "category": "automation_contract",
+          "contractTarget": "automation_contract:v1",
+          "shape": "array",
+          "exitCode": 0
+        },
+        "preview": {
+          "supported": false,
+          "contractTarget": null,
+          "shape": null,
+          "exitCode": null
+        },
+        "failure": {
+          "jsonWhenRequested": true,
+          "parseErrorsJsonWhenRequested": true,
+          "exitCodes": [
+            {
+              "code": 1,
+              "meaning": "generic_failure"
+            },
+            {
+              "code": 4,
+              "meaning": "auth_error"
+            }
+          ]
+        }
+      }
     },
     {
       "path": "linear issue parent",
@@ -599,7 +1604,58 @@ stdout:
         "category": "read_only",
         "notes": null
       },
-      "notes": null
+      "notes": null,
+      "schema": {
+        "coverage": "curated_primary_inputs",
+        "arguments": [
+          {
+            "name": "issue",
+            "required": false,
+            "valueType": "issue_ref",
+            "description": "Issue identifier or internal ID. Defaults to the current issue."
+          }
+        ],
+        "flags": [
+          {
+            "name": "--json",
+            "short": "-j",
+            "required": false,
+            "valueType": "boolean",
+            "description": "Emit machine-readable JSON output."
+          }
+        ],
+        "inputModes": [
+          "flags"
+        ]
+      },
+      "output": {
+        "success": {
+          "category": "automation_contract",
+          "contractTarget": "automation_contract:v1",
+          "shape": "object",
+          "exitCode": 0
+        },
+        "preview": {
+          "supported": false,
+          "contractTarget": null,
+          "shape": null,
+          "exitCode": null
+        },
+        "failure": {
+          "jsonWhenRequested": true,
+          "parseErrorsJsonWhenRequested": true,
+          "exitCodes": [
+            {
+              "code": 1,
+              "meaning": "generic_failure"
+            },
+            {
+              "code": 4,
+              "meaning": "auth_error"
+            }
+          ]
+        }
+      }
     },
     {
       "path": "linear issue relation add",
@@ -620,7 +1676,88 @@ stdout:
         "category": "retry_safe_no_op",
         "notes": "Adding an existing relation succeeds with noOp: true."
       },
-      "notes": null
+      "notes": null,
+      "schema": {
+        "coverage": "curated_primary_inputs",
+        "arguments": [
+          {
+            "name": "issue",
+            "required": true,
+            "valueType": "issue_ref",
+            "description": "Source issue identifier or internal ID."
+          },
+          {
+            "name": "relationType",
+            "required": true,
+            "valueType": "relation_type",
+            "description": "Relation type keyword."
+          },
+          {
+            "name": "relatedIssue",
+            "required": true,
+            "valueType": "issue_ref",
+            "description": "Related issue identifier or internal ID."
+          }
+        ],
+        "flags": [
+          {
+            "name": "--json",
+            "short": "-j",
+            "required": false,
+            "valueType": "boolean",
+            "description": "Emit machine-readable JSON output."
+          },
+          {
+            "name": "--dry-run",
+            "short": null,
+            "required": false,
+            "valueType": "boolean",
+            "description": "Preview the command without mutating Linear."
+          },
+          {
+            "name": "--timeout-ms",
+            "short": null,
+            "required": false,
+            "valueType": "integer",
+            "description": "Override the write confirmation timeout in milliseconds."
+          }
+        ],
+        "inputModes": [
+          "flags"
+        ]
+      },
+      "output": {
+        "success": {
+          "category": "automation_contract",
+          "contractTarget": "automation_contract:v1",
+          "shape": "object",
+          "exitCode": 0
+        },
+        "preview": {
+          "supported": true,
+          "contractTarget": "dry_run_preview:v1",
+          "shape": "object",
+          "exitCode": 0
+        },
+        "failure": {
+          "jsonWhenRequested": true,
+          "parseErrorsJsonWhenRequested": true,
+          "exitCodes": [
+            {
+              "code": 1,
+              "meaning": "generic_failure"
+            },
+            {
+              "code": 4,
+              "meaning": "auth_error"
+            },
+            {
+              "code": 6,
+              "meaning": "timeout_error"
+            }
+          ]
+        }
+      }
     },
     {
       "path": "linear issue relation delete",
@@ -641,7 +1778,88 @@ stdout:
         "category": "retry_safe_no_op",
         "notes": "Deleting a missing relation succeeds with noOp: true."
       },
-      "notes": null
+      "notes": null,
+      "schema": {
+        "coverage": "curated_primary_inputs",
+        "arguments": [
+          {
+            "name": "issue",
+            "required": true,
+            "valueType": "issue_ref",
+            "description": "Source issue identifier or internal ID."
+          },
+          {
+            "name": "relationType",
+            "required": true,
+            "valueType": "relation_type",
+            "description": "Relation type keyword."
+          },
+          {
+            "name": "relatedIssue",
+            "required": true,
+            "valueType": "issue_ref",
+            "description": "Related issue identifier or internal ID."
+          }
+        ],
+        "flags": [
+          {
+            "name": "--json",
+            "short": "-j",
+            "required": false,
+            "valueType": "boolean",
+            "description": "Emit machine-readable JSON output."
+          },
+          {
+            "name": "--dry-run",
+            "short": null,
+            "required": false,
+            "valueType": "boolean",
+            "description": "Preview the command without mutating Linear."
+          },
+          {
+            "name": "--timeout-ms",
+            "short": null,
+            "required": false,
+            "valueType": "integer",
+            "description": "Override the write confirmation timeout in milliseconds."
+          }
+        ],
+        "inputModes": [
+          "flags"
+        ]
+      },
+      "output": {
+        "success": {
+          "category": "automation_contract",
+          "contractTarget": "automation_contract:v1",
+          "shape": "object",
+          "exitCode": 0
+        },
+        "preview": {
+          "supported": true,
+          "contractTarget": "dry_run_preview:v1",
+          "shape": "object",
+          "exitCode": 0
+        },
+        "failure": {
+          "jsonWhenRequested": true,
+          "parseErrorsJsonWhenRequested": true,
+          "exitCodes": [
+            {
+              "code": 1,
+              "meaning": "generic_failure"
+            },
+            {
+              "code": 4,
+              "meaning": "auth_error"
+            },
+            {
+              "code": 6,
+              "meaning": "timeout_error"
+            }
+          ]
+        }
+      }
     },
     {
       "path": "linear issue relation list",
@@ -662,7 +1880,58 @@ stdout:
         "category": "read_only",
         "notes": null
       },
-      "notes": null
+      "notes": null,
+      "schema": {
+        "coverage": "curated_primary_inputs",
+        "arguments": [
+          {
+            "name": "issue",
+            "required": false,
+            "valueType": "issue_ref",
+            "description": "Issue identifier or internal ID. Defaults to the current issue."
+          }
+        ],
+        "flags": [
+          {
+            "name": "--json",
+            "short": "-j",
+            "required": false,
+            "valueType": "boolean",
+            "description": "Emit machine-readable JSON output."
+          }
+        ],
+        "inputModes": [
+          "flags"
+        ]
+      },
+      "output": {
+        "success": {
+          "category": "automation_contract",
+          "contractTarget": "automation_contract:v1",
+          "shape": "array",
+          "exitCode": 0
+        },
+        "preview": {
+          "supported": false,
+          "contractTarget": null,
+          "shape": null,
+          "exitCode": null
+        },
+        "failure": {
+          "jsonWhenRequested": true,
+          "parseErrorsJsonWhenRequested": true,
+          "exitCodes": [
+            {
+              "code": 1,
+              "meaning": "generic_failure"
+            },
+            {
+              "code": 4,
+              "meaning": "auth_error"
+            }
+          ]
+        }
+      }
     },
     {
       "path": "linear issue start",
@@ -683,7 +1952,58 @@ stdout:
         "category": "conditional",
         "notes": "The dry-run is safe to repeat; the live path mutates both Linear state and local VCS state."
       },
-      "notes": null
+      "notes": null,
+      "schema": {
+        "coverage": "curated_primary_inputs",
+        "arguments": [
+          {
+            "name": "issue",
+            "required": false,
+            "valueType": "issue_ref",
+            "description": "Issue identifier or internal ID. Defaults to the current issue."
+          }
+        ],
+        "flags": [
+          {
+            "name": "--dry-run",
+            "short": null,
+            "required": false,
+            "valueType": "boolean",
+            "description": "Preview the command without mutating Linear."
+          }
+        ],
+        "inputModes": [
+          "flags"
+        ]
+      },
+      "output": {
+        "success": {
+          "category": "terminal_only",
+          "contractTarget": null,
+          "shape": "object",
+          "exitCode": 0
+        },
+        "preview": {
+          "supported": true,
+          "contractTarget": "dry_run_preview:v1",
+          "shape": "object",
+          "exitCode": 0
+        },
+        "failure": {
+          "jsonWhenRequested": false,
+          "parseErrorsJsonWhenRequested": false,
+          "exitCodes": [
+            {
+              "code": 1,
+              "meaning": "generic_failure"
+            },
+            {
+              "code": 4,
+              "meaning": "auth_error"
+            }
+          ]
+        }
+      }
     },
     {
       "path": "linear issue update",
@@ -704,7 +2024,106 @@ stdout:
         "category": "conditional",
         "notes": "Field-only updates are retry-safe; adding --comment makes the command non-idempotent."
       },
-      "notes": null
+      "notes": null,
+      "schema": {
+        "coverage": "curated_primary_inputs",
+        "arguments": [
+          {
+            "name": "issue",
+            "required": false,
+            "valueType": "issue_ref",
+            "description": "Issue identifier or internal ID. Defaults to the current issue."
+          }
+        ],
+        "flags": [
+          {
+            "name": "--json",
+            "short": "-j",
+            "required": false,
+            "valueType": "boolean",
+            "description": "Emit machine-readable JSON output."
+          },
+          {
+            "name": "--dry-run",
+            "short": null,
+            "required": false,
+            "valueType": "boolean",
+            "description": "Preview the command without mutating Linear."
+          },
+          {
+            "name": "--timeout-ms",
+            "short": null,
+            "required": false,
+            "valueType": "integer",
+            "description": "Override the write confirmation timeout in milliseconds."
+          },
+          {
+            "name": "--state",
+            "short": null,
+            "required": false,
+            "valueType": "state_ref",
+            "description": "Target workflow state."
+          },
+          {
+            "name": "--comment",
+            "short": null,
+            "required": false,
+            "valueType": "string",
+            "description": "Comment to append after the update."
+          },
+          {
+            "name": "--description",
+            "short": "-d",
+            "required": false,
+            "valueType": "string",
+            "description": "Replacement description text."
+          },
+          {
+            "name": "--description-file",
+            "short": null,
+            "required": false,
+            "valueType": "path",
+            "description": "Read the replacement description from a file."
+          }
+        ],
+        "inputModes": [
+          "flags",
+          "stdin",
+          "file"
+        ]
+      },
+      "output": {
+        "success": {
+          "category": "automation_contract",
+          "contractTarget": "automation_contract:v1",
+          "shape": "object",
+          "exitCode": 0
+        },
+        "preview": {
+          "supported": true,
+          "contractTarget": "dry_run_preview:v1",
+          "shape": "object",
+          "exitCode": 0
+        },
+        "failure": {
+          "jsonWhenRequested": true,
+          "parseErrorsJsonWhenRequested": true,
+          "exitCodes": [
+            {
+              "code": 1,
+              "meaning": "generic_failure"
+            },
+            {
+              "code": 4,
+              "meaning": "auth_error"
+            },
+            {
+              "code": 6,
+              "meaning": "timeout_error"
+            }
+          ]
+        }
+      }
     },
     {
       "path": "linear issue view",
@@ -725,7 +2144,65 @@ stdout:
         "category": "read_only",
         "notes": null
       },
-      "notes": null
+      "notes": null,
+      "schema": {
+        "coverage": "curated_primary_inputs",
+        "arguments": [
+          {
+            "name": "issue",
+            "required": false,
+            "valueType": "issue_ref",
+            "description": "Issue identifier or internal ID. Defaults to the current issue."
+          }
+        ],
+        "flags": [
+          {
+            "name": "--json",
+            "short": "-j",
+            "required": false,
+            "valueType": "boolean",
+            "description": "Emit machine-readable JSON output."
+          },
+          {
+            "name": "--no-comments",
+            "short": null,
+            "required": false,
+            "valueType": "boolean",
+            "description": "Skip raw comments in JSON output."
+          }
+        ],
+        "inputModes": [
+          "flags"
+        ]
+      },
+      "output": {
+        "success": {
+          "category": "automation_contract",
+          "contractTarget": "automation_contract:v1",
+          "shape": "object",
+          "exitCode": 0
+        },
+        "preview": {
+          "supported": false,
+          "contractTarget": null,
+          "shape": null,
+          "exitCode": null
+        },
+        "failure": {
+          "jsonWhenRequested": true,
+          "parseErrorsJsonWhenRequested": true,
+          "exitCodes": [
+            {
+              "code": 1,
+              "meaning": "generic_failure"
+            },
+            {
+              "code": 4,
+              "meaning": "auth_error"
+            }
+          ]
+        }
+      }
     },
     {
       "path": "linear label list",
@@ -746,7 +2223,51 @@ stdout:
         "category": "read_only",
         "notes": null
       },
-      "notes": null
+      "notes": null,
+      "schema": {
+        "coverage": "curated_primary_inputs",
+        "arguments": [],
+        "flags": [
+          {
+            "name": "--json",
+            "short": "-j",
+            "required": false,
+            "valueType": "boolean",
+            "description": "Emit machine-readable JSON output."
+          }
+        ],
+        "inputModes": [
+          "flags"
+        ]
+      },
+      "output": {
+        "success": {
+          "category": "automation_contract",
+          "contractTarget": "automation_contract:v4",
+          "shape": "array",
+          "exitCode": 0
+        },
+        "preview": {
+          "supported": false,
+          "contractTarget": null,
+          "shape": null,
+          "exitCode": null
+        },
+        "failure": {
+          "jsonWhenRequested": true,
+          "parseErrorsJsonWhenRequested": true,
+          "exitCodes": [
+            {
+              "code": 1,
+              "meaning": "generic_failure"
+            },
+            {
+              "code": 4,
+              "meaning": "auth_error"
+            }
+          ]
+        }
+      }
     },
     {
       "path": "linear milestone create",
@@ -767,7 +2288,55 @@ stdout:
         "category": "non_idempotent",
         "notes": null
       },
-      "notes": null
+      "notes": null,
+      "schema": {
+        "coverage": "curated_primary_inputs",
+        "arguments": [],
+        "flags": [
+          {
+            "name": "--dry-run",
+            "short": null,
+            "required": false,
+            "valueType": "boolean",
+            "description": "Preview the command without mutating Linear."
+          }
+        ],
+        "inputModes": [
+          "flags"
+        ]
+      },
+      "output": {
+        "success": {
+          "category": "terminal_only",
+          "contractTarget": null,
+          "shape": "object",
+          "exitCode": 0
+        },
+        "preview": {
+          "supported": true,
+          "contractTarget": "dry_run_preview:v1",
+          "shape": "object",
+          "exitCode": 0
+        },
+        "failure": {
+          "jsonWhenRequested": false,
+          "parseErrorsJsonWhenRequested": false,
+          "exitCodes": [
+            {
+              "code": 1,
+              "meaning": "generic_failure"
+            },
+            {
+              "code": 4,
+              "meaning": "auth_error"
+            },
+            {
+              "code": 5,
+              "meaning": "plan_limit"
+            }
+          ]
+        }
+      }
     },
     {
       "path": "linear milestone delete",
@@ -788,7 +2357,58 @@ stdout:
         "category": "destructive",
         "notes": null
       },
-      "notes": null
+      "notes": null,
+      "schema": {
+        "coverage": "curated_primary_inputs",
+        "arguments": [],
+        "flags": [
+          {
+            "name": "--dry-run",
+            "short": null,
+            "required": false,
+            "valueType": "boolean",
+            "description": "Preview the command without mutating Linear."
+          },
+          {
+            "name": "--yes",
+            "short": null,
+            "required": false,
+            "valueType": "boolean",
+            "description": "Skip the confirmation prompt."
+          }
+        ],
+        "inputModes": [
+          "flags"
+        ]
+      },
+      "output": {
+        "success": {
+          "category": "terminal_only",
+          "contractTarget": null,
+          "shape": "object",
+          "exitCode": 0
+        },
+        "preview": {
+          "supported": true,
+          "contractTarget": "dry_run_preview:v1",
+          "shape": "object",
+          "exitCode": 0
+        },
+        "failure": {
+          "jsonWhenRequested": false,
+          "parseErrorsJsonWhenRequested": false,
+          "exitCodes": [
+            {
+              "code": 1,
+              "meaning": "generic_failure"
+            },
+            {
+              "code": 4,
+              "meaning": "auth_error"
+            }
+          ]
+        }
+      }
     },
     {
       "path": "linear milestone list",
@@ -809,7 +2429,51 @@ stdout:
         "category": "read_only",
         "notes": null
       },
-      "notes": null
+      "notes": null,
+      "schema": {
+        "coverage": "curated_primary_inputs",
+        "arguments": [],
+        "flags": [
+          {
+            "name": "--json",
+            "short": "-j",
+            "required": false,
+            "valueType": "boolean",
+            "description": "Emit machine-readable JSON output."
+          }
+        ],
+        "inputModes": [
+          "flags"
+        ]
+      },
+      "output": {
+        "success": {
+          "category": "automation_contract",
+          "contractTarget": "automation_contract:v2",
+          "shape": "array",
+          "exitCode": 0
+        },
+        "preview": {
+          "supported": false,
+          "contractTarget": null,
+          "shape": null,
+          "exitCode": null
+        },
+        "failure": {
+          "jsonWhenRequested": true,
+          "parseErrorsJsonWhenRequested": true,
+          "exitCodes": [
+            {
+              "code": 1,
+              "meaning": "generic_failure"
+            },
+            {
+              "code": 4,
+              "meaning": "auth_error"
+            }
+          ]
+        }
+      }
     },
     {
       "path": "linear milestone update",
@@ -830,7 +2494,51 @@ stdout:
         "category": "retry_safe_update",
         "notes": null
       },
-      "notes": null
+      "notes": null,
+      "schema": {
+        "coverage": "curated_primary_inputs",
+        "arguments": [],
+        "flags": [
+          {
+            "name": "--dry-run",
+            "short": null,
+            "required": false,
+            "valueType": "boolean",
+            "description": "Preview the command without mutating Linear."
+          }
+        ],
+        "inputModes": [
+          "flags"
+        ]
+      },
+      "output": {
+        "success": {
+          "category": "terminal_only",
+          "contractTarget": null,
+          "shape": "object",
+          "exitCode": 0
+        },
+        "preview": {
+          "supported": true,
+          "contractTarget": "dry_run_preview:v1",
+          "shape": "object",
+          "exitCode": 0
+        },
+        "failure": {
+          "jsonWhenRequested": false,
+          "parseErrorsJsonWhenRequested": false,
+          "exitCodes": [
+            {
+              "code": 1,
+              "meaning": "generic_failure"
+            },
+            {
+              "code": 4,
+              "meaning": "auth_error"
+            }
+          ]
+        }
+      }
     },
     {
       "path": "linear milestone view",
@@ -851,7 +2559,58 @@ stdout:
         "category": "read_only",
         "notes": null
       },
-      "notes": null
+      "notes": null,
+      "schema": {
+        "coverage": "curated_primary_inputs",
+        "arguments": [
+          {
+            "name": "milestone",
+            "required": true,
+            "valueType": "milestone_ref",
+            "description": "Milestone ID, slug, or name."
+          }
+        ],
+        "flags": [
+          {
+            "name": "--json",
+            "short": "-j",
+            "required": false,
+            "valueType": "boolean",
+            "description": "Emit machine-readable JSON output."
+          }
+        ],
+        "inputModes": [
+          "flags"
+        ]
+      },
+      "output": {
+        "success": {
+          "category": "automation_contract",
+          "contractTarget": "automation_contract:v2",
+          "shape": "object",
+          "exitCode": 0
+        },
+        "preview": {
+          "supported": false,
+          "contractTarget": null,
+          "shape": null,
+          "exitCode": null
+        },
+        "failure": {
+          "jsonWhenRequested": true,
+          "parseErrorsJsonWhenRequested": true,
+          "exitCodes": [
+            {
+              "code": 1,
+              "meaning": "generic_failure"
+            },
+            {
+              "code": 4,
+              "meaning": "auth_error"
+            }
+          ]
+        }
+      }
     },
     {
       "path": "linear notification archive",
@@ -872,7 +2631,58 @@ stdout:
         "category": "retry_safe_no_op",
         "notes": "Archiving an already-archived notification succeeds with noOp: true."
       },
-      "notes": null
+      "notes": null,
+      "schema": {
+        "coverage": "curated_primary_inputs",
+        "arguments": [
+          {
+            "name": "notification",
+            "required": true,
+            "valueType": "notification_id",
+            "description": "Notification ID."
+          }
+        ],
+        "flags": [
+          {
+            "name": "--json",
+            "short": "-j",
+            "required": false,
+            "valueType": "boolean",
+            "description": "Emit machine-readable JSON output."
+          }
+        ],
+        "inputModes": [
+          "flags"
+        ]
+      },
+      "output": {
+        "success": {
+          "category": "curated_json",
+          "contractTarget": null,
+          "shape": "object",
+          "exitCode": 0
+        },
+        "preview": {
+          "supported": false,
+          "contractTarget": null,
+          "shape": null,
+          "exitCode": null
+        },
+        "failure": {
+          "jsonWhenRequested": false,
+          "parseErrorsJsonWhenRequested": false,
+          "exitCodes": [
+            {
+              "code": 1,
+              "meaning": "generic_failure"
+            },
+            {
+              "code": 4,
+              "meaning": "auth_error"
+            }
+          ]
+        }
+      }
     },
     {
       "path": "linear notification count",
@@ -893,7 +2703,51 @@ stdout:
         "category": "read_only",
         "notes": null
       },
-      "notes": null
+      "notes": null,
+      "schema": {
+        "coverage": "curated_primary_inputs",
+        "arguments": [],
+        "flags": [
+          {
+            "name": "--json",
+            "short": "-j",
+            "required": false,
+            "valueType": "boolean",
+            "description": "Emit machine-readable JSON output."
+          }
+        ],
+        "inputModes": [
+          "flags"
+        ]
+      },
+      "output": {
+        "success": {
+          "category": "automation_contract",
+          "contractTarget": "automation_contract:v3",
+          "shape": "object",
+          "exitCode": 0
+        },
+        "preview": {
+          "supported": false,
+          "contractTarget": null,
+          "shape": null,
+          "exitCode": null
+        },
+        "failure": {
+          "jsonWhenRequested": true,
+          "parseErrorsJsonWhenRequested": true,
+          "exitCodes": [
+            {
+              "code": 1,
+              "meaning": "generic_failure"
+            },
+            {
+              "code": 4,
+              "meaning": "auth_error"
+            }
+          ]
+        }
+      }
     },
     {
       "path": "linear notification list",
@@ -914,7 +2768,51 @@ stdout:
         "category": "read_only",
         "notes": null
       },
-      "notes": null
+      "notes": null,
+      "schema": {
+        "coverage": "curated_primary_inputs",
+        "arguments": [],
+        "flags": [
+          {
+            "name": "--json",
+            "short": "-j",
+            "required": false,
+            "valueType": "boolean",
+            "description": "Emit machine-readable JSON output."
+          }
+        ],
+        "inputModes": [
+          "flags"
+        ]
+      },
+      "output": {
+        "success": {
+          "category": "automation_contract",
+          "contractTarget": "automation_contract:v3",
+          "shape": "array",
+          "exitCode": 0
+        },
+        "preview": {
+          "supported": false,
+          "contractTarget": null,
+          "shape": null,
+          "exitCode": null
+        },
+        "failure": {
+          "jsonWhenRequested": true,
+          "parseErrorsJsonWhenRequested": true,
+          "exitCodes": [
+            {
+              "code": 1,
+              "meaning": "generic_failure"
+            },
+            {
+              "code": 4,
+              "meaning": "auth_error"
+            }
+          ]
+        }
+      }
     },
     {
       "path": "linear notification read",
@@ -935,7 +2833,58 @@ stdout:
         "category": "retry_safe_no_op",
         "notes": "Reading an already-read notification succeeds with noOp: true."
       },
-      "notes": null
+      "notes": null,
+      "schema": {
+        "coverage": "curated_primary_inputs",
+        "arguments": [
+          {
+            "name": "notification",
+            "required": true,
+            "valueType": "notification_id",
+            "description": "Notification ID."
+          }
+        ],
+        "flags": [
+          {
+            "name": "--json",
+            "short": "-j",
+            "required": false,
+            "valueType": "boolean",
+            "description": "Emit machine-readable JSON output."
+          }
+        ],
+        "inputModes": [
+          "flags"
+        ]
+      },
+      "output": {
+        "success": {
+          "category": "curated_json",
+          "contractTarget": null,
+          "shape": "object",
+          "exitCode": 0
+        },
+        "preview": {
+          "supported": false,
+          "contractTarget": null,
+          "shape": null,
+          "exitCode": null
+        },
+        "failure": {
+          "jsonWhenRequested": false,
+          "parseErrorsJsonWhenRequested": false,
+          "exitCodes": [
+            {
+              "code": 1,
+              "meaning": "generic_failure"
+            },
+            {
+              "code": 4,
+              "meaning": "auth_error"
+            }
+          ]
+        }
+      }
     },
     {
       "path": "linear project create",
@@ -956,7 +2905,62 @@ stdout:
         "category": "non_idempotent",
         "notes": null
       },
-      "notes": null
+      "notes": null,
+      "schema": {
+        "coverage": "curated_primary_inputs",
+        "arguments": [],
+        "flags": [
+          {
+            "name": "--json",
+            "short": "-j",
+            "required": false,
+            "valueType": "boolean",
+            "description": "Emit machine-readable JSON output."
+          },
+          {
+            "name": "--dry-run",
+            "short": null,
+            "required": false,
+            "valueType": "boolean",
+            "description": "Preview the command without mutating Linear."
+          }
+        ],
+        "inputModes": [
+          "flags"
+        ]
+      },
+      "output": {
+        "success": {
+          "category": "curated_json",
+          "contractTarget": null,
+          "shape": "object",
+          "exitCode": 0
+        },
+        "preview": {
+          "supported": true,
+          "contractTarget": "dry_run_preview:v1",
+          "shape": "object",
+          "exitCode": 0
+        },
+        "failure": {
+          "jsonWhenRequested": false,
+          "parseErrorsJsonWhenRequested": false,
+          "exitCodes": [
+            {
+              "code": 1,
+              "meaning": "generic_failure"
+            },
+            {
+              "code": 4,
+              "meaning": "auth_error"
+            },
+            {
+              "code": 5,
+              "meaning": "plan_limit"
+            }
+          ]
+        }
+      }
     },
     {
       "path": "linear project delete",
@@ -977,7 +2981,65 @@ stdout:
         "category": "destructive",
         "notes": null
       },
-      "notes": null
+      "notes": null,
+      "schema": {
+        "coverage": "curated_primary_inputs",
+        "arguments": [
+          {
+            "name": "project",
+            "required": true,
+            "valueType": "project_ref",
+            "description": "Project ID or slug."
+          }
+        ],
+        "flags": [
+          {
+            "name": "--dry-run",
+            "short": null,
+            "required": false,
+            "valueType": "boolean",
+            "description": "Preview the command without mutating Linear."
+          },
+          {
+            "name": "--yes",
+            "short": null,
+            "required": false,
+            "valueType": "boolean",
+            "description": "Skip the confirmation prompt."
+          }
+        ],
+        "inputModes": [
+          "flags"
+        ]
+      },
+      "output": {
+        "success": {
+          "category": "terminal_only",
+          "contractTarget": null,
+          "shape": "object",
+          "exitCode": 0
+        },
+        "preview": {
+          "supported": true,
+          "contractTarget": "dry_run_preview:v1",
+          "shape": "object",
+          "exitCode": 0
+        },
+        "failure": {
+          "jsonWhenRequested": false,
+          "parseErrorsJsonWhenRequested": false,
+          "exitCodes": [
+            {
+              "code": 1,
+              "meaning": "generic_failure"
+            },
+            {
+              "code": 4,
+              "meaning": "auth_error"
+            }
+          ]
+        }
+      }
     },
     {
       "path": "linear project label add",
@@ -998,7 +3060,51 @@ stdout:
         "category": "retry_safe_no_op",
         "notes": "Adding an already-attached label succeeds with changed: false."
       },
-      "notes": null
+      "notes": null,
+      "schema": {
+        "coverage": "curated_primary_inputs",
+        "arguments": [],
+        "flags": [
+          {
+            "name": "--json",
+            "short": "-j",
+            "required": false,
+            "valueType": "boolean",
+            "description": "Emit machine-readable JSON output."
+          }
+        ],
+        "inputModes": [
+          "flags"
+        ]
+      },
+      "output": {
+        "success": {
+          "category": "curated_json",
+          "contractTarget": null,
+          "shape": "object",
+          "exitCode": 0
+        },
+        "preview": {
+          "supported": false,
+          "contractTarget": null,
+          "shape": null,
+          "exitCode": null
+        },
+        "failure": {
+          "jsonWhenRequested": false,
+          "parseErrorsJsonWhenRequested": false,
+          "exitCodes": [
+            {
+              "code": 1,
+              "meaning": "generic_failure"
+            },
+            {
+              "code": 4,
+              "meaning": "auth_error"
+            }
+          ]
+        }
+      }
     },
     {
       "path": "linear project label remove",
@@ -1019,7 +3125,51 @@ stdout:
         "category": "retry_safe_no_op",
         "notes": "Removing a missing label succeeds with changed: false."
       },
-      "notes": null
+      "notes": null,
+      "schema": {
+        "coverage": "curated_primary_inputs",
+        "arguments": [],
+        "flags": [
+          {
+            "name": "--json",
+            "short": "-j",
+            "required": false,
+            "valueType": "boolean",
+            "description": "Emit machine-readable JSON output."
+          }
+        ],
+        "inputModes": [
+          "flags"
+        ]
+      },
+      "output": {
+        "success": {
+          "category": "curated_json",
+          "contractTarget": null,
+          "shape": "object",
+          "exitCode": 0
+        },
+        "preview": {
+          "supported": false,
+          "contractTarget": null,
+          "shape": null,
+          "exitCode": null
+        },
+        "failure": {
+          "jsonWhenRequested": false,
+          "parseErrorsJsonWhenRequested": false,
+          "exitCodes": [
+            {
+              "code": 1,
+              "meaning": "generic_failure"
+            },
+            {
+              "code": 4,
+              "meaning": "auth_error"
+            }
+          ]
+        }
+      }
     },
     {
       "path": "linear project list",
@@ -1040,7 +3190,58 @@ stdout:
         "category": "read_only",
         "notes": null
       },
-      "notes": null
+      "notes": null,
+      "schema": {
+        "coverage": "curated_primary_inputs",
+        "arguments": [],
+        "flags": [
+          {
+            "name": "--json",
+            "short": "-j",
+            "required": false,
+            "valueType": "boolean",
+            "description": "Emit machine-readable JSON output."
+          },
+          {
+            "name": "--team",
+            "short": null,
+            "required": false,
+            "valueType": "team_key",
+            "description": "Filter by team key."
+          }
+        ],
+        "inputModes": [
+          "flags"
+        ]
+      },
+      "output": {
+        "success": {
+          "category": "automation_contract",
+          "contractTarget": "automation_contract:v2",
+          "shape": "array",
+          "exitCode": 0
+        },
+        "preview": {
+          "supported": false,
+          "contractTarget": null,
+          "shape": null,
+          "exitCode": null
+        },
+        "failure": {
+          "jsonWhenRequested": true,
+          "parseErrorsJsonWhenRequested": true,
+          "exitCodes": [
+            {
+              "code": 1,
+              "meaning": "generic_failure"
+            },
+            {
+              "code": 4,
+              "meaning": "auth_error"
+            }
+          ]
+        }
+      }
     },
     {
       "path": "linear project update",
@@ -1061,7 +3262,51 @@ stdout:
         "category": "retry_safe_update",
         "notes": null
       },
-      "notes": null
+      "notes": null,
+      "schema": {
+        "coverage": "curated_primary_inputs",
+        "arguments": [],
+        "flags": [
+          {
+            "name": "--dry-run",
+            "short": null,
+            "required": false,
+            "valueType": "boolean",
+            "description": "Preview the command without mutating Linear."
+          }
+        ],
+        "inputModes": [
+          "flags"
+        ]
+      },
+      "output": {
+        "success": {
+          "category": "terminal_only",
+          "contractTarget": null,
+          "shape": "object",
+          "exitCode": 0
+        },
+        "preview": {
+          "supported": true,
+          "contractTarget": "dry_run_preview:v1",
+          "shape": "object",
+          "exitCode": 0
+        },
+        "failure": {
+          "jsonWhenRequested": false,
+          "parseErrorsJsonWhenRequested": false,
+          "exitCodes": [
+            {
+              "code": 1,
+              "meaning": "generic_failure"
+            },
+            {
+              "code": 4,
+              "meaning": "auth_error"
+            }
+          ]
+        }
+      }
     },
     {
       "path": "linear project view",
@@ -1082,7 +3327,58 @@ stdout:
         "category": "read_only",
         "notes": null
       },
-      "notes": null
+      "notes": null,
+      "schema": {
+        "coverage": "curated_primary_inputs",
+        "arguments": [
+          {
+            "name": "project",
+            "required": true,
+            "valueType": "project_ref",
+            "description": "Project ID or slug."
+          }
+        ],
+        "flags": [
+          {
+            "name": "--json",
+            "short": "-j",
+            "required": false,
+            "valueType": "boolean",
+            "description": "Emit machine-readable JSON output."
+          }
+        ],
+        "inputModes": [
+          "flags"
+        ]
+      },
+      "output": {
+        "success": {
+          "category": "automation_contract",
+          "contractTarget": "automation_contract:v2",
+          "shape": "object",
+          "exitCode": 0
+        },
+        "preview": {
+          "supported": false,
+          "contractTarget": null,
+          "shape": null,
+          "exitCode": null
+        },
+        "failure": {
+          "jsonWhenRequested": true,
+          "parseErrorsJsonWhenRequested": true,
+          "exitCodes": [
+            {
+              "code": 1,
+              "meaning": "generic_failure"
+            },
+            {
+              "code": 4,
+              "meaning": "auth_error"
+            }
+          ]
+        }
+      }
     },
     {
       "path": "linear project-label list",
@@ -1103,7 +3399,51 @@ stdout:
         "category": "read_only",
         "notes": null
       },
-      "notes": null
+      "notes": null,
+      "schema": {
+        "coverage": "curated_primary_inputs",
+        "arguments": [],
+        "flags": [
+          {
+            "name": "--json",
+            "short": "-j",
+            "required": false,
+            "valueType": "boolean",
+            "description": "Emit machine-readable JSON output."
+          }
+        ],
+        "inputModes": [
+          "flags"
+        ]
+      },
+      "output": {
+        "success": {
+          "category": "automation_contract",
+          "contractTarget": "automation_contract:v4",
+          "shape": "array",
+          "exitCode": 0
+        },
+        "preview": {
+          "supported": false,
+          "contractTarget": null,
+          "shape": null,
+          "exitCode": null
+        },
+        "failure": {
+          "jsonWhenRequested": true,
+          "parseErrorsJsonWhenRequested": true,
+          "exitCodes": [
+            {
+              "code": 1,
+              "meaning": "generic_failure"
+            },
+            {
+              "code": 4,
+              "meaning": "auth_error"
+            }
+          ]
+        }
+      }
     },
     {
       "path": "linear team list",
@@ -1124,7 +3464,51 @@ stdout:
         "category": "read_only",
         "notes": null
       },
-      "notes": null
+      "notes": null,
+      "schema": {
+        "coverage": "curated_primary_inputs",
+        "arguments": [],
+        "flags": [
+          {
+            "name": "--json",
+            "short": "-j",
+            "required": false,
+            "valueType": "boolean",
+            "description": "Emit machine-readable JSON output."
+          }
+        ],
+        "inputModes": [
+          "flags"
+        ]
+      },
+      "output": {
+        "success": {
+          "category": "automation_contract",
+          "contractTarget": "automation_contract:v4",
+          "shape": "array",
+          "exitCode": 0
+        },
+        "preview": {
+          "supported": false,
+          "contractTarget": null,
+          "shape": null,
+          "exitCode": null
+        },
+        "failure": {
+          "jsonWhenRequested": true,
+          "parseErrorsJsonWhenRequested": true,
+          "exitCodes": [
+            {
+              "code": 1,
+              "meaning": "generic_failure"
+            },
+            {
+              "code": 4,
+              "meaning": "auth_error"
+            }
+          ]
+        }
+      }
     },
     {
       "path": "linear team members",
@@ -1145,7 +3529,58 @@ stdout:
         "category": "read_only",
         "notes": null
       },
-      "notes": null
+      "notes": null,
+      "schema": {
+        "coverage": "curated_primary_inputs",
+        "arguments": [
+          {
+            "name": "team",
+            "required": false,
+            "valueType": "team_key",
+            "description": "Team key. Defaults to the configured current team."
+          }
+        ],
+        "flags": [
+          {
+            "name": "--json",
+            "short": "-j",
+            "required": false,
+            "valueType": "boolean",
+            "description": "Emit machine-readable JSON output."
+          }
+        ],
+        "inputModes": [
+          "flags"
+        ]
+      },
+      "output": {
+        "success": {
+          "category": "automation_contract",
+          "contractTarget": "automation_contract:v1",
+          "shape": "object",
+          "exitCode": 0
+        },
+        "preview": {
+          "supported": false,
+          "contractTarget": null,
+          "shape": null,
+          "exitCode": null
+        },
+        "failure": {
+          "jsonWhenRequested": true,
+          "parseErrorsJsonWhenRequested": true,
+          "exitCodes": [
+            {
+              "code": 1,
+              "meaning": "generic_failure"
+            },
+            {
+              "code": 4,
+              "meaning": "auth_error"
+            }
+          ]
+        }
+      }
     },
     {
       "path": "linear team view",
@@ -1166,7 +3601,58 @@ stdout:
         "category": "read_only",
         "notes": null
       },
-      "notes": null
+      "notes": null,
+      "schema": {
+        "coverage": "curated_primary_inputs",
+        "arguments": [
+          {
+            "name": "team",
+            "required": false,
+            "valueType": "team_key",
+            "description": "Team key. Defaults to the configured current team."
+          }
+        ],
+        "flags": [
+          {
+            "name": "--json",
+            "short": "-j",
+            "required": false,
+            "valueType": "boolean",
+            "description": "Emit machine-readable JSON output."
+          }
+        ],
+        "inputModes": [
+          "flags"
+        ]
+      },
+      "output": {
+        "success": {
+          "category": "automation_contract",
+          "contractTarget": "automation_contract:v4",
+          "shape": "object",
+          "exitCode": 0
+        },
+        "preview": {
+          "supported": false,
+          "contractTarget": null,
+          "shape": null,
+          "exitCode": null
+        },
+        "failure": {
+          "jsonWhenRequested": true,
+          "parseErrorsJsonWhenRequested": true,
+          "exitCodes": [
+            {
+              "code": 1,
+              "meaning": "generic_failure"
+            },
+            {
+              "code": 4,
+              "meaning": "auth_error"
+            }
+          ]
+        }
+      }
     },
     {
       "path": "linear user list",
@@ -1187,7 +3673,51 @@ stdout:
         "category": "read_only",
         "notes": null
       },
-      "notes": null
+      "notes": null,
+      "schema": {
+        "coverage": "curated_primary_inputs",
+        "arguments": [],
+        "flags": [
+          {
+            "name": "--json",
+            "short": "-j",
+            "required": false,
+            "valueType": "boolean",
+            "description": "Emit machine-readable JSON output."
+          }
+        ],
+        "inputModes": [
+          "flags"
+        ]
+      },
+      "output": {
+        "success": {
+          "category": "automation_contract",
+          "contractTarget": "automation_contract:v4",
+          "shape": "array",
+          "exitCode": 0
+        },
+        "preview": {
+          "supported": false,
+          "contractTarget": null,
+          "shape": null,
+          "exitCode": null
+        },
+        "failure": {
+          "jsonWhenRequested": true,
+          "parseErrorsJsonWhenRequested": true,
+          "exitCodes": [
+            {
+              "code": 1,
+              "meaning": "generic_failure"
+            },
+            {
+              "code": 4,
+              "meaning": "auth_error"
+            }
+          ]
+        }
+      }
     },
     {
       "path": "linear user view",
@@ -1208,7 +3738,58 @@ stdout:
         "category": "read_only",
         "notes": null
       },
-      "notes": null
+      "notes": null,
+      "schema": {
+        "coverage": "curated_primary_inputs",
+        "arguments": [
+          {
+            "name": "user",
+            "required": true,
+            "valueType": "user_ref",
+            "description": "User ID, email, or username."
+          }
+        ],
+        "flags": [
+          {
+            "name": "--json",
+            "short": "-j",
+            "required": false,
+            "valueType": "boolean",
+            "description": "Emit machine-readable JSON output."
+          }
+        ],
+        "inputModes": [
+          "flags"
+        ]
+      },
+      "output": {
+        "success": {
+          "category": "automation_contract",
+          "contractTarget": "automation_contract:v4",
+          "shape": "object",
+          "exitCode": 0
+        },
+        "preview": {
+          "supported": false,
+          "contractTarget": null,
+          "shape": null,
+          "exitCode": null
+        },
+        "failure": {
+          "jsonWhenRequested": true,
+          "parseErrorsJsonWhenRequested": true,
+          "exitCodes": [
+            {
+              "code": 1,
+              "meaning": "generic_failure"
+            },
+            {
+              "code": 4,
+              "meaning": "auth_error"
+            }
+          ]
+        }
+      }
     },
     {
       "path": "linear webhook create",
@@ -1229,7 +3810,62 @@ stdout:
         "category": "non_idempotent",
         "notes": null
       },
-      "notes": null
+      "notes": null,
+      "schema": {
+        "coverage": "curated_primary_inputs",
+        "arguments": [],
+        "flags": [
+          {
+            "name": "--json",
+            "short": "-j",
+            "required": false,
+            "valueType": "boolean",
+            "description": "Emit machine-readable JSON output."
+          },
+          {
+            "name": "--dry-run",
+            "short": null,
+            "required": false,
+            "valueType": "boolean",
+            "description": "Preview the command without mutating Linear."
+          }
+        ],
+        "inputModes": [
+          "flags"
+        ]
+      },
+      "output": {
+        "success": {
+          "category": "curated_json",
+          "contractTarget": null,
+          "shape": "object",
+          "exitCode": 0
+        },
+        "preview": {
+          "supported": true,
+          "contractTarget": "dry_run_preview:v1",
+          "shape": "object",
+          "exitCode": 0
+        },
+        "failure": {
+          "jsonWhenRequested": false,
+          "parseErrorsJsonWhenRequested": false,
+          "exitCodes": [
+            {
+              "code": 1,
+              "meaning": "generic_failure"
+            },
+            {
+              "code": 4,
+              "meaning": "auth_error"
+            },
+            {
+              "code": 5,
+              "meaning": "plan_limit"
+            }
+          ]
+        }
+      }
     },
     {
       "path": "linear webhook delete",
@@ -1250,7 +3886,72 @@ stdout:
         "category": "destructive",
         "notes": null
       },
-      "notes": null
+      "notes": null,
+      "schema": {
+        "coverage": "curated_primary_inputs",
+        "arguments": [
+          {
+            "name": "webhook",
+            "required": true,
+            "valueType": "webhook_id",
+            "description": "Webhook ID."
+          }
+        ],
+        "flags": [
+          {
+            "name": "--json",
+            "short": "-j",
+            "required": false,
+            "valueType": "boolean",
+            "description": "Emit machine-readable JSON output."
+          },
+          {
+            "name": "--dry-run",
+            "short": null,
+            "required": false,
+            "valueType": "boolean",
+            "description": "Preview the command without mutating Linear."
+          },
+          {
+            "name": "--yes",
+            "short": null,
+            "required": false,
+            "valueType": "boolean",
+            "description": "Skip the confirmation prompt."
+          }
+        ],
+        "inputModes": [
+          "flags"
+        ]
+      },
+      "output": {
+        "success": {
+          "category": "curated_json",
+          "contractTarget": null,
+          "shape": "object",
+          "exitCode": 0
+        },
+        "preview": {
+          "supported": true,
+          "contractTarget": "dry_run_preview:v1",
+          "shape": "object",
+          "exitCode": 0
+        },
+        "failure": {
+          "jsonWhenRequested": false,
+          "parseErrorsJsonWhenRequested": false,
+          "exitCodes": [
+            {
+              "code": 1,
+              "meaning": "generic_failure"
+            },
+            {
+              "code": 4,
+              "meaning": "auth_error"
+            }
+          ]
+        }
+      }
     },
     {
       "path": "linear webhook list",
@@ -1271,7 +3972,51 @@ stdout:
         "category": "read_only",
         "notes": null
       },
-      "notes": null
+      "notes": null,
+      "schema": {
+        "coverage": "curated_primary_inputs",
+        "arguments": [],
+        "flags": [
+          {
+            "name": "--json",
+            "short": "-j",
+            "required": false,
+            "valueType": "boolean",
+            "description": "Emit machine-readable JSON output."
+          }
+        ],
+        "inputModes": [
+          "flags"
+        ]
+      },
+      "output": {
+        "success": {
+          "category": "automation_contract",
+          "contractTarget": "automation_contract:v3",
+          "shape": "array",
+          "exitCode": 0
+        },
+        "preview": {
+          "supported": false,
+          "contractTarget": null,
+          "shape": null,
+          "exitCode": null
+        },
+        "failure": {
+          "jsonWhenRequested": true,
+          "parseErrorsJsonWhenRequested": true,
+          "exitCodes": [
+            {
+              "code": 1,
+              "meaning": "generic_failure"
+            },
+            {
+              "code": 4,
+              "meaning": "auth_error"
+            }
+          ]
+        }
+      }
     },
     {
       "path": "linear webhook update",
@@ -1292,7 +4037,58 @@ stdout:
         "category": "retry_safe_update",
         "notes": null
       },
-      "notes": null
+      "notes": null,
+      "schema": {
+        "coverage": "curated_primary_inputs",
+        "arguments": [],
+        "flags": [
+          {
+            "name": "--json",
+            "short": "-j",
+            "required": false,
+            "valueType": "boolean",
+            "description": "Emit machine-readable JSON output."
+          },
+          {
+            "name": "--dry-run",
+            "short": null,
+            "required": false,
+            "valueType": "boolean",
+            "description": "Preview the command without mutating Linear."
+          }
+        ],
+        "inputModes": [
+          "flags"
+        ]
+      },
+      "output": {
+        "success": {
+          "category": "curated_json",
+          "contractTarget": null,
+          "shape": "object",
+          "exitCode": 0
+        },
+        "preview": {
+          "supported": true,
+          "contractTarget": "dry_run_preview:v1",
+          "shape": "object",
+          "exitCode": 0
+        },
+        "failure": {
+          "jsonWhenRequested": false,
+          "parseErrorsJsonWhenRequested": false,
+          "exitCodes": [
+            {
+              "code": 1,
+              "meaning": "generic_failure"
+            },
+            {
+              "code": 4,
+              "meaning": "auth_error"
+            }
+          ]
+        }
+      }
     },
     {
       "path": "linear webhook view",
@@ -1313,7 +4109,58 @@ stdout:
         "category": "read_only",
         "notes": null
       },
-      "notes": null
+      "notes": null,
+      "schema": {
+        "coverage": "curated_primary_inputs",
+        "arguments": [
+          {
+            "name": "webhook",
+            "required": true,
+            "valueType": "webhook_id",
+            "description": "Webhook ID."
+          }
+        ],
+        "flags": [
+          {
+            "name": "--json",
+            "short": "-j",
+            "required": false,
+            "valueType": "boolean",
+            "description": "Emit machine-readable JSON output."
+          }
+        ],
+        "inputModes": [
+          "flags"
+        ]
+      },
+      "output": {
+        "success": {
+          "category": "automation_contract",
+          "contractTarget": "automation_contract:v3",
+          "shape": "object",
+          "exitCode": 0
+        },
+        "preview": {
+          "supported": false,
+          "contractTarget": null,
+          "shape": null,
+          "exitCode": null
+        },
+        "failure": {
+          "jsonWhenRequested": true,
+          "parseErrorsJsonWhenRequested": true,
+          "exitCodes": [
+            {
+              "code": 1,
+              "meaning": "generic_failure"
+            },
+            {
+              "code": 4,
+              "meaning": "auth_error"
+            }
+          ]
+        }
+      }
     },
     {
       "path": "linear workflow-state list",
@@ -1334,7 +4181,51 @@ stdout:
         "category": "read_only",
         "notes": null
       },
-      "notes": null
+      "notes": null,
+      "schema": {
+        "coverage": "curated_primary_inputs",
+        "arguments": [],
+        "flags": [
+          {
+            "name": "--json",
+            "short": "-j",
+            "required": false,
+            "valueType": "boolean",
+            "description": "Emit machine-readable JSON output."
+          }
+        ],
+        "inputModes": [
+          "flags"
+        ]
+      },
+      "output": {
+        "success": {
+          "category": "automation_contract",
+          "contractTarget": "automation_contract:v4",
+          "shape": "array",
+          "exitCode": 0
+        },
+        "preview": {
+          "supported": false,
+          "contractTarget": null,
+          "shape": null,
+          "exitCode": null
+        },
+        "failure": {
+          "jsonWhenRequested": true,
+          "parseErrorsJsonWhenRequested": true,
+          "exitCodes": [
+            {
+              "code": 1,
+              "meaning": "generic_failure"
+            },
+            {
+              "code": 4,
+              "meaning": "auth_error"
+            }
+          ]
+        }
+      }
     },
     {
       "path": "linear workflow-state view",
@@ -1355,7 +4246,58 @@ stdout:
         "category": "read_only",
         "notes": null
       },
-      "notes": null
+      "notes": null,
+      "schema": {
+        "coverage": "curated_primary_inputs",
+        "arguments": [
+          {
+            "name": "workflowState",
+            "required": true,
+            "valueType": "workflow_state_id",
+            "description": "Workflow state ID."
+          }
+        ],
+        "flags": [
+          {
+            "name": "--json",
+            "short": "-j",
+            "required": false,
+            "valueType": "boolean",
+            "description": "Emit machine-readable JSON output."
+          }
+        ],
+        "inputModes": [
+          "flags"
+        ]
+      },
+      "output": {
+        "success": {
+          "category": "automation_contract",
+          "contractTarget": "automation_contract:v4",
+          "shape": "object",
+          "exitCode": 0
+        },
+        "preview": {
+          "supported": false,
+          "contractTarget": null,
+          "shape": null,
+          "exitCode": null
+        },
+        "failure": {
+          "jsonWhenRequested": true,
+          "parseErrorsJsonWhenRequested": true,
+          "exitCodes": [
+            {
+              "code": 1,
+              "meaning": "generic_failure"
+            },
+            {
+              "code": 4,
+              "meaning": "auth_error"
+            }
+          ]
+        }
+      }
     }
   ]
 }

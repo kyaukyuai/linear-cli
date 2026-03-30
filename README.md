@@ -88,7 +88,7 @@ deno task install
 compared to upstream, this fork adds and maintains capabilities aimed at automation-heavy workflows:
 
 - stable JSON contracts for the automation tier, with machine-readable failures for parser, validation, and runtime errors
-- a self-describing `linear capabilities --json` surface so agents can discover contract coverage and command traits without scraping docs
+- a self-describing `linear capabilities --json` surface so agents can discover contract coverage, primary input schema, output semantics, and command traits without scraping docs
 - `--dry-run` previews for high-value write commands, including `issue start`, issue writes, and non-issue writes
 - stdin and pipeline support for high-value write paths
 - retry-safe semantics for relation add/delete, project label add/remove, notification read/archive, and structured partial-failure details
@@ -109,7 +109,7 @@ compared to upstream, this fork adds and maintains capabilities aimed at automat
 
 for bot and org-wide automation use cases, `linear-cli` defines a stable JSON contract for a focused automation tier.
 
-to discover the curated agent-facing command surface programmatically, use `linear capabilities --json`. it reports stable contract versions, automation-tier membership, and per-command support for `--json`, `--dry-run`, stdin, confirmation bypass, and idempotency category.
+to discover the curated agent-facing command surface programmatically, use `linear capabilities --json`. it reports stable contract versions, automation-tier membership, and per-command support for `--json`, `--dry-run`, stdin, confirmation bypass, idempotency category, primary arguments and flags, and success/failure output semantics.
 
 - v1 in scope: `issue list/view/create/update --json`, `issue relation add/delete/list --json`, `issue comment add --json`, `team members --json`, `issue parent/children/create-batch --json`
 - v2 additions: `project list/view --json`, `cycle list/view/current/next --json`, `milestone list/view --json`
