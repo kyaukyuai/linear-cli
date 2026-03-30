@@ -2,13 +2,13 @@ import { assert, assertEquals } from "@std/assert"
 import { buildCapabilitiesPayload } from "../../src/utils/capabilities.ts"
 
 Deno.test("buildCapabilitiesPayload exposes stable top-level contract metadata", () => {
-  const payload = buildCapabilitiesPayload("2.10.0")
+  const payload = buildCapabilitiesPayload("2.11.0")
 
-  assertEquals(payload.schemaVersion, "v1")
+  assertEquals(payload.schemaVersion, "v2")
   assertEquals(payload.cli, {
     name: "linear-cli",
     binary: "linear",
-    version: "2.10.0",
+    version: "2.11.0",
   })
   assertEquals(payload.contractVersions.automation.latest, "v4")
   assertEquals(payload.contractVersions.automation.supported, [
@@ -37,7 +37,7 @@ Deno.test("buildCapabilitiesPayload exposes stable top-level contract metadata",
 })
 
 Deno.test("buildCapabilitiesPayload includes issue update capability traits", () => {
-  const payload = buildCapabilitiesPayload("2.10.0")
+  const payload = buildCapabilitiesPayload("2.11.0")
   const command = payload.commands.find((entry) =>
     entry.path === "linear issue update"
   )
@@ -58,10 +58,43 @@ Deno.test("buildCapabilitiesPayload includes issue update capability traits", ()
     command.idempotency.notes,
     "Field-only updates are retry-safe; adding --comment makes the command non-idempotent.",
   )
+  assertEquals(command.schema.coverage, "curated_primary_inputs")
+  assertEquals(command.schema.inputModes, ["flags", "stdin", "file"])
+  assertEquals(command.schema.arguments, [
+    {
+      name: "issue",
+      required: false,
+      valueType: "issue_ref",
+      description:
+        "Issue identifier or internal ID. Defaults to the current issue.",
+    },
+  ])
+  assert(command.schema.flags.some((flag) => flag.name === "--state"))
+  assert(command.schema.flags.some((flag) => flag.name === "--comment"))
+  assert(command.schema.flags.some((flag) => flag.name === "--json"))
+  assert(command.schema.flags.some((flag) => flag.name === "--dry-run"))
+  assert(command.schema.flags.some((flag) => flag.name === "--timeout-ms"))
+  assertEquals(command.output.success, {
+    category: "automation_contract",
+    contractTarget: "automation_contract:v1",
+    shape: "object",
+    exitCode: 0,
+  })
+  assertEquals(command.output.preview, {
+    supported: true,
+    contractTarget: "dry_run_preview:v1",
+    shape: "object",
+    exitCode: 0,
+  })
+  assertEquals(command.output.failure.jsonWhenRequested, true)
+  assertEquals(command.output.failure.parseErrorsJsonWhenRequested, true)
+  assert(command.output.failure.exitCodes.some((entry) => entry.code === 1))
+  assert(command.output.failure.exitCodes.some((entry) => entry.code === 4))
+  assert(command.output.failure.exitCodes.some((entry) => entry.code === 6))
 })
 
 Deno.test("buildCapabilitiesPayload includes raw api escape hatch traits", () => {
-  const payload = buildCapabilitiesPayload("2.10.0")
+  const payload = buildCapabilitiesPayload("2.11.0")
   const command = payload.commands.find((entry) => entry.path === "linear api")
 
   assert(command != null)
@@ -75,10 +108,14 @@ Deno.test("buildCapabilitiesPayload includes raw api escape hatch traits", () =>
     command.notes,
     "Outputs JSON by default and accepts stdin, but does not use a --json flag.",
   )
+  assertEquals(command.schema.inputModes, ["flags", "stdin"])
+  assertEquals(command.output.success.category, "json_default")
+  assertEquals(command.output.success.contractTarget, "raw_graphql_response")
+  assertEquals(command.output.failure.jsonWhenRequested, false)
 })
 
 Deno.test("buildCapabilitiesPayload classifies notification writes as retry-safe no-op", () => {
-  const payload = buildCapabilitiesPayload("2.10.0")
+  const payload = buildCapabilitiesPayload("2.11.0")
   const readCommand = payload.commands.find((entry) =>
     entry.path === "linear notification read"
   )
@@ -99,4 +136,6 @@ Deno.test("buildCapabilitiesPayload classifies notification writes as retry-safe
     archiveCommand.idempotency.notes,
     "Archiving an already-archived notification succeeds with noOp: true.",
   )
+  assertEquals(readCommand.output.success.category, "curated_json")
+  assertEquals(archiveCommand.output.success.category, "curated_json")
 })

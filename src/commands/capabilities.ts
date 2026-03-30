@@ -47,7 +47,9 @@ function renderCapabilitiesSummary(
           command.dryRun.supported,
           command.dryRun.contractVersion,
         )
-      } stdin=${command.stdin.mode} confirm=${
+      } inputs=${
+        command.schema.inputModes.join(",")
+      } success=${command.output.success.category} confirm=${
         command.confirmationBypass ?? "none"
       } idempotency=${command.idempotency.category}`,
     )
