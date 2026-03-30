@@ -1,4 +1,3 @@
-import { snapshotTest as cliffySnapshotTest } from "@cliffy/testing"
 import { snapshotTest } from "../../utils/snapshot_with_fake_time.ts"
 import { listCommand } from "../../../src/commands/team/team-list.ts"
 import { MockLinearServer } from "../../utils/mock_linear_server.ts"
@@ -7,7 +6,7 @@ import { MockLinearServer } from "../../utils/mock_linear_server.ts"
 const denoArgs = ["--allow-all", "--quiet"]
 
 // Test help output
-await cliffySnapshotTest({
+await snapshotTest({
   name: "Team List Command - Help Text",
   meta: import.meta,
   colors: false,
@@ -126,7 +125,7 @@ await snapshotTest({
 })
 
 // Test with empty teams list
-await cliffySnapshotTest({
+await snapshotTest({
   name: "Team List Command - No Teams Found",
   meta: import.meta,
   colors: false,
@@ -165,7 +164,7 @@ await cliffySnapshotTest({
   },
 })
 
-await cliffySnapshotTest({
+await snapshotTest({
   name: "Team List Command - JSON Output",
   meta: import.meta,
   colors: false,
@@ -221,7 +220,7 @@ await cliffySnapshotTest({
   },
 })
 
-await cliffySnapshotTest({
+await snapshotTest({
   name: "Team List Command - JSON Rejects Web Flags",
   meta: import.meta,
   colors: false,

@@ -4,6 +4,11 @@ import { gql } from "../../__codegen__/gql.ts"
 import { getGraphQLClient } from "../../utils/graphql.ts"
 import { CliError, handleError, ValidationError } from "../../utils/errors.ts"
 import { readTextFromStdin } from "../../utils/stdin.ts"
+import {
+  buildWriteTimeoutSuggestion,
+  resolveWriteTimeoutMs,
+  withWriteTimeout,
+} from "../../utils/write_timeout.ts"
 
 export const commentUpdateCommand = new Command()
   .name("update")
@@ -14,14 +19,19 @@ export const commentUpdateCommand = new Command()
     "--body-file <path:string>",
     "Read comment body from a file (preferred for markdown content)",
   )
+  .option(
+    "--timeout-ms <timeoutMs:number>",
+    "Timeout for write confirmation in milliseconds",
+  )
   .example(
     "Update a comment from stdin",
     'printf "Updated comment\\n" | linear issue comment update comment_123',
   )
   .action(async (options, commentId) => {
-    const { body, bodyFile } = options
+    const { body, bodyFile, timeoutMs } = options
 
     try {
+      const writeTimeoutMs = resolveWriteTimeoutMs(timeoutMs)
       // Validate that body and bodyFile are not both provided
       if (body && bodyFile) {
         throw new ValidationError(
@@ -105,12 +115,24 @@ export const commentUpdateCommand = new Command()
       `)
 
       const client = getGraphQLClient()
-      const data = await client.request(mutation, {
-        id: commentId,
-        input: {
-          body: newBody,
+      const data = await withWriteTimeout(
+        (signal) =>
+          client.request({
+            document: mutation,
+            variables: {
+              id: commentId,
+              input: {
+                body: newBody,
+              },
+            },
+            signal,
+          }),
+        {
+          operation: "issue comment update",
+          timeoutMs: writeTimeoutMs,
+          suggestion: buildWriteTimeoutSuggestion(),
         },
-      })
+      )
 
       if (!data.commentUpdate.success) {
         throw new CliError("Failed to update comment")

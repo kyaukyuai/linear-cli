@@ -1,6 +1,5 @@
 import { assertEquals } from "@std/assert"
 import { fromFileUrl } from "@std/path"
-import { snapshotTest as cliffySnapshotTest } from "@cliffy/testing"
 import { snapshotTest } from "../../utils/snapshot_with_fake_time.ts"
 import { viewCommand } from "../../../src/commands/issue/issue-view.ts"
 import { MockLinearServer } from "../../utils/mock_linear_server.ts"
@@ -13,7 +12,7 @@ const denoJsonPath = fromFileUrl(new URL("../../../deno.json", import.meta.url))
 const mainPath = fromFileUrl(new URL("../../../src/main.ts", import.meta.url))
 
 // Test help output
-await cliffySnapshotTest({
+await snapshotTest({
   name: "Issue View Command - Help Text",
   meta: import.meta,
   colors: false,

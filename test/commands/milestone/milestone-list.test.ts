@@ -1,10 +1,9 @@
-import { snapshotTest as cliffySnapshotTest } from "@cliffy/testing"
 import { snapshotTest } from "../../utils/snapshot_with_fake_time.ts"
 import { listCommand } from "../../../src/commands/milestone/milestone-list.ts"
 import { commonDenoArgs } from "../../utils/test-helpers.ts"
 import { MockLinearServer } from "../../utils/mock_linear_server.ts"
 
-await cliffySnapshotTest({
+await snapshotTest({
   name: "Milestone List Command - Help Text",
   meta: import.meta,
   colors: false,
@@ -27,7 +26,7 @@ await snapshotTest({
   },
 })
 
-await cliffySnapshotTest({
+await snapshotTest({
   name: "Milestone List Command - With Mock Milestones",
   meta: import.meta,
   colors: false,
@@ -208,7 +207,7 @@ await snapshotTest({
   },
 })
 
-await cliffySnapshotTest({
+await snapshotTest({
   name: "Milestone List Command - No Milestones Found",
   meta: import.meta,
   colors: false,
@@ -260,7 +259,7 @@ await cliffySnapshotTest({
   },
 })
 
-await cliffySnapshotTest({
+await snapshotTest({
   name: "Milestone List Command - No Milestones Found JSON",
   meta: import.meta,
   colors: false,

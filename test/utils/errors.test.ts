@@ -12,6 +12,7 @@ import {
   NotFoundError,
   PlanLimitError,
   ValidationError,
+  WriteTimeoutError,
 } from "../../src/utils/errors.ts"
 import { ClientError, type GraphQLResponse } from "graphql-request"
 
@@ -148,6 +149,18 @@ Deno.test("getExitCode - returns 5 for plan limit errors", () => {
 Deno.test("getExitCode - returns 1 for generic errors", () => {
   assertEquals(getExitCode(new Error("boom")), 1)
   assertEquals(getExitCode(new CliError("Something went wrong")), 1)
+})
+
+Deno.test("getExitCode - returns 6 for write timeout errors", () => {
+  assertEquals(getExitCode(new WriteTimeoutError("issue update", 30_000)), 6)
+  assertEquals(
+    getExitCode(
+      new CliError("Wrapped timeout", {
+        cause: new WriteTimeoutError("issue update", 30_000),
+      }),
+    ),
+    6,
+  )
 })
 
 Deno.test("getRateLimitDetails - extracts rate limit headers", () => {

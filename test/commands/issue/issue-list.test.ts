@@ -1,4 +1,3 @@
-import { snapshotTest as cliffySnapshotTest } from "@cliffy/testing"
 import { snapshotTest } from "../../utils/snapshot_with_fake_time.ts"
 import { listCommand } from "../../../src/commands/issue/issue-list.ts"
 import {
@@ -8,7 +7,7 @@ import {
 import { MockLinearServer } from "../../utils/mock_linear_server.ts"
 
 // Test help output
-await cliffySnapshotTest({
+await snapshotTest({
   name: "Issue List Command - Help Text",
   meta: import.meta,
   colors: false,

@@ -1,11 +1,10 @@
-import { snapshotTest as cliffySnapshotTest } from "@cliffy/testing"
 import { snapshotTest } from "../../utils/snapshot_with_fake_time.ts"
 import { listCommand } from "../../../src/commands/project/project-list.ts"
 import { commonDenoArgs } from "../../utils/test-helpers.ts"
 import { MockLinearServer } from "../../utils/mock_linear_server.ts"
 
 // Test help output
-await cliffySnapshotTest({
+await snapshotTest({
   name: "Project List Command - Help Text",
   meta: import.meta,
   colors: false,
@@ -173,7 +172,7 @@ await snapshotTest({
 })
 
 // Test with empty projects list
-await cliffySnapshotTest({
+await snapshotTest({
   name: "Project List Command - No Projects Found",
   meta: import.meta,
   colors: false,
@@ -213,7 +212,7 @@ await cliffySnapshotTest({
 })
 
 // Test with empty projects list and --json
-await cliffySnapshotTest({
+await snapshotTest({
   name: "Project List Command - No Projects Found JSON",
   meta: import.meta,
   colors: false,
@@ -253,7 +252,7 @@ await cliffySnapshotTest({
 })
 
 // Test with projects and --json
-await cliffySnapshotTest({
+await snapshotTest({
   name: "Project List Command - With JSON Output",
   meta: import.meta,
   colors: false,

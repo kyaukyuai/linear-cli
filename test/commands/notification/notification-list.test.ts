@@ -1,4 +1,3 @@
-import { snapshotTest as cliffySnapshotTest } from "@cliffy/testing"
 import { listCommand } from "../../../src/commands/notification/notification-list.ts"
 import { snapshotTest } from "../../utils/snapshot_with_fake_time.ts"
 import {
@@ -6,7 +5,7 @@ import {
   setupMockLinearServer,
 } from "../../utils/test-helpers.ts"
 
-await cliffySnapshotTest({
+await snapshotTest({
   name: "Notification List Command - Help Text",
   meta: import.meta,
   colors: false,
@@ -29,7 +28,7 @@ await snapshotTest({
   },
 })
 
-await cliffySnapshotTest({
+await snapshotTest({
   name: "Notification List Command - Shows Notifications",
   meta: import.meta,
   colors: false,
@@ -90,7 +89,7 @@ await cliffySnapshotTest({
   },
 })
 
-await cliffySnapshotTest({
+await snapshotTest({
   name: "Notification List Command - JSON Output",
   meta: import.meta,
   colors: false,
@@ -135,7 +134,7 @@ await cliffySnapshotTest({
   },
 })
 
-await cliffySnapshotTest({
+await snapshotTest({
   name: "Notification List Command - No Notifications",
   meta: import.meta,
   colors: false,
@@ -163,7 +162,7 @@ await cliffySnapshotTest({
   },
 })
 
-await cliffySnapshotTest({
+await snapshotTest({
   name: "Notification List Command - Unread Only",
   meta: import.meta,
   colors: false,

@@ -1,10 +1,9 @@
-import { snapshotTest as cliffySnapshotTest } from "@cliffy/testing"
 import { viewCommand } from "../../../src/commands/webhook/webhook-view.ts"
 import { MockLinearServer } from "../../utils/mock_linear_server.ts"
 import { snapshotTest } from "../../utils/snapshot_with_fake_time.ts"
 import { commonDenoArgs } from "../../utils/test-helpers.ts"
 
-await cliffySnapshotTest({
+await snapshotTest({
   name: "Webhook View Command - Help Text",
   meta: import.meta,
   colors: false,
@@ -27,7 +26,7 @@ await snapshotTest({
   },
 })
 
-await cliffySnapshotTest({
+await snapshotTest({
   name: "Webhook View Command - Shows Webhook",
   meta: import.meta,
   colors: false,
@@ -80,7 +79,7 @@ await cliffySnapshotTest({
   },
 })
 
-await cliffySnapshotTest({
+await snapshotTest({
   name: "Webhook View Command - JSON Output",
   meta: import.meta,
   colors: false,

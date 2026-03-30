@@ -1,4 +1,3 @@
-import { snapshotTest as cliffySnapshotTest } from "@cliffy/testing"
 import { snapshotTest } from "../../utils/snapshot_with_fake_time.ts"
 import { viewCommand } from "../../../src/commands/milestone/milestone-view.ts"
 import { commonDenoArgs } from "../../utils/test-helpers.ts"
@@ -6,7 +5,7 @@ import { MockLinearServer } from "../../utils/mock_linear_server.ts"
 
 const fakeTime = "2025-08-17T15:30:00Z"
 
-await cliffySnapshotTest({
+await snapshotTest({
   name: "Milestone View Command - Help Text",
   meta: import.meta,
   colors: false,

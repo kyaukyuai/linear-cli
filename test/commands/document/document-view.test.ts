@@ -1,11 +1,10 @@
-import { snapshotTest as cliffySnapshotTest } from "@cliffy/testing"
 import { viewCommand } from "../../../src/commands/document/document-view.ts"
 import { MockLinearServer } from "../../utils/mock_linear_server.ts"
 import { snapshotTest } from "../../utils/snapshot_with_fake_time.ts"
 import { commonDenoArgs } from "../../utils/test-helpers.ts"
 
 // Test help output
-await cliffySnapshotTest({
+await snapshotTest({
   name: "Document View Command - Help Text",
   meta: import.meta,
   colors: false,
@@ -29,7 +28,7 @@ await snapshotTest({
 })
 
 // Test viewing a document
-await cliffySnapshotTest({
+await snapshotTest({
   name: "Document View Command - View Document",
   meta: import.meta,
   colors: false,
@@ -76,7 +75,7 @@ await cliffySnapshotTest({
 })
 
 // Test viewing a document with --raw flag
-await cliffySnapshotTest({
+await snapshotTest({
   name: "Document View Command - Raw Output",
   meta: import.meta,
   colors: false,
@@ -123,7 +122,7 @@ await cliffySnapshotTest({
 })
 
 // Test JSON output
-await cliffySnapshotTest({
+await snapshotTest({
   name: "Document View Command - JSON Output",
   meta: import.meta,
   colors: false,
@@ -204,7 +203,7 @@ await snapshotTest({
 })
 
 // Test document attached to issue
-await cliffySnapshotTest({
+await snapshotTest({
   name: "Document View Command - Document Attached To Issue",
   meta: import.meta,
   colors: false,

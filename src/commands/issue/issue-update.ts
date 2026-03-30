@@ -19,22 +19,24 @@ import {
 } from "../../utils/json_output.ts"
 import { emitDryRunOutput } from "../../utils/dry_run.ts"
 import { withSpinner } from "../../utils/spinner.ts"
-import { CliError, NotFoundError, ValidationError } from "../../utils/errors.ts"
+import {
+  CliError,
+  isWriteTimeoutError,
+  NotFoundError,
+  ValidationError,
+} from "../../utils/errors.ts"
 import { readTextFromStdin } from "../../utils/stdin.ts"
+import {
+  buildWriteTimeoutSuggestion,
+  resolveWriteTimeoutMs,
+  withWriteTimeout,
+} from "../../utils/write_timeout.ts"
 import { buildIssueWritePayload } from "./issue-write-payload.ts"
-import {
-  buildIssueCommentPayload,
-  type IssueCommentPayloadComment,
-} from "./issue-comment-payload.ts"
-import {
-  createIssueComment,
-  type CreateIssueCommentOptions,
-} from "./issue-comment-utils.ts"
+import { buildIssueCommentPayload } from "./issue-comment-payload.ts"
+import { createIssueComment } from "./issue-comment-utils.ts"
 import { buildIssueUpdateDryRunPayload } from "./issue-dry-run-payload.ts"
 import { maybeHandleIssueDescriptionParseError } from "./issue-description-parse.ts"
 import { buildPartialSuccessDetails } from "../../utils/retry_semantics.ts"
-
-const COMMENT_CREATE_TIMEOUT_MS = 15_000
 
 export const updateCommand = new Command()
   .name("update")
@@ -107,6 +109,10 @@ export const updateCommand = new Command()
   )
   .option("-j, --json", "Output as JSON")
   .option("--dry-run", "Preview the update without mutating the issue")
+  .option(
+    "--timeout-ms <timeoutMs:number>",
+    "Timeout for write confirmation in milliseconds",
+  )
   .option("-t, --title <title:string>", "Title of the issue")
   .example(
     "Update state and assignee",
@@ -157,6 +163,7 @@ export const updateCommand = new Command()
         title,
         json,
         dryRun,
+        timeoutMs,
       },
       issueIdArg,
     ) => {
@@ -225,6 +232,8 @@ export const updateCommand = new Command()
             },
           )
         }
+
+        const writeTimeoutMs = resolveWriteTimeoutMs(timeoutMs)
 
         // Get the issue ID - either from argument or infer from current context
         const issueId = await getIssueIdentifier(issueIdArg)
@@ -429,10 +438,22 @@ export const updateCommand = new Command()
         const client = getGraphQLClient()
         const data = await withSpinner(
           () =>
-            client.request(updateIssueMutation, {
-              id: issueId,
-              input,
-            }),
+            withWriteTimeout(
+              (signal) =>
+                client.request({
+                  document: updateIssueMutation,
+                  variables: {
+                    id: issueId,
+                    input,
+                  },
+                  signal,
+                }),
+              {
+                operation: "issue update",
+                timeoutMs: writeTimeoutMs,
+                suggestion: buildWriteTimeoutSuggestion(),
+              },
+            ),
           { enabled: !json },
         )
 
@@ -449,12 +470,15 @@ export const updateCommand = new Command()
         let createdComment = null
         if (comment != null) {
           try {
-            createdComment = await createIssueCommentWithTimeout(
-              issue.id,
-              comment,
+            createdComment = await createIssueComment(
+              {
+                issueId: issue.id,
+                body: comment,
+              },
               {
                 client,
                 spinnerEnabled: !json,
+                timeoutMs: writeTimeoutMs,
               },
             )
           } catch (error) {
@@ -495,48 +519,7 @@ export const updateCommand = new Command()
     },
   )
 
-class CommentCreateTimeoutError extends Error {
-  constructor(timeoutMs: number) {
-    super(`Adding the comment did not complete within ${timeoutMs}ms.`)
-    this.name = "CommentCreateTimeoutError"
-  }
-}
-
 type IssueUpdateCommentFailureIssue = ReturnType<typeof buildIssueWritePayload>
-
-async function createIssueCommentWithTimeout(
-  issueId: string,
-  body: string,
-  options: {
-    client: NonNullable<CreateIssueCommentOptions["client"]>
-    spinnerEnabled: boolean
-  },
-): Promise<IssueCommentPayloadComment> {
-  let timeoutId: ReturnType<typeof setTimeout> | null = null
-
-  const timeoutPromise = new Promise<never>((_, reject) => {
-    timeoutId = setTimeout(() => {
-      reject(new CommentCreateTimeoutError(COMMENT_CREATE_TIMEOUT_MS))
-    }, COMMENT_CREATE_TIMEOUT_MS)
-  })
-
-  try {
-    return await Promise.race([
-      createIssueComment(
-        {
-          issueId,
-          body,
-        },
-        options,
-      ),
-      timeoutPromise,
-    ])
-  } finally {
-    if (timeoutId != null) {
-      clearTimeout(timeoutId)
-    }
-  }
-}
 
 function buildIssueUpdateCommentFailureError(
   issue: IssueUpdateCommentFailureIssue,
@@ -546,16 +529,18 @@ function buildIssueUpdateCommentFailureError(
   const retryCommand = `linear issue comment add ${issue.identifier} --body ${
     JSON.stringify(comment)
   }`
-  const failureMode = error instanceof CommentCreateTimeoutError
-    ? "timeout"
+  const failureMode = isWriteTimeoutError(error)
+    ? "timeout_waiting_for_confirmation"
     : "error"
 
   return new CliError(
-    error instanceof CommentCreateTimeoutError
+    isWriteTimeoutError(error)
       ? `Issue ${issue.identifier} was updated, but adding the comment did not complete in time.`
       : `Issue ${issue.identifier} was updated, but adding the comment failed.`,
     {
-      suggestion: `Retry with \`${retryCommand}\`.`,
+      suggestion: isWriteTimeoutError(error)
+        ? `Retry with \`${retryCommand}\`. Increase the timeout with --timeout-ms or LINEAR_WRITE_TIMEOUT_MS if comment creation is consistently slow.`
+        : `Retry with \`${retryCommand}\`.`,
       cause: error,
       details: buildPartialSuccessDetails(
         {

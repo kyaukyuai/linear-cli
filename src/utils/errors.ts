@@ -13,6 +13,7 @@ import { gray, red, setColorEnabled } from "@std/fmt/colors"
 
 const AUTH_EXIT_CODE = 4
 const PLAN_LIMIT_EXIT_CODE = 5
+const WRITE_TIMEOUT_EXIT_CODE = 6
 const DEFAULT_PLAN_LIMIT_SUGGESTION =
   "Upgrade your Linear plan or archive existing items and retry."
 const DEFAULT_RATE_LIMIT_SUGGESTION =
@@ -23,6 +24,13 @@ export type RateLimitDetails = {
   limit?: string
   remaining?: string
   reset?: string
+}
+
+export type WriteTimeoutDetails = {
+  failureMode: "timeout_waiting_for_confirmation"
+  timeoutMs: number
+  operation: string
+  outcome: "unknown"
 }
 
 /**
@@ -117,6 +125,42 @@ export class PlanLimitError extends CliError {
       ...options,
     })
     this.name = "PlanLimitError"
+  }
+}
+
+/**
+ * Error for client-side timeouts while waiting for Linear to confirm a write.
+ */
+export class WriteTimeoutError extends CliError {
+  readonly operation: string
+  readonly timeoutMs: number
+
+  constructor(
+    operation: string,
+    timeoutMs: number,
+    options?: {
+      suggestion?: string
+      details?: Record<string, unknown>
+      cause?: unknown
+    },
+  ) {
+    super(
+      `Timed out waiting for ${operation} confirmation after ${timeoutMs}ms. The write may still have been accepted by Linear.`,
+      {
+        suggestion: options?.suggestion,
+        cause: options?.cause,
+        details: {
+          failureMode: "timeout_waiting_for_confirmation",
+          timeoutMs,
+          operation,
+          outcome: "unknown",
+          ...(options?.details ?? {}),
+        },
+      },
+    )
+    this.name = "WriteTimeoutError"
+    this.operation = operation
+    this.timeoutMs = timeoutMs
   }
 }
 
@@ -289,6 +333,10 @@ export async function withContext<T>(
 }
 
 export function getExitCode(error: unknown): number {
+  if (isWriteTimeoutError(error)) {
+    return WRITE_TIMEOUT_EXIT_CODE
+  }
+
   if (isPlanLimitError(error)) {
     return PLAN_LIMIT_EXIT_CODE
   }
@@ -334,6 +382,16 @@ function isAuthFailure(error: unknown): boolean {
   return false
 }
 
+export function isWriteTimeoutError(error: unknown): boolean {
+  for (const candidate of iterateErrorChain(error)) {
+    if (candidate instanceof WriteTimeoutError) {
+      return true
+    }
+  }
+
+  return false
+}
+
 export function isPlanLimitError(error: unknown): boolean {
   for (const candidate of iterateErrorChain(error)) {
     if (candidate instanceof PlanLimitError) {
@@ -367,6 +425,25 @@ export function getRateLimitDetails(
 
     if (isClientError(candidate)) {
       const details = getGraphQLRateLimitDetails(candidate)
+      if (details != null) {
+        return details
+      }
+    }
+  }
+
+  return undefined
+}
+
+export function getWriteTimeoutDetails(
+  error: unknown,
+): WriteTimeoutDetails | undefined {
+  for (const candidate of iterateErrorChain(error)) {
+    if (candidate instanceof WriteTimeoutError) {
+      return extractWriteTimeoutDetails(candidate.details)
+    }
+
+    if (candidate instanceof CliError) {
+      const details = extractWriteTimeoutDetails(candidate.details)
       if (details != null) {
         return details
       }
@@ -491,6 +568,35 @@ function extractRateLimitDetails(
   }
 
   return Object.keys(extracted).length > 0 ? extracted : undefined
+}
+
+function extractWriteTimeoutDetails(
+  details: Record<string, unknown> | undefined,
+): WriteTimeoutDetails | undefined {
+  if (details == null) {
+    return undefined
+  }
+
+  const failureMode = details.failureMode
+  const timeoutMs = details.timeoutMs
+  const operation = details.operation
+  const outcome = details.outcome
+
+  if (
+    failureMode !== "timeout_waiting_for_confirmation" ||
+    typeof timeoutMs !== "number" ||
+    typeof operation !== "string" ||
+    outcome !== "unknown"
+  ) {
+    return undefined
+  }
+
+  return {
+    failureMode,
+    timeoutMs,
+    operation,
+    outcome,
+  }
 }
 
 function buildRateLimitSuggestion(

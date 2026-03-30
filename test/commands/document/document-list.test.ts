@@ -1,11 +1,10 @@
-import { snapshotTest as cliffySnapshotTest } from "@cliffy/testing"
 import { listCommand } from "../../../src/commands/document/document-list.ts"
 import { MockLinearServer } from "../../utils/mock_linear_server.ts"
 import { snapshotTest } from "../../utils/snapshot_with_fake_time.ts"
 import { commonDenoArgs } from "../../utils/test-helpers.ts"
 
 // Test help output
-await cliffySnapshotTest({
+await snapshotTest({
   name: "Document List Command - Help Text",
   meta: import.meta,
   colors: false,
@@ -34,7 +33,7 @@ await snapshotTest({
 // mock servers (see project-list.test.ts for similar issue).
 
 // Test JSON output (uses raw timestamps, not relative - deterministic)
-await cliffySnapshotTest({
+await snapshotTest({
   name: "Document List Command - JSON Output",
   meta: import.meta,
   colors: false,
@@ -83,7 +82,7 @@ await cliffySnapshotTest({
 })
 
 // Test empty results
-await cliffySnapshotTest({
+await snapshotTest({
   name: "Document List Command - Empty Results",
   meta: import.meta,
   colors: false,

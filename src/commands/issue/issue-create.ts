@@ -35,6 +35,11 @@ import { emitDryRunOutput } from "../../utils/dry_run.ts"
 import { withSpinner } from "../../utils/spinner.ts"
 import { CliError, NotFoundError, ValidationError } from "../../utils/errors.ts"
 import { readTextFromStdin } from "../../utils/stdin.ts"
+import {
+  buildWriteTimeoutSuggestion,
+  resolveWriteTimeoutMs,
+  withWriteTimeout,
+} from "../../utils/write_timeout.ts"
 import { buildIssueCreateDryRunPayload } from "./issue-dry-run-payload.ts"
 import { buildIssueWritePayload } from "./issue-write-payload.ts"
 import { maybeHandleIssueDescriptionParseError } from "./issue-description-parse.ts"
@@ -513,6 +518,10 @@ export const createCommand = new Command()
   .option("-j, --json", "Output as JSON")
   .option("--dry-run", "Preview the created issue without creating it")
   .option(
+    "--timeout-ms <timeoutMs:number>",
+    "Timeout for write confirmation in milliseconds",
+  )
+  .option(
     "--no-pager",
     "Accepted for compatibility; issue create does not use a pager",
   )
@@ -568,9 +577,11 @@ export const createCommand = new Command()
         title,
         json,
         dryRun,
+        timeoutMs,
       },
     ) => {
       try {
+        const writeTimeoutMs = resolveWriteTimeoutMs(timeoutMs)
         interactive = interactive && Deno.stdout.isTerminal() && !json &&
           !dryRun
 
@@ -695,22 +706,34 @@ export const createCommand = new Command()
           const client = getGraphQLClient()
           const data = await withSpinner(
             () =>
-              client.request(createIssueMutation, {
-                input: {
-                  title: interactiveData.title,
-                  assigneeId: interactiveData.assigneeId,
-                  dueDate: undefined,
-                  parentId: interactiveData.parentId,
-                  priority: interactiveData.priority,
-                  estimate: interactiveData.estimate,
-                  labelIds: interactiveData.labelIds,
-                  teamId: interactiveData.teamId,
-                  projectId: interactiveData.projectId,
-                  stateId: interactiveData.stateId,
-                  useDefaultTemplate,
-                  description: interactiveData.description,
+              withWriteTimeout(
+                (signal) =>
+                  client.request({
+                    document: createIssueMutation,
+                    variables: {
+                      input: {
+                        title: interactiveData.title,
+                        assigneeId: interactiveData.assigneeId,
+                        dueDate: undefined,
+                        parentId: interactiveData.parentId,
+                        priority: interactiveData.priority,
+                        estimate: interactiveData.estimate,
+                        labelIds: interactiveData.labelIds,
+                        teamId: interactiveData.teamId,
+                        projectId: interactiveData.projectId,
+                        stateId: interactiveData.stateId,
+                        useDefaultTemplate,
+                        description: interactiveData.description,
+                      },
+                    },
+                    signal,
+                  }),
+                {
+                  operation: "issue creation",
+                  timeoutMs: writeTimeoutMs,
+                  suggestion: buildWriteTimeoutSuggestion(),
                 },
-              }),
+              ),
             { enabled: true },
           )
 
@@ -969,7 +992,20 @@ export const createCommand = new Command()
 
         const client = getGraphQLClient()
         const data = await withSpinner(
-          () => client.request(createIssueMutation, { input }),
+          () =>
+            withWriteTimeout(
+              (signal) =>
+                client.request({
+                  document: createIssueMutation,
+                  variables: { input },
+                  signal,
+                }),
+              {
+                operation: "issue creation",
+                timeoutMs: writeTimeoutMs,
+                suggestion: buildWriteTimeoutSuggestion(),
+              },
+            ),
           { enabled: !json },
         )
         if (!data.issueCreate.success) {
