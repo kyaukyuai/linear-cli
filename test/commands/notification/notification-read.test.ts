@@ -25,6 +25,19 @@ await snapshotTest({
   async fn() {
     const { cleanup } = await setupMockLinearServer([
       {
+        queryName: "GetNotificationForRead",
+        response: {
+          data: {
+            notification: {
+              id: "notif-1",
+              title: "ENG-123 was assigned to you",
+              readAt: null,
+              archivedAt: null,
+            },
+          },
+        },
+      },
+      {
         queryName: "ReadNotification",
         response: {
           data: {
@@ -59,6 +72,19 @@ await snapshotTest({
   async fn() {
     const { cleanup } = await setupMockLinearServer([
       {
+        queryName: "GetNotificationForRead",
+        response: {
+          data: {
+            notification: {
+              id: "notif-1",
+              title: "ENG-123 was assigned to you",
+              readAt: null,
+              archivedAt: null,
+            },
+          },
+        },
+      },
+      {
         queryName: "ReadNotification",
         response: {
           data: {
@@ -70,6 +96,37 @@ await snapshotTest({
                 readAt: "2026-03-13T07:00:00Z",
                 archivedAt: null,
               },
+            },
+          },
+        },
+      },
+    ])
+
+    try {
+      await readCommand.parse()
+    } finally {
+      await cleanup()
+    }
+  },
+})
+
+await snapshotTest({
+  name: "Notification Read Command - Already Read",
+  meta: import.meta,
+  colors: false,
+  args: ["notif-1", "--json"],
+  denoArgs: commonDenoArgs,
+  async fn() {
+    const { cleanup } = await setupMockLinearServer([
+      {
+        queryName: "GetNotificationForRead",
+        response: {
+          data: {
+            notification: {
+              id: "notif-1",
+              title: "ENG-123 was assigned to you",
+              readAt: "2026-03-13T07:00:00Z",
+              archivedAt: null,
             },
           },
         },

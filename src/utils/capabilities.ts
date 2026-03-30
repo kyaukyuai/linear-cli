@@ -436,7 +436,10 @@ const COMMANDS: CapabilityCommand[] = [
     dryRun: dryRunContract(null),
     stdin: stdin("none"),
     confirmationBypass: null,
-    idempotency: idempotency("retry_safe_update"),
+    idempotency: idempotency(
+      "retry_safe_no_op",
+      "Archiving an already-archived notification succeeds with noOp: true.",
+    ),
     notes: null,
   },
   {
@@ -466,7 +469,10 @@ const COMMANDS: CapabilityCommand[] = [
     dryRun: dryRunContract(null),
     stdin: stdin("none"),
     confirmationBypass: null,
-    idempotency: idempotency("retry_safe_update"),
+    idempotency: idempotency(
+      "retry_safe_no_op",
+      "Reading an already-read notification succeeds with noOp: true.",
+    ),
     notes: null,
   },
   {

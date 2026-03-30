@@ -33,7 +33,22 @@ stdout:
   "id": "notif-1",
   "title": "ENG-123 was assigned to you",
   "readAt": "2026-03-13T07:00:00Z",
-  "archivedAt": null
+  "archivedAt": null,
+  "noOp": false
+}
+'
+stderr:
+""
+`;
+
+snapshot[`Notification Read Command - Already Read 1`] = `
+stdout:
+'{
+  "id": "notif-1",
+  "title": "ENG-123 was assigned to you",
+  "readAt": "2026-03-13T07:00:00Z",
+  "archivedAt": null,
+  "noOp": true
 }
 '
 stderr:

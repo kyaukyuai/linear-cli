@@ -32,6 +32,7 @@ import {
 } from "./issue-comment-utils.ts"
 import { buildIssueUpdateDryRunPayload } from "./issue-dry-run-payload.ts"
 import { maybeHandleIssueDescriptionParseError } from "./issue-description-parse.ts"
+import { buildPartialSuccessDetails } from "../../utils/retry_semantics.ts"
 
 const COMMENT_CREATE_TIMEOUT_MS = 15_000
 
@@ -556,17 +557,21 @@ function buildIssueUpdateCommentFailureError(
     {
       suggestion: `Retry with \`${retryCommand}\`.`,
       cause: error,
-      details: {
-        failureStage: "comment_create",
-        failureMode,
-        retryable: true,
-        retryCommand,
-        partialSuccess: {
+      details: buildPartialSuccessDetails(
+        {
           issueUpdated: true,
           commentAttempted: true,
           issue,
         },
-      },
+        {
+          failureStage: "comment_create",
+          retryable: true,
+          retryCommand,
+          extraDetails: {
+            failureMode,
+          },
+        },
+      ),
     },
   )
 }

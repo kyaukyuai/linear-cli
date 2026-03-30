@@ -33,7 +33,22 @@ stdout:
   "id": "notif-1",
   "title": "ENG-123 was assigned to you",
   "archivedAt": "2026-03-13T07:05:00Z",
-  "readAt": "2026-03-13T07:00:00Z"
+  "readAt": "2026-03-13T07:00:00Z",
+  "noOp": false
+}
+'
+stderr:
+""
+`;
+
+snapshot[`Notification Archive Command - Already Archived 1`] = `
+stdout:
+'{
+  "id": "notif-1",
+  "title": "ENG-123 was assigned to you",
+  "archivedAt": "2026-03-13T07:05:00Z",
+  "readAt": "2026-03-13T07:00:00Z",
+  "noOp": true
 }
 '
 stderr:

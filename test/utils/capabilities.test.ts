@@ -76,3 +76,27 @@ Deno.test("buildCapabilitiesPayload includes raw api escape hatch traits", () =>
     "Outputs JSON by default and accepts stdin, but does not use a --json flag.",
   )
 })
+
+Deno.test("buildCapabilitiesPayload classifies notification writes as retry-safe no-op", () => {
+  const payload = buildCapabilitiesPayload("2.10.0")
+  const readCommand = payload.commands.find((entry) =>
+    entry.path === "linear notification read"
+  )
+  const archiveCommand = payload.commands.find((entry) =>
+    entry.path === "linear notification archive"
+  )
+
+  assert(readCommand != null)
+  assertEquals(readCommand.idempotency.category, "retry_safe_no_op")
+  assertEquals(
+    readCommand.idempotency.notes,
+    "Reading an already-read notification succeeds with noOp: true.",
+  )
+
+  assert(archiveCommand != null)
+  assertEquals(archiveCommand.idempotency.category, "retry_safe_no_op")
+  assertEquals(
+    archiveCommand.idempotency.notes,
+    "Archiving an already-archived notification succeeds with noOp: true.",
+  )
+})

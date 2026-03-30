@@ -5,6 +5,17 @@ import { getGraphQLClient } from "../../utils/graphql.ts"
 import { handleError } from "../../utils/errors.ts"
 import { withSpinner } from "../../utils/spinner.ts"
 
+const GetNotificationForRead = gql(`
+  query GetNotificationForRead($id: String!) {
+    notification(id: $id) {
+      id
+      title
+      readAt
+      archivedAt
+    }
+  }
+`)
+
 const ReadNotification = gql(`
   mutation ReadNotification($id: String!, $readAt: DateTime!) {
     notificationUpdate(id: $id, input: { readAt: $readAt }) {
@@ -28,22 +39,38 @@ export const readCommand = new Command()
     try {
       const client = getGraphQLClient()
       const result = await withSpinner(
-        () =>
-          client.request(ReadNotification, {
+        async () => {
+          const current = await client.request(GetNotificationForRead, {
+            id: notificationId,
+          })
+
+          if (current.notification.readAt != null) {
+            return {
+              noOp: true,
+              notification: current.notification,
+            }
+          }
+
+          const mutation = await client.request(ReadNotification, {
             id: notificationId,
             readAt: new Date().toISOString(),
-          }),
+          })
+
+          if (
+            !mutation.notificationUpdate.success ||
+            !mutation.notificationUpdate.notification
+          ) {
+            throw new Error("Failed to mark notification as read")
+          }
+
+          return {
+            noOp: false,
+            notification: mutation.notificationUpdate.notification,
+          }
+        },
         { enabled: !json },
       )
-
-      if (
-        !result.notificationUpdate.success ||
-        !result.notificationUpdate.notification
-      ) {
-        throw new Error("Failed to mark notification as read")
-      }
-
-      const notification = result.notificationUpdate.notification
+      const notification = result.notification
 
       if (json) {
         console.log(JSON.stringify(
@@ -52,10 +79,19 @@ export const readCommand = new Command()
             title: notification.title,
             readAt: notification.readAt,
             archivedAt: notification.archivedAt,
+            noOp: result.noOp,
           },
           null,
           2,
         ))
+        return
+      }
+
+      if (result.noOp) {
+        console.log(
+          green("✓") +
+            ` Notification already marked as read: ${notification.id}`,
+        )
         return
       }
 

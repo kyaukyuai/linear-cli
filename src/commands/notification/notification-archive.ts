@@ -5,6 +5,17 @@ import { getGraphQLClient } from "../../utils/graphql.ts"
 import { handleError } from "../../utils/errors.ts"
 import { withSpinner } from "../../utils/spinner.ts"
 
+const GetNotificationForArchive = gql(`
+  query GetNotificationForArchive($id: String!) {
+    notification(id: $id) {
+      id
+      title
+      archivedAt
+      readAt
+    }
+  }
+`)
+
 const ArchiveNotification = gql(`
   mutation ArchiveNotification($id: String!) {
     notificationArchive(id: $id) {
@@ -28,18 +39,37 @@ export const archiveCommand = new Command()
     try {
       const client = getGraphQLClient()
       const result = await withSpinner(
-        () => client.request(ArchiveNotification, { id: notificationId }),
+        async () => {
+          const current = await client.request(GetNotificationForArchive, {
+            id: notificationId,
+          })
+
+          if (current.notification.archivedAt != null) {
+            return {
+              noOp: true,
+              notification: current.notification,
+            }
+          }
+
+          const mutation = await client.request(ArchiveNotification, {
+            id: notificationId,
+          })
+
+          if (
+            !mutation.notificationArchive.success ||
+            !mutation.notificationArchive.entity
+          ) {
+            throw new Error("Failed to archive notification")
+          }
+
+          return {
+            noOp: false,
+            notification: mutation.notificationArchive.entity,
+          }
+        },
         { enabled: !json },
       )
-
-      if (
-        !result.notificationArchive.success ||
-        !result.notificationArchive.entity
-      ) {
-        throw new Error("Failed to archive notification")
-      }
-
-      const notification = result.notificationArchive.entity
+      const notification = result.notification
 
       if (json) {
         console.log(JSON.stringify(
@@ -48,10 +78,18 @@ export const archiveCommand = new Command()
             title: notification.title,
             archivedAt: notification.archivedAt,
             readAt: notification.readAt,
+            noOp: result.noOp,
           },
           null,
           2,
         ))
+        return
+      }
+
+      if (result.noOp) {
+        console.log(
+          green("✓") + ` Notification already archived: ${notification.id}`,
+        )
         return
       }
 
