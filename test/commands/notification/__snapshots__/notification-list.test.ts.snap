@@ -23,6 +23,22 @@ stderr:
 ""
 `;
 
+snapshot[`Notification List Command - JSON Validation Error 1`] = `
+stdout:
+'{
+  "success": false,
+  "error": {
+    "type": "validation_error",
+    "message": "Option \\\\"--limit\\\\" must be of type \\\\"number\\\\", but got \\\\"oops\\\\".",
+    "suggestion": null,
+    "context": "Failed to list notifications"
+  }
+}
+'
+stderr:
+""
+`;
+
 snapshot[`Notification List Command - Shows Notifications 1`] = `
 stdout:
 "UNREAD 2026-03-12T10:00:00Z notif-1
@@ -49,7 +65,10 @@ stdout:
     "title": "ENG-123 was assigned to you",
     "subtitle": "Fix login bug",
     "status": "unread",
-    "actor": "John Doe",
+    "actor": {
+      "name": "jdoe",
+      "displayName": "John Doe"
+    },
     "createdAt": "2026-03-12T10:00:00Z",
     "readAt": null,
     "archivedAt": null,

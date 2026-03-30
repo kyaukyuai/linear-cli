@@ -3,8 +3,17 @@ import { bold, gray, yellow } from "@std/fmt/colors"
 import { gql } from "../../__codegen__/gql.ts"
 import { getGraphQLClient } from "../../utils/graphql.ts"
 import { truncateText } from "../../utils/display.ts"
-import { handleError, ValidationError } from "../../utils/errors.ts"
+import { ValidationError } from "../../utils/errors.ts"
+import {
+  handleAutomationCommandError,
+  handleAutomationContractParseError,
+} from "../../utils/json_output.ts"
 import { withSpinner } from "../../utils/spinner.ts"
+import {
+  buildNotificationJsonPayload,
+  getNotificationActorName,
+  getNotificationStatus,
+} from "./notification-json.ts"
 
 const GetNotifications = gql(`
   query GetNotifications($first: Int!, $includeArchived: Boolean) {
@@ -29,29 +38,6 @@ const GetNotifications = gql(`
   }
 `)
 
-function getNotificationStatus(notification: {
-  readAt?: string | null
-  archivedAt?: string | null
-  snoozedUntilAt?: string | null
-}): string {
-  if (notification.archivedAt != null) {
-    return "archived"
-  }
-  if (notification.snoozedUntilAt != null) {
-    return "snoozed"
-  }
-  if (notification.readAt != null) {
-    return "read"
-  }
-  return "unread"
-}
-
-function getActorName(notification: {
-  actor?: { name: string; displayName?: string | null } | null
-}): string | null {
-  return notification.actor?.displayName || notification.actor?.name || null
-}
-
 export const listCommand = new Command()
   .name("list")
   .description("List notifications")
@@ -62,6 +48,13 @@ export const listCommand = new Command()
   .option("--unread", "Show only unread notifications")
   .option("-j, --json", "Output as JSON")
   .option("--no-pager", "Disable automatic paging for long output")
+  .error((error, cmd) =>
+    handleAutomationContractParseError(
+      error,
+      cmd,
+      "Failed to list notifications",
+    )
+  )
   .action(async ({ limit, includeArchived, unread, json }) => {
     try {
       if (limit < 1 || limit > 100) {
@@ -81,20 +74,7 @@ export const listCommand = new Command()
 
       if (json) {
         console.log(JSON.stringify(
-          notifications.map((notification) => ({
-            id: notification.id,
-            type: notification.type,
-            title: notification.title,
-            subtitle: notification.subtitle,
-            status: getNotificationStatus(notification),
-            actor: getActorName(notification),
-            createdAt: notification.createdAt,
-            readAt: notification.readAt,
-            archivedAt: notification.archivedAt,
-            snoozedUntilAt: notification.snoozedUntilAt,
-            url: notification.url,
-            inboxUrl: notification.inboxUrl,
-          })),
+          notifications.map(buildNotificationJsonPayload),
           null,
           2,
         ))
@@ -113,7 +93,7 @@ export const listCommand = new Command()
 
       for (const notification of notifications) {
         const status = getNotificationStatus(notification)
-        const actor = getActorName(notification)
+        const actor = getNotificationActorName(notification)
         const title = truncateText(notification.title, titleWidth)
 
         const statusLabel = status === "unread"
@@ -133,6 +113,6 @@ export const listCommand = new Command()
         console.log("")
       }
     } catch (error) {
-      handleError(error, "Failed to list notifications")
+      handleAutomationCommandError(error, "Failed to list notifications", json)
     }
   })

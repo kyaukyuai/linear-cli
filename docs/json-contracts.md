@@ -892,7 +892,7 @@ Top-level shape:
 
 ## Automation Contract v3
 
-Automation Contract v3 extends the stable read surface to document and webhook commands while preserving the v1/v2 guarantees for existing automation-tier commands.
+Automation Contract v3 extends the stable read surface to document, webhook, and notification commands while preserving the v1/v2 guarantees for existing automation-tier commands.
 
 The v3 additions are:
 
@@ -900,6 +900,8 @@ The v3 additions are:
 - `linear document view --json`
 - `linear webhook list --json`
 - `linear webhook view --json`
+- `linear notification list --json`
+- `linear notification count --json`
 
 V3 reuses the same failure envelope, value rules, and compatibility rules defined above.
 
@@ -1136,6 +1138,73 @@ Top-level shape:
     "name": "alice.bot",
     "displayName": "Alice Bot"
   }
+}
+```
+
+### `notificationActorRef`
+
+```json
+{
+  "name": "alice.bot",
+  "displayName": "Alice Bot"
+}
+```
+
+### `notificationRef`
+
+```json
+{
+  "id": "notif-123",
+  "type": "issueAssigned",
+  "title": "ENG-123 was assigned to you",
+  "subtitle": "Close rollout blockers",
+  "status": "unread",
+  "actor": {
+    "name": "alice.bot",
+    "displayName": "Alice Bot"
+  },
+  "createdAt": "2026-03-28T00:00:00.000Z",
+  "readAt": null,
+  "archivedAt": null,
+  "snoozedUntilAt": null,
+  "url": "https://linear.app/acme/issue/ENG-123/close-rollout-blockers",
+  "inboxUrl": "https://linear.app/acme/inbox/notif-123"
+}
+```
+
+### `notification list --json`
+
+Top-level shape:
+
+```json
+[
+  {
+    "id": "notif-123",
+    "type": "issueAssigned",
+    "title": "ENG-123 was assigned to you",
+    "subtitle": "Close rollout blockers",
+    "status": "unread",
+    "actor": {
+      "name": "alice.bot",
+      "displayName": "Alice Bot"
+    },
+    "createdAt": "2026-03-28T00:00:00.000Z",
+    "readAt": null,
+    "archivedAt": null,
+    "snoozedUntilAt": null,
+    "url": "https://linear.app/acme/issue/ENG-123/close-rollout-blockers",
+    "inboxUrl": "https://linear.app/acme/inbox/notif-123"
+  }
+]
+```
+
+### `notification count --json`
+
+Top-level shape:
+
+```json
+{
+  "unread": 7
 }
 ```
 

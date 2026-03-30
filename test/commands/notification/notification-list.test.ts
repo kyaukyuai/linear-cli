@@ -1,11 +1,12 @@
-import { snapshotTest } from "@cliffy/testing"
+import { snapshotTest as cliffySnapshotTest } from "@cliffy/testing"
 import { listCommand } from "../../../src/commands/notification/notification-list.ts"
+import { snapshotTest } from "../../utils/snapshot_with_fake_time.ts"
 import {
   commonDenoArgs,
   setupMockLinearServer,
 } from "../../utils/test-helpers.ts"
 
-await snapshotTest({
+await cliffySnapshotTest({
   name: "Notification List Command - Help Text",
   meta: import.meta,
   colors: false,
@@ -17,6 +18,18 @@ await snapshotTest({
 })
 
 await snapshotTest({
+  name: "Notification List Command - JSON Validation Error",
+  meta: import.meta,
+  colors: false,
+  canFail: true,
+  args: ["--limit", "oops", "--json"],
+  denoArgs: commonDenoArgs,
+  async fn() {
+    await listCommand.parse()
+  },
+})
+
+await cliffySnapshotTest({
   name: "Notification List Command - Shows Notifications",
   meta: import.meta,
   colors: false,
@@ -77,7 +90,7 @@ await snapshotTest({
   },
 })
 
-await snapshotTest({
+await cliffySnapshotTest({
   name: "Notification List Command - JSON Output",
   meta: import.meta,
   colors: false,
@@ -122,7 +135,7 @@ await snapshotTest({
   },
 })
 
-await snapshotTest({
+await cliffySnapshotTest({
   name: "Notification List Command - No Notifications",
   meta: import.meta,
   colors: false,
@@ -150,7 +163,7 @@ await snapshotTest({
   },
 })
 
-await snapshotTest({
+await cliffySnapshotTest({
   name: "Notification List Command - Unread Only",
   meta: import.meta,
   colors: false,
