@@ -4,13 +4,17 @@ import { open } from "@opensrc/deno-open"
 import { gql } from "../../__codegen__/gql.ts"
 import { getGraphQLClient } from "../../utils/graphql.ts"
 import { formatRelativeTime } from "../../utils/display.ts"
-import { shouldShowSpinner } from "../../utils/hyperlink.ts"
 import {
-  handleError,
   isClientError,
   isNotFoundError,
   NotFoundError,
 } from "../../utils/errors.ts"
+import {
+  handleAutomationCommandError,
+  handleAutomationContractParseError,
+} from "../../utils/json_output.ts"
+import { withSpinner } from "../../utils/spinner.ts"
+import { buildDocumentDetailJsonPayload } from "./document-json.ts"
 
 const GetDocument = gql(`
   query GetDocument($id: String!) {
@@ -24,15 +28,20 @@ const GetDocument = gql(`
       updatedAt
       creator {
         name
+        displayName
         email
       }
       project {
+        id
         name
         slugId
+        url
       }
       issue {
+        id
         identifier
         title
+        url
       }
     }
   }
@@ -46,16 +55,20 @@ export const viewCommand = new Command()
   .option("--raw", "Output raw markdown without rendering")
   .option("-w, --web", "Open document in browser")
   .option("--json", "Output full document as JSON")
+  .example(
+    "View a document as JSON",
+    "linear document view d4b93e3b2695 --json",
+  )
+  .error((error, cmd) =>
+    handleAutomationContractParseError(error, cmd, "Failed to view document")
+  )
   .action(async ({ raw, web, json }, id) => {
-    const { Spinner } = await import("@std/cli/unstable-spinner")
-    const showSpinner = shouldShowSpinner() && !raw && !json
-    const spinner = showSpinner ? new Spinner() : null
-    spinner?.start()
-
     try {
       const client = getGraphQLClient()
-      const result = await client.request(GetDocument, { id })
-      spinner?.stop()
+      const result = await withSpinner(
+        () => client.request(GetDocument, { id }),
+        { enabled: !raw && !json },
+      )
 
       const document = result.document
       if (!document) {
@@ -71,7 +84,9 @@ export const viewCommand = new Command()
 
       // JSON output
       if (json) {
-        console.log(JSON.stringify(document, null, 2))
+        console.log(
+          JSON.stringify(buildDocumentDetailJsonPayload(document), null, 2),
+        )
         return
       }
 
@@ -123,10 +138,14 @@ export const viewCommand = new Command()
       const terminalWidth = Deno.consoleSize().columns
       console.log(renderMarkdown(markdown, { lineWidth: terminalWidth }))
     } catch (error) {
-      spinner?.stop()
-      if (isClientError(error) && isNotFoundError(error)) {
-        throw new NotFoundError("Document", id)
-      }
-      handleError(error, "Failed to view document")
+      const handledError = isClientError(error) && isNotFoundError(error)
+        ? new NotFoundError("Document", id)
+        : error
+
+      handleAutomationCommandError(
+        handledError,
+        "Failed to view document",
+        json,
+      )
     }
   })

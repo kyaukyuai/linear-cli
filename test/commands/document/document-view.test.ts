@@ -1,10 +1,11 @@
-import { snapshotTest } from "@cliffy/testing"
+import { snapshotTest as cliffySnapshotTest } from "@cliffy/testing"
 import { viewCommand } from "../../../src/commands/document/document-view.ts"
 import { MockLinearServer } from "../../utils/mock_linear_server.ts"
+import { snapshotTest } from "../../utils/snapshot_with_fake_time.ts"
 import { commonDenoArgs } from "../../utils/test-helpers.ts"
 
 // Test help output
-await snapshotTest({
+await cliffySnapshotTest({
   name: "Document View Command - Help Text",
   meta: import.meta,
   colors: false,
@@ -15,8 +16,20 @@ await snapshotTest({
   },
 })
 
-// Test viewing a document
 await snapshotTest({
+  name: "Document View Command - JSON Missing Document Reference",
+  meta: import.meta,
+  colors: false,
+  canFail: true,
+  args: ["--json"],
+  denoArgs: commonDenoArgs,
+  async fn() {
+    await viewCommand.parse()
+  },
+})
+
+// Test viewing a document
+await cliffySnapshotTest({
   name: "Document View Command - View Document",
   meta: import.meta,
   colors: false,
@@ -63,7 +76,7 @@ await snapshotTest({
 })
 
 // Test viewing a document with --raw flag
-await snapshotTest({
+await cliffySnapshotTest({
   name: "Document View Command - Raw Output",
   meta: import.meta,
   colors: false,
@@ -110,7 +123,7 @@ await snapshotTest({
 })
 
 // Test JSON output
-await snapshotTest({
+await cliffySnapshotTest({
   name: "Document View Command - JSON Output",
   meta: import.meta,
   colors: false,
@@ -156,10 +169,42 @@ await snapshotTest({
   },
 })
 
-// NOTE: "Document Not Found" test removed - stack traces contain machine-specific paths
+await snapshotTest({
+  name: "Document View Command - JSON Document Not Found",
+  meta: import.meta,
+  colors: false,
+  canFail: true,
+  args: ["missing-doc", "--json"],
+  denoArgs: commonDenoArgs,
+  async fn() {
+    const server = new MockLinearServer([
+      {
+        queryName: "GetDocument",
+        variables: { id: "missing-doc" },
+        response: {
+          data: {
+            document: null,
+          },
+        },
+      },
+    ])
+
+    try {
+      await server.start()
+      Deno.env.set("LINEAR_GRAPHQL_ENDPOINT", server.getEndpoint())
+      Deno.env.set("LINEAR_API_KEY", "Bearer test-token")
+
+      await viewCommand.parse()
+    } finally {
+      await server.stop()
+      Deno.env.delete("LINEAR_GRAPHQL_ENDPOINT")
+      Deno.env.delete("LINEAR_API_KEY")
+    }
+  },
+})
 
 // Test document attached to issue
-await snapshotTest({
+await cliffySnapshotTest({
   name: "Document View Command - Document Attached To Issue",
   meta: import.meta,
   colors: false,

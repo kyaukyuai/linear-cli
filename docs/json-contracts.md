@@ -890,6 +890,131 @@ Top-level shape:
 }
 ```
 
+## Automation Contract v3
+
+Automation Contract v3 extends the stable read surface to document commands while preserving the v1/v2 guarantees for existing automation-tier commands.
+
+The v3 additions are:
+
+- `linear document list --json`
+- `linear document view --json`
+
+V3 reuses the same failure envelope, value rules, and compatibility rules defined above.
+
+### `documentCreatorRef`
+
+```json
+{
+  "name": "alice.bot",
+  "displayName": "Alice Bot",
+  "email": "alice@example.com"
+}
+```
+
+### `documentProjectRef`
+
+```json
+{
+  "id": "project-123",
+  "name": "Platform Refresh",
+  "slugId": "platform-refresh",
+  "url": "https://linear.app/acme/project/platform-refresh"
+}
+```
+
+### `documentIssueRef`
+
+```json
+{
+  "id": "issue-123",
+  "identifier": "ENG-123",
+  "title": "Close rollout blockers",
+  "url": "https://linear.app/acme/issue/ENG-123/close-rollout-blockers"
+}
+```
+
+### `documentRef`
+
+```json
+{
+  "id": "doc-123",
+  "title": "Runbook",
+  "slugId": "d4b93e3b2695",
+  "url": "https://linear.app/acme/document/runbook-d4b93e3b2695",
+  "createdAt": "2026-03-28T00:00:00.000Z",
+  "updatedAt": "2026-03-29T00:00:00.000Z",
+  "creator": {
+    "name": "alice.bot",
+    "displayName": "Alice Bot",
+    "email": "alice@example.com"
+  },
+  "project": {
+    "id": "project-123",
+    "name": "Platform Refresh",
+    "slugId": "platform-refresh",
+    "url": "https://linear.app/acme/project/platform-refresh"
+  },
+  "issue": null
+}
+```
+
+### `document list --json`
+
+Top-level shape:
+
+```json
+[
+  {
+    "id": "doc-123",
+    "title": "Runbook",
+    "slugId": "d4b93e3b2695",
+    "url": "https://linear.app/acme/document/runbook-d4b93e3b2695",
+    "createdAt": "2026-03-28T00:00:00.000Z",
+    "updatedAt": "2026-03-29T00:00:00.000Z",
+    "creator": {
+      "name": "alice.bot",
+      "displayName": "Alice Bot",
+      "email": "alice@example.com"
+    },
+    "project": {
+      "id": "project-123",
+      "name": "Platform Refresh",
+      "slugId": "platform-refresh",
+      "url": "https://linear.app/acme/project/platform-refresh"
+    },
+    "issue": null
+  }
+]
+```
+
+### `document view --json`
+
+Top-level shape:
+
+```json
+{
+  "id": "doc-123",
+  "title": "Runbook",
+  "slugId": "d4b93e3b2695",
+  "url": "https://linear.app/acme/document/runbook-d4b93e3b2695",
+  "createdAt": "2026-03-28T00:00:00.000Z",
+  "updatedAt": "2026-03-29T00:00:00.000Z",
+  "creator": {
+    "name": "alice.bot",
+    "displayName": "Alice Bot",
+    "email": "alice@example.com"
+  },
+  "project": {
+    "id": "project-123",
+    "name": "Platform Refresh",
+    "slugId": "platform-refresh",
+    "url": "https://linear.app/acme/project/platform-refresh"
+  },
+  "issue": null,
+  "content": "# Runbook\\n\\nSteps to roll out safely."
+}
+```
+
 ## Compatibility Rules
 
 Within a given Automation Contract version:

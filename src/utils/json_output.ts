@@ -97,6 +97,8 @@ const AUTOMATION_CONTRACT_CONTEXT_BY_PATH = new Map<string, string>([
   ["linear cycle next", "Failed to get next cycle"],
   ["linear milestone list", "Failed to list milestones"],
   ["linear milestone view", "Failed to view milestone"],
+  ["linear document list", "Failed to list documents"],
+  ["linear document view", "Failed to view document"],
 ])
 
 export function maybeHandleAutomationContractParseError(
