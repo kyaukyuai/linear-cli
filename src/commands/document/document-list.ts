@@ -1,9 +1,15 @@
 import { Command } from "@cliffy/command"
 import { gql } from "../../__codegen__/gql.ts"
+import type { ListDocumentsQueryVariables } from "../../__codegen__/graphql.ts"
 import { getGraphQLClient } from "../../utils/graphql.ts"
+import { resolveIssueInternalId } from "../../utils/linear.ts"
 import { getTimeAgo, padDisplay } from "../../utils/display.ts"
-import { shouldShowSpinner } from "../../utils/hyperlink.ts"
-import { handleError } from "../../utils/errors.ts"
+import {
+  handleAutomationCommandError,
+  handleAutomationContractParseError,
+} from "../../utils/json_output.ts"
+import { withSpinner } from "../../utils/spinner.ts"
+import { buildDocumentListJsonPayload } from "./document-json.ts"
 
 const ListDocuments = gql(`
   query ListDocuments($filter: DocumentFilter, $first: Int) {
@@ -13,17 +19,24 @@ const ListDocuments = gql(`
         title
         slugId
         url
+        createdAt
         updatedAt
         project {
+          id
           name
           slugId
+          url
         }
         issue {
+          id
           identifier
           title
+          url
         }
         creator {
           name
+          displayName
+          email
         }
       }
       pageInfo {
@@ -43,16 +56,16 @@ export const listCommand = new Command()
   .option("--json", "Output as JSON")
   .option("--limit <limit:number>", "Limit results", { default: 50 })
   .option("--no-pager", "Disable automatic paging for long output")
+  .example(
+    "List documents as JSON",
+    "linear document list --project platform-refresh --json",
+  )
+  .error((error, cmd) =>
+    handleAutomationContractParseError(error, cmd, "Failed to list documents")
+  )
   .action(async ({ project, issue, json, limit }) => {
-    const { Spinner } = await import("@std/cli/unstable-spinner")
-    const showSpinner = shouldShowSpinner() && !json
-    const spinner = showSpinner ? new Spinner() : null
-    spinner?.start()
-
     try {
-      // Build filter based on options
-      // deno-lint-ignore no-explicit-any
-      let filter: any = undefined
+      let filter: ListDocumentsQueryVariables["filter"] | undefined
 
       if (project) {
         filter = {
@@ -62,23 +75,32 @@ export const listCommand = new Command()
       }
 
       if (issue) {
+        const issueId = await resolveIssueInternalId(issue, {
+          suggestion:
+            "Use a full issue identifier like 'ENG-123' or just the number like '123'",
+        })
         filter = {
           ...filter,
-          issue: { identifier: { eq: issue.toUpperCase() } },
+          issue: { id: { eq: issueId } },
         }
       }
 
       const client = getGraphQLClient()
-      const result = await client.request(ListDocuments, {
-        filter,
-        first: limit,
-      })
-      spinner?.stop()
+      const result = await withSpinner(
+        () =>
+          client.request(ListDocuments, {
+            filter,
+            first: limit,
+          }),
+        { enabled: !json },
+      )
 
-      const documents = result.documents?.nodes || []
+      const documents = result.documents?.nodes ?? []
 
       if (json) {
-        console.log(JSON.stringify(documents, null, 2))
+        console.log(
+          JSON.stringify(documents.map(buildDocumentListJsonPayload), null, 2),
+        )
         return
       }
 
@@ -98,7 +120,7 @@ export const listCommand = new Command()
       )
 
       // Get attachment column (project name or issue identifier)
-      const getAttachment = (doc: typeof documents[0]) => {
+      const getAttachment = (doc: (typeof documents)[number]) => {
         if (doc.project?.name) return doc.project.name
         if (doc.issue?.identifier) return doc.issue.identifier
         return "-"
@@ -162,7 +184,6 @@ export const listCommand = new Command()
         )
       }
     } catch (error) {
-      spinner?.stop()
-      handleError(error, "Failed to list documents")
+      handleAutomationCommandError(error, "Failed to list documents", json)
     }
   })

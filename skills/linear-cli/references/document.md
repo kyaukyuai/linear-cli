@@ -46,7 +46,11 @@ Options:
   --issue          <issue>    - Filter by issue (identifier like TC-123)               
   --json                      - Output as JSON                                         
   --limit          <limit>    - Limit results                             (Default: 50)
-  --no-pager                  - Disable automatic paging for long output
+  --no-pager                  - Disable automatic paging for long output               
+
+Examples:
+
+  List documents as JSON linear document list --project platform-refresh --json
 ```
 
 ### view
@@ -66,7 +70,11 @@ Options:
   -w, --workspace  <slug>  - Target workspace (uses credentials)    
   --raw                    - Output raw markdown without rendering  
   -w, --web                - Open document in browser               
-  --json                   - Output full document as JSON
+  --json                   - Output full document as JSON           
+
+Examples:
+
+  View a document as JSON linear document view d4b93e3b2695 --json
 ```
 
 ### create

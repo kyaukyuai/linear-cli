@@ -16,7 +16,27 @@ Options:
   -w, --web   - Open document in browser               
   --json      - Output full document as JSON           
 
+Examples:
+
+  View a document as JSON linear document view d4b93e3b2695 --json
+
 "
+stderr:
+""
+`;
+
+snapshot[`Document View Command - JSON Missing Document Reference 1`] = `
+stdout:
+'{
+  "success": false,
+  "error": {
+    "type": "unknown_error",
+    "message": "Missing argument(s): id",
+    "suggestion": null,
+    "context": "Failed to view document"
+  }
+}
+'
 stderr:
 ""
 `;
@@ -57,19 +77,38 @@ stdout:
   "id": "doc-1",
   "title": "Delegation System Spec",
   "slugId": "d4b93e3b2695",
-  "content": "# Delegation System\\\\n\\\\nThis document describes the delegation system architecture.",
   "url": "https://linear.app/test/document/delegation-system-spec-d4b93e3b2695",
   "createdAt": "2026-01-15T08:00:00Z",
   "updatedAt": "2026-01-18T10:30:00Z",
   "creator": {
     "name": "John Doe",
+    "displayName": null,
     "email": "john@example.com"
   },
   "project": {
+    "id": null,
     "name": "TinyCloud SDK",
-    "slugId": "tinycloud-sdk"
+    "slugId": "tinycloud-sdk",
+    "url": null
   },
-  "issue": null
+  "issue": null,
+  "content": "# Delegation System\\\\n\\\\nThis document describes the delegation system architecture."
+}
+'
+stderr:
+""
+`;
+
+snapshot[`Document View Command - JSON Document Not Found 1`] = `
+stdout:
+'{
+  "success": false,
+  "error": {
+    "type": "not_found",
+    "message": "Document not found: missing-doc",
+    "suggestion": null,
+    "context": "Failed to view document"
+  }
 }
 '
 stderr:
