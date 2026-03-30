@@ -6,19 +6,23 @@ import {
   getErrorSuggestion,
   getExitCode,
   getRateLimitDetails,
+  getWriteTimeoutDetails,
   handleError,
   isClientError,
   isDebugMode,
   isNotFoundError,
+  isWriteTimeoutError,
   NotFoundError,
   PlanLimitError,
   ValidationError,
+  WriteTimeoutError,
 } from "./errors.ts"
 
 export type JsonErrorType =
   | "validation_error"
   | "not_found"
   | "auth_error"
+  | "timeout_error"
   | "cli_error"
   | "graphql_error"
   | "unknown_error"
@@ -139,6 +143,9 @@ export function handleAutomationContractParseError(
 }
 
 function getJsonErrorType(error: unknown): JsonErrorType {
+  if (error instanceof WriteTimeoutError || isWriteTimeoutError(error)) {
+    return "timeout_error"
+  }
   if (error instanceof ValidationError) {
     return "validation_error"
   }
@@ -193,13 +200,24 @@ function getJsonErrorDetails(
   error: unknown,
 ): { details?: Record<string, unknown> } {
   const rateLimitDetails = getRateLimitDetails(error)
+  const writeTimeoutDetails = getWriteTimeoutDetails(error)
 
   if (error instanceof CliError && error.details != null) {
     return {
-      details: rateLimitDetails == null
-        ? error.details
-        : { ...error.details, rateLimit: rateLimitDetails },
+      details: {
+        ...error.details,
+        ...(rateLimitDetails == null ? {} : { rateLimit: rateLimitDetails }),
+        ...(writeTimeoutDetails == null ? {} : writeTimeoutDetails),
+      },
     }
+  }
+
+  if (writeTimeoutDetails != null && rateLimitDetails != null) {
+    return { details: { ...writeTimeoutDetails, rateLimit: rateLimitDetails } }
+  }
+
+  if (writeTimeoutDetails != null) {
+    return { details: writeTimeoutDetails }
   }
 
   if (rateLimitDetails != null) {

@@ -18,6 +18,11 @@ import {
   NotFoundError,
   ValidationError,
 } from "../../utils/errors.ts"
+import {
+  buildWriteTimeoutSuggestion,
+  resolveWriteTimeoutMs,
+  withWriteTimeout,
+} from "../../utils/write_timeout.ts"
 import { buildIssueRelationDryRunPayload } from "./issue-dry-run-payload.ts"
 
 const RELATION_TYPES = ["blocks", "blocked-by", "related", "duplicate"] as const
@@ -197,6 +202,10 @@ const addRelationCommand = new Command()
   .arguments("<issueId:string> <relationType:string> <relatedIssueId:string>")
   .option("-j, --json", "Output as JSON")
   .option("--dry-run", "Preview relation creation without mutating Linear")
+  .option(
+    "--timeout-ms <timeoutMs:number>",
+    "Timeout for write confirmation in milliseconds",
+  )
   .error((error, cmd) => {
     handleAutomationContractParseError(
       error,
@@ -222,12 +231,13 @@ const addRelationCommand = new Command()
   )
   .action(
     async (
-      { json, dryRun },
+      { json, dryRun, timeoutMs },
       issueIdArg,
       relationTypeArg,
       relatedIssueIdArg,
     ) => {
       try {
+        const writeTimeoutMs = resolveWriteTimeoutMs(timeoutMs)
         const relationType = relationTypeArg.toLowerCase() as RelationType
         if (!RELATION_TYPES.includes(relationType)) {
           throw new ValidationError(
@@ -287,13 +297,25 @@ const addRelationCommand = new Command()
 
           const createData = await withSpinner(
             () =>
-              client.request(CreateIssueRelation, {
-                input: {
-                  issueId: fromId,
-                  relatedIssueId: toId,
-                  type: apiType,
+              withWriteTimeout(
+                (signal) =>
+                  client.request({
+                    document: CreateIssueRelation,
+                    variables: {
+                      input: {
+                        issueId: fromId,
+                        relatedIssueId: toId,
+                        type: apiType,
+                      },
+                    },
+                    signal,
+                  }),
+                {
+                  operation: "issue relation creation",
+                  timeoutMs: writeTimeoutMs,
+                  suggestion: buildWriteTimeoutSuggestion(),
                 },
-              }),
+              ),
             { enabled: !json },
           )
 
@@ -337,6 +359,10 @@ const deleteRelationCommand = new Command()
   .arguments("<issueId:string> <relationType:string> <relatedIssueId:string>")
   .option("-j, --json", "Output as JSON")
   .option("--dry-run", "Preview relation deletion without mutating Linear")
+  .option(
+    "--timeout-ms <timeoutMs:number>",
+    "Timeout for write confirmation in milliseconds",
+  )
   .error((error, cmd) => {
     handleAutomationContractParseError(
       error,
@@ -346,12 +372,13 @@ const deleteRelationCommand = new Command()
   })
   .action(
     async (
-      { json, dryRun },
+      { json, dryRun, timeoutMs },
       issueIdArg,
       relationTypeArg,
       relatedIssueIdArg,
     ) => {
       try {
+        const writeTimeoutMs = resolveWriteTimeoutMs(timeoutMs)
         const relationType = relationTypeArg.toLowerCase() as RelationType
         if (!RELATION_TYPES.includes(relationType)) {
           throw new ValidationError(
@@ -402,7 +429,20 @@ const deleteRelationCommand = new Command()
         } else {
           const client = getGraphQLClient()
           const deleteData = await withSpinner(
-            () => client.request(DeleteIssueRelation, { id: relationId }),
+            () =>
+              withWriteTimeout(
+                (signal) =>
+                  client.request({
+                    document: DeleteIssueRelation,
+                    variables: { id: relationId },
+                    signal,
+                  }),
+                {
+                  operation: "issue relation deletion",
+                  timeoutMs: writeTimeoutMs,
+                  suggestion: buildWriteTimeoutSuggestion(),
+                },
+              ),
             { enabled: !json },
           )
 

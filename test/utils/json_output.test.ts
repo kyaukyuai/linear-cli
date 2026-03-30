@@ -6,6 +6,7 @@ import {
   CliError,
   NotFoundError,
   ValidationError,
+  WriteTimeoutError,
 } from "../../src/utils/errors.ts"
 import { buildJsonErrorEnvelope } from "../../src/utils/json_output.ts"
 
@@ -77,6 +78,26 @@ Deno.test("buildJsonErrorEnvelope maps AuthError", () => {
   assertEquals(envelope.error.context, null)
 })
 
+Deno.test("buildJsonErrorEnvelope maps WriteTimeoutError", () => {
+  const envelope = buildJsonErrorEnvelope(
+    new WriteTimeoutError("issue update", 30_000),
+    "Failed to update issue",
+  )
+
+  assertEquals(envelope.error.type, "timeout_error")
+  assertEquals(
+    envelope.error.message,
+    "Timed out waiting for issue update confirmation after 30000ms. The write may still have been accepted by Linear.",
+  )
+  assertEquals(envelope.error.context, "Failed to update issue")
+  assertEquals(envelope.error.details, {
+    failureMode: "timeout_waiting_for_confirmation",
+    timeoutMs: 30000,
+    operation: "issue update",
+    outcome: "unknown",
+  })
+})
+
 Deno.test("buildJsonErrorEnvelope maps generic CliError", () => {
   const envelope = buildJsonErrorEnvelope(new CliError("Something went wrong"))
 
@@ -110,6 +131,31 @@ Deno.test("buildJsonErrorEnvelope includes CliError details when present", () =>
         createdCount: 1,
       },
     },
+  })
+})
+
+Deno.test("buildJsonErrorEnvelope preserves timeout details for wrapped CliError", () => {
+  const envelope = buildJsonErrorEnvelope(
+    new CliError("Issue update timed out", {
+      cause: new WriteTimeoutError("issue update", 45_000),
+      details: {
+        partialSuccess: {
+          issueUpdated: false,
+        },
+      },
+    }),
+    "Failed to update issue",
+  )
+
+  assertEquals(envelope.error.type, "timeout_error")
+  assertEquals(envelope.error.details, {
+    partialSuccess: {
+      issueUpdated: false,
+    },
+    failureMode: "timeout_waiting_for_confirmation",
+    timeoutMs: 45000,
+    operation: "issue update",
+    outcome: "unknown",
   })
 })
 

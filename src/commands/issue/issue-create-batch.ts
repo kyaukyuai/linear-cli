@@ -19,6 +19,11 @@ import { emitDryRunOutput } from "../../utils/dry_run.ts"
 import { withSpinner } from "../../utils/spinner.ts"
 import { CliError, NotFoundError, ValidationError } from "../../utils/errors.ts"
 import {
+  buildWriteTimeoutSuggestion,
+  resolveWriteTimeoutMs,
+  withWriteTimeout,
+} from "../../utils/write_timeout.ts"
+import {
   buildIssueWritePayload,
   type IssueWritePayloadIssue,
 } from "./issue-write-payload.ts"
@@ -297,11 +302,24 @@ async function buildIssueCreateInput(
 
 async function createIssue(
   input: IssueCreateInput,
-  options: { json: boolean; message: string },
+  options: { json: boolean; message: string; timeoutMs: number },
 ): Promise<IssueWritePayloadIssue> {
   const client = getGraphQLClient()
   const data = await withSpinner(
-    () => client.request(CreateIssue, { input }),
+    () =>
+      withWriteTimeout(
+        (signal) =>
+          client.request({
+            document: CreateIssue,
+            variables: { input },
+            signal,
+          }),
+        {
+          operation: "issue creation",
+          timeoutMs: options.timeoutMs,
+          suggestion: buildWriteTimeoutSuggestion(),
+        },
+      ),
     { enabled: !options.json, message: options.message },
   )
 
@@ -353,6 +371,10 @@ export const createBatchCommand = new Command()
   )
   .option("-j, --json", "Output as JSON")
   .option("--dry-run", "Preview the batch without creating issues")
+  .option(
+    "--timeout-ms <timeoutMs:number>",
+    "Timeout for write confirmation in milliseconds",
+  )
   .example(
     "Preview a parent and child issue batch",
     "linear issue create-batch --file rollout.json --dry-run",
@@ -368,10 +390,11 @@ export const createBatchCommand = new Command()
       "Failed to create issue batch",
     )
   })
-  .action(async ({ file, team, project, json, dryRun }) => {
+  .action(async ({ file, team, project, json, dryRun, timeoutMs }) => {
     const jsonOutput = json === true
 
     try {
+      const writeTimeoutMs = resolveWriteTimeoutMs(timeoutMs)
       if (file == null) {
         throw new ValidationError(
           "Batch file is required",
@@ -451,7 +474,11 @@ export const createBatchCommand = new Command()
 
       const parent = await createIssue(
         parentInput,
-        { json: jsonOutput, message: "Creating parent issue" },
+        {
+          json: jsonOutput,
+          message: "Creating parent issue",
+          timeoutMs: writeTimeoutMs,
+        },
       )
       const parentPayload = buildIssueWritePayload(parent)
       createdParentAndChildren.push(parentPayload)
@@ -472,6 +499,7 @@ export const createBatchCommand = new Command()
               message: `Creating child issue ${
                 index + 1
               }/${batch.children.length}`,
+              timeoutMs: writeTimeoutMs,
             },
           )
           const childPayload = buildIssueWritePayload(createdChild)

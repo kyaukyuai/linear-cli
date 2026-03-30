@@ -30,6 +30,7 @@ Options:
   --no-interactive                   - Accepted for compatibility; issue update is always non-interactive  
   -j, --json                         - Output as JSON                                                      
   --dry-run                          - Preview the update without mutating the issue                       
+  --timeout-ms        <timeoutMs>    - Timeout for write confirmation in milliseconds                      
   -t, --title         <title>        - Title of the issue                                                  
 
 Examples:

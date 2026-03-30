@@ -327,6 +327,7 @@ Options:
   --cycle                    <cycle>        - Cycle name, number, or 'active'                                    
   -j, --json                                - Output as JSON                                                     
   --dry-run                                 - Preview the created issue without creating it                      
+  --timeout-ms               <timeoutMs>    - Timeout for write confirmation in milliseconds                     
   --no-pager                                - Accepted for compatibility; issue create does not use a pager      
   --no-use-default-template                 - Do not use default template for the issue                          
   --no-interactive                          - Disable interactive prompts                                        
@@ -352,13 +353,14 @@ Description:
 
 Options:
 
-  -h, --help                  - Show this help.                                 
-  -w, --workspace  <slug>     - Target workspace (uses credentials)             
-  --file           <path>     - Path to a JSON file describing the issue batch  
-  --team           <team>     - Team key override for the batch file            
-  --project        <project>  - Project name override for the batch file        
-  -j, --json                  - Output as JSON                                  
-  --dry-run                   - Preview the batch without creating issues       
+  -h, --help                    - Show this help.                                 
+  -w, --workspace  <slug>       - Target workspace (uses credentials)             
+  --file           <path>       - Path to a JSON file describing the issue batch  
+  --team           <team>       - Team key override for the batch file            
+  --project        <project>    - Project name override for the batch file        
+  -j, --json                    - Output as JSON                                  
+  --dry-run                     - Preview the batch without creating issues       
+  --timeout-ms     <timeoutMs>  - Timeout for write confirmation in milliseconds  
 
 Examples:
 
@@ -399,6 +401,7 @@ Options:
   --no-interactive                   - Accepted for compatibility; issue update is always non-interactive  
   -j, --json                         - Output as JSON                                                      
   --dry-run                          - Preview the update without mutating the issue                       
+  --timeout-ms        <timeoutMs>    - Timeout for write confirmation in milliseconds                      
   -t, --title         <title>        - Title of the issue                                                  
 
 Examples:
@@ -644,14 +647,15 @@ Description:
 
 Options:
 
-  -h, --help                   - Show this help.                                                 
-  -w, --workspace  <slug>      - Target workspace (uses credentials)                             
-  -b, --body       <text>      - Comment body text                                               
-  --body-file      <path>      - Read comment body from a file (preferred for markdown content)  
-  -p, --parent     <id>        - Parent comment ID for replies                                   
-  -a, --attach     <filepath>  - Attach a file to the comment (can be used multiple times)       
-  -j, --json                   - Output as JSON                                                  
-  --dry-run                    - Preview the comment without creating it                         
+  -h, --help                    - Show this help.                                                 
+  -w, --workspace  <slug>       - Target workspace (uses credentials)                             
+  -b, --body       <text>       - Comment body text                                               
+  --body-file      <path>       - Read comment body from a file (preferred for markdown content)  
+  -p, --parent     <id>         - Parent comment ID for replies                                   
+  -a, --attach     <filepath>   - Attach a file to the comment (can be used multiple times)       
+  -j, --json                    - Output as JSON                                                  
+  --dry-run                     - Preview the comment without creating it                         
+  --timeout-ms     <timeoutMs>  - Timeout for write confirmation in milliseconds                  
 
 Examples:
 
@@ -687,10 +691,11 @@ Description:
 
 Options:
 
-  -h, --help               - Show this help.                                                 
-  -w, --workspace  <slug>  - Target workspace (uses credentials)                             
-  -b, --body       <text>  - New comment body text                                           
-  --body-file      <path>  - Read comment body from a file (preferred for markdown content)  
+  -h, --help                    - Show this help.                                                 
+  -w, --workspace  <slug>       - Target workspace (uses credentials)                             
+  -b, --body       <text>       - New comment body text                                           
+  --body-file      <path>       - Read comment body from a file (preferred for markdown content)  
+  --timeout-ms     <timeoutMs>  - Timeout for write confirmation in milliseconds                  
 
 Examples:
 
@@ -769,10 +774,11 @@ Description:
 
 Options:
 
-  -h, --help               - Show this help.                                    
-  -w, --workspace  <slug>  - Target workspace (uses credentials)                
-  -j, --json               - Output as JSON                                     
-  --dry-run                - Preview relation creation without mutating Linear  
+  -h, --help                    - Show this help.                                    
+  -w, --workspace  <slug>       - Target workspace (uses credentials)                
+  -j, --json                    - Output as JSON                                     
+  --dry-run                     - Preview relation creation without mutating Linear  
+  --timeout-ms     <timeoutMs>  - Timeout for write confirmation in milliseconds     
 
 Examples:
 
@@ -793,10 +799,11 @@ Description:
 
 Options:
 
-  -h, --help               - Show this help.                                    
-  -w, --workspace  <slug>  - Target workspace (uses credentials)                
-  -j, --json               - Output as JSON                                     
-  --dry-run                - Preview relation deletion without mutating Linear
+  -h, --help                    - Show this help.                                    
+  -w, --workspace  <slug>       - Target workspace (uses credentials)                
+  -j, --json                    - Output as JSON                                     
+  --dry-run                     - Preview relation deletion without mutating Linear  
+  --timeout-ms     <timeoutMs>  - Timeout for write confirmation in milliseconds
 ```
 
 ##### list

@@ -18,6 +18,7 @@ import {
 import { emitDryRunOutput } from "../../utils/dry_run.ts"
 import { ValidationError } from "../../utils/errors.ts"
 import { readTextFromStdin } from "../../utils/stdin.ts"
+import { resolveWriteTimeoutMs } from "../../utils/write_timeout.ts"
 import { createIssueComment } from "./issue-comment-utils.ts"
 import { buildIssueCommentPayload } from "./issue-comment-payload.ts"
 import { buildIssueCommentDryRunPayload } from "./issue-dry-run-payload.ts"
@@ -39,6 +40,10 @@ export const commentAddCommand = new Command()
   )
   .option("-j, --json", "Output as JSON")
   .option("--dry-run", "Preview the comment without creating it")
+  .option(
+    "--timeout-ms <timeoutMs:number>",
+    "Timeout for write confirmation in milliseconds",
+  )
   .example(
     "Add a comment with a positional body",
     'linear issue comment add ENG-123 "Ready for review"',
@@ -59,9 +64,10 @@ export const commentAddCommand = new Command()
     handleAutomationContractParseError(error, cmd, "Failed to add comment")
   })
   .action(async (options, issueId, bodyArg) => {
-    const { body, bodyFile, parent, attach, json, dryRun } = options
+    const { body, bodyFile, parent, attach, json, dryRun, timeoutMs } = options
 
     try {
+      const writeTimeoutMs = resolveWriteTimeoutMs(timeoutMs)
       // Validate that body sources are not both provided
       if (body != null && bodyFile != null) {
         throw new ValidationError(
@@ -239,6 +245,7 @@ export const commentAddCommand = new Command()
 
       const comment = await createIssueComment(input, {
         spinnerEnabled: !json,
+        timeoutMs: writeTimeoutMs,
       })
 
       if (json) {

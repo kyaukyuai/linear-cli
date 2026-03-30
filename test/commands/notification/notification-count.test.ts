@@ -1,4 +1,3 @@
-import { snapshotTest as cliffySnapshotTest } from "@cliffy/testing"
 import { countCommand } from "../../../src/commands/notification/notification-count.ts"
 import { snapshotTest } from "../../utils/snapshot_with_fake_time.ts"
 import {
@@ -6,7 +5,7 @@ import {
   setupMockLinearServer,
 } from "../../utils/test-helpers.ts"
 
-await cliffySnapshotTest({
+await snapshotTest({
   name: "Notification Count Command - Help Text",
   meta: import.meta,
   colors: false,
@@ -29,7 +28,7 @@ await snapshotTest({
   },
 })
 
-await cliffySnapshotTest({
+await snapshotTest({
   name: "Notification Count Command - Shows Count",
   meta: import.meta,
   colors: false,
@@ -55,7 +54,7 @@ await cliffySnapshotTest({
   },
 })
 
-await cliffySnapshotTest({
+await snapshotTest({
   name: "Notification Count Command - JSON Output",
   meta: import.meta,
   colors: false,

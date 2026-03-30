@@ -17,6 +17,7 @@ interface MockResponse {
   response: Record<string, unknown>
   status?: number
   headers?: Record<string, string>
+  delayMs?: number
 }
 
 export class MockLinearServer {
@@ -95,6 +96,11 @@ export class MockLinearServer {
       const mockResponse = this.findMatchingResponse(query, variables)
 
       if (mockResponse) {
+        if (mockResponse.delayMs != null && mockResponse.delayMs > 0) {
+          await new Promise((resolve) =>
+            setTimeout(resolve, mockResponse.delayMs)
+          )
+        }
         const headers = {
           ...defaultHeaders,
           ...mockResponse.headers,

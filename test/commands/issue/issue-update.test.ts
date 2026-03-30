@@ -502,6 +502,103 @@ Deno.test(
 )
 
 Deno.test(
+  "Issue Update Command - JSON Output Distinguishes Write Timeout",
+  async () => {
+    const server = new MockLinearServer([
+      {
+        queryName: "GetTeamIdByKey",
+        variables: { team: "ENG" },
+        response: {
+          data: {
+            teams: {
+              nodes: [{ id: "team-eng-id" }],
+            },
+          },
+        },
+      },
+      {
+        queryName: "GetViewerId",
+        response: {
+          data: {
+            viewer: {
+              id: "user-self-123",
+            },
+          },
+        },
+      },
+      {
+        queryName: "UpdateIssue",
+        delayMs: 250,
+        response: {
+          data: {
+            issueUpdate: {
+              success: true,
+              issue: {
+                id: "issue-existing-123",
+                identifier: "ENG-123",
+                title: "Updated after timeout",
+                url:
+                  "https://linear.app/test-team/issue/ENG-123/updated-after-timeout",
+                dueDate: null,
+                assignee: {
+                  id: "user-self-123",
+                  name: "alice.bot",
+                  displayName: "Alice Bot",
+                  initials: "AB",
+                },
+                parent: null,
+                state: {
+                  name: "Todo",
+                  color: "#bec2c8",
+                },
+              },
+            },
+          },
+        },
+      },
+    ])
+
+    try {
+      await server.start()
+
+      const output = await runIssueUpdateSubprocess([
+        "ENG-123",
+        "--assignee",
+        "self",
+        "--json",
+        "--timeout-ms",
+        "50",
+      ], {
+        LINEAR_GRAPHQL_ENDPOINT: server.getEndpoint(),
+        LINEAR_API_KEY: "Bearer test-token",
+        NO_COLOR: "1",
+      })
+
+      assertEquals(output.success, false)
+      assertEquals(output.code, 6)
+      assertEquals(new TextDecoder().decode(output.stderr), "")
+
+      const result = JSON.parse(new TextDecoder().decode(output.stdout))
+      assertEquals(result.success, false)
+      assertEquals(result.error.type, "timeout_error")
+      assertEquals(
+        result.error.message,
+        "Timed out waiting for issue update confirmation after 50ms. The write may still have been accepted by Linear.",
+      )
+      assertEquals(
+        result.error.details.failureMode,
+        "timeout_waiting_for_confirmation",
+      )
+      assertEquals(result.error.details.timeoutMs, 50)
+      assertEquals(result.error.details.operation, "issue update")
+      assertEquals(result.error.details.outcome, "unknown")
+    } finally {
+      await server.stop()
+    }
+  },
+)
+
+Deno.test(
   "Issue Update Command - JSON Output Reports Partial Success When Comment Fails",
   async () => {
     const server = new MockLinearServer([

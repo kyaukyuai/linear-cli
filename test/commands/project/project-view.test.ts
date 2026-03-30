@@ -1,4 +1,3 @@
-import { snapshotTest as cliffySnapshotTest } from "@cliffy/testing"
 import { snapshotTest } from "../../utils/snapshot_with_fake_time.ts"
 import { viewCommand } from "../../../src/commands/project/project-view.ts"
 import { MockLinearServer } from "../../utils/mock_linear_server.ts"
@@ -20,7 +19,7 @@ function projectLookupResponse(slugId: string, id?: string) {
   }
 }
 
-await cliffySnapshotTest({
+await snapshotTest({
   name: "Project View Command - Help Text",
   meta: import.meta,
   colors: false,

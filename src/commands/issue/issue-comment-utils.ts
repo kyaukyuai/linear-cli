@@ -3,6 +3,10 @@ import type { CommentCreateInput } from "../../__codegen__/graphql.ts"
 import { CliError } from "../../utils/errors.ts"
 import { getGraphQLClient } from "../../utils/graphql.ts"
 import { withSpinner } from "../../utils/spinner.ts"
+import {
+  buildWriteTimeoutSuggestion,
+  withWriteTimeout,
+} from "../../utils/write_timeout.ts"
 import type { IssueCommentPayloadComment } from "./issue-comment-payload.ts"
 
 const addCommentMutation = `
@@ -42,6 +46,7 @@ type AddCommentMutationResponse = {
 export type CreateIssueCommentOptions = {
   spinnerEnabled?: boolean
   client?: GraphQLClient
+  timeoutMs?: number
 }
 
 export async function createIssueComment(
@@ -50,11 +55,34 @@ export async function createIssueComment(
 ): Promise<IssueCommentPayloadComment> {
   const client = options?.client ?? getGraphQLClient()
   const data = await withSpinner(
-    () =>
-      client.request<AddCommentMutationResponse, { input: CommentCreateInput }>(
-        addCommentMutation,
-        { input },
-      ),
+    () => {
+      if (options?.timeoutMs == null) {
+        return client.request<
+          AddCommentMutationResponse,
+          { input: CommentCreateInput }
+        >(
+          addCommentMutation,
+          { input },
+        )
+      }
+
+      return withWriteTimeout(
+        (signal) =>
+          client.request<
+            AddCommentMutationResponse,
+            { input: CommentCreateInput }
+          >({
+            document: addCommentMutation,
+            variables: { input },
+            signal,
+          }),
+        {
+          operation: "issue comment creation",
+          timeoutMs: options.timeoutMs,
+          suggestion: buildWriteTimeoutSuggestion(),
+        },
+      )
+    },
     { enabled: options?.spinnerEnabled ?? true },
   )
 
