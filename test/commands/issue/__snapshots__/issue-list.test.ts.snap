@@ -110,7 +110,8 @@ stdout:
         }
       ]
     },
-    "updatedAt": "2025-08-16T15:30:00Z"
+    "updatedAt": "2025-08-16T15:30:00Z",
+    "stateName": "In Progress"
   }
 ]
 '
@@ -153,7 +154,8 @@ stdout:
     "labels": {
       "nodes": []
     },
-    "updatedAt": "2025-08-14T15:30:00Z"
+    "updatedAt": "2025-08-14T15:30:00Z",
+    "stateName": "Backlog"
   }
 ]
 '
@@ -198,7 +200,8 @@ stdout:
     "labels": {
       "nodes": []
     },
-    "updatedAt": "2025-08-15T15:30:00Z"
+    "updatedAt": "2025-08-15T15:30:00Z",
+    "stateName": "Backlog"
   }
 ]
 '

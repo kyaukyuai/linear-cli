@@ -862,7 +862,10 @@ export async function fetchIssuesForState(
 
   return {
     issues: {
-      nodes: allIssues.slice(0, limit),
+      nodes: allIssues.slice(0, limit).map((issue) => ({
+        ...issue,
+        stateName: issue.state?.name ?? null,
+      })),
     },
   }
 }

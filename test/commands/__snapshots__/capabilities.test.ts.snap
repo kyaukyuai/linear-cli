@@ -60,6 +60,7 @@ agent-facing commands
   linear issue create-batch :: json=v1 dry-run=v1 inputs=flags,file success=automation_contract confirm=none idempotency=resumable_batch
     retry: Partial failures return createdIdentifiers and failedStep details.
   linear issue list :: json=v1 dry-run=no inputs=flags success=automation_contract confirm=none idempotency=read_only
+    note: Issue list JSON keeps the nested state object and adds a stateName convenience field.
   linear issue parent :: json=v1 dry-run=no inputs=flags success=automation_contract confirm=none idempotency=read_only
   linear issue relation add :: json=v1 dry-run=v1 inputs=flags success=automation_contract confirm=none idempotency=retry_safe_no_op
     retry: Adding an existing relation succeeds with noOp: true.
@@ -1763,7 +1764,7 @@ stdout:
         "category": "read_only",
         "notes": null
       },
-      "notes": null,
+      "notes": "Issue list JSON keeps the nested state object and adds a stateName convenience field.",
       "schema": {
         "coverage": "curated_primary_inputs",
         "arguments": [],

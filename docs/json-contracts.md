@@ -414,6 +414,7 @@ Top-level shape:
     "estimate": 3,
     "updatedAt": "2026-03-18T00:00:00.000Z",
     "assignee": null,
+    "stateName": "In Progress",
     "state": { "id": "state-1", "name": "In Progress", "color": "#f87462" },
     "team": { "id": "team-1", "key": "ENG", "name": "Engineering" },
     "project": null,

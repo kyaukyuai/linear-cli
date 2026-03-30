@@ -769,7 +769,8 @@ const COMMANDS: CapabilityRegistryEntry[] = [
     stdin: stdin("none"),
     confirmationBypass: null,
     idempotency: idempotency("read_only"),
-    notes: null,
+    notes:
+      "Issue list JSON keeps the nested state object and adds a stateName convenience field.",
   },
   {
     path: "linear issue parent",
