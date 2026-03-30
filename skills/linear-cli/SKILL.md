@@ -1,6 +1,6 @@
 ---
 name: linear-cli
-description: Manage Linear issues from the command line using the linear cli. This skill allows automating linear management.
+description: Use the linear-cli agent-first command surface to read and mutate Linear from Claude Code, Codex, or other agents. Use when the user wants stable JSON output, dry-run previews, workflow-safe automation, or direct CLI control over Linear issues, projects, cycles, documents, notifications, webhooks, or related resources.
 allowed-tools: Bash(linear:*), Bash(curl:*)
 ---
 

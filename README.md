@@ -52,6 +52,18 @@ Recommended docs:
 
 for agents and scripts, prefer a pinned install in the repo or runtime you control.
 
+### install as a skill
+
+If you want to expose `linear-cli` as a reusable skill on top of an existing agent runtime, install the skill directly from this repo:
+
+```bash
+npx skills add https://github.com/kyaukyuai/linear-cli/tree/main/skills/linear-cli
+```
+
+That path exposes only the public `linear-cli` skill instead of the repo's internal maintainer skills.
+
+Once installed, agents can load the skill and then call the local `linear` binary using the agent-first guidance in [skills/linear-cli/SKILL.md](skills/linear-cli/SKILL.md).
+
 ### npm / bun / pnpm
 
 install as a dependency to pin a version in your project:
@@ -74,6 +86,8 @@ bunx linear issue list
 > **note:** this package ships pre-built binaries
 
 package on npm: [@kyaukyuai/linear-cli](https://www.npmjs.com/package/@kyaukyuai/linear-cli)
+
+skills directory on GitHub: [skills/linear-cli](https://github.com/kyaukyuai/linear-cli/tree/main/skills/linear-cli)
 
 ### deno via jsr
 
