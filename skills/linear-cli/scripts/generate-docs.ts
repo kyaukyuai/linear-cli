@@ -283,10 +283,25 @@ function generateIndex(commands: CommandInfo[]): string {
   lines.push("## Quick Reference")
   lines.push("")
   lines.push("```bash")
+  lines.push("# Discover agent-facing capabilities")
+  lines.push("linear capabilities --json")
+  lines.push("")
   lines.push("# Get help for any command")
   lines.push("linear <command> --help")
   lines.push("linear <command> <subcommand> --help")
   lines.push("```")
+  lines.push("")
+  lines.push("## Agent Workflow")
+  lines.push("")
+  lines.push("Use the CLI in this order when possible:")
+  lines.push("")
+  lines.push("1. Discover command traits with `linear capabilities --json`")
+  lines.push("2. Read state with `--json`")
+  lines.push("3. Preview writes with `--dry-run --json`")
+  lines.push("4. Apply writes with `--json`")
+  lines.push(
+    "5. Inspect exit codes and `error.details` for retries or reconciliation",
+  )
 
   return lines.join("\n") + "\n"
 }
