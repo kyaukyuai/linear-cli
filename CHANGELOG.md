@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## [2.10.0] - 2026-03-30
+
+### Added
+
+- added Automation Contract v3 coverage for `document list/view --json`
+- added Automation Contract v3 coverage for `webhook list/view --json`
+- added Automation Contract v3 coverage for `notification list/count --json`
+
 ## [2.9.1] - 2026-03-29
 
 ### Fixed
