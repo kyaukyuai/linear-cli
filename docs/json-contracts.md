@@ -2,6 +2,8 @@
 
 `linear-cli` exposes many `--json` modes, but only a subset is treated as a stable automation contract.
 
+If you are integrating this CLI into an agent loop, read [agent-first.md](./agent-first.md) first, then use this document for the exact JSON and compatibility rules.
+
 This document defines the stable JSON contracts for org-wide automation. Each contract version applies to:
 
 - success payload top-level shapes

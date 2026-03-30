@@ -26,7 +26,20 @@
 ## Quick Reference
 
 ```bash
+# Discover agent-facing capabilities
+linear capabilities --json
+
 # Get help for any command
 linear <command> --help
 linear <command> <subcommand> --help
 ```
+
+## Agent Workflow
+
+Use the CLI in this order when possible:
+
+1. Discover command traits with `linear capabilities --json`
+2. Read state with `--json`
+3. Preview writes with `--dry-run --json`
+4. Apply writes with `--json`
+5. Inspect exit codes and `error.details` for retries or reconciliation

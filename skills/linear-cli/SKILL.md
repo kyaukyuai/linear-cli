@@ -6,7 +6,23 @@ allowed-tools: Bash(linear:*), Bash(curl:*)
 
 # Linear CLI
 
-A CLI to manage Linear issues from the command line, with git and jj integration.
+An agent-first Linear CLI with stable JSON contracts, dry-run previews, timeout-aware write semantics, and git/jj workflow integration.
+
+## Recommended Agent Loop
+
+When using this CLI from an agent, prefer this order:
+
+1. Discover command traits with `linear capabilities --json`
+2. Read Linear state with `--json`
+3. Preview writes with `--dry-run --json` when available
+4. Apply writes with `--json`
+5. Inspect exit codes and `error.details` instead of parsing styled terminal text
+
+Recommended supporting docs:
+
+- [../../docs/agent-first.md](../../docs/agent-first.md)
+- [../../docs/json-contracts.md](../../docs/json-contracts.md)
+- [../../docs/stdin-policy.md](../../docs/stdin-policy.md)
 
 ## Prerequisites
 
@@ -123,6 +139,12 @@ linear issue create --help
 ```
 
 Each command has detailed help output describing all available flags and options.
+
+For machine-readable discovery, prefer:
+
+```bash
+linear capabilities --json
+```
 
 ## Using the Linear GraphQL API Directly
 

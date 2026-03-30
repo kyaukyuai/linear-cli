@@ -16,6 +16,22 @@ linear notification list --json
 
 interactive commands still exist for humans, but the primary design goal is that an agent can discover commands incrementally, pass all important input as flags or stdin, and get machine-readable success or failure back.
 
+## for agents
+
+If an agent only reads one page, it should be this README plus the two contract docs below.
+
+- start with `linear capabilities --json` to discover which commands support `--json`, `--dry-run`, stdin, confirmation bypass, and stable automation contracts
+- prefer stable read surfaces such as `issue`, `project`, `cycle`, `milestone`, `document`, `webhook`, `notification`, `team`, `user`, `workflow-state`, `label`, `initiative`, and update feeds with `--json`
+- preview writes with `--dry-run --json` before mutating Linear
+- apply writes with `--json`, then inspect exit codes and `error.details` instead of parsing terminal text
+- use stdin or file flags for Markdown-heavy descriptions and comments instead of long inline shell strings
+
+Recommended docs:
+
+- [Agent workflow guide](docs/agent-first.md)
+- [Automation contracts](docs/json-contracts.md)
+- [stdin and pipeline policy](docs/stdin-policy.md)
+
 ## screencast demos
 
 <details>
@@ -105,6 +121,15 @@ compared to upstream, this fork adds and maintains capabilities aimed at automat
 - JSON output for scripting across issue, cycle, project, milestone, initiative, document, webhook, notification, and update-feed commands
 - workspace-aware auth management with keyring migration and default workspace support
 - generated AI-agent skill docs, Claude plugin metadata, npm publishing, and Homebrew tap release plumbing
+
+## docs map
+
+Use the docs in this order if you are building an agent integration:
+
+1. [docs/agent-first.md](docs/agent-first.md) for the recommended discover/read/preview/apply/recover loop
+2. [docs/json-contracts.md](docs/json-contracts.md) for stable JSON payloads, exit codes, timeout semantics, and dry-run envelopes
+3. [docs/stdin-policy.md](docs/stdin-policy.md) for pipeline and file-input conventions
+4. [`linear capabilities --json`](#automation-contract) for machine-readable command metadata at runtime
 
 ## automation contract
 
