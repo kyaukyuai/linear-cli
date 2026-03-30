@@ -54,13 +54,19 @@ for agents and scripts, prefer a pinned install in the repo or runtime you contr
 
 ### install as a skill
 
-If you want to expose `linear-cli` as a reusable skill on top of an existing agent runtime, install the skill directly from this repo:
+If you want to expose `linear-cli` as a reusable skill on top of an existing agent runtime, install it from the repo root and select the public skill explicitly:
+
+```bash
+npx skills add https://github.com/kyaukyuai/linear-cli --skill linear-cli
+```
+
+This is the most compatible form for `skills` and `skills.sh`.
+
+If you want to point directly at the skill directory instead, this also works:
 
 ```bash
 npx skills add https://github.com/kyaukyuai/linear-cli/tree/main/skills/linear-cli
 ```
-
-That path exposes only the public `linear-cli` skill instead of the repo's internal maintainer skills.
 
 Once installed, agents can load the skill and then call the local `linear` binary using the agent-first guidance in [skills/linear-cli/SKILL.md](skills/linear-cli/SKILL.md).
 
