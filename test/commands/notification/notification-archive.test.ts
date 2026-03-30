@@ -25,6 +25,19 @@ await snapshotTest({
   async fn() {
     const { cleanup } = await setupMockLinearServer([
       {
+        queryName: "GetNotificationForArchive",
+        response: {
+          data: {
+            notification: {
+              id: "notif-1",
+              title: "ENG-123 was assigned to you",
+              archivedAt: null,
+              readAt: "2026-03-13T07:00:00Z",
+            },
+          },
+        },
+      },
+      {
         queryName: "ArchiveNotification",
         response: {
           data: {
@@ -59,6 +72,19 @@ await snapshotTest({
   async fn() {
     const { cleanup } = await setupMockLinearServer([
       {
+        queryName: "GetNotificationForArchive",
+        response: {
+          data: {
+            notification: {
+              id: "notif-1",
+              title: "ENG-123 was assigned to you",
+              archivedAt: null,
+              readAt: "2026-03-13T07:00:00Z",
+            },
+          },
+        },
+      },
+      {
         queryName: "ArchiveNotification",
         response: {
           data: {
@@ -70,6 +96,37 @@ await snapshotTest({
                 archivedAt: "2026-03-13T07:05:00Z",
                 readAt: "2026-03-13T07:00:00Z",
               },
+            },
+          },
+        },
+      },
+    ])
+
+    try {
+      await archiveCommand.parse()
+    } finally {
+      await cleanup()
+    }
+  },
+})
+
+await snapshotTest({
+  name: "Notification Archive Command - Already Archived",
+  meta: import.meta,
+  colors: false,
+  args: ["notif-1", "--json"],
+  denoArgs: commonDenoArgs,
+  async fn() {
+    const { cleanup } = await setupMockLinearServer([
+      {
+        queryName: "GetNotificationForArchive",
+        response: {
+          data: {
+            notification: {
+              id: "notif-1",
+              title: "ENG-123 was assigned to you",
+              archivedAt: "2026-03-13T07:05:00Z",
+              readAt: "2026-03-13T07:00:00Z",
             },
           },
         },

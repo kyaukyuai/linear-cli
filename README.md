@@ -91,7 +91,7 @@ compared to upstream, this fork adds and maintains capabilities aimed at automat
 - a self-describing `linear capabilities --json` surface so agents can discover contract coverage and command traits without scraping docs
 - `--dry-run` previews for high-value write commands, including `issue start`, issue writes, and non-issue writes
 - stdin and pipeline support for high-value write paths
-- retry-safe semantics for relation add/delete and structured partial-failure details for batch writes
+- retry-safe semantics for relation add/delete, project label add/remove, notification read/archive, and structured partial-failure details
 - canonical `--yes` confirmation bypass handling for destructive commands
 - agent-focused help examples across automation-tier and major write commands
 - cycle workflows beyond listing and viewing, including `cycle current`, `cycle next`, `cycle create`, `cycle add`, and `cycle remove`
@@ -127,10 +127,11 @@ destructive commands use `--yes` as the canonical confirmation-bypass flag. lega
 for retry behavior, prefer treating write commands in three buckets:
 
 - retry-safe set-style writes: `issue update` without `--comment`, plus relation add/delete
+- retry-safe no-op writes: `project label add/remove` and `notification read/archive`, which succeed without mutating when the target state is already satisfied
 - non-idempotent writes: `issue create`, `issue comment add`, and `issue update --comment`
 - resumable but non-idempotent batch writes: `issue create-batch`, which reports `error.details.createdIdentifiers` and `failedStep` on partial failure
 
-when `issue update --comment --json` updates the issue but the follow-up comment fails, the command exits non-zero and includes `error.details.partialSuccess.issueUpdated = true` plus a standalone retry command for `issue comment add`.
+when a write command completes part of its work and then fails, `error.details` uses a shared partial-success shape with `failureStage`, `retryable`, and `partialSuccess`. for example, `issue update --comment --json` sets `error.details.partialSuccess.issueUpdated = true` and includes a standalone retry command for `issue comment add`.
 
 For stdin and pipeline behavior, see [docs/stdin-policy.md](docs/stdin-policy.md).
 

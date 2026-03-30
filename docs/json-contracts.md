@@ -402,10 +402,34 @@ When `issue update --json` is called with `--comment`, the same top-level object
 If the issue update succeeds but the follow-up comment fails or times out, the command exits non-zero with the normal failure envelope and adds:
 
 - `error.details.failureStage = "comment_create"`
+- `error.details.retryable = true`
+- `error.details.retryCommand` with a standalone `issue comment add` retry command
 - `error.details.partialSuccess.issueUpdated = true`
 - `error.details.partialSuccess.commentAttempted = true`
 - `error.details.partialSuccess.issue` with the same shape as the successful `issue update --json` payload
-- `error.details.retryCommand` with a standalone `issue comment add` retry command
+
+### Common Partial Success Shape
+
+When a write command completes a durable side effect and then fails in a later stage, `error.details` should use this shared shape:
+
+```json
+{
+  "failureStage": "comment_create",
+  "retryable": true,
+  "retryCommand": "linear issue comment add ENG-123 --body \"Ready for review\"",
+  "partialSuccess": {
+    "issueUpdated": true,
+    "commentAttempted": true
+  }
+}
+```
+
+Rules:
+
+- `failureStage` is always present and identifies the stage that did not complete
+- `retryable` is always present and tells callers whether a follow-up retry flow exists
+- `retryCommand` is optional and may be omitted when there is no safe standalone retry
+- `partialSuccess` is always present and contains command-specific facts about the side effects that already happened
 
 ### `issue relation add --json` and `issue relation delete --json`
 
@@ -598,6 +622,8 @@ These rules are intended for automation and agent callers.
 - `issue update --comment` is not idempotent because the comment side effect may be duplicated on retry.
 - `issue comment add` is non-idempotent. Callers should not blindly retry without checking whether the comment was already posted.
 - `issue relation add` and `issue relation delete` are idempotent and return success with `noOp: true` when the requested relation state is already satisfied.
+- `project label add` and `project label remove` are retry-safe no-op writes. They return success with `changed: false` when the requested label state is already satisfied.
+- `notification read` and `notification archive` are retry-safe no-op writes. They return success with `noOp: true` when the notification is already in the requested state.
 - `issue create-batch` is non-idempotent as a whole. Use `error.details.createdIdentifiers` and `failedStep` to resume manually instead of rerunning the same batch unchanged.
 
 ## Automation Contract v2

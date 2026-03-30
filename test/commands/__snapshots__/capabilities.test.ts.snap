@@ -74,10 +74,12 @@ agent-facing commands
   linear milestone list :: json=v2 dry-run=no stdin=none confirm=none idempotency=read_only
   linear milestone update :: json=no dry-run=v1 stdin=none confirm=none idempotency=retry_safe_update
   linear milestone view :: json=v2 dry-run=no stdin=none confirm=none idempotency=read_only
-  linear notification archive :: json=yes dry-run=no stdin=none confirm=none idempotency=retry_safe_update
+  linear notification archive :: json=yes dry-run=no stdin=none confirm=none idempotency=retry_safe_no_op
+    retry: Archiving an already-archived notification succeeds with noOp: true.
   linear notification count :: json=v3 dry-run=no stdin=none confirm=none idempotency=read_only
   linear notification list :: json=v3 dry-run=no stdin=none confirm=none idempotency=read_only
-  linear notification read :: json=yes dry-run=no stdin=none confirm=none idempotency=retry_safe_update
+  linear notification read :: json=yes dry-run=no stdin=none confirm=none idempotency=retry_safe_no_op
+    retry: Reading an already-read notification succeeds with noOp: true.
   linear project create :: json=yes dry-run=v1 stdin=none confirm=none idempotency=non_idempotent
   linear project delete :: json=no dry-run=v1 stdin=none confirm=--yes idempotency=destructive
   linear project label add :: json=yes dry-run=no stdin=none confirm=none idempotency=retry_safe_no_op
@@ -867,8 +869,8 @@ stdout:
       },
       "confirmationBypass": null,
       "idempotency": {
-        "category": "retry_safe_update",
-        "notes": null
+        "category": "retry_safe_no_op",
+        "notes": "Archiving an already-archived notification succeeds with noOp: true."
       },
       "notes": null
     },
@@ -930,8 +932,8 @@ stdout:
       },
       "confirmationBypass": null,
       "idempotency": {
-        "category": "retry_safe_update",
-        "notes": null
+        "category": "retry_safe_no_op",
+        "notes": "Reading an already-read notification succeeds with noOp: true."
       },
       "notes": null
     },
