@@ -28,7 +28,7 @@ snapshot[`Capabilities Command - Human Summary 1`] = `
 stdout:
 "linear-cli 2.11.0
 capabilities schema: v2
-automation contract latest: v4
+automation contract latest: v5
 dry-run preview contract: v1
 stdin policy: v1
 
@@ -50,6 +50,9 @@ agent-facing commands
   linear document list :: json=v3 dry-run=no inputs=flags success=automation_contract confirm=none idempotency=read_only
   linear document update :: json=no dry-run=v1 inputs=flags,stdin success=terminal_only confirm=none idempotency=retry_safe_update
   linear document view :: json=v3 dry-run=no inputs=flags success=automation_contract confirm=none idempotency=read_only
+  linear initiative list :: json=v5 dry-run=no inputs=flags success=automation_contract confirm=none idempotency=read_only
+  linear initiative view :: json=v5 dry-run=no inputs=flags success=automation_contract confirm=none idempotency=read_only
+  linear initiative-update list :: json=v5 dry-run=no inputs=flags success=automation_contract confirm=none idempotency=read_only
   linear issue children :: json=v1 dry-run=no inputs=flags success=automation_contract confirm=none idempotency=read_only
   linear issue comment add :: json=v1 dry-run=v1 inputs=flags,stdin,file success=automation_contract confirm=none idempotency=non_idempotent
   linear issue comment update :: json=no dry-run=no inputs=flags,stdin,file success=terminal_only confirm=none idempotency=retry_safe_update
@@ -90,6 +93,7 @@ agent-facing commands
   linear project update :: json=no dry-run=v1 inputs=flags success=terminal_only confirm=none idempotency=retry_safe_update
   linear project view :: json=v2 dry-run=no inputs=flags success=automation_contract confirm=none idempotency=read_only
   linear project-label list :: json=v4 dry-run=no inputs=flags success=automation_contract confirm=none idempotency=read_only
+  linear project-update list :: json=v5 dry-run=no inputs=flags success=automation_contract confirm=none idempotency=read_only
   linear team list :: json=v4 dry-run=no inputs=flags success=automation_contract confirm=none idempotency=read_only
   linear team members :: json=v1 dry-run=no inputs=flags success=automation_contract confirm=none idempotency=read_only
   linear team view :: json=v4 dry-run=no inputs=flags success=automation_contract confirm=none idempotency=read_only
@@ -118,12 +122,13 @@ stdout:
   },
   "contractVersions": {
     "automation": {
-      "latest": "v4",
+      "latest": "v5",
       "supported": [
         "v1",
         "v2",
         "v3",
-        "v4"
+        "v4",
+        "v5"
       ]
     },
     "dryRunPreview": {
@@ -140,7 +145,7 @@ stdout:
     }
   },
   "automationTier": {
-    "latestVersion": "v4",
+    "latestVersion": "v5",
     "byVersion": {
       "v1": [
         "linear issue children",
@@ -183,6 +188,12 @@ stdout:
         "linear user view",
         "linear workflow-state list",
         "linear workflow-state view"
+      ],
+      "v5": [
+        "linear initiative list",
+        "linear initiative view",
+        "linear initiative-update list",
+        "linear project-update list"
       ]
     },
     "allCommands": [
@@ -219,7 +230,11 @@ stdout:
       "linear user list",
       "linear user view",
       "linear workflow-state list",
-      "linear workflow-state view"
+      "linear workflow-state view",
+      "linear initiative list",
+      "linear initiative view",
+      "linear initiative-update list",
+      "linear project-update list"
     ]
   },
   "commands": [
@@ -965,6 +980,250 @@ stdout:
         "success": {
           "category": "automation_contract",
           "contractTarget": "automation_contract:v3",
+          "shape": "object",
+          "exitCode": 0
+        },
+        "preview": {
+          "supported": false,
+          "contractTarget": null,
+          "shape": null,
+          "exitCode": null
+        },
+        "failure": {
+          "jsonWhenRequested": true,
+          "parseErrorsJsonWhenRequested": true,
+          "exitCodes": [
+            {
+              "code": 1,
+              "meaning": "generic_failure"
+            },
+            {
+              "code": 4,
+              "meaning": "auth_error"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "path": "linear initiative list",
+      "summary": "List initiatives",
+      "json": {
+        "supported": true,
+        "contractVersion": "v5"
+      },
+      "dryRun": {
+        "supported": false,
+        "contractVersion": null
+      },
+      "stdin": {
+        "mode": "none"
+      },
+      "confirmationBypass": null,
+      "idempotency": {
+        "category": "read_only",
+        "notes": null
+      },
+      "notes": null,
+      "schema": {
+        "coverage": "curated_primary_inputs",
+        "arguments": [],
+        "flags": [
+          {
+            "name": "--json",
+            "short": "-j",
+            "required": false,
+            "valueType": "boolean",
+            "description": "Emit machine-readable JSON output."
+          },
+          {
+            "name": "--status",
+            "short": "-s",
+            "required": false,
+            "valueType": "string",
+            "description": "Filter by initiative status."
+          },
+          {
+            "name": "--all-statuses",
+            "short": null,
+            "required": false,
+            "valueType": "boolean",
+            "description": "Include all initiative statuses."
+          },
+          {
+            "name": "--owner",
+            "short": "-o",
+            "required": false,
+            "valueType": "user_ref",
+            "description": "Filter by owner username or email."
+          },
+          {
+            "name": "--archived",
+            "short": null,
+            "required": false,
+            "valueType": "boolean",
+            "description": "Include archived initiatives."
+          }
+        ],
+        "inputModes": [
+          "flags"
+        ]
+      },
+      "output": {
+        "success": {
+          "category": "automation_contract",
+          "contractTarget": "automation_contract:v5",
+          "shape": "array",
+          "exitCode": 0
+        },
+        "preview": {
+          "supported": false,
+          "contractTarget": null,
+          "shape": null,
+          "exitCode": null
+        },
+        "failure": {
+          "jsonWhenRequested": true,
+          "parseErrorsJsonWhenRequested": true,
+          "exitCodes": [
+            {
+              "code": 1,
+              "meaning": "generic_failure"
+            },
+            {
+              "code": 4,
+              "meaning": "auth_error"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "path": "linear initiative view",
+      "summary": "View an initiative",
+      "json": {
+        "supported": true,
+        "contractVersion": "v5"
+      },
+      "dryRun": {
+        "supported": false,
+        "contractVersion": null
+      },
+      "stdin": {
+        "mode": "none"
+      },
+      "confirmationBypass": null,
+      "idempotency": {
+        "category": "read_only",
+        "notes": null
+      },
+      "notes": null,
+      "schema": {
+        "coverage": "curated_primary_inputs",
+        "arguments": [
+          {
+            "name": "initiative",
+            "required": true,
+            "valueType": "string",
+            "description": "Initiative ID, slug, or name."
+          }
+        ],
+        "flags": [
+          {
+            "name": "--json",
+            "short": "-j",
+            "required": false,
+            "valueType": "boolean",
+            "description": "Emit machine-readable JSON output."
+          }
+        ],
+        "inputModes": [
+          "flags"
+        ]
+      },
+      "output": {
+        "success": {
+          "category": "automation_contract",
+          "contractTarget": "automation_contract:v5",
+          "shape": "object",
+          "exitCode": 0
+        },
+        "preview": {
+          "supported": false,
+          "contractTarget": null,
+          "shape": null,
+          "exitCode": null
+        },
+        "failure": {
+          "jsonWhenRequested": true,
+          "parseErrorsJsonWhenRequested": true,
+          "exitCodes": [
+            {
+              "code": 1,
+              "meaning": "generic_failure"
+            },
+            {
+              "code": 4,
+              "meaning": "auth_error"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "path": "linear initiative-update list",
+      "summary": "List initiative status updates",
+      "json": {
+        "supported": true,
+        "contractVersion": "v5"
+      },
+      "dryRun": {
+        "supported": false,
+        "contractVersion": null
+      },
+      "stdin": {
+        "mode": "none"
+      },
+      "confirmationBypass": null,
+      "idempotency": {
+        "category": "read_only",
+        "notes": null
+      },
+      "notes": null,
+      "schema": {
+        "coverage": "curated_primary_inputs",
+        "arguments": [
+          {
+            "name": "initiative",
+            "required": true,
+            "valueType": "string",
+            "description": "Initiative ID, slug, or name."
+          }
+        ],
+        "flags": [
+          {
+            "name": "--json",
+            "short": "-j",
+            "required": false,
+            "valueType": "boolean",
+            "description": "Emit machine-readable JSON output."
+          },
+          {
+            "name": "--limit",
+            "short": null,
+            "required": false,
+            "valueType": "integer",
+            "description": "Limit returned initiative updates."
+          }
+        ],
+        "inputModes": [
+          "flags"
+        ]
+      },
+      "output": {
+        "success": {
+          "category": "automation_contract",
+          "contractTarget": "automation_contract:v5",
           "shape": "object",
           "exitCode": 0
         },
@@ -3421,6 +3680,85 @@ stdout:
           "category": "automation_contract",
           "contractTarget": "automation_contract:v4",
           "shape": "array",
+          "exitCode": 0
+        },
+        "preview": {
+          "supported": false,
+          "contractTarget": null,
+          "shape": null,
+          "exitCode": null
+        },
+        "failure": {
+          "jsonWhenRequested": true,
+          "parseErrorsJsonWhenRequested": true,
+          "exitCodes": [
+            {
+              "code": 1,
+              "meaning": "generic_failure"
+            },
+            {
+              "code": 4,
+              "meaning": "auth_error"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "path": "linear project-update list",
+      "summary": "List project status updates",
+      "json": {
+        "supported": true,
+        "contractVersion": "v5"
+      },
+      "dryRun": {
+        "supported": false,
+        "contractVersion": null
+      },
+      "stdin": {
+        "mode": "none"
+      },
+      "confirmationBypass": null,
+      "idempotency": {
+        "category": "read_only",
+        "notes": null
+      },
+      "notes": null,
+      "schema": {
+        "coverage": "curated_primary_inputs",
+        "arguments": [
+          {
+            "name": "project",
+            "required": true,
+            "valueType": "project_ref",
+            "description": "Project ID or slug."
+          }
+        ],
+        "flags": [
+          {
+            "name": "--json",
+            "short": "-j",
+            "required": false,
+            "valueType": "boolean",
+            "description": "Emit machine-readable JSON output."
+          },
+          {
+            "name": "--limit",
+            "short": null,
+            "required": false,
+            "valueType": "integer",
+            "description": "Limit returned project updates."
+          }
+        ],
+        "inputModes": [
+          "flags"
+        ]
+      },
+      "output": {
+        "success": {
+          "category": "automation_contract",
+          "contractTarget": "automation_contract:v5",
+          "shape": "object",
           "exitCode": 0
         },
         "preview": {

@@ -2,19 +2,25 @@ import { Command } from "@cliffy/command"
 import { unicodeWidth } from "@std/cli"
 import { open } from "@opensrc/deno-open"
 import { gql } from "../../__codegen__/gql.ts"
-import { getGraphQLClient } from "../../utils/graphql.ts"
-import { padDisplay, truncateText } from "../../utils/display.ts"
+import type { InitiativeFilter } from "../../__codegen__/graphql.ts"
 import { getOption } from "../../config.ts"
-import { shouldShowSpinner } from "../../utils/hyperlink.ts"
 import { LINEAR_WEB_BASE_URL } from "../../const.ts"
+import { padDisplay, truncateText } from "../../utils/display.ts"
+import { NotFoundError, ValidationError } from "../../utils/errors.ts"
+import { getGraphQLClient } from "../../utils/graphql.ts"
+import { shouldShowSpinner } from "../../utils/hyperlink.ts"
 import {
-  handleError,
-  NotFoundError,
-  ValidationError,
-} from "../../utils/errors.ts"
+  handleAutomationCommandError,
+  handleAutomationContractParseError,
+} from "../../utils/json_output.ts"
+import { withSpinner } from "../../utils/spinner.ts"
+import { buildInitiativeListJsonPayload } from "./initiative-json.ts"
 
-const GetInitiatives = gql(`
-  query GetInitiatives($filter: InitiativeFilter, $includeArchived: Boolean) {
+const GetInitiativesForAutomationContractV5 = gql(`
+  query GetInitiativesForAutomationContractV5(
+    $filter: InitiativeFilter
+    $includeArchived: Boolean
+  ) {
     initiatives(filter: $filter, includeArchived: $includeArchived) {
       nodes {
         id
@@ -30,6 +36,7 @@ const GetInitiatives = gql(`
         archivedAt
         owner {
           id
+          name
           displayName
           initials
         }
@@ -47,25 +54,32 @@ const GetInitiatives = gql(`
   }
 `)
 
-// Initiative status display names and order
-// Note: InitiativeStatus enum values are: Planned, Active, Completed
+const GetViewerForInitiativesForAutomationContractV5 = gql(`
+  query GetViewerForInitiativesForAutomationContractV5 {
+    viewer {
+      organization {
+        urlKey
+      }
+    }
+  }
+`)
+
 const INITIATIVE_STATUS_ORDER: Record<string, number> = {
-  "Active": 1,
-  "Planned": 2,
-  "Completed": 3,
+  Active: 1,
+  Planned: 2,
+  Completed: 3,
 }
 
 const INITIATIVE_STATUS_DISPLAY: Record<string, string> = {
-  "Active": "Active",
-  "Planned": "Planned",
-  "Completed": "Completed",
+  Active: "Active",
+  Planned: "Planned",
+  Completed: "Completed",
 }
 
-// Map user input (lowercase) to API values (capitalized)
 const STATUS_INPUT_MAP: Record<string, string> = {
-  "active": "Active",
-  "planned": "Planned",
-  "completed": "Completed",
+  active: "Active",
+  planned: "Planned",
+  completed: "Completed",
 }
 
 export const listCommand = new Command()
@@ -82,80 +96,90 @@ export const listCommand = new Command()
   .option("-j, --json", "Output as JSON")
   .option("--archived", "Include archived initiatives")
   .option("--no-pager", "Disable automatic paging for long output")
+  .example(
+    "List initiatives as JSON",
+    "linear initiative list --json",
+  )
+  .error((error, cmd) =>
+    handleAutomationContractParseError(
+      error,
+      cmd,
+      "Failed to list initiatives",
+    )
+  )
   .action(async ({ status, allStatuses, owner, web, app, json, archived }) => {
-    // Handle open in browser/app
-    if (web || app) {
-      let workspace = getOption("workspace")
-      if (!workspace) {
-        // Get workspace from viewer if not configured
-        const client = getGraphQLClient()
-        const viewerQuery = gql(`
-          query GetViewerForInitiatives {
-            viewer {
-              organization {
-                urlKey
-              }
-            }
-          }
-        `)
-        const result = await client.request(viewerQuery)
-        workspace = result.viewer.organization.urlKey
+    try {
+      if (json && (web || app)) {
+        throw new ValidationError(
+          "Cannot combine --json with --web or --app",
+          {
+            suggestion:
+              "Use either `linear initiative list --json` or `linear initiative list --web`.",
+          },
+        )
       }
 
-      const url = `${LINEAR_WEB_BASE_URL}/${workspace}/initiatives`
-      const destination = app ? "Linear.app" : "web browser"
-      console.log(`Opening ${url} in ${destination}`)
-      await open(url, app ? { app: { name: "Linear" } } : undefined)
-      return
-    }
+      if (web || app) {
+        let workspace = getOption("workspace")
+        if (!workspace) {
+          const client = getGraphQLClient()
+          const result = await client.request(
+            GetViewerForInitiativesForAutomationContractV5,
+          )
+          workspace = result.viewer.organization.urlKey
+        }
 
-    const { Spinner } = await import("@std/cli/unstable-spinner")
-    const showSpinner = shouldShowSpinner() && !json
-    const spinner = showSpinner ? new Spinner() : null
-    spinner?.start()
+        const url = `${LINEAR_WEB_BASE_URL}/${workspace}/initiatives`
+        const destination = app ? "Linear.app" : "web browser"
+        console.log(`Opening ${url} in ${destination}`)
+        await open(
+          url,
+          app ? { app: { name: "Linear" } } : undefined,
+        )
+        return
+      }
 
-    try {
-      // Build filter
-      // deno-lint-ignore no-explicit-any
-      const filter: any = {}
+      const filter: InitiativeFilter = {}
 
-      // Status filter
       if (status) {
         const statusLower = status.toLowerCase()
         const apiStatus = STATUS_INPUT_MAP[statusLower]
         if (!apiStatus) {
-          spinner?.stop()
           throw new ValidationError(
             `Invalid status: ${status}. Valid values: ${
               Object.keys(STATUS_INPUT_MAP).join(", ")
             }`,
+            {
+              suggestion:
+                "Use `active`, `planned`, or `completed`, or omit `--status` and use `--all-statuses`.",
+            },
           )
         }
         filter.status = { eq: apiStatus }
       } else if (!allStatuses) {
-        // Default to active only
         filter.status = { eq: "Active" }
       }
 
-      // Owner filter
       if (owner) {
         const { lookupUserId } = await import("../../utils/linear.ts")
         const ownerId = await lookupUserId(owner)
         if (!ownerId) {
-          spinner?.stop()
           throw new NotFoundError("Owner", owner)
         }
         filter.owner = { id: { eq: ownerId } }
       }
 
       const client = getGraphQLClient()
-      const result = await client.request(GetInitiatives, {
-        filter: Object.keys(filter).length > 0 ? filter : undefined,
-        includeArchived: archived || false,
-      })
-      spinner?.stop()
+      const result = await withSpinner(
+        () =>
+          client.request(GetInitiativesForAutomationContractV5, {
+            filter: Object.keys(filter).length > 0 ? filter : undefined,
+            includeArchived: archived || false,
+          }),
+        { enabled: !json && shouldShowSpinner() },
+      )
 
-      let initiatives = result.initiatives?.nodes || []
+      let initiatives = result.initiatives?.nodes ?? []
 
       if (initiatives.length === 0) {
         if (json) {
@@ -166,7 +190,6 @@ export const listCommand = new Command()
         return
       }
 
-      // Sort initiatives by status then by name
       initiatives = initiatives.sort((a, b) => {
         const statusA = INITIATIVE_STATUS_ORDER[a.status] || 999
         const statusB = INITIATIVE_STATUS_ORDER[b.status] || 999
@@ -178,132 +201,109 @@ export const listCommand = new Command()
         return a.name.localeCompare(b.name)
       })
 
-      // JSON output
       if (json) {
-        const jsonOutput = initiatives.map((init) => ({
-          id: init.id,
-          slugId: init.slugId,
-          name: init.name,
-          description: init.description,
-          status: init.status,
-          health: init.health,
-          targetDate: init.targetDate,
-          owner: init.owner
-            ? {
-              id: init.owner.id,
-              displayName: init.owner.displayName,
-            }
-            : null,
-          projectCount: init.projects?.nodes?.length || 0,
-          url: init.url,
-          archivedAt: init.archivedAt,
-        }))
-        console.log(JSON.stringify(jsonOutput, null, 2))
+        console.log(JSON.stringify(
+          initiatives.map(buildInitiativeListJsonPayload),
+          null,
+          2,
+        ))
         return
       }
 
-      // Table output
       const { columns } = Deno.stdout.isTerminal()
         ? Deno.consoleSize()
         : { columns: 120 }
 
-      // Calculate column widths
-      const SLUG_WIDTH = Math.max(
+      const slugWidth = Math.max(
         4,
-        ...initiatives.map((init) => init.slugId.length),
+        ...initiatives.map((initiative) => initiative.slugId.length),
       )
-      const STATUS_WIDTH = Math.max(
+      const statusWidth = Math.max(
         6,
-        ...initiatives.map(
-          (init) =>
-            (INITIATIVE_STATUS_DISPLAY[init.status] || init.status).length,
+        ...initiatives.map((initiative) =>
+          (INITIATIVE_STATUS_DISPLAY[initiative.status] || initiative.status)
+            .length
         ),
       )
-      const HEALTH_WIDTH = Math.max(
+      const healthWidth = Math.max(
         6,
-        ...initiatives.map((init) => (init.health || "-").length),
+        ...initiatives.map((initiative) => (initiative.health || "-").length),
       )
-      const OWNER_WIDTH = Math.max(
+      const ownerWidth = Math.max(
         5,
-        ...initiatives.map((init) => (init.owner?.initials || "-").length),
-      )
-      const PROJECTS_WIDTH = Math.max(
-        4,
-        ...initiatives.map((init) =>
-          String(init.projects?.nodes?.length || 0).length
+        ...initiatives.map((initiative) =>
+          (initiative.owner?.initials || "-").length
         ),
       )
-      const TARGET_WIDTH = Math.max(
+      const projectsWidth = Math.max(
+        4,
+        ...initiatives.map((initiative) =>
+          String(initiative.projects?.nodes.length || 0).length
+        ),
+      )
+      const targetWidth = Math.max(
         10,
-        ...initiatives.map((init) => (init.targetDate || "-").length),
+        ...initiatives.map((initiative) =>
+          (initiative.targetDate || "-").length
+        ),
       )
 
-      const SPACE_WIDTH = 6 // Space between columns
-      const fixed = SLUG_WIDTH +
-        STATUS_WIDTH +
-        HEALTH_WIDTH +
-        OWNER_WIDTH +
-        PROJECTS_WIDTH +
-        TARGET_WIDTH +
-        SPACE_WIDTH
-      const PADDING = 1
+      const spaceWidth = 6
+      const fixed = slugWidth + statusWidth + healthWidth + ownerWidth +
+        projectsWidth + targetWidth + spaceWidth
+      const padding = 1
       const maxNameWidth = Math.max(
-        ...initiatives.map((init) => unicodeWidth(init.name)),
+        ...initiatives.map((initiative) => unicodeWidth(initiative.name)),
       )
-      const availableWidth = Math.max(columns - PADDING - fixed, 10)
+      const availableWidth = Math.max(columns - padding - fixed, 10)
       const nameWidth = Math.min(maxNameWidth, availableWidth)
 
-      // Print header
       const headerCells = [
-        padDisplay("SLUG", SLUG_WIDTH),
+        padDisplay("SLUG", slugWidth),
         padDisplay("NAME", nameWidth),
-        padDisplay("STATUS", STATUS_WIDTH),
-        padDisplay("HEALTH", HEALTH_WIDTH),
-        padDisplay("OWNER", OWNER_WIDTH),
-        padDisplay("PROJ", PROJECTS_WIDTH),
-        padDisplay("TARGET", TARGET_WIDTH),
+        padDisplay("STATUS", statusWidth),
+        padDisplay("HEALTH", healthWidth),
+        padDisplay("OWNER", ownerWidth),
+        padDisplay("PROJ", projectsWidth),
+        padDisplay("TARGET", targetWidth),
       ]
 
-      let headerMsg = ""
+      let headerMessage = ""
       const headerStyles: string[] = []
       headerCells.forEach((cell, index) => {
-        headerMsg += `%c${cell}`
+        headerMessage += `%c${cell}`
         headerStyles.push("text-decoration: underline")
         if (index < headerCells.length - 1) {
-          headerMsg += "%c %c"
+          headerMessage += "%c %c"
           headerStyles.push("text-decoration: none")
           headerStyles.push("text-decoration: underline")
         }
       })
-      console.log(headerMsg, ...headerStyles)
+      console.log(headerMessage, ...headerStyles)
 
-      // Print each initiative
-      for (const init of initiatives) {
-        const statusDisplay = INITIATIVE_STATUS_DISPLAY[init.status] ||
-          init.status
-        const health = init.health || "-"
-        const owner = init.owner?.initials || "-"
-        const projectCount = String(init.projects?.nodes?.length || 0)
-        const target = init.targetDate || "-"
-
-        const truncName = truncateText(init.name, nameWidth)
-        const paddedName = padDisplay(truncName, nameWidth)
-
-        // Get status color
+      for (const initiative of initiatives) {
+        const statusDisplay = INITIATIVE_STATUS_DISPLAY[initiative.status] ||
+          initiative.status
+        const health = initiative.health || "-"
+        const ownerInitials = initiative.owner?.initials || "-"
+        const projectCount = String(initiative.projects?.nodes.length || 0)
+        const target = initiative.targetDate || "-"
+        const truncatedName = truncateText(initiative.name, nameWidth)
+        const paddedName = padDisplay(truncatedName, nameWidth)
         const statusColors: Record<string, string> = {
           Active: "#27AE60",
           Planned: "#5E6AD2",
           Completed: "#6B6F76",
         }
-        const statusColor = statusColors[init.status] || "#6B6F76"
+        const statusColor = statusColors[initiative.status] || "#6B6F76"
 
         console.log(
-          `${padDisplay(init.slugId, SLUG_WIDTH)} ${paddedName} %c${
-            padDisplay(statusDisplay, STATUS_WIDTH)
-          }%c ${padDisplay(health, HEALTH_WIDTH)} ${
-            padDisplay(owner, OWNER_WIDTH)
-          } ${padDisplay(projectCount, PROJECTS_WIDTH)} %c${
-            padDisplay(target, TARGET_WIDTH)
+          `${padDisplay(initiative.slugId, slugWidth)} ${paddedName} %c${
+            padDisplay(statusDisplay, statusWidth)
+          }%c ${padDisplay(health, healthWidth)} ${
+            padDisplay(ownerInitials, ownerWidth)
+          } ${padDisplay(projectCount, projectsWidth)} %c${
+            padDisplay(target, targetWidth)
           }%c`,
           `color: ${statusColor}`,
           "",
@@ -312,7 +312,6 @@ export const listCommand = new Command()
         )
       }
     } catch (error) {
-      spinner?.stop()
-      handleError(error, "Failed to fetch initiatives")
+      handleAutomationCommandError(error, "Failed to list initiatives", json)
     }
   })

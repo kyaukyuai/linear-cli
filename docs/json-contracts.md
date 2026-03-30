@@ -32,8 +32,8 @@ Top-level shape:
   },
   "contractVersions": {
     "automation": {
-      "latest": "v4",
-      "supported": ["v1", "v2", "v3", "v4"]
+      "latest": "v5",
+      "supported": ["v1", "v2", "v3", "v4", "v5"]
     },
     "dryRunPreview": {
       "latest": "v1",
@@ -45,16 +45,20 @@ Top-level shape:
     }
   },
   "automationTier": {
-    "latestVersion": "v3",
+    "latestVersion": "v5",
     "byVersion": {
       "v1": ["linear issue list"],
       "v2": ["linear project list"],
-      "v3": ["linear document list"]
+      "v3": ["linear document list"],
+      "v4": ["linear team list"],
+      "v5": ["linear initiative list"]
     },
     "allCommands": [
       "linear issue list",
       "linear project list",
-      "linear document list"
+      "linear document list",
+      "linear team list",
+      "linear initiative list"
     ]
   },
   "commands": [
@@ -1733,6 +1737,191 @@ Top-level shape:
     }
   }
 ]
+```
+
+## Automation Contract v5
+
+Automation Contract v5 extends the stable read surface to initiative and update-feed commands while preserving the v1/v2/v3/v4 guarantees for existing automation-tier commands.
+
+The v5 additions are:
+
+- `linear initiative list --json`
+- `linear initiative view --json`
+- `linear project-update list --json`
+- `linear initiative-update list --json`
+
+V5 reuses the same failure envelope, value rules, and compatibility rules defined above.
+
+### `initiativeOwnerRef`
+
+```json
+{
+  "id": "user-123",
+  "name": "alice.bot",
+  "displayName": "Alice Bot",
+  "initials": "AB"
+}
+```
+
+### `initiativeRef`
+
+```json
+{
+  "id": "initiative-123",
+  "slugId": "agent-cli",
+  "name": "Agent CLI",
+  "description": "Make linear-cli self-describing for agents",
+  "status": "active",
+  "targetDate": "2026-04-15",
+  "health": "onTrack",
+  "color": "#3b82f6",
+  "icon": "🤖",
+  "url": "https://linear.app/acme/initiative/agent-cli",
+  "archivedAt": null,
+  "owner": {
+    "id": "user-123",
+    "name": "alice.bot",
+    "displayName": "Alice Bot",
+    "initials": "AB"
+  },
+  "projectCount": 2
+}
+```
+
+### `initiative list --json`
+
+Top-level shape:
+
+```json
+[
+  {
+    "id": "initiative-123",
+    "slugId": "agent-cli",
+    "name": "Agent CLI",
+    "description": "Make linear-cli self-describing for agents",
+    "status": "active",
+    "targetDate": "2026-04-15",
+    "health": "onTrack",
+    "color": "#3b82f6",
+    "icon": "🤖",
+    "url": "https://linear.app/acme/initiative/agent-cli",
+    "archivedAt": null,
+    "owner": {
+      "id": "user-123",
+      "name": "alice.bot",
+      "displayName": "Alice Bot",
+      "initials": "AB"
+    },
+    "projectCount": 2
+  }
+]
+```
+
+### `initiative view --json`
+
+Top-level shape:
+
+```json
+{
+  "id": "initiative-123",
+  "slugId": "agent-cli",
+  "name": "Agent CLI",
+  "description": "Make linear-cli self-describing for agents",
+  "status": "active",
+  "targetDate": "2026-04-15",
+  "health": "onTrack",
+  "color": "#3b82f6",
+  "icon": "🤖",
+  "url": "https://linear.app/acme/initiative/agent-cli",
+  "archivedAt": null,
+  "owner": {
+    "id": "user-123",
+    "name": "alice.bot",
+    "displayName": "Alice Bot",
+    "initials": "AB"
+  },
+  "projectCount": 2,
+  "createdAt": "2026-03-30T00:00:00.000Z",
+  "updatedAt": "2026-03-30T12:00:00.000Z",
+  "projects": [
+    {
+      "id": "project-123",
+      "slugId": "automation-contract-v5",
+      "name": "Automation Contract v5",
+      "status": {
+        "name": "In Progress",
+        "type": "started"
+      }
+    }
+  ]
+}
+```
+
+### `projectUpdateRef`
+
+```json
+{
+  "id": "update-123",
+  "body": "Schema metadata landed.",
+  "health": "onTrack",
+  "url": "https://linear.app/acme/update/update-123",
+  "createdAt": "2026-03-30T09:00:00.000Z",
+  "author": {
+    "name": "alice.bot",
+    "displayName": "Alice Bot"
+  }
+}
+```
+
+### `project-update list --json`
+
+Top-level shape:
+
+```json
+{
+  "project": {
+    "id": "project-123",
+    "name": "Automation Contract v5",
+    "slugId": "automation-contract-v5"
+  },
+  "updates": [
+    {
+      "id": "update-123",
+      "body": "Schema metadata landed.",
+      "health": "onTrack",
+      "url": "https://linear.app/acme/update/update-123",
+      "createdAt": "2026-03-30T09:00:00.000Z",
+      "author": {
+        "name": "alice.bot",
+        "displayName": "Alice Bot"
+      }
+    }
+  ]
+}
+```
+
+### `initiative-update list --json`
+
+Top-level shape:
+
+```json
+{
+  "initiative": {
+    "id": "initiative-123",
+    "name": "Agent CLI",
+    "slugId": "agent-cli"
+  },
+  "updates": [
+    {
+      "id": "update-123",
+      "body": "Schema metadata landed.",
+      "health": "onTrack",
+      "url": "https://linear.app/acme/update/update-123",
+      "createdAt": "2026-03-30T09:00:00.000Z",
+      "author": "alice.bot"
+    }
+  ]
+}
 ```
 
 ## Compatibility Rules

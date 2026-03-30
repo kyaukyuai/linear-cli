@@ -62,5 +62,9 @@ Options:
   -w, --workspace  <slug>   - Target workspace (uses credentials)                    
   -j, --json                - Output as JSON                                         
   --limit          <limit>  - Limit results                             (Default: 10)
-  --no-pager                - Disable automatic paging for long output
+  --no-pager                - Disable automatic paging for long output               
+
+Examples:
+
+  List initiative updates as JSON linear initiative-update list initiative-slug --json
 ```

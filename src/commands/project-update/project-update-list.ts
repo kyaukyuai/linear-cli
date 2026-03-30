@@ -1,35 +1,20 @@
 import { Command } from "@cliffy/command"
-import { getGraphQLClient } from "../../utils/graphql.ts"
+import { gql } from "../../__codegen__/gql.ts"
 import { getTimeAgo, padDisplay, truncateText } from "../../utils/display.ts"
+import { NotFoundError } from "../../utils/errors.ts"
+import { getGraphQLClient } from "../../utils/graphql.ts"
+import {
+  handleAutomationCommandError,
+  handleAutomationContractParseError,
+} from "../../utils/json_output.ts"
 import { resolveProjectId } from "../../utils/linear.ts"
-import { shouldShowSpinner } from "../../utils/hyperlink.ts"
-import { handleError, NotFoundError } from "../../utils/errors.ts"
+import { withSpinner } from "../../utils/spinner.ts"
+import { buildProjectUpdateListJsonPayload } from "./project-update-json.ts"
 
-interface ProjectUpdateNode {
-  id: string
-  body: string | null
-  health: string | null
-  url: string
-  createdAt: string
-  user: {
-    name: string
-    displayName: string
-  } | null
-}
-
-interface ListProjectUpdatesQueryResult {
-  project: {
-    name: string
-    slugId: string
-    projectUpdates: {
-      nodes: ProjectUpdateNode[]
-    } | null
-  } | null
-}
-
-const ListProjectUpdatesQuery = /* GraphQL */ `
-  query ListProjectUpdates($id: String!, $first: Int) {
+const ListProjectUpdatesForAutomationContractV5 = gql(`
+  query ListProjectUpdatesForAutomationContractV5($id: String!, $first: Int) {
     project(id: $id) {
+      id
       name
       slugId
       projectUpdates(first: $first) {
@@ -47,7 +32,7 @@ const ListProjectUpdatesQuery = /* GraphQL */ `
       }
     }
   }
-`
+`)
 
 export const listCommand = new Command()
   .name("list")
@@ -57,42 +42,40 @@ export const listCommand = new Command()
   .option("--json", "Output as JSON")
   .option("--limit <limit:number>", "Limit results", { default: 10 })
   .option("--no-pager", "Disable automatic paging for long output")
+  .example(
+    "List project updates as JSON",
+    "linear project-update list project-slug --json",
+  )
+  .error((error, cmd) =>
+    handleAutomationContractParseError(
+      error,
+      cmd,
+      "Failed to fetch project updates",
+    )
+  )
   .action(async ({ json, limit }, projectId) => {
-    const { Spinner } = await import("@std/cli/unstable-spinner")
-    const showSpinner = shouldShowSpinner() && !json
-    const spinner = showSpinner ? new Spinner() : null
-    spinner?.start()
-
     try {
-      // Resolve project ID
       const resolvedProjectId = await resolveProjectId(projectId)
-
       const client = getGraphQLClient()
-      const result = await client.request<ListProjectUpdatesQueryResult>(
-        ListProjectUpdatesQuery,
-        {
-          id: resolvedProjectId,
-          first: limit,
-        },
+      const result = await withSpinner(
+        () =>
+          client.request(ListProjectUpdatesForAutomationContractV5, {
+            id: resolvedProjectId,
+            first: limit,
+          }),
+        { enabled: !json },
       )
-      spinner?.stop()
 
       const project = result.project
-      if (!project) {
+      if (project == null) {
         throw new NotFoundError("Project", projectId)
       }
 
-      const updates = project.projectUpdates?.nodes || []
+      const updates = project.projectUpdates?.nodes ?? []
 
       if (json) {
         console.log(JSON.stringify(
-          {
-            project: {
-              name: project.name,
-              slugId: project.slugId,
-            },
-            updates,
-          },
+          buildProjectUpdateListJsonPayload(project, updates),
           null,
           2,
         ))
@@ -107,70 +90,64 @@ export const listCommand = new Command()
       console.log(`Status updates for: ${project.name}`)
       console.log("")
 
-      // Calculate column widths based on actual data
       const { columns } = Deno.stdout.isTerminal()
         ? Deno.consoleSize()
         : { columns: 120 }
 
-      const ID_WIDTH = 8 // Short ID prefix
-
-      const HEALTH_WIDTH = Math.max(
-        6, // minimum width for "HEALTH" header
-        ...updates.map((u) => (u.health || "-").length),
+      const idWidth = 8
+      const healthWidth = Math.max(
+        6,
+        ...updates.map((update) => (update.health || "-").length),
+      )
+      const dateWidth = Math.max(
+        4,
+        ...updates.map((update) =>
+          getTimeAgo(new Date(update.createdAt)).length
+        ),
       )
 
-      const DATE_WIDTH = Math.max(
-        4, // minimum width for "DATE" header
-        ...updates.map((u) => getTimeAgo(new Date(u.createdAt)).length),
-      )
-
-      // Get author display name
-      const getAuthor = (update: typeof updates[0]) => {
+      const getAuthor = (update: typeof updates[number]) => {
         if (update.user?.displayName) return update.user.displayName
         if (update.user?.name) return update.user.name
         return "-"
       }
 
-      const AUTHOR_WIDTH = Math.max(
-        6, // minimum width for "AUTHOR" header
-        ...updates.map((u) => getAuthor(u).length),
+      const authorWidth = Math.max(
+        6,
+        ...updates.map((update) => getAuthor(update).length),
       )
 
-      const SPACE_WIDTH = 4 // spaces between columns
-      const fixed = ID_WIDTH + HEALTH_WIDTH + DATE_WIDTH + AUTHOR_WIDTH +
-        SPACE_WIDTH
-      const PADDING = 1
-      const availableWidth = Math.max(columns - PADDING - fixed, 10)
+      const spaceWidth = 4
+      const fixed = idWidth + healthWidth + dateWidth + authorWidth + spaceWidth
+      const padding = 1
+      const availableWidth = Math.max(columns - padding - fixed, 10)
 
-      // Print header
-      const header = [
-        padDisplay("ID", ID_WIDTH),
-        padDisplay("HEALTH", HEALTH_WIDTH),
-        padDisplay("DATE", DATE_WIDTH),
-        padDisplay("AUTHOR", AUTHOR_WIDTH),
+      const headerCells = [
+        padDisplay("ID", idWidth),
+        padDisplay("HEALTH", healthWidth),
+        padDisplay("DATE", dateWidth),
+        padDisplay("AUTHOR", authorWidth),
       ]
 
-      let headerMsg = ""
+      let headerMessage = ""
       const headerStyles: string[] = []
-      header.forEach((cell, index) => {
-        headerMsg += `%c${cell}`
+      headerCells.forEach((cell, index) => {
+        headerMessage += `%c${cell}`
         headerStyles.push("text-decoration: underline")
-        if (index < header.length - 1) {
-          headerMsg += "%c %c"
+        if (index < headerCells.length - 1) {
+          headerMessage += "%c %c"
           headerStyles.push("text-decoration: none")
           headerStyles.push("text-decoration: underline")
         }
       })
-      console.log(headerMsg, ...headerStyles)
+      console.log(headerMessage, ...headerStyles)
 
-      // Print each update
       for (const update of updates) {
         const shortId = update.id.slice(0, 8)
         const health = update.health || "-"
         const date = getTimeAgo(new Date(update.createdAt))
         const author = getAuthor(update)
 
-        // Get health color
         let healthColor = ""
         if (update.health === "onTrack") {
           healthColor = "color: green"
@@ -182,25 +159,24 @@ export const listCommand = new Command()
 
         if (healthColor) {
           console.log(
-            `${padDisplay(shortId, ID_WIDTH)} %c${
-              padDisplay(health, HEALTH_WIDTH)
-            }%c ${padDisplay(date, DATE_WIDTH)} ${
-              padDisplay(author, AUTHOR_WIDTH)
+            `${padDisplay(shortId, idWidth)} %c${
+              padDisplay(health, healthWidth)
+            }%c ${padDisplay(date, dateWidth)} ${
+              padDisplay(author, authorWidth)
             }`,
             healthColor,
             "",
           )
         } else {
           console.log(
-            `${padDisplay(shortId, ID_WIDTH)} ${
-              padDisplay(health, HEALTH_WIDTH)
-            } ${padDisplay(date, DATE_WIDTH)} ${
-              padDisplay(author, AUTHOR_WIDTH)
+            `${padDisplay(shortId, idWidth)} ${
+              padDisplay(health, healthWidth)
+            } ${padDisplay(date, dateWidth)} ${
+              padDisplay(author, authorWidth)
             }`,
           )
         }
 
-        // Show truncated body if available
         if (update.body) {
           const bodyPreview = update.body.replace(/\n/g, " ").trim()
           const truncatedBody = truncateText(bodyPreview, availableWidth)
@@ -208,7 +184,10 @@ export const listCommand = new Command()
         }
       }
     } catch (error) {
-      spinner?.stop()
-      handleError(error, "Failed to fetch project updates")
+      handleAutomationCommandError(
+        error,
+        "Failed to fetch project updates",
+        json,
+      )
     }
   })

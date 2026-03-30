@@ -1,0 +1,76 @@
+export const snapshot = {};
+
+snapshot[`Initiative List Command - Help Text 1`] = `
+stdout:
+"
+Usage: list
+
+Description:
+
+  List initiatives
+
+Options:
+
+  -h, --help                - Show this help.                                
+  -s, --status    <status>  - Filter by status (active, planned, completed)  
+  --all-statuses            - Show all statuses (default: active only)       
+  -o, --owner     <owner>   - Filter by owner (username or email)            
+  -w, --web                 - Open initiatives page in web browser           
+  -a, --app                 - Open initiatives page in Linear.app            
+  -j, --json                - Output as JSON                                 
+  --archived                - Include archived initiatives                   
+  --no-pager                - Disable automatic paging for long output       
+
+Examples:
+
+  List initiatives as JSON linear initiative list --json
+
+"
+stderr:
+""
+`;
+
+snapshot[`Initiative List Command - JSON Validation Error 1`] = `
+stdout:
+'{
+  "success": false,
+  "error": {
+    "type": "validation_error",
+    "message": "Invalid status: unknown. Valid values: active, planned, completed",
+    "suggestion": "Use \`active\`, \`planned\`, or \`completed\`, or omit \`--status\` and use \`--all-statuses\`.",
+    "context": "Failed to list initiatives"
+  }
+}
+'
+stderr:
+""
+`;
+
+snapshot[`Initiative List Command - JSON Output 1`] = `
+stdout:
+'[
+  {
+    "id": "init-1",
+    "slugId": "automation-contract-v5",
+    "name": "Automation Contract v5",
+    "description": "Expand remaining high-value read surfaces.",
+    "status": "Active",
+    "targetDate": "2026-04-30",
+    "health": "onTrack",
+    "color": "#5E6AD2",
+    "icon": "rocket",
+    "url": "https://linear.app/test/initiative/automation-contract-v5",
+    "archivedAt": null,
+    "owner": {
+      "id": "user-1",
+      "name": "yuya",
+      "displayName": "Yuya Kakui",
+      "initials": "YK"
+    },
+    "projectCount": 1
+  }
+]
+'
+stderr:
+""
+`;

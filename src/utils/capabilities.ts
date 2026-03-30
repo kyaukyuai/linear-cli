@@ -1,4 +1,4 @@
-export type AutomationContractVersion = "v1" | "v2" | "v3" | "v4"
+export type AutomationContractVersion = "v1" | "v2" | "v3" | "v4" | "v5"
 export type DryRunContractVersion = "v1"
 export type StdinPolicyVersion = "v1"
 export type CapabilitiesSchemaVersion = "v1" | "v2"
@@ -151,7 +151,7 @@ export type CapabilitiesPayload = {
   commands: CapabilityCommand[]
 }
 
-const AUTOMATION_CONTRACT_VERSIONS = ["v1", "v2", "v3", "v4"] as const
+const AUTOMATION_CONTRACT_VERSIONS = ["v1", "v2", "v3", "v4", "v5"] as const
 const DRY_RUN_CONTRACT_VERSIONS = ["v1"] as const
 const STDIN_POLICY_VERSIONS = ["v1"] as const
 
@@ -247,6 +247,9 @@ const JSON_FAILURE_COMMANDS = new Set<string>([
   "linear issue relation list",
   "linear issue update",
   "linear issue view",
+  "linear initiative list",
+  "linear initiative view",
+  "linear initiative-update list",
   "linear label list",
   "linear milestone list",
   "linear milestone view",
@@ -254,6 +257,7 @@ const JSON_FAILURE_COMMANDS = new Set<string>([
   "linear notification list",
   "linear project list",
   "linear project view",
+  "linear project-update list",
   "linear project-label list",
   "linear team list",
   "linear team members",
@@ -375,6 +379,12 @@ const PRIMARY_ARGUMENTS: Record<string, CapabilityArgumentSchema[]> = {
       false,
     ),
   ],
+  "linear initiative view": [
+    argument("initiative", "string", "Initiative ID, slug, or name."),
+  ],
+  "linear initiative-update list": [
+    argument("initiative", "string", "Initiative ID, slug, or name."),
+  ],
   "linear milestone view": [
     argument("milestone", "milestone_ref", "Milestone ID, slug, or name."),
   ],
@@ -388,6 +398,9 @@ const PRIMARY_ARGUMENTS: Record<string, CapabilityArgumentSchema[]> = {
     argument("project", "project_ref", "Project ID or slug."),
   ],
   "linear project view": [
+    argument("project", "project_ref", "Project ID or slug."),
+  ],
+  "linear project-update list": [
     argument("project", "project_ref", "Project ID or slug."),
   ],
   "linear team members": [
@@ -516,8 +529,20 @@ const FLAG_OVERRIDES: Record<string, CapabilityFlagSchema[]> = {
   "linear issue view": [
     flag("--no-comments", null, "boolean", "Skip raw comments in JSON output."),
   ],
+  "linear initiative list": [
+    flag("--status", "-s", "string", "Filter by initiative status."),
+    flag("--all-statuses", null, "boolean", "Include all initiative statuses."),
+    flag("--owner", "-o", "user_ref", "Filter by owner username or email."),
+    flag("--archived", null, "boolean", "Include archived initiatives."),
+  ],
+  "linear initiative-update list": [
+    flag("--limit", null, "integer", "Limit returned initiative updates."),
+  ],
   "linear project list": [
     flag("--team", null, "team_key", "Filter by team key."),
+  ],
+  "linear project-update list": [
+    flag("--limit", null, "integer", "Limit returned project updates."),
   ],
 }
 
@@ -527,6 +552,7 @@ const ARRAY_RESULT_COMMANDS = new Set<string>([
   "linear issue children",
   "linear issue list",
   "linear issue relation list",
+  "linear initiative list",
   "linear label list",
   "linear milestone list",
   "linear notification list",
@@ -644,6 +670,36 @@ const COMMANDS: CapabilityRegistryEntry[] = [
     path: "linear document view",
     summary: "View a document",
     json: jsonContract("v3"),
+    dryRun: dryRunContract(null),
+    stdin: stdin("none"),
+    confirmationBypass: null,
+    idempotency: idempotency("read_only"),
+    notes: null,
+  },
+  {
+    path: "linear initiative list",
+    summary: "List initiatives",
+    json: jsonContract("v5"),
+    dryRun: dryRunContract(null),
+    stdin: stdin("none"),
+    confirmationBypass: null,
+    idempotency: idempotency("read_only"),
+    notes: null,
+  },
+  {
+    path: "linear initiative view",
+    summary: "View an initiative",
+    json: jsonContract("v5"),
+    dryRun: dryRunContract(null),
+    stdin: stdin("none"),
+    confirmationBypass: null,
+    idempotency: idempotency("read_only"),
+    notes: null,
+  },
+  {
+    path: "linear initiative-update list",
+    summary: "List initiative status updates",
+    json: jsonContract("v5"),
     dryRun: dryRunContract(null),
     stdin: stdin("none"),
     confirmationBypass: null,
@@ -978,6 +1034,16 @@ const COMMANDS: CapabilityRegistryEntry[] = [
     notes: null,
   },
   {
+    path: "linear project-update list",
+    summary: "List project status updates",
+    json: jsonContract("v5"),
+    dryRun: dryRunContract(null),
+    stdin: stdin("none"),
+    confirmationBypass: null,
+    idempotency: idempotency("read_only"),
+    notes: null,
+  },
+  {
     path: "linear project-label list",
     summary: "List project labels",
     json: jsonContract("v4"),
@@ -1265,6 +1331,7 @@ function buildAutomationTier() {
     v2: [] as string[],
     v3: [] as string[],
     v4: [] as string[],
+    v5: [] as string[],
   }
 
   for (const command of CAPABILITY_COMMANDS) {
@@ -1275,13 +1342,14 @@ function buildAutomationTier() {
   }
 
   return {
-    latestVersion: "v4" as const,
+    latestVersion: "v5" as const,
     byVersion,
     allCommands: [
       ...byVersion.v1,
       ...byVersion.v2,
       ...byVersion.v3,
       ...byVersion.v4,
+      ...byVersion.v5,
     ],
   }
 }
@@ -1296,7 +1364,7 @@ export function buildCapabilitiesPayload(version: string): CapabilitiesPayload {
     },
     contractVersions: {
       automation: {
-        latest: "v4",
+        latest: "v5",
         supported: [...AUTOMATION_CONTRACT_VERSIONS],
       },
       dryRunPreview: {

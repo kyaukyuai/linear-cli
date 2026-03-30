@@ -53,7 +53,11 @@ Options:
   -a, --app                  - Open initiatives page in Linear.app            
   -j, --json                 - Output as JSON                                 
   --archived                 - Include archived initiatives                   
-  --no-pager                 - Disable automatic paging for long output
+  --no-pager                 - Disable automatic paging for long output       
+
+Examples:
+
+  List initiatives as JSON linear initiative list --json
 ```
 
 ### view
@@ -73,7 +77,11 @@ Options:
   -w, --workspace  <slug>  - Target workspace (uses credentials)  
   -w, --web                - Open in web browser                  
   -a, --app                - Open in Linear.app                   
-  -j, --json               - Output as JSON
+  -j, --json               - Output as JSON                       
+
+Examples:
+
+  View an initiative as JSON linear initiative view initiative-slug --json
 ```
 
 ### create

@@ -5,73 +5,41 @@ import {
   padDisplay,
   truncateText,
 } from "../../utils/display.ts"
-import { handleError, NotFoundError } from "../../utils/errors.ts"
+import { NotFoundError } from "../../utils/errors.ts"
 import { getGraphQLClient } from "../../utils/graphql.ts"
-import { shouldShowSpinner } from "../../utils/hyperlink.ts"
+import {
+  handleAutomationCommandError,
+  handleAutomationContractParseError,
+} from "../../utils/json_output.ts"
+import { withSpinner } from "../../utils/spinner.ts"
+import { resolveInitiativeId } from "../initiative/initiative-resolve.ts"
+import { buildInitiativeUpdateListJsonPayload } from "./initiative-update-json.ts"
 
-/**
- * Resolve initiative ID from UUID, slug, or name
- */
-async function resolveInitiativeId(
-  // deno-lint-ignore no-explicit-any
-  client: any,
-  idOrSlugOrName: string,
-): Promise<string | undefined> {
-  // Try as UUID first
-  if (
-    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
-      idOrSlugOrName,
-    )
+const ListInitiativeUpdatesForAutomationContractV5 = gql(`
+  query ListInitiativeUpdatesForAutomationContractV5(
+    $id: String!
+    $first: Int
   ) {
-    return idOrSlugOrName
-  }
-
-  // Try as slug
-  const slugQuery = gql(`
-    query GetInitiativeBySlugForListUpdates($slugId: String!) {
-      initiatives(filter: { slugId: { eq: $slugId } }) {
+    initiative(id: $id) {
+      id
+      name
+      slugId
+      initiativeUpdates(first: $first) {
         nodes {
           id
-          slugId
+          body
+          health
+          url
+          createdAt
+          user {
+            name
+          }
         }
       }
     }
-  `)
-
-  try {
-    const result = await client.request(slugQuery, { slugId: idOrSlugOrName })
-    if (result.initiatives?.nodes?.length > 0) {
-      return result.initiatives.nodes[0].id
-    }
-  } catch {
-    // Continue to name lookup
   }
+`)
 
-  // Try as name (case-insensitive)
-  const nameQuery = gql(`
-    query GetInitiativeByNameForListUpdates($name: String!) {
-      initiatives(filter: { name: { eqIgnoreCase: $name } }) {
-        nodes {
-          id
-          name
-        }
-      }
-    }
-  `)
-
-  try {
-    const result = await client.request(nameQuery, { name: idOrSlugOrName })
-    if (result.initiatives?.nodes?.length > 0) {
-      return result.initiatives.nodes[0].id
-    }
-  } catch {
-    // Not found
-  }
-
-  return undefined
-}
-
-// Health display colors
 const HEALTH_COLORS: Record<string, string> = {
   onTrack: "#27AE60",
   atRisk: "#F2994A",
@@ -92,74 +60,43 @@ export const listCommand = new Command()
   .option("-j, --json", "Output as JSON")
   .option("--limit <limit:number>", "Limit results", { default: 10 })
   .option("--no-pager", "Disable automatic paging for long output")
+  .example(
+    "List initiative updates as JSON",
+    "linear initiative-update list initiative-slug --json",
+  )
+  .error((error, cmd) =>
+    handleAutomationContractParseError(
+      error,
+      cmd,
+      "Failed to list initiative updates",
+    )
+  )
   .action(async ({ json, limit }, initiativeId) => {
-    const { Spinner } = await import("@std/cli/unstable-spinner")
-    const showSpinner = shouldShowSpinner() && !json
-    const spinner = showSpinner ? new Spinner() : null
-    spinner?.start()
-
     try {
       const client = getGraphQLClient()
-
-      // Resolve initiative ID
-      const resolvedId = await resolveInitiativeId(client, initiativeId)
-      if (!resolvedId) {
-        spinner?.stop()
-        throw new NotFoundError("Initiative", initiativeId)
-      }
-
-      const listQuery = gql(`
-        query ListInitiativeUpdates($id: String!, $first: Int) {
-          initiative(id: $id) {
-            name
-            slugId
-            initiativeUpdates(first: $first) {
-              nodes {
-                id
-                body
-                health
-                url
-                createdAt
-                user {
-                  name
-                }
-              }
-            }
-          }
-        }
-      `)
-
-      const result = await client.request(listQuery, {
-        id: resolvedId,
-        first: limit,
-      })
-
-      spinner?.stop()
+      const resolvedId = await resolveInitiativeId(initiativeId, client)
+      const result = await withSpinner(
+        () =>
+          client.request(ListInitiativeUpdatesForAutomationContractV5, {
+            id: resolvedId,
+            first: limit,
+          }),
+        { enabled: !json },
+      )
 
       const initiative = result.initiative
-      if (!initiative) {
+      if (initiative == null) {
         throw new NotFoundError("Initiative", initiativeId)
       }
 
-      const updates = initiative.initiativeUpdates?.nodes || []
+      const updates = initiative.initiativeUpdates?.nodes ?? []
 
-      // JSON output
       if (json) {
-        const jsonOutput = {
-          initiative: {
-            name: initiative.name,
-            slugId: initiative.slugId,
-          },
-          updates: updates.map((update) => ({
-            id: update.id,
-            body: update.body,
-            health: update.health,
-            url: update.url,
-            createdAt: update.createdAt,
-            author: update.user?.name || null,
-          })),
-        }
-        console.log(JSON.stringify(jsonOutput, null, 2))
+        console.log(JSON.stringify(
+          buildInitiativeUpdateListJsonPayload(initiative, updates),
+          null,
+          2,
+        ))
         return
       }
 
@@ -170,62 +107,51 @@ export const listCommand = new Command()
 
       console.log(`Status updates for: ${initiative.name}\n`)
 
-      // Calculate column widths
       const { columns } = Deno.stdout.isTerminal()
         ? Deno.consoleSize()
         : { columns: 120 }
-
-      // ID column - show first 8 chars of UUID
-      const ID_WIDTH = 8
-
-      // Health column
-      const HEALTH_WIDTH = Math.max(
+      const idWidth = 8
+      const healthWidth = Math.max(
         6,
-        ...updates.map((u) =>
-          u.health ? (HEALTH_DISPLAY[u.health] || u.health).length : 1
+        ...updates.map((update) =>
+          update.health
+            ? (HEALTH_DISPLAY[update.health] || update.health).length
+            : 1
         ),
       )
-
-      // Date column
-      const DATE_WIDTH = Math.max(
+      const dateWidth = Math.max(
         4,
-        ...updates.map((u) => formatRelativeTime(u.createdAt).length),
+        ...updates.map((update) => formatRelativeTime(update.createdAt).length),
       )
-
-      // Author column
-      const AUTHOR_WIDTH = Math.max(
+      const authorWidth = Math.max(
         6,
-        ...updates.map((u) => (u.user?.name || "-").length),
+        ...updates.map((update) => (update.user?.name || "-").length),
       )
+      const spaceWidth = 4
+      const fixed = idWidth + healthWidth + dateWidth + authorWidth + spaceWidth
+      const padding = 1
+      const availableWidth = Math.max(columns - padding - fixed, 10)
 
-      const SPACE_WIDTH = 4 // spaces between columns
-      const fixed = ID_WIDTH + HEALTH_WIDTH + DATE_WIDTH + AUTHOR_WIDTH +
-        SPACE_WIDTH
-      const PADDING = 1
-      const availableWidth = Math.max(columns - PADDING - fixed, 10)
-
-      // Print header
       const headerCells = [
-        padDisplay("ID", ID_WIDTH),
-        padDisplay("HEALTH", HEALTH_WIDTH),
-        padDisplay("DATE", DATE_WIDTH),
-        padDisplay("AUTHOR", AUTHOR_WIDTH),
+        padDisplay("ID", idWidth),
+        padDisplay("HEALTH", healthWidth),
+        padDisplay("DATE", dateWidth),
+        padDisplay("AUTHOR", authorWidth),
       ]
 
-      let headerMsg = ""
+      let headerMessage = ""
       const headerStyles: string[] = []
       headerCells.forEach((cell, index) => {
-        headerMsg += `%c${cell}`
+        headerMessage += `%c${cell}`
         headerStyles.push("text-decoration: underline")
         if (index < headerCells.length - 1) {
-          headerMsg += "%c %c"
+          headerMessage += "%c %c"
           headerStyles.push("text-decoration: none")
           headerStyles.push("text-decoration: underline")
         }
       })
-      console.log(headerMsg, ...headerStyles)
+      console.log(headerMessage, ...headerStyles)
 
-      // Print each update
       for (const update of updates) {
         const shortId = update.id.slice(0, 8)
         const healthDisplay = update.health
@@ -238,10 +164,10 @@ export const listCommand = new Command()
         const author = update.user?.name || "-"
 
         console.log(
-          `${padDisplay(shortId, ID_WIDTH)} %c${
-            padDisplay(healthDisplay, HEALTH_WIDTH)
-          }%c %c${padDisplay(date, DATE_WIDTH)}%c ${
-            padDisplay(author, AUTHOR_WIDTH)
+          `${padDisplay(shortId, idWidth)} %c${
+            padDisplay(healthDisplay, healthWidth)
+          }%c %c${padDisplay(date, dateWidth)}%c ${
+            padDisplay(author, authorWidth)
           }`,
           `color: ${healthColor}`,
           "",
@@ -249,7 +175,6 @@ export const listCommand = new Command()
           "",
         )
 
-        // Print body preview if available (indented, on next line)
         if (update.body) {
           const bodyPreview = truncateText(
             update.body.replace(/\n/g, " ").trim(),
@@ -259,7 +184,10 @@ export const listCommand = new Command()
         }
       }
     } catch (error) {
-      spinner?.stop()
-      handleError(error, "Failed to fetch initiative updates")
+      handleAutomationCommandError(
+        error,
+        "Failed to list initiative updates",
+        json,
+      )
     }
   })
