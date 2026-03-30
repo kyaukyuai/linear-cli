@@ -99,6 +99,8 @@ const AUTOMATION_CONTRACT_CONTEXT_BY_PATH = new Map<string, string>([
   ["linear milestone view", "Failed to view milestone"],
   ["linear document list", "Failed to list documents"],
   ["linear document view", "Failed to view document"],
+  ["linear webhook list", "Failed to list webhooks"],
+  ["linear webhook view", "Failed to view webhook"],
 ])
 
 export function maybeHandleAutomationContractParseError(

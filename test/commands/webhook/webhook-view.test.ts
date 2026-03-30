@@ -1,11 +1,10 @@
-import { snapshotTest } from "@cliffy/testing"
+import { snapshotTest as cliffySnapshotTest } from "@cliffy/testing"
 import { viewCommand } from "../../../src/commands/webhook/webhook-view.ts"
-import {
-  commonDenoArgs,
-  setupMockLinearServer,
-} from "../../utils/test-helpers.ts"
+import { MockLinearServer } from "../../utils/mock_linear_server.ts"
+import { snapshotTest } from "../../utils/snapshot_with_fake_time.ts"
+import { commonDenoArgs } from "../../utils/test-helpers.ts"
 
-await snapshotTest({
+await cliffySnapshotTest({
   name: "Webhook View Command - Help Text",
   meta: import.meta,
   colors: false,
@@ -17,15 +16,28 @@ await snapshotTest({
 })
 
 await snapshotTest({
+  name: "Webhook View Command - JSON Missing Webhook Reference",
+  meta: import.meta,
+  colors: false,
+  canFail: true,
+  args: ["--json"],
+  denoArgs: commonDenoArgs,
+  async fn() {
+    await viewCommand.parse()
+  },
+})
+
+await cliffySnapshotTest({
   name: "Webhook View Command - Shows Webhook",
   meta: import.meta,
   colors: false,
   args: ["webhook-1"],
   denoArgs: commonDenoArgs,
   async fn() {
-    const { cleanup } = await setupMockLinearServer([
+    const server = new MockLinearServer([
       {
         queryName: "GetWebhook",
+        variables: { id: "webhook-1" },
         response: {
           data: {
             webhook: {
@@ -55,23 +67,30 @@ await snapshotTest({
     ])
 
     try {
+      await server.start()
+      Deno.env.set("LINEAR_GRAPHQL_ENDPOINT", server.getEndpoint())
+      Deno.env.set("LINEAR_API_KEY", "Bearer test-token")
+
       await viewCommand.parse()
     } finally {
-      await cleanup()
+      await server.stop()
+      Deno.env.delete("LINEAR_GRAPHQL_ENDPOINT")
+      Deno.env.delete("LINEAR_API_KEY")
     }
   },
 })
 
-await snapshotTest({
+await cliffySnapshotTest({
   name: "Webhook View Command - JSON Output",
   meta: import.meta,
   colors: false,
   args: ["webhook-1", "--json"],
   denoArgs: commonDenoArgs,
   async fn() {
-    const { cleanup } = await setupMockLinearServer([
+    const server = new MockLinearServer([
       {
         queryName: "GetWebhook",
+        variables: { id: "webhook-1" },
         response: {
           data: {
             webhook: {
@@ -101,9 +120,49 @@ await snapshotTest({
     ])
 
     try {
+      await server.start()
+      Deno.env.set("LINEAR_GRAPHQL_ENDPOINT", server.getEndpoint())
+      Deno.env.set("LINEAR_API_KEY", "Bearer test-token")
+
       await viewCommand.parse()
     } finally {
-      await cleanup()
+      await server.stop()
+      Deno.env.delete("LINEAR_GRAPHQL_ENDPOINT")
+      Deno.env.delete("LINEAR_API_KEY")
+    }
+  },
+})
+
+await snapshotTest({
+  name: "Webhook View Command - JSON Webhook Not Found",
+  meta: import.meta,
+  colors: false,
+  canFail: true,
+  args: ["webhook-missing", "--json"],
+  denoArgs: commonDenoArgs,
+  async fn() {
+    const server = new MockLinearServer([
+      {
+        queryName: "GetWebhook",
+        variables: { id: "webhook-missing" },
+        response: {
+          data: {
+            webhook: null,
+          },
+        },
+      },
+    ])
+
+    try {
+      await server.start()
+      Deno.env.set("LINEAR_GRAPHQL_ENDPOINT", server.getEndpoint())
+      Deno.env.set("LINEAR_API_KEY", "Bearer test-token")
+
+      await viewCommand.parse()
+    } finally {
+      await server.stop()
+      Deno.env.delete("LINEAR_GRAPHQL_ENDPOINT")
+      Deno.env.delete("LINEAR_API_KEY")
     }
   },
 })

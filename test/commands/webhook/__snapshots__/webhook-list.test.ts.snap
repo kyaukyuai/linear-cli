@@ -28,6 +28,22 @@ stderr:
 ""
 `;
 
+snapshot[`Webhook List Command - JSON Validation Error 1`] = `
+stdout:
+'{
+  "success": false,
+  "error": {
+    "type": "validation_error",
+    "message": "Option \\\\"--limit\\\\" must be of type \\\\"number\\\\", but got \\\\"oops\\\\".",
+    "suggestion": null,
+    "context": "Failed to list webhooks"
+  }
+}
+'
+stderr:
+""
+`;
+
 snapshot[`Webhook List Command - Shows Webhooks 1`] = `
 stdout:
 "ENABLED webhook-1
@@ -54,7 +70,10 @@ stdout:
   {
     "id": "webhook-1",
     "label": "Issue events",
+    "displayLabel": "Issue events",
     "url": "https://example.com/hooks/issues",
+    "status": "enabled",
+    "scope": "Engineering (ENG)",
     "enabled": true,
     "archivedAt": null,
     "allPublicTeams": false,
@@ -76,6 +95,22 @@ stdout:
     }
   }
 ]
+'
+stderr:
+""
+`;
+
+snapshot[`Webhook List Command - JSON Team Not Found 1`] = `
+stdout:
+'{
+  "success": false,
+  "error": {
+    "type": "not_found",
+    "message": "Team not found: ENG",
+    "suggestion": null,
+    "context": "Failed to list webhooks"
+  }
+}
 '
 stderr:
 ""

@@ -2,13 +2,18 @@ import { Command } from "@cliffy/command"
 import { bold, gray } from "@std/fmt/colors"
 import { gql } from "../../__codegen__/gql.ts"
 import { getGraphQLClient } from "../../utils/graphql.ts"
-import { handleError } from "../../utils/errors.ts"
+import { NotFoundError } from "../../utils/errors.ts"
+import {
+  handleAutomationCommandError,
+  handleAutomationContractParseError,
+} from "../../utils/json_output.ts"
 import { withSpinner } from "../../utils/spinner.ts"
 import {
   getWebhookDisplayLabel,
   getWebhookScope,
   getWebhookStatus,
 } from "./webhook-utils.ts"
+import { buildWebhookJsonPayload } from "./webhook-json.ts"
 
 const GetWebhook = gql(`
   query GetWebhook($id: String!) {
@@ -49,6 +54,9 @@ export const viewCommand = new Command()
     "View a webhook in the terminal",
     "linear webhook view webhook_123",
   )
+  .error((error, cmd) =>
+    handleAutomationContractParseError(error, cmd, "Failed to view webhook")
+  )
   .action(async ({ json }, webhookId) => {
     try {
       const client = getGraphQLClient()
@@ -58,34 +66,13 @@ export const viewCommand = new Command()
       )
 
       const webhook = result.webhook
+      if (webhook == null) {
+        throw new NotFoundError("Webhook", webhookId)
+      }
 
       if (json) {
         console.log(JSON.stringify(
-          {
-            id: webhook.id,
-            label: webhook.label,
-            url: webhook.url,
-            enabled: webhook.enabled,
-            archivedAt: webhook.archivedAt,
-            allPublicTeams: webhook.allPublicTeams,
-            resourceTypes: webhook.resourceTypes,
-            createdAt: webhook.createdAt,
-            updatedAt: webhook.updatedAt,
-            team: webhook.team
-              ? {
-                id: webhook.team.id,
-                key: webhook.team.key,
-                name: webhook.team.name,
-              }
-              : null,
-            creator: webhook.creator
-              ? {
-                id: webhook.creator.id,
-                name: webhook.creator.name,
-                displayName: webhook.creator.displayName,
-              }
-              : null,
-          },
+          buildWebhookJsonPayload(webhook),
           null,
           2,
         ))
@@ -111,6 +98,6 @@ export const viewCommand = new Command()
         console.log(`${gray("Archived:")} ${webhook.archivedAt}`)
       }
     } catch (error) {
-      handleError(error, "Failed to view webhook")
+      handleAutomationCommandError(error, "Failed to view webhook", json)
     }
   })

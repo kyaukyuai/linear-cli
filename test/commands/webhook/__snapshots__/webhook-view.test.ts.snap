@@ -24,6 +24,22 @@ stderr:
 ""
 `;
 
+snapshot[`Webhook View Command - JSON Missing Webhook Reference 1`] = `
+stdout:
+'{
+  "success": false,
+  "error": {
+    "type": "unknown_error",
+    "message": "Missing argument(s): webhookId",
+    "suggestion": null,
+    "context": "Failed to view webhook"
+  }
+}
+'
+stderr:
+""
+`;
+
 snapshot[`Webhook View Command - Shows Webhook 1`] = `
 stdout:
 "Issue events
@@ -45,7 +61,10 @@ stdout:
 '{
   "id": "webhook-1",
   "label": "Issue events",
+  "displayLabel": "Issue events",
   "url": "https://example.com/hooks/issues",
+  "status": "enabled",
+  "scope": "Engineering (ENG)",
   "enabled": true,
   "archivedAt": null,
   "allPublicTeams": false,
@@ -64,6 +83,22 @@ stdout:
     "id": "user-1",
     "name": "jdoe",
     "displayName": "John Doe"
+  }
+}
+'
+stderr:
+""
+`;
+
+snapshot[`Webhook View Command - JSON Webhook Not Found 1`] = `
+stdout:
+'{
+  "success": false,
+  "error": {
+    "type": "not_found",
+    "message": "Webhook not found: webhook-missing",
+    "suggestion": null,
+    "context": "Failed to view webhook"
   }
 }
 '

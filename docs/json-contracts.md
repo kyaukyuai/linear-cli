@@ -892,12 +892,14 @@ Top-level shape:
 
 ## Automation Contract v3
 
-Automation Contract v3 extends the stable read surface to document commands while preserving the v1/v2 guarantees for existing automation-tier commands.
+Automation Contract v3 extends the stable read surface to document and webhook commands while preserving the v1/v2 guarantees for existing automation-tier commands.
 
 The v3 additions are:
 
 - `linear document list --json`
 - `linear document view --json`
+- `linear webhook list --json`
+- `linear webhook view --json`
 
 V3 reuses the same failure envelope, value rules, and compatibility rules defined above.
 
@@ -1012,6 +1014,128 @@ Top-level shape:
   },
   "issue": null,
   "content": "# Runbook\\n\\nSteps to roll out safely."
+}
+```
+
+### `webhookTeamRef`
+
+```json
+{
+  "id": "team-123",
+  "key": "ENG",
+  "name": "Engineering"
+}
+```
+
+### `webhookCreatorRef`
+
+```json
+{
+  "id": "user-123",
+  "name": "alice.bot",
+  "displayName": "Alice Bot"
+}
+```
+
+### `webhookRef`
+
+```json
+{
+  "id": "webhook-123",
+  "label": "Issue events",
+  "displayLabel": "Issue events",
+  "url": "https://example.com/linear/webhooks",
+  "status": "enabled",
+  "scope": "Engineering (ENG)",
+  "enabled": true,
+  "archivedAt": null,
+  "allPublicTeams": false,
+  "resourceTypes": [
+    "Issue",
+    "Comment"
+  ],
+  "createdAt": "2026-03-28T00:00:00.000Z",
+  "updatedAt": "2026-03-29T00:00:00.000Z",
+  "team": {
+    "id": "team-123",
+    "key": "ENG",
+    "name": "Engineering"
+  },
+  "creator": {
+    "id": "user-123",
+    "name": "alice.bot",
+    "displayName": "Alice Bot"
+  }
+}
+```
+
+### `webhook list --json`
+
+Top-level shape:
+
+```json
+[
+  {
+    "id": "webhook-123",
+    "label": "Issue events",
+    "displayLabel": "Issue events",
+    "url": "https://example.com/linear/webhooks",
+    "status": "enabled",
+    "scope": "Engineering (ENG)",
+    "enabled": true,
+    "archivedAt": null,
+    "allPublicTeams": false,
+    "resourceTypes": [
+      "Issue",
+      "Comment"
+    ],
+    "createdAt": "2026-03-28T00:00:00.000Z",
+    "updatedAt": "2026-03-29T00:00:00.000Z",
+    "team": {
+      "id": "team-123",
+      "key": "ENG",
+      "name": "Engineering"
+    },
+    "creator": {
+      "id": "user-123",
+      "name": "alice.bot",
+      "displayName": "Alice Bot"
+    }
+  }
+]
+```
+
+### `webhook view --json`
+
+Top-level shape:
+
+```json
+{
+  "id": "webhook-123",
+  "label": "Issue events",
+  "displayLabel": "Issue events",
+  "url": "https://example.com/linear/webhooks",
+  "status": "enabled",
+  "scope": "Engineering (ENG)",
+  "enabled": true,
+  "archivedAt": null,
+  "allPublicTeams": false,
+  "resourceTypes": [
+    "Issue",
+    "Comment"
+  ],
+  "createdAt": "2026-03-28T00:00:00.000Z",
+  "updatedAt": "2026-03-29T00:00:00.000Z",
+  "team": {
+    "id": "team-123",
+    "key": "ENG",
+    "name": "Engineering"
+  },
+  "creator": {
+    "id": "user-123",
+    "name": "alice.bot",
+    "displayName": "Alice Bot"
+  }
 }
 ```
 

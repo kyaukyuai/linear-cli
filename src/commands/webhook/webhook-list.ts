@@ -1,12 +1,12 @@
 import { Command } from "@cliffy/command"
 import { bold, gray, green, yellow } from "@std/fmt/colors"
 import { gql } from "../../__codegen__/gql.ts"
+import { NotFoundError, ValidationError } from "../../utils/errors.ts"
 import { getGraphQLClient } from "../../utils/graphql.ts"
 import {
-  handleError,
-  NotFoundError,
-  ValidationError,
-} from "../../utils/errors.ts"
+  handleAutomationCommandError,
+  handleAutomationContractParseError,
+} from "../../utils/json_output.ts"
 import { getTeamIdByKey } from "../../utils/linear.ts"
 import { withSpinner } from "../../utils/spinner.ts"
 import {
@@ -14,6 +14,7 @@ import {
   getWebhookScope,
   getWebhookStatus,
 } from "./webhook-utils.ts"
+import { buildWebhookJsonPayload } from "./webhook-json.ts"
 
 const GetWebhooks = gql(`
   query GetWebhooks($first: Int!, $includeArchived: Boolean) {
@@ -104,6 +105,9 @@ export const listCommand = new Command()
     "List archived webhooks",
     "linear webhook list --include-archived --limit 50",
   )
+  .error((error, cmd) =>
+    handleAutomationContractParseError(error, cmd, "Failed to list webhooks")
+  )
   .action(async ({ limit, team, includeArchived, json }) => {
     try {
       if (limit < 1 || limit > 100) {
@@ -138,31 +142,7 @@ export const listCommand = new Command()
 
       if (json) {
         console.log(JSON.stringify(
-          webhooks.map((webhook) => ({
-            id: webhook.id,
-            label: webhook.label,
-            url: webhook.url,
-            enabled: webhook.enabled,
-            archivedAt: webhook.archivedAt,
-            allPublicTeams: webhook.allPublicTeams,
-            resourceTypes: webhook.resourceTypes,
-            createdAt: webhook.createdAt,
-            updatedAt: webhook.updatedAt,
-            team: webhook.team
-              ? {
-                id: webhook.team.id,
-                key: webhook.team.key,
-                name: webhook.team.name,
-              }
-              : null,
-            creator: webhook.creator
-              ? {
-                id: webhook.creator.id,
-                name: webhook.creator.name,
-                displayName: webhook.creator.displayName,
-              }
-              : null,
-          })),
+          webhooks.map(buildWebhookJsonPayload),
           null,
           2,
         ))
@@ -196,6 +176,6 @@ export const listCommand = new Command()
         console.log("")
       }
     } catch (error) {
-      handleError(error, "Failed to list webhooks")
+      handleAutomationCommandError(error, "Failed to list webhooks", json)
     }
   })
