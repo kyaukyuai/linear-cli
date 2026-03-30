@@ -20,6 +20,7 @@ import { projectLabelCommand } from "./commands/project-label/project-label.ts"
 import { configCommand } from "./commands/config.ts"
 import { schemaCommand } from "./commands/schema.ts"
 import { apiCommand } from "./commands/api.ts"
+import { capabilitiesCommand } from "./commands/capabilities.ts"
 import { setCliWorkspace } from "./config.ts"
 import { maybeHandleAutomationContractParseError } from "./utils/json_output.ts"
 
@@ -78,4 +79,5 @@ Environment Variables:
   .command("config", configCommand)
   .command("schema", schemaCommand)
   .command("api", apiCommand)
+  .command("capabilities", capabilitiesCommand)
   .parse(Deno.args)

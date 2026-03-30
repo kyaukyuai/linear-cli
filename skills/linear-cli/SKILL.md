@@ -83,6 +83,7 @@ linear project-label      # Manage Linear project labels
 linear config             # Interactively generate .linear.toml configuration
 linear schema             # Print the GraphQL schema to stdout
 linear api                # Make a raw GraphQL API request
+linear capabilities       # Describe the agent-facing command surface
 ```
 
 ## Reference Documentation
@@ -106,6 +107,7 @@ linear api                # Make a raw GraphQL API request
 - [config](references/config.md) - Interactively generate .linear.toml configuration
 - [schema](references/schema.md) - Print the GraphQL schema to stdout
 - [api](references/api.md) - Make a raw GraphQL API request
+- [capabilities](references/capabilities.md) - Describe the agent-facing command surface
 
 For curated examples of organization features (initiatives, labels, projects, bulk operations), see [organization-features](references/organization-features.md).
 

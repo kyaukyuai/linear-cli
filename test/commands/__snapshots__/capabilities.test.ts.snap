@@ -1,0 +1,1294 @@
+export const snapshot = {};
+
+snapshot[`Capabilities Command - Help Text 1`] = `
+stdout:
+"
+Usage: capabilities
+
+Description:
+
+  Describe the agent-facing command surface
+
+Options:
+
+  -h, --help  - Show this help.                           
+  -j, --json  - Output the capabilities registry as JSON  
+
+Examples:
+
+  Describe agent-facing capabilities as JSON linear capabilities --json                                               
+  Find commands that support dry-run         linear capabilities --json | jq '.commands[] | select(.dryRun.supported)'
+
+"
+stderr:
+""
+`;
+
+snapshot[`Capabilities Command - Human Summary 1`] = `
+stdout:
+"linear-cli 2.10.0
+capabilities schema: v1
+automation contract latest: v3
+dry-run preview contract: v1
+stdin policy: v1
+
+automation tier
+  v1: linear issue children, linear issue comment add, linear issue create, linear issue create-batch, linear issue list, linear issue parent, linear issue relation add, linear issue relation delete, linear issue relation list, linear issue update, linear issue view, linear team members
+  v2: linear cycle current, linear cycle list, linear cycle next, linear cycle view, linear milestone list, linear milestone view, linear project list, linear project view
+  v3: linear document list, linear document view, linear notification count, linear notification list, linear webhook list, linear webhook view
+
+agent-facing commands
+  linear api :: json=no dry-run=no stdin=implicit_text confirm=none idempotency=read_only
+    note: Outputs JSON by default and accepts stdin, but does not use a --json flag.
+  linear capabilities :: json=yes dry-run=no stdin=none confirm=none idempotency=read_only
+  linear cycle current :: json=v2 dry-run=no stdin=none confirm=none idempotency=read_only
+  linear cycle list :: json=v2 dry-run=no stdin=none confirm=none idempotency=read_only
+  linear cycle next :: json=v2 dry-run=no stdin=none confirm=none idempotency=read_only
+  linear cycle view :: json=v2 dry-run=no stdin=none confirm=none idempotency=read_only
+  linear document create :: json=no dry-run=v1 stdin=implicit_text confirm=none idempotency=non_idempotent
+  linear document delete :: json=no dry-run=v1 stdin=explicit_bulk confirm=--yes idempotency=destructive
+  linear document list :: json=v3 dry-run=no stdin=none confirm=none idempotency=read_only
+  linear document update :: json=no dry-run=v1 stdin=implicit_text confirm=none idempotency=retry_safe_update
+  linear document view :: json=v3 dry-run=no stdin=none confirm=none idempotency=read_only
+  linear issue children :: json=v1 dry-run=no stdin=none confirm=none idempotency=read_only
+  linear issue comment add :: json=v1 dry-run=v1 stdin=implicit_text confirm=none idempotency=non_idempotent
+  linear issue comment update :: json=no dry-run=no stdin=implicit_text confirm=none idempotency=retry_safe_update
+  linear issue create :: json=v1 dry-run=v1 stdin=implicit_text confirm=none idempotency=non_idempotent
+  linear issue create-batch :: json=v1 dry-run=v1 stdin=none confirm=none idempotency=resumable_batch
+    retry: Partial failures return createdIdentifiers and failedStep details.
+  linear issue list :: json=v1 dry-run=no stdin=none confirm=none idempotency=read_only
+  linear issue parent :: json=v1 dry-run=no stdin=none confirm=none idempotency=read_only
+  linear issue relation add :: json=v1 dry-run=v1 stdin=none confirm=none idempotency=retry_safe_no_op
+    retry: Adding an existing relation succeeds with noOp: true.
+  linear issue relation delete :: json=v1 dry-run=v1 stdin=none confirm=none idempotency=retry_safe_no_op
+    retry: Deleting a missing relation succeeds with noOp: true.
+  linear issue relation list :: json=v1 dry-run=no stdin=none confirm=none idempotency=read_only
+  linear issue start :: json=no dry-run=v1 stdin=none confirm=none idempotency=conditional
+    retry: The dry-run is safe to repeat; the live path mutates both Linear state and local VCS state.
+  linear issue update :: json=v1 dry-run=v1 stdin=implicit_text confirm=none idempotency=conditional
+    retry: Field-only updates are retry-safe; adding --comment makes the command non-idempotent.
+  linear issue view :: json=v1 dry-run=no stdin=none confirm=none idempotency=read_only
+  linear milestone create :: json=no dry-run=v1 stdin=none confirm=none idempotency=non_idempotent
+  linear milestone delete :: json=no dry-run=v1 stdin=none confirm=--yes idempotency=destructive
+  linear milestone list :: json=v2 dry-run=no stdin=none confirm=none idempotency=read_only
+  linear milestone update :: json=no dry-run=v1 stdin=none confirm=none idempotency=retry_safe_update
+  linear milestone view :: json=v2 dry-run=no stdin=none confirm=none idempotency=read_only
+  linear notification archive :: json=yes dry-run=no stdin=none confirm=none idempotency=retry_safe_update
+  linear notification count :: json=v3 dry-run=no stdin=none confirm=none idempotency=read_only
+  linear notification list :: json=v3 dry-run=no stdin=none confirm=none idempotency=read_only
+  linear notification read :: json=yes dry-run=no stdin=none confirm=none idempotency=retry_safe_update
+  linear project create :: json=yes dry-run=v1 stdin=none confirm=none idempotency=non_idempotent
+  linear project delete :: json=no dry-run=v1 stdin=none confirm=--yes idempotency=destructive
+  linear project label add :: json=yes dry-run=no stdin=none confirm=none idempotency=retry_safe_no_op
+    retry: Adding an already-attached label succeeds with changed: false.
+  linear project label remove :: json=yes dry-run=no stdin=none confirm=none idempotency=retry_safe_no_op
+    retry: Removing a missing label succeeds with changed: false.
+  linear project list :: json=v2 dry-run=no stdin=none confirm=none idempotency=read_only
+  linear project update :: json=no dry-run=v1 stdin=none confirm=none idempotency=retry_safe_update
+  linear project view :: json=v2 dry-run=no stdin=none confirm=none idempotency=read_only
+  linear project-label list :: json=yes dry-run=no stdin=none confirm=none idempotency=read_only
+  linear team members :: json=v1 dry-run=no stdin=none confirm=none idempotency=read_only
+  linear user list :: json=yes dry-run=no stdin=none confirm=none idempotency=read_only
+  linear user view :: json=yes dry-run=no stdin=none confirm=none idempotency=read_only
+  linear webhook create :: json=yes dry-run=v1 stdin=none confirm=none idempotency=non_idempotent
+  linear webhook delete :: json=yes dry-run=v1 stdin=none confirm=--yes idempotency=destructive
+  linear webhook list :: json=v3 dry-run=no stdin=none confirm=none idempotency=read_only
+  linear webhook update :: json=yes dry-run=v1 stdin=none confirm=none idempotency=retry_safe_update
+  linear webhook view :: json=v3 dry-run=no stdin=none confirm=none idempotency=read_only
+  linear workflow-state list :: json=yes dry-run=no stdin=none confirm=none idempotency=read_only
+  linear workflow-state view :: json=yes dry-run=no stdin=none confirm=none idempotency=read_only
+"
+stderr:
+""
+`;
+
+snapshot[`Capabilities Command - JSON Output 1`] = `
+stdout:
+\`{
+  "schemaVersion": "v1",
+  "cli": {
+    "name": "linear-cli",
+    "binary": "linear",
+    "version": "2.10.0"
+  },
+  "contractVersions": {
+    "automation": {
+      "latest": "v3",
+      "supported": [
+        "v1",
+        "v2",
+        "v3"
+      ]
+    },
+    "dryRunPreview": {
+      "latest": "v1",
+      "supported": [
+        "v1"
+      ]
+    },
+    "stdinPolicy": {
+      "latest": "v1",
+      "supported": [
+        "v1"
+      ]
+    }
+  },
+  "automationTier": {
+    "latestVersion": "v3",
+    "byVersion": {
+      "v1": [
+        "linear issue children",
+        "linear issue comment add",
+        "linear issue create",
+        "linear issue create-batch",
+        "linear issue list",
+        "linear issue parent",
+        "linear issue relation add",
+        "linear issue relation delete",
+        "linear issue relation list",
+        "linear issue update",
+        "linear issue view",
+        "linear team members"
+      ],
+      "v2": [
+        "linear cycle current",
+        "linear cycle list",
+        "linear cycle next",
+        "linear cycle view",
+        "linear milestone list",
+        "linear milestone view",
+        "linear project list",
+        "linear project view"
+      ],
+      "v3": [
+        "linear document list",
+        "linear document view",
+        "linear notification count",
+        "linear notification list",
+        "linear webhook list",
+        "linear webhook view"
+      ]
+    },
+    "allCommands": [
+      "linear issue children",
+      "linear issue comment add",
+      "linear issue create",
+      "linear issue create-batch",
+      "linear issue list",
+      "linear issue parent",
+      "linear issue relation add",
+      "linear issue relation delete",
+      "linear issue relation list",
+      "linear issue update",
+      "linear issue view",
+      "linear team members",
+      "linear cycle current",
+      "linear cycle list",
+      "linear cycle next",
+      "linear cycle view",
+      "linear milestone list",
+      "linear milestone view",
+      "linear project list",
+      "linear project view",
+      "linear document list",
+      "linear document view",
+      "linear notification count",
+      "linear notification list",
+      "linear webhook list",
+      "linear webhook view"
+    ]
+  },
+  "commands": [
+    {
+      "path": "linear api",
+      "summary": "Run a raw GraphQL API query",
+      "json": {
+        "supported": false,
+        "contractVersion": null
+      },
+      "dryRun": {
+        "supported": false,
+        "contractVersion": null
+      },
+      "stdin": {
+        "mode": "implicit_text"
+      },
+      "confirmationBypass": null,
+      "idempotency": {
+        "category": "read_only",
+        "notes": null
+      },
+      "notes": "Outputs JSON by default and accepts stdin, but does not use a --json flag."
+    },
+    {
+      "path": "linear capabilities",
+      "summary": "Describe the curated agent-facing command surface",
+      "json": {
+        "supported": true,
+        "contractVersion": null
+      },
+      "dryRun": {
+        "supported": false,
+        "contractVersion": null
+      },
+      "stdin": {
+        "mode": "none"
+      },
+      "confirmationBypass": null,
+      "idempotency": {
+        "category": "read_only",
+        "notes": null
+      },
+      "notes": null
+    },
+    {
+      "path": "linear cycle current",
+      "summary": "Show the current cycle for a team",
+      "json": {
+        "supported": true,
+        "contractVersion": "v2"
+      },
+      "dryRun": {
+        "supported": false,
+        "contractVersion": null
+      },
+      "stdin": {
+        "mode": "none"
+      },
+      "confirmationBypass": null,
+      "idempotency": {
+        "category": "read_only",
+        "notes": null
+      },
+      "notes": null
+    },
+    {
+      "path": "linear cycle list",
+      "summary": "List cycles for a team",
+      "json": {
+        "supported": true,
+        "contractVersion": "v2"
+      },
+      "dryRun": {
+        "supported": false,
+        "contractVersion": null
+      },
+      "stdin": {
+        "mode": "none"
+      },
+      "confirmationBypass": null,
+      "idempotency": {
+        "category": "read_only",
+        "notes": null
+      },
+      "notes": null
+    },
+    {
+      "path": "linear cycle next",
+      "summary": "Show the next cycle for a team",
+      "json": {
+        "supported": true,
+        "contractVersion": "v2"
+      },
+      "dryRun": {
+        "supported": false,
+        "contractVersion": null
+      },
+      "stdin": {
+        "mode": "none"
+      },
+      "confirmationBypass": null,
+      "idempotency": {
+        "category": "read_only",
+        "notes": null
+      },
+      "notes": null
+    },
+    {
+      "path": "linear cycle view",
+      "summary": "View a cycle by number or ID",
+      "json": {
+        "supported": true,
+        "contractVersion": "v2"
+      },
+      "dryRun": {
+        "supported": false,
+        "contractVersion": null
+      },
+      "stdin": {
+        "mode": "none"
+      },
+      "confirmationBypass": null,
+      "idempotency": {
+        "category": "read_only",
+        "notes": null
+      },
+      "notes": null
+    },
+    {
+      "path": "linear document create",
+      "summary": "Create a document",
+      "json": {
+        "supported": false,
+        "contractVersion": null
+      },
+      "dryRun": {
+        "supported": true,
+        "contractVersion": "v1"
+      },
+      "stdin": {
+        "mode": "implicit_text"
+      },
+      "confirmationBypass": null,
+      "idempotency": {
+        "category": "non_idempotent",
+        "notes": null
+      },
+      "notes": null
+    },
+    {
+      "path": "linear document delete",
+      "summary": "Delete one or more documents",
+      "json": {
+        "supported": false,
+        "contractVersion": null
+      },
+      "dryRun": {
+        "supported": true,
+        "contractVersion": "v1"
+      },
+      "stdin": {
+        "mode": "explicit_bulk"
+      },
+      "confirmationBypass": "--yes",
+      "idempotency": {
+        "category": "destructive",
+        "notes": null
+      },
+      "notes": null
+    },
+    {
+      "path": "linear document list",
+      "summary": "List documents",
+      "json": {
+        "supported": true,
+        "contractVersion": "v3"
+      },
+      "dryRun": {
+        "supported": false,
+        "contractVersion": null
+      },
+      "stdin": {
+        "mode": "none"
+      },
+      "confirmationBypass": null,
+      "idempotency": {
+        "category": "read_only",
+        "notes": null
+      },
+      "notes": null
+    },
+    {
+      "path": "linear document update",
+      "summary": "Update a document",
+      "json": {
+        "supported": false,
+        "contractVersion": null
+      },
+      "dryRun": {
+        "supported": true,
+        "contractVersion": "v1"
+      },
+      "stdin": {
+        "mode": "implicit_text"
+      },
+      "confirmationBypass": null,
+      "idempotency": {
+        "category": "retry_safe_update",
+        "notes": null
+      },
+      "notes": null
+    },
+    {
+      "path": "linear document view",
+      "summary": "View a document",
+      "json": {
+        "supported": true,
+        "contractVersion": "v3"
+      },
+      "dryRun": {
+        "supported": false,
+        "contractVersion": null
+      },
+      "stdin": {
+        "mode": "none"
+      },
+      "confirmationBypass": null,
+      "idempotency": {
+        "category": "read_only",
+        "notes": null
+      },
+      "notes": null
+    },
+    {
+      "path": "linear issue children",
+      "summary": "List child issues",
+      "json": {
+        "supported": true,
+        "contractVersion": "v1"
+      },
+      "dryRun": {
+        "supported": false,
+        "contractVersion": null
+      },
+      "stdin": {
+        "mode": "none"
+      },
+      "confirmationBypass": null,
+      "idempotency": {
+        "category": "read_only",
+        "notes": null
+      },
+      "notes": null
+    },
+    {
+      "path": "linear issue comment add",
+      "summary": "Add an issue comment",
+      "json": {
+        "supported": true,
+        "contractVersion": "v1"
+      },
+      "dryRun": {
+        "supported": true,
+        "contractVersion": "v1"
+      },
+      "stdin": {
+        "mode": "implicit_text"
+      },
+      "confirmationBypass": null,
+      "idempotency": {
+        "category": "non_idempotent",
+        "notes": null
+      },
+      "notes": null
+    },
+    {
+      "path": "linear issue comment update",
+      "summary": "Update an existing comment",
+      "json": {
+        "supported": false,
+        "contractVersion": null
+      },
+      "dryRun": {
+        "supported": false,
+        "contractVersion": null
+      },
+      "stdin": {
+        "mode": "implicit_text"
+      },
+      "confirmationBypass": null,
+      "idempotency": {
+        "category": "retry_safe_update",
+        "notes": null
+      },
+      "notes": null
+    },
+    {
+      "path": "linear issue create",
+      "summary": "Create an issue",
+      "json": {
+        "supported": true,
+        "contractVersion": "v1"
+      },
+      "dryRun": {
+        "supported": true,
+        "contractVersion": "v1"
+      },
+      "stdin": {
+        "mode": "implicit_text"
+      },
+      "confirmationBypass": null,
+      "idempotency": {
+        "category": "non_idempotent",
+        "notes": null
+      },
+      "notes": null
+    },
+    {
+      "path": "linear issue create-batch",
+      "summary": "Create a parent issue and child issues from JSON",
+      "json": {
+        "supported": true,
+        "contractVersion": "v1"
+      },
+      "dryRun": {
+        "supported": true,
+        "contractVersion": "v1"
+      },
+      "stdin": {
+        "mode": "none"
+      },
+      "confirmationBypass": null,
+      "idempotency": {
+        "category": "resumable_batch",
+        "notes": "Partial failures return createdIdentifiers and failedStep details."
+      },
+      "notes": null
+    },
+    {
+      "path": "linear issue list",
+      "summary": "List issues",
+      "json": {
+        "supported": true,
+        "contractVersion": "v1"
+      },
+      "dryRun": {
+        "supported": false,
+        "contractVersion": null
+      },
+      "stdin": {
+        "mode": "none"
+      },
+      "confirmationBypass": null,
+      "idempotency": {
+        "category": "read_only",
+        "notes": null
+      },
+      "notes": null
+    },
+    {
+      "path": "linear issue parent",
+      "summary": "Show an issue's parent",
+      "json": {
+        "supported": true,
+        "contractVersion": "v1"
+      },
+      "dryRun": {
+        "supported": false,
+        "contractVersion": null
+      },
+      "stdin": {
+        "mode": "none"
+      },
+      "confirmationBypass": null,
+      "idempotency": {
+        "category": "read_only",
+        "notes": null
+      },
+      "notes": null
+    },
+    {
+      "path": "linear issue relation add",
+      "summary": "Add an issue relation",
+      "json": {
+        "supported": true,
+        "contractVersion": "v1"
+      },
+      "dryRun": {
+        "supported": true,
+        "contractVersion": "v1"
+      },
+      "stdin": {
+        "mode": "none"
+      },
+      "confirmationBypass": null,
+      "idempotency": {
+        "category": "retry_safe_no_op",
+        "notes": "Adding an existing relation succeeds with noOp: true."
+      },
+      "notes": null
+    },
+    {
+      "path": "linear issue relation delete",
+      "summary": "Delete an issue relation",
+      "json": {
+        "supported": true,
+        "contractVersion": "v1"
+      },
+      "dryRun": {
+        "supported": true,
+        "contractVersion": "v1"
+      },
+      "stdin": {
+        "mode": "none"
+      },
+      "confirmationBypass": null,
+      "idempotency": {
+        "category": "retry_safe_no_op",
+        "notes": "Deleting a missing relation succeeds with noOp: true."
+      },
+      "notes": null
+    },
+    {
+      "path": "linear issue relation list",
+      "summary": "List issue relations",
+      "json": {
+        "supported": true,
+        "contractVersion": "v1"
+      },
+      "dryRun": {
+        "supported": false,
+        "contractVersion": null
+      },
+      "stdin": {
+        "mode": "none"
+      },
+      "confirmationBypass": null,
+      "idempotency": {
+        "category": "read_only",
+        "notes": null
+      },
+      "notes": null
+    },
+    {
+      "path": "linear issue start",
+      "summary": "Create or switch to an issue branch and mark it started",
+      "json": {
+        "supported": false,
+        "contractVersion": null
+      },
+      "dryRun": {
+        "supported": true,
+        "contractVersion": "v1"
+      },
+      "stdin": {
+        "mode": "none"
+      },
+      "confirmationBypass": null,
+      "idempotency": {
+        "category": "conditional",
+        "notes": "The dry-run is safe to repeat; the live path mutates both Linear state and local VCS state."
+      },
+      "notes": null
+    },
+    {
+      "path": "linear issue update",
+      "summary": "Update an issue",
+      "json": {
+        "supported": true,
+        "contractVersion": "v1"
+      },
+      "dryRun": {
+        "supported": true,
+        "contractVersion": "v1"
+      },
+      "stdin": {
+        "mode": "implicit_text"
+      },
+      "confirmationBypass": null,
+      "idempotency": {
+        "category": "conditional",
+        "notes": "Field-only updates are retry-safe; adding --comment makes the command non-idempotent."
+      },
+      "notes": null
+    },
+    {
+      "path": "linear issue view",
+      "summary": "View an issue",
+      "json": {
+        "supported": true,
+        "contractVersion": "v1"
+      },
+      "dryRun": {
+        "supported": false,
+        "contractVersion": null
+      },
+      "stdin": {
+        "mode": "none"
+      },
+      "confirmationBypass": null,
+      "idempotency": {
+        "category": "read_only",
+        "notes": null
+      },
+      "notes": null
+    },
+    {
+      "path": "linear milestone create",
+      "summary": "Create a milestone",
+      "json": {
+        "supported": false,
+        "contractVersion": null
+      },
+      "dryRun": {
+        "supported": true,
+        "contractVersion": "v1"
+      },
+      "stdin": {
+        "mode": "none"
+      },
+      "confirmationBypass": null,
+      "idempotency": {
+        "category": "non_idempotent",
+        "notes": null
+      },
+      "notes": null
+    },
+    {
+      "path": "linear milestone delete",
+      "summary": "Delete a milestone",
+      "json": {
+        "supported": false,
+        "contractVersion": null
+      },
+      "dryRun": {
+        "supported": true,
+        "contractVersion": "v1"
+      },
+      "stdin": {
+        "mode": "none"
+      },
+      "confirmationBypass": "--yes",
+      "idempotency": {
+        "category": "destructive",
+        "notes": null
+      },
+      "notes": null
+    },
+    {
+      "path": "linear milestone list",
+      "summary": "List milestones",
+      "json": {
+        "supported": true,
+        "contractVersion": "v2"
+      },
+      "dryRun": {
+        "supported": false,
+        "contractVersion": null
+      },
+      "stdin": {
+        "mode": "none"
+      },
+      "confirmationBypass": null,
+      "idempotency": {
+        "category": "read_only",
+        "notes": null
+      },
+      "notes": null
+    },
+    {
+      "path": "linear milestone update",
+      "summary": "Update a milestone",
+      "json": {
+        "supported": false,
+        "contractVersion": null
+      },
+      "dryRun": {
+        "supported": true,
+        "contractVersion": "v1"
+      },
+      "stdin": {
+        "mode": "none"
+      },
+      "confirmationBypass": null,
+      "idempotency": {
+        "category": "retry_safe_update",
+        "notes": null
+      },
+      "notes": null
+    },
+    {
+      "path": "linear milestone view",
+      "summary": "View a milestone",
+      "json": {
+        "supported": true,
+        "contractVersion": "v2"
+      },
+      "dryRun": {
+        "supported": false,
+        "contractVersion": null
+      },
+      "stdin": {
+        "mode": "none"
+      },
+      "confirmationBypass": null,
+      "idempotency": {
+        "category": "read_only",
+        "notes": null
+      },
+      "notes": null
+    },
+    {
+      "path": "linear notification archive",
+      "summary": "Archive a notification",
+      "json": {
+        "supported": true,
+        "contractVersion": null
+      },
+      "dryRun": {
+        "supported": false,
+        "contractVersion": null
+      },
+      "stdin": {
+        "mode": "none"
+      },
+      "confirmationBypass": null,
+      "idempotency": {
+        "category": "retry_safe_update",
+        "notes": null
+      },
+      "notes": null
+    },
+    {
+      "path": "linear notification count",
+      "summary": "Count unread notifications",
+      "json": {
+        "supported": true,
+        "contractVersion": "v3"
+      },
+      "dryRun": {
+        "supported": false,
+        "contractVersion": null
+      },
+      "stdin": {
+        "mode": "none"
+      },
+      "confirmationBypass": null,
+      "idempotency": {
+        "category": "read_only",
+        "notes": null
+      },
+      "notes": null
+    },
+    {
+      "path": "linear notification list",
+      "summary": "List notifications",
+      "json": {
+        "supported": true,
+        "contractVersion": "v3"
+      },
+      "dryRun": {
+        "supported": false,
+        "contractVersion": null
+      },
+      "stdin": {
+        "mode": "none"
+      },
+      "confirmationBypass": null,
+      "idempotency": {
+        "category": "read_only",
+        "notes": null
+      },
+      "notes": null
+    },
+    {
+      "path": "linear notification read",
+      "summary": "Mark a notification as read",
+      "json": {
+        "supported": true,
+        "contractVersion": null
+      },
+      "dryRun": {
+        "supported": false,
+        "contractVersion": null
+      },
+      "stdin": {
+        "mode": "none"
+      },
+      "confirmationBypass": null,
+      "idempotency": {
+        "category": "retry_safe_update",
+        "notes": null
+      },
+      "notes": null
+    },
+    {
+      "path": "linear project create",
+      "summary": "Create a project",
+      "json": {
+        "supported": true,
+        "contractVersion": null
+      },
+      "dryRun": {
+        "supported": true,
+        "contractVersion": "v1"
+      },
+      "stdin": {
+        "mode": "none"
+      },
+      "confirmationBypass": null,
+      "idempotency": {
+        "category": "non_idempotent",
+        "notes": null
+      },
+      "notes": null
+    },
+    {
+      "path": "linear project delete",
+      "summary": "Delete a project",
+      "json": {
+        "supported": false,
+        "contractVersion": null
+      },
+      "dryRun": {
+        "supported": true,
+        "contractVersion": "v1"
+      },
+      "stdin": {
+        "mode": "none"
+      },
+      "confirmationBypass": "--yes",
+      "idempotency": {
+        "category": "destructive",
+        "notes": null
+      },
+      "notes": null
+    },
+    {
+      "path": "linear project label add",
+      "summary": "Add a label to a project",
+      "json": {
+        "supported": true,
+        "contractVersion": null
+      },
+      "dryRun": {
+        "supported": false,
+        "contractVersion": null
+      },
+      "stdin": {
+        "mode": "none"
+      },
+      "confirmationBypass": null,
+      "idempotency": {
+        "category": "retry_safe_no_op",
+        "notes": "Adding an already-attached label succeeds with changed: false."
+      },
+      "notes": null
+    },
+    {
+      "path": "linear project label remove",
+      "summary": "Remove a label from a project",
+      "json": {
+        "supported": true,
+        "contractVersion": null
+      },
+      "dryRun": {
+        "supported": false,
+        "contractVersion": null
+      },
+      "stdin": {
+        "mode": "none"
+      },
+      "confirmationBypass": null,
+      "idempotency": {
+        "category": "retry_safe_no_op",
+        "notes": "Removing a missing label succeeds with changed: false."
+      },
+      "notes": null
+    },
+    {
+      "path": "linear project list",
+      "summary": "List projects",
+      "json": {
+        "supported": true,
+        "contractVersion": "v2"
+      },
+      "dryRun": {
+        "supported": false,
+        "contractVersion": null
+      },
+      "stdin": {
+        "mode": "none"
+      },
+      "confirmationBypass": null,
+      "idempotency": {
+        "category": "read_only",
+        "notes": null
+      },
+      "notes": null
+    },
+    {
+      "path": "linear project update",
+      "summary": "Update a project",
+      "json": {
+        "supported": false,
+        "contractVersion": null
+      },
+      "dryRun": {
+        "supported": true,
+        "contractVersion": "v1"
+      },
+      "stdin": {
+        "mode": "none"
+      },
+      "confirmationBypass": null,
+      "idempotency": {
+        "category": "retry_safe_update",
+        "notes": null
+      },
+      "notes": null
+    },
+    {
+      "path": "linear project view",
+      "summary": "View a project",
+      "json": {
+        "supported": true,
+        "contractVersion": "v2"
+      },
+      "dryRun": {
+        "supported": false,
+        "contractVersion": null
+      },
+      "stdin": {
+        "mode": "none"
+      },
+      "confirmationBypass": null,
+      "idempotency": {
+        "category": "read_only",
+        "notes": null
+      },
+      "notes": null
+    },
+    {
+      "path": "linear project-label list",
+      "summary": "List project labels",
+      "json": {
+        "supported": true,
+        "contractVersion": null
+      },
+      "dryRun": {
+        "supported": false,
+        "contractVersion": null
+      },
+      "stdin": {
+        "mode": "none"
+      },
+      "confirmationBypass": null,
+      "idempotency": {
+        "category": "read_only",
+        "notes": null
+      },
+      "notes": null
+    },
+    {
+      "path": "linear team members",
+      "summary": "List team members",
+      "json": {
+        "supported": true,
+        "contractVersion": "v1"
+      },
+      "dryRun": {
+        "supported": false,
+        "contractVersion": null
+      },
+      "stdin": {
+        "mode": "none"
+      },
+      "confirmationBypass": null,
+      "idempotency": {
+        "category": "read_only",
+        "notes": null
+      },
+      "notes": null
+    },
+    {
+      "path": "linear user list",
+      "summary": "List users",
+      "json": {
+        "supported": true,
+        "contractVersion": null
+      },
+      "dryRun": {
+        "supported": false,
+        "contractVersion": null
+      },
+      "stdin": {
+        "mode": "none"
+      },
+      "confirmationBypass": null,
+      "idempotency": {
+        "category": "read_only",
+        "notes": null
+      },
+      "notes": null
+    },
+    {
+      "path": "linear user view",
+      "summary": "View a user",
+      "json": {
+        "supported": true,
+        "contractVersion": null
+      },
+      "dryRun": {
+        "supported": false,
+        "contractVersion": null
+      },
+      "stdin": {
+        "mode": "none"
+      },
+      "confirmationBypass": null,
+      "idempotency": {
+        "category": "read_only",
+        "notes": null
+      },
+      "notes": null
+    },
+    {
+      "path": "linear webhook create",
+      "summary": "Create a webhook",
+      "json": {
+        "supported": true,
+        "contractVersion": null
+      },
+      "dryRun": {
+        "supported": true,
+        "contractVersion": "v1"
+      },
+      "stdin": {
+        "mode": "none"
+      },
+      "confirmationBypass": null,
+      "idempotency": {
+        "category": "non_idempotent",
+        "notes": null
+      },
+      "notes": null
+    },
+    {
+      "path": "linear webhook delete",
+      "summary": "Delete a webhook",
+      "json": {
+        "supported": true,
+        "contractVersion": null
+      },
+      "dryRun": {
+        "supported": true,
+        "contractVersion": "v1"
+      },
+      "stdin": {
+        "mode": "none"
+      },
+      "confirmationBypass": "--yes",
+      "idempotency": {
+        "category": "destructive",
+        "notes": null
+      },
+      "notes": null
+    },
+    {
+      "path": "linear webhook list",
+      "summary": "List webhooks",
+      "json": {
+        "supported": true,
+        "contractVersion": "v3"
+      },
+      "dryRun": {
+        "supported": false,
+        "contractVersion": null
+      },
+      "stdin": {
+        "mode": "none"
+      },
+      "confirmationBypass": null,
+      "idempotency": {
+        "category": "read_only",
+        "notes": null
+      },
+      "notes": null
+    },
+    {
+      "path": "linear webhook update",
+      "summary": "Update a webhook",
+      "json": {
+        "supported": true,
+        "contractVersion": null
+      },
+      "dryRun": {
+        "supported": true,
+        "contractVersion": "v1"
+      },
+      "stdin": {
+        "mode": "none"
+      },
+      "confirmationBypass": null,
+      "idempotency": {
+        "category": "retry_safe_update",
+        "notes": null
+      },
+      "notes": null
+    },
+    {
+      "path": "linear webhook view",
+      "summary": "View a webhook",
+      "json": {
+        "supported": true,
+        "contractVersion": "v3"
+      },
+      "dryRun": {
+        "supported": false,
+        "contractVersion": null
+      },
+      "stdin": {
+        "mode": "none"
+      },
+      "confirmationBypass": null,
+      "idempotency": {
+        "category": "read_only",
+        "notes": null
+      },
+      "notes": null
+    },
+    {
+      "path": "linear workflow-state list",
+      "summary": "List workflow states",
+      "json": {
+        "supported": true,
+        "contractVersion": null
+      },
+      "dryRun": {
+        "supported": false,
+        "contractVersion": null
+      },
+      "stdin": {
+        "mode": "none"
+      },
+      "confirmationBypass": null,
+      "idempotency": {
+        "category": "read_only",
+        "notes": null
+      },
+      "notes": null
+    },
+    {
+      "path": "linear workflow-state view",
+      "summary": "View a workflow state",
+      "json": {
+        "supported": true,
+        "contractVersion": null
+      },
+      "dryRun": {
+        "supported": false,
+        "contractVersion": null
+      },
+      "stdin": {
+        "mode": "none"
+      },
+      "confirmationBypass": null,
+      "idempotency": {
+        "category": "read_only",
+        "notes": null
+      },
+      "notes": null
+    }
+  ]
+}
+\`
+stderr:
+""
+`;
+
+snapshot[`Capabilities Command - JSON Parse Failure 1`] = `
+stdout:
+'{
+  "success": false,
+  "error": {
+    "type": "validation_error",
+    "message": "Unknown option \\\\"--bogus\\\\". Did you mean option \\\\"--help\\\\"?",
+    "suggestion": null,
+    "context": "Failed to describe capabilities"
+  }
+}
+'
+stderr:
+""
+`;

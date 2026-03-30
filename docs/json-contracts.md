@@ -16,6 +16,84 @@ It does not apply to:
 - commands outside the automation tier listed below
 - stderr output when `LINEAR_DEBUG=1`
 
+## Capabilities Discovery v1
+
+`linear capabilities --json` is a stable self-description surface for agents. It is versioned independently from the automation tier so callers can discover command traits without scraping `--help`, README content, or generated docs.
+
+Top-level shape:
+
+```json
+{
+  "schemaVersion": "v1",
+  "cli": {
+    "name": "linear-cli",
+    "binary": "linear",
+    "version": "2.10.0"
+  },
+  "contractVersions": {
+    "automation": {
+      "latest": "v3",
+      "supported": ["v1", "v2", "v3"]
+    },
+    "dryRunPreview": {
+      "latest": "v1",
+      "supported": ["v1"]
+    },
+    "stdinPolicy": {
+      "latest": "v1",
+      "supported": ["v1"]
+    }
+  },
+  "automationTier": {
+    "latestVersion": "v3",
+    "byVersion": {
+      "v1": ["linear issue list"],
+      "v2": ["linear project list"],
+      "v3": ["linear document list"]
+    },
+    "allCommands": [
+      "linear issue list",
+      "linear project list",
+      "linear document list"
+    ]
+  },
+  "commands": [
+    {
+      "path": "linear issue update",
+      "summary": "Update an issue",
+      "json": {
+        "supported": true,
+        "contractVersion": "v1"
+      },
+      "dryRun": {
+        "supported": true,
+        "contractVersion": "v1"
+      },
+      "stdin": {
+        "mode": "implicit_text"
+      },
+      "confirmationBypass": null,
+      "idempotency": {
+        "category": "conditional",
+        "notes": "Field-only updates are retry-safe; adding --comment makes the command non-idempotent."
+      },
+      "notes": null
+    }
+  ]
+}
+```
+
+Rules:
+
+- `schemaVersion` is fixed for the capabilities surface and changes only on breaking schema changes
+- `automationTier.byVersion` lists the commands added by each automation contract version
+- `automationTier.allCommands` is the cumulative ordered list of all automation-tier commands
+- `json.contractVersion` is `null` when a command supports `--json` but is outside the stable automation tier
+- `stdin.mode` is one of `none`, `implicit_text`, or `explicit_bulk`
+- `confirmationBypass` is `--yes` when the command supports canonical confirmation skipping, otherwise `null`
+- `idempotency.category` is one of `read_only`, `retry_safe_update`, `retry_safe_no_op`, `non_idempotent`, `resumable_batch`, `conditional`, or `destructive`
+- additive command entries and additive fields are allowed within `schemaVersion: "v1"`; removing fields or changing field types requires a new schema version
+
 ## Automation Contract v1
 
 ## Write Safety Rails Foundation

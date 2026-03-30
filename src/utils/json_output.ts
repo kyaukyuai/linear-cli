@@ -77,6 +77,7 @@ type AutomationContractCommand = {
 }
 
 const AUTOMATION_CONTRACT_CONTEXT_BY_PATH = new Map<string, string>([
+  ["linear capabilities", "Failed to describe capabilities"],
   ["linear issue list", "Failed to list issues"],
   ["linear issue view", "Failed to view issue"],
   ["linear issue create", "Failed to create issue"],
