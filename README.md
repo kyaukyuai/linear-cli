@@ -101,7 +101,8 @@ compared to upstream, this fork adds and maintains capabilities aimed at automat
 - workflow state commands for `list` and `view`
 - user commands for `list` and `view`
 - project label commands for `list` and `project label add/remove`
-- JSON output for scripting across issue, cycle, project, milestone, document, webhook, and notification commands
+- initiative commands for `list` and `view`, plus project update and initiative update feeds
+- JSON output for scripting across issue, cycle, project, milestone, initiative, document, webhook, notification, and update-feed commands
 - workspace-aware auth management with keyring migration and default workspace support
 - generated AI-agent skill docs, Claude plugin metadata, npm publishing, and Homebrew tap release plumbing
 
@@ -114,6 +115,8 @@ to discover the curated agent-facing command surface programmatically, use `line
 - v1 in scope: `issue list/view/create/update --json`, `issue relation add/delete/list --json`, `issue comment add --json`, `team members --json`, `issue parent/children/create-batch --json`
 - v2 additions: `project list/view --json`, `cycle list/view/current/next --json`, `milestone list/view --json`
 - v3 additions: `document list/view --json`, `webhook list/view --json`, `notification list/count --json`
+- v4 additions: `team list/view --json`, `user list/view --json`, `workflow-state list/view --json`, `label list --json`, `project-label list --json`
+- v5 additions: `initiative list/view --json`, `project-update list --json`, `initiative-update list --json`
 - out of scope: non-JSON terminal output, `linear api`, and other `--json` commands that are not listed above
 
 the contract fixes top-level success payload shapes and requires machine-readable failure payloads for the automation tier. see [docs/json-contracts.md](docs/json-contracts.md) for the full contract, compatibility rules, and example payloads. that guarantee also covers parser and argument validation failures when `--json` is present.

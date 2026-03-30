@@ -1,0 +1,82 @@
+export const snapshot = {};
+
+snapshot[`Initiative Update List Command - Help Text 1`] = `
+stdout:
+"
+Usage: list <initiativeId>
+
+Description:
+
+  List status updates for an initiative
+
+Options:
+
+  -h, --help           - Show this help.                                        
+  -j, --json           - Output as JSON                                         
+  --limit     <limit>  - Limit results                             (Default: \\x1b[33m10\\x1b[39m)
+  --no-pager           - Disable automatic paging for long output               
+
+Examples:
+
+  List initiative updates as JSON linear initiative-update list initiative-slug --json
+
+"
+stderr:
+""
+`;
+
+snapshot[`Initiative Update List Command - JSON Missing Initiative Reference 1`] = `
+stdout:
+'{
+  "success": false,
+  "error": {
+    "type": "unknown_error",
+    "message": "Missing argument(s): initiativeId",
+    "suggestion": null,
+    "context": "Failed to list initiative updates"
+  }
+}
+'
+stderr:
+""
+`;
+
+snapshot[`Initiative Update List Command - JSON Output 1`] = `
+stdout:
+'{
+  "initiative": {
+    "id": "init-1",
+    "name": "Automation Contract v5",
+    "slugId": "automation-contract-v5"
+  },
+  "updates": [
+    {
+      "id": "initiative-update-1",
+      "body": "Expanded initiative and project-update reads.",
+      "health": "onTrack",
+      "url": "https://linear.app/test/initiative-update/initiative-update-1",
+      "createdAt": "2026-03-30T05:00:00Z",
+      "author": "yuya"
+    }
+  ]
+}
+'
+stderr:
+""
+`;
+
+snapshot[`Initiative Update List Command - JSON Initiative Not Found 1`] = `
+stdout:
+'{
+  "success": false,
+  "error": {
+    "type": "not_found",
+    "message": "Initiative not found: missing-initiative",
+    "suggestion": null,
+    "context": "Failed to list initiative updates"
+  }
+}
+'
+stderr:
+""
+`;

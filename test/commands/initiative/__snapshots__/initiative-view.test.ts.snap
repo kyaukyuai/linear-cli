@@ -1,0 +1,98 @@
+export const snapshot = {};
+
+snapshot[`Initiative View Command - Help Text 1`] = `
+stdout:
+"
+Usage: view <initiativeId>
+
+Description:
+
+  View initiative details
+
+Options:
+
+  -h, --help  - Show this help.      
+  -w, --web   - Open in web browser  
+  -a, --app   - Open in Linear.app   
+  -j, --json  - Output as JSON       
+
+Examples:
+
+  View an initiative as JSON linear initiative view initiative-slug --json
+
+"
+stderr:
+""
+`;
+
+snapshot[`Initiative View Command - JSON Missing Initiative Reference 1`] = `
+stdout:
+'{
+  "success": false,
+  "error": {
+    "type": "unknown_error",
+    "message": "Missing argument(s): initiativeId",
+    "suggestion": null,
+    "context": "Failed to view initiative"
+  }
+}
+'
+stderr:
+""
+`;
+
+snapshot[`Initiative View Command - JSON Output 1`] = `
+stdout:
+'{
+  "id": "init-1",
+  "slugId": "automation-contract-v5",
+  "name": "Automation Contract v5",
+  "description": "Expand remaining high-value read surfaces.",
+  "status": "active",
+  "targetDate": "2026-04-30",
+  "health": "onTrack",
+  "color": "#5E6AD2",
+  "icon": "rocket",
+  "url": "https://linear.app/test/initiative/automation-contract-v5",
+  "archivedAt": null,
+  "owner": {
+    "id": "user-1",
+    "name": "yuya",
+    "displayName": "Yuya Kakui",
+    "initials": "YK"
+  },
+  "projectCount": 1,
+  "createdAt": "2026-03-01T00:00:00Z",
+  "updatedAt": "2026-03-29T00:00:00Z",
+  "projects": [
+    {
+      "id": "project-1",
+      "slugId": "agent-complete",
+      "name": "Agent Complete Surface",
+      "status": {
+        "name": "Started",
+        "type": "started"
+      }
+    }
+  ]
+}
+'
+stderr:
+""
+`;
+
+snapshot[`Initiative View Command - JSON Initiative Not Found 1`] = `
+stdout:
+'{
+  "success": false,
+  "error": {
+    "type": "not_found",
+    "message": "Initiative not found: missing-initiative",
+    "suggestion": null,
+    "context": "Failed to view initiative"
+  }
+}
+'
+stderr:
+""
+`;

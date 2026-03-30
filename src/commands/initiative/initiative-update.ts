@@ -5,6 +5,7 @@ import { getGraphQLClient } from "../../utils/graphql.ts"
 import { lookupUserId } from "../../utils/linear.ts"
 import { shouldShowSpinner } from "../../utils/hyperlink.ts"
 import { CliError, handleError, NotFoundError } from "../../utils/errors.ts"
+import { resolveInitiativeId } from "./initiative-resolve.ts"
 
 // Initiative status options from Linear API
 const INITIATIVE_STATUSES = [
@@ -84,10 +85,7 @@ export const updateCommand = new Command()
       const client = getGraphQLClient()
 
       // Resolve initiative ID
-      const resolvedId = await resolveInitiativeId(client, initiativeId)
-      if (!resolvedId) {
-        throw new NotFoundError("Initiative", initiativeId)
-      }
+      const resolvedId = await resolveInitiativeId(initiativeId, client)
 
       // Get current initiative details
       let initiativeDetails
@@ -223,62 +221,3 @@ export const updateCommand = new Command()
       }
     },
   )
-
-async function resolveInitiativeId(
-  // deno-lint-ignore no-explicit-any
-  client: any,
-  idOrSlugOrName: string,
-): Promise<string | undefined> {
-  // Try as UUID first
-  if (
-    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
-      idOrSlugOrName,
-    )
-  ) {
-    return idOrSlugOrName
-  }
-
-  // Try as slug
-  const slugQuery = gql(`
-    query GetInitiativeBySlug($slugId: String!) {
-      initiatives(filter: { slugId: { eq: $slugId } }) {
-        nodes {
-          id
-          slugId
-        }
-      }
-    }
-  `)
-
-  try {
-    const result = await client.request(slugQuery, { slugId: idOrSlugOrName })
-    if (result.initiatives?.nodes?.length > 0) {
-      return result.initiatives.nodes[0].id
-    }
-  } catch {
-    // Continue to name lookup
-  }
-
-  // Try as name
-  const nameQuery = gql(`
-    query GetInitiativeByName($name: String!) {
-      initiatives(filter: { name: { eqIgnoreCase: $name } }) {
-        nodes {
-          id
-          name
-        }
-      }
-    }
-  `)
-
-  try {
-    const result = await client.request(nameQuery, { name: idOrSlugOrName })
-    if (result.initiatives?.nodes?.length > 0) {
-      return result.initiatives.nodes[0].id
-    }
-  } catch {
-    // Not found
-  }
-
-  return undefined
-}

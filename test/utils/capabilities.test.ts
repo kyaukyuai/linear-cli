@@ -10,12 +10,13 @@ Deno.test("buildCapabilitiesPayload exposes stable top-level contract metadata",
     binary: "linear",
     version: "2.11.0",
   })
-  assertEquals(payload.contractVersions.automation.latest, "v4")
+  assertEquals(payload.contractVersions.automation.latest, "v5")
   assertEquals(payload.contractVersions.automation.supported, [
     "v1",
     "v2",
     "v3",
     "v4",
+    "v5",
   ])
   assertEquals(payload.contractVersions.dryRunPreview.latest, "v1")
   assertEquals(payload.contractVersions.stdinPolicy.latest, "v1")
@@ -33,6 +34,20 @@ Deno.test("buildCapabilitiesPayload exposes stable top-level contract metadata",
   )
   assert(
     payload.automationTier.byVersion.v4.includes("linear label list"),
+  )
+  assert(
+    payload.automationTier.byVersion.v5.includes("linear initiative list"),
+  )
+  assert(
+    payload.automationTier.byVersion.v5.includes("linear initiative view"),
+  )
+  assert(
+    payload.automationTier.byVersion.v5.includes(
+      "linear initiative-update list",
+    ),
+  )
+  assert(
+    payload.automationTier.byVersion.v5.includes("linear project-update list"),
   )
 })
 
