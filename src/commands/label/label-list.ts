@@ -1,12 +1,19 @@
 import { Command } from "@cliffy/command"
 import { unicodeWidth } from "@std/cli"
 import { gql } from "../../__codegen__/gql.ts"
-import type { GetIssueLabelsQuery } from "../../__codegen__/graphql.ts"
+import type {
+  GetIssueLabelsQuery,
+  GetIssueLabelsQueryVariables,
+} from "../../__codegen__/graphql.ts"
 import { getGraphQLClient } from "../../utils/graphql.ts"
 import { padDisplay } from "../../utils/display.ts"
 import { getTeamKey } from "../../utils/linear.ts"
 import { shouldShowSpinner } from "../../utils/hyperlink.ts"
-import { handleError } from "../../utils/errors.ts"
+import {
+  handleAutomationCommandError,
+  handleAutomationContractParseError,
+} from "../../utils/json_output.ts"
+import { buildIssueLabelJsonPayload } from "./label-json.ts"
 
 const GetIssueLabels = gql(`
   query GetIssueLabels($filter: IssueLabelFilter, $first: Int, $after: String) {
@@ -17,6 +24,7 @@ const GetIssueLabels = gql(`
         description
         color
         team {
+          id
           key
           name
         }
@@ -34,7 +42,7 @@ interface Label {
   name: string
   description?: string | null
   color: string
-  team?: { key: string; name: string } | null
+  team?: { id: string; key: string; name: string } | null
 }
 
 export const listCommand = new Command()
@@ -54,6 +62,13 @@ export const listCommand = new Command()
   )
   .option("-j, --json", "Output as JSON")
   .option("--no-pager", "Disable automatic paging for long output")
+  .example(
+    "List issue labels as JSON",
+    "linear label list --json",
+  )
+  .error((error, cmd) => {
+    handleAutomationContractParseError(error, cmd, "Failed to fetch labels")
+  })
   .action(async ({ team: teamKey, workspace, all, json }) => {
     const { Spinner } = await import("@std/cli/unstable-spinner")
     const showSpinner = !json && shouldShowSpinner()
@@ -64,8 +79,7 @@ export const listCommand = new Command()
       const client = getGraphQLClient()
 
       // Build filter based on options
-      // deno-lint-ignore no-explicit-any
-      let filter: any = {}
+      let filter: GetIssueLabelsQueryVariables["filter"] | undefined
 
       if (workspace) {
         // Only workspace labels (no team)
@@ -101,7 +115,7 @@ export const listCommand = new Command()
         const result: GetIssueLabelsQuery = await client.request(
           GetIssueLabels,
           {
-            filter: Object.keys(filter).length > 0 ? filter : undefined,
+            filter,
             first: 100,
             after,
           },
@@ -128,7 +142,9 @@ export const listCommand = new Command()
 
       // JSON output
       if (json) {
-        console.log(JSON.stringify(sortedLabels, null, 2))
+        console.log(
+          JSON.stringify(sortedLabels.map(buildIssueLabelJsonPayload), null, 2),
+        )
         return
       }
 
@@ -195,6 +211,6 @@ export const listCommand = new Command()
       console.log(`\n${sortedLabels.length} labels found.`)
     } catch (error) {
       spinner?.stop()
-      handleError(error, "Failed to fetch labels")
+      handleAutomationCommandError(error, "Failed to fetch labels", json)
     }
   })

@@ -28,7 +28,7 @@ snapshot[`Capabilities Command - Human Summary 1`] = `
 stdout:
 "linear-cli 2.10.0
 capabilities schema: v1
-automation contract latest: v3
+automation contract latest: v4
 dry-run preview contract: v1
 stdin policy: v1
 
@@ -68,6 +68,7 @@ agent-facing commands
   linear issue update :: json=v1 dry-run=v1 stdin=implicit_text confirm=none idempotency=conditional
     retry: Field-only updates are retry-safe; adding --comment makes the command non-idempotent.
   linear issue view :: json=v1 dry-run=no stdin=none confirm=none idempotency=read_only
+  linear label list :: json=v4 dry-run=no stdin=none confirm=none idempotency=read_only
   linear milestone create :: json=no dry-run=v1 stdin=none confirm=none idempotency=non_idempotent
   linear milestone delete :: json=no dry-run=v1 stdin=none confirm=--yes idempotency=destructive
   linear milestone list :: json=v2 dry-run=no stdin=none confirm=none idempotency=read_only
@@ -86,17 +87,19 @@ agent-facing commands
   linear project list :: json=v2 dry-run=no stdin=none confirm=none idempotency=read_only
   linear project update :: json=no dry-run=v1 stdin=none confirm=none idempotency=retry_safe_update
   linear project view :: json=v2 dry-run=no stdin=none confirm=none idempotency=read_only
-  linear project-label list :: json=yes dry-run=no stdin=none confirm=none idempotency=read_only
+  linear project-label list :: json=v4 dry-run=no stdin=none confirm=none idempotency=read_only
+  linear team list :: json=v4 dry-run=no stdin=none confirm=none idempotency=read_only
   linear team members :: json=v1 dry-run=no stdin=none confirm=none idempotency=read_only
-  linear user list :: json=yes dry-run=no stdin=none confirm=none idempotency=read_only
-  linear user view :: json=yes dry-run=no stdin=none confirm=none idempotency=read_only
+  linear team view :: json=v4 dry-run=no stdin=none confirm=none idempotency=read_only
+  linear user list :: json=v4 dry-run=no stdin=none confirm=none idempotency=read_only
+  linear user view :: json=v4 dry-run=no stdin=none confirm=none idempotency=read_only
   linear webhook create :: json=yes dry-run=v1 stdin=none confirm=none idempotency=non_idempotent
   linear webhook delete :: json=yes dry-run=v1 stdin=none confirm=--yes idempotency=destructive
   linear webhook list :: json=v3 dry-run=no stdin=none confirm=none idempotency=read_only
   linear webhook update :: json=yes dry-run=v1 stdin=none confirm=none idempotency=retry_safe_update
   linear webhook view :: json=v3 dry-run=no stdin=none confirm=none idempotency=read_only
-  linear workflow-state list :: json=yes dry-run=no stdin=none confirm=none idempotency=read_only
-  linear workflow-state view :: json=yes dry-run=no stdin=none confirm=none idempotency=read_only
+  linear workflow-state list :: json=v4 dry-run=no stdin=none confirm=none idempotency=read_only
+  linear workflow-state view :: json=v4 dry-run=no stdin=none confirm=none idempotency=read_only
 "
 stderr:
 ""
@@ -113,11 +116,12 @@ stdout:
   },
   "contractVersions": {
     "automation": {
-      "latest": "v3",
+      "latest": "v4",
       "supported": [
         "v1",
         "v2",
-        "v3"
+        "v3",
+        "v4"
       ]
     },
     "dryRunPreview": {
@@ -134,7 +138,7 @@ stdout:
     }
   },
   "automationTier": {
-    "latestVersion": "v3",
+    "latestVersion": "v4",
     "byVersion": {
       "v1": [
         "linear issue children",
@@ -167,6 +171,16 @@ stdout:
         "linear notification list",
         "linear webhook list",
         "linear webhook view"
+      ],
+      "v4": [
+        "linear label list",
+        "linear project-label list",
+        "linear team list",
+        "linear team view",
+        "linear user list",
+        "linear user view",
+        "linear workflow-state list",
+        "linear workflow-state view"
       ]
     },
     "allCommands": [
@@ -195,7 +209,15 @@ stdout:
       "linear notification count",
       "linear notification list",
       "linear webhook list",
-      "linear webhook view"
+      "linear webhook view",
+      "linear label list",
+      "linear project-label list",
+      "linear team list",
+      "linear team view",
+      "linear user list",
+      "linear user view",
+      "linear workflow-state list",
+      "linear workflow-state view"
     ]
   },
   "commands": [
@@ -704,6 +726,27 @@ stdout:
       "notes": null
     },
     {
+      "path": "linear label list",
+      "summary": "List issue labels",
+      "json": {
+        "supported": true,
+        "contractVersion": "v4"
+      },
+      "dryRun": {
+        "supported": false,
+        "contractVersion": null
+      },
+      "stdin": {
+        "mode": "none"
+      },
+      "confirmationBypass": null,
+      "idempotency": {
+        "category": "read_only",
+        "notes": null
+      },
+      "notes": null
+    },
+    {
       "path": "linear milestone create",
       "summary": "Create a milestone",
       "json": {
@@ -1044,7 +1087,28 @@ stdout:
       "summary": "List project labels",
       "json": {
         "supported": true,
+        "contractVersion": "v4"
+      },
+      "dryRun": {
+        "supported": false,
         "contractVersion": null
+      },
+      "stdin": {
+        "mode": "none"
+      },
+      "confirmationBypass": null,
+      "idempotency": {
+        "category": "read_only",
+        "notes": null
+      },
+      "notes": null
+    },
+    {
+      "path": "linear team list",
+      "summary": "List teams",
+      "json": {
+        "supported": true,
+        "contractVersion": "v4"
       },
       "dryRun": {
         "supported": false,
@@ -1082,11 +1146,32 @@ stdout:
       "notes": null
     },
     {
+      "path": "linear team view",
+      "summary": "View a team",
+      "json": {
+        "supported": true,
+        "contractVersion": "v4"
+      },
+      "dryRun": {
+        "supported": false,
+        "contractVersion": null
+      },
+      "stdin": {
+        "mode": "none"
+      },
+      "confirmationBypass": null,
+      "idempotency": {
+        "category": "read_only",
+        "notes": null
+      },
+      "notes": null
+    },
+    {
       "path": "linear user list",
       "summary": "List users",
       "json": {
         "supported": true,
-        "contractVersion": null
+        "contractVersion": "v4"
       },
       "dryRun": {
         "supported": false,
@@ -1107,7 +1192,7 @@ stdout:
       "summary": "View a user",
       "json": {
         "supported": true,
-        "contractVersion": null
+        "contractVersion": "v4"
       },
       "dryRun": {
         "supported": false,
@@ -1233,7 +1318,7 @@ stdout:
       "summary": "List workflow states",
       "json": {
         "supported": true,
-        "contractVersion": null
+        "contractVersion": "v4"
       },
       "dryRun": {
         "supported": false,
@@ -1254,7 +1339,7 @@ stdout:
       "summary": "View a workflow state",
       "json": {
         "supported": true,
-        "contractVersion": null
+        "contractVersion": "v4"
       },
       "dryRun": {
         "supported": false,

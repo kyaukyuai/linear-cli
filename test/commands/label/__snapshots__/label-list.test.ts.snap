@@ -1,0 +1,55 @@
+export const snapshot = {};
+
+snapshot[`Label List Command - Help Text 1`] = `
+stdout:
+"
+Usage: list
+
+Description:
+
+  List issue labels
+
+Options:
+
+  -h, --help              - Show this help.                                              
+  --team       <teamKey>  - Filter by team (e.g., TC). Shows team-specific labels only.  
+  --workspace             - Show only workspace-level labels (not team-specific)         
+  --all                   - Show all labels (both workspace and team)                    
+  -j, --json              - Output as JSON                                               
+  --no-pager              - Disable automatic paging for long output                     
+
+Examples:
+
+  List issue labels as JSON linear label list --json
+
+"
+stderr:
+""
+`;
+
+snapshot[`Label List Command - JSON Output 1`] = `
+stdout:
+'[
+  {
+    "id": "label-1",
+    "name": "backend",
+    "description": "Backend work",
+    "color": "#5E6AD2",
+    "team": {
+      "id": "team-1",
+      "key": "ENG",
+      "name": "Engineering"
+    }
+  },
+  {
+    "id": "label-2",
+    "name": "workspace",
+    "description": null,
+    "color": "#2F80ED",
+    "team": null
+  }
+]
+'
+stderr:
+""
+`;

@@ -41,7 +41,11 @@ Options:
   -w, --workspace  <slug>     - Target workspace (uses credentials)       
   --team           <teamKey>  - Team key (defaults to current team)       
   -j, --json                  - Output as JSON                            
-  --no-pager                  - Disable automatic paging for long output
+  --no-pager                  - Disable automatic paging for long output  
+
+Examples:
+
+  List workflow states as JSON linear workflow-state list --team ENG --json
 ```
 
 ### view
@@ -59,5 +63,9 @@ Options:
 
   -h, --help               - Show this help.                      
   -w, --workspace  <slug>  - Target workspace (uses credentials)  
-  -j, --json               - Output as JSON
+  -j, --json               - Output as JSON                       
+
+Examples:
+
+  View a workflow state as JSON linear workflow-state view state-123 --json
 ```

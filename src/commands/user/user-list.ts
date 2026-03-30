@@ -2,8 +2,13 @@ import { Command } from "@cliffy/command"
 import { bold, gray } from "@std/fmt/colors"
 import { gql } from "../../__codegen__/gql.ts"
 import { getGraphQLClient } from "../../utils/graphql.ts"
-import { handleError, ValidationError } from "../../utils/errors.ts"
+import { ValidationError } from "../../utils/errors.ts"
+import {
+  handleAutomationCommandError,
+  handleAutomationContractParseError,
+} from "../../utils/json_output.ts"
 import { withSpinner } from "../../utils/spinner.ts"
+import { buildUserListJsonPayload } from "./user-json.ts"
 
 const GetUsers = gql(`
   query GetUsers($first: Int!, $includeDisabled: Boolean) {
@@ -36,6 +41,13 @@ export const listCommand = new Command()
   .option("-a, --all", "Include disabled users")
   .option("-j, --json", "Output as JSON")
   .option("--no-pager", "Disable automatic paging for long output")
+  .example(
+    "List users as JSON",
+    "linear user list --json",
+  )
+  .error((error, cmd) => {
+    handleAutomationContractParseError(error, cmd, "Failed to list users")
+  })
   .action(async ({ limit, all, json }) => {
     try {
       if (limit < 1 || limit > 250) {
@@ -54,21 +66,7 @@ export const listCommand = new Command()
 
       if (json) {
         console.log(JSON.stringify(
-          users.map((user) => ({
-            id: user.id,
-            name: user.name,
-            displayName: user.displayName,
-            email: user.email,
-            active: user.active,
-            guest: user.guest,
-            app: user.app,
-            isAssignable: user.isAssignable,
-            isMentionable: user.isMentionable,
-            description: user.description,
-            statusEmoji: user.statusEmoji,
-            statusLabel: user.statusLabel,
-            timezone: user.timezone,
-          })),
+          users.map(buildUserListJsonPayload),
           null,
           2,
         ))
@@ -111,6 +109,6 @@ export const listCommand = new Command()
         console.log("")
       }
     } catch (error) {
-      handleError(error, "Failed to list users")
+      handleAutomationCommandError(error, "Failed to list users", json)
     }
   })

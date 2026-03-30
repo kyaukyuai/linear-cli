@@ -7,8 +7,13 @@ import { getGraphQLClient } from "../../utils/graphql.ts"
 import { getTimeAgo, padDisplay } from "../../utils/display.ts"
 import { getOption } from "../../config.ts"
 import { shouldShowSpinner } from "../../utils/hyperlink.ts"
-import { handleError, ValidationError } from "../../utils/errors.ts"
+import { ValidationError } from "../../utils/errors.ts"
+import {
+  handleAutomationCommandError,
+  handleAutomationContractParseError,
+} from "../../utils/json_output.ts"
 import { LINEAR_WEB_BASE_URL } from "../../const.ts"
+import { buildTeamJsonPayload } from "./team-json.ts"
 
 const GetTeams = gql(`
   query GetTeams($filter: TeamFilter, $first: Int, $after: String) {
@@ -40,15 +45,33 @@ const GetTeams = gql(`
 export const listCommand = new Command()
   .name("list")
   .description("List teams")
+  .option("-j, --json", "Output as JSON")
   .option("-w, --web", "Open in web browser")
   .option("-a, --app", "Open in Linear.app")
   .option("--no-pager", "Disable automatic paging for long output")
-  .action(async ({ web, app }) => {
+  .example(
+    "List teams as JSON",
+    "linear team list --json",
+  )
+  .error((error, cmd) => {
+    handleAutomationContractParseError(error, cmd, "Failed to fetch teams")
+  })
+  .action(async ({ web, app, json }) => {
     const { Spinner } = await import("@std/cli/unstable-spinner")
-    const showSpinner = shouldShowSpinner()
+    const showSpinner = !json && shouldShowSpinner()
     const spinner = showSpinner ? new Spinner() : null
 
     try {
+      if (json && (web || app)) {
+        throw new ValidationError(
+          "Cannot combine --json with --web or --app",
+          {
+            suggestion:
+              "Use either `linear team list --json` or `linear team list --web`.",
+          },
+        )
+      }
+
       if (web || app) {
         const workspace = getOption("workspace")
         if (!workspace) {
@@ -92,13 +115,18 @@ export const listCommand = new Command()
       // Filter out archived teams
       let teams = allTeams.filter((team) => !team.archivedAt)
 
+      // Sort teams alphabetically by name
+      teams = teams.sort((a, b) => a.name.localeCompare(b.name))
+
+      if (json) {
+        console.log(JSON.stringify(teams.map(buildTeamJsonPayload), null, 2))
+        return
+      }
+
       if (teams.length === 0) {
         console.log("No teams found.")
         return
       }
-
-      // Sort teams alphabetically by name
-      teams = teams.sort((a, b) => a.name.localeCompare(b.name))
 
       // Define column widths based on actual data
       const { columns } = Deno.stdout.isTerminal()
@@ -178,6 +206,6 @@ export const listCommand = new Command()
       }
     } catch (error) {
       spinner?.stop()
-      handleError(error, "Failed to fetch teams")
+      handleAutomationCommandError(error, "Failed to fetch teams", json)
     }
   })

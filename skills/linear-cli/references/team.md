@@ -21,6 +21,7 @@ Commands:
   create                - Create a linear team                                                         
   delete     <teamKey>  - Delete a Linear team                                                         
   list                  - List teams                                                                   
+  view       [teamKey]  - View a team                                                                  
   id                    - Print the configured team id                                                 
   autolinks             - Configure GitHub repository autolinks for Linear issues with this team prefix
   members    [teamKey]  - List team members
@@ -85,9 +86,36 @@ Options:
 
   -h, --help               - Show this help.                           
   -w, --workspace  <slug>  - Target workspace (uses credentials)       
+  -j, --json               - Output as JSON                            
   -w, --web                - Open in web browser                       
   -a, --app                - Open in Linear.app                        
-  --no-pager               - Disable automatic paging for long output
+  --no-pager               - Disable automatic paging for long output  
+
+Examples:
+
+  List teams as JSON linear team list --json
+```
+
+### view
+
+> View a team
+
+```
+Usage:   linear team view [teamKey]
+
+Description:
+
+  View a team
+
+Options:
+
+  -h, --help               - Show this help.                      
+  -w, --workspace  <slug>  - Target workspace (uses credentials)  
+  -j, --json               - Output as JSON                       
+
+Examples:
+
+  View a team as JSON linear team view ENG --json
 ```
 
 ### id

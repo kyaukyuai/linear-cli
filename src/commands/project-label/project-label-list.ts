@@ -2,8 +2,13 @@ import { Command } from "@cliffy/command"
 import { bold, gray } from "@std/fmt/colors"
 import { gql } from "../../__codegen__/gql.ts"
 import { getGraphQLClient } from "../../utils/graphql.ts"
-import { handleError, ValidationError } from "../../utils/errors.ts"
+import { ValidationError } from "../../utils/errors.ts"
+import {
+  handleAutomationCommandError,
+  handleAutomationContractParseError,
+} from "../../utils/json_output.ts"
 import { withSpinner } from "../../utils/spinner.ts"
+import { buildProjectLabelJsonPayload } from "../label/label-json.ts"
 
 const GetProjectLabels = gql(`
   query GetProjectLabels($first: Int!, $includeArchived: Boolean) {
@@ -36,6 +41,17 @@ export const listCommand = new Command()
   .option("--include-archived", "Include archived project labels")
   .option("-j, --json", "Output as JSON")
   .option("--no-pager", "Disable automatic paging for long output")
+  .example(
+    "List project labels as JSON",
+    "linear project-label list --json",
+  )
+  .error((error, cmd) => {
+    handleAutomationContractParseError(
+      error,
+      cmd,
+      "Failed to list project labels",
+    )
+  })
   .action(async ({ limit, includeArchived, json }) => {
     try {
       if (limit < 1 || limit > 250) {
@@ -58,23 +74,7 @@ export const listCommand = new Command()
 
       if (json) {
         console.log(JSON.stringify(
-          labels.map((label) => ({
-            id: label.id,
-            name: label.name,
-            description: label.description,
-            color: label.color,
-            isGroup: label.isGroup,
-            createdAt: label.createdAt,
-            updatedAt: label.updatedAt,
-            archivedAt: label.archivedAt,
-            retiredAt: label.retiredAt,
-            parent: label.parent
-              ? {
-                id: label.parent.id,
-                name: label.parent.name,
-              }
-              : null,
-          })),
+          labels.map(buildProjectLabelJsonPayload),
           null,
           2,
         ))
@@ -107,6 +107,10 @@ export const listCommand = new Command()
         console.log("")
       }
     } catch (error) {
-      handleError(error, "Failed to list project labels")
+      handleAutomationCommandError(
+        error,
+        "Failed to list project labels",
+        json,
+      )
     }
   })

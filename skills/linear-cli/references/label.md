@@ -43,7 +43,11 @@ Options:
   --workspace             - Show only workspace-level labels (not team-specific)         
   --all                   - Show all labels (both workspace and team)                    
   -j, --json              - Output as JSON                                               
-  --no-pager              - Disable automatic paging for long output
+  --no-pager              - Disable automatic paging for long output                     
+
+Examples:
+
+  List issue labels as JSON linear label list --json
 ```
 
 ### create

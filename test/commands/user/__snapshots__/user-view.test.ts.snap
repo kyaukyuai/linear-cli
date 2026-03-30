@@ -14,6 +14,10 @@ Options:
   -h, --help  - Show this help.  
   -j, --json  - Output as JSON   
 
+Examples:
+
+  View a user as JSON linear user view user-123 --json
+
 "
 stderr:
 ""
@@ -67,6 +71,22 @@ stdout:
   "organization": {
     "name": "Kyaukyuai",
     "urlKey": "kyaukyuai"
+  }
+}
+'
+stderr:
+""
+`;
+
+snapshot[`User View Command - JSON User Not Found 1`] = `
+stdout:
+'{
+  "success": false,
+  "error": {
+    "type": "not_found",
+    "message": "User not found: missing-user",
+    "suggestion": null,
+    "context": "Failed to view user"
   }
 }
 '

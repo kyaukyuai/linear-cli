@@ -17,6 +17,10 @@ Options:
   -j, --json            - Output as JSON                                         
   --no-pager            - Disable automatic paging for long output               
 
+Examples:
+
+  List users as JSON linear user list --json
+
 "
 stderr:
 ""
@@ -73,6 +77,22 @@ stdout:
   flags: inactive, guest, not assignable
 
 "
+stderr:
+""
+`;
+
+snapshot[`User List Command - JSON Invalid Limit 1`] = `
+stdout:
+'{
+  "success": false,
+  "error": {
+    "type": "validation_error",
+    "message": "Limit must be between 1 and 250",
+    "suggestion": null,
+    "context": "Failed to list users"
+  }
+}
+'
 stderr:
 ""
 `;

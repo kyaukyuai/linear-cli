@@ -166,3 +166,15 @@ await snapshotTest({
     }
   },
 })
+
+await snapshotTest({
+  name: "User List Command - JSON Invalid Limit",
+  meta: import.meta,
+  colors: false,
+  canFail: true,
+  args: ["--json", "--limit", "0"],
+  denoArgs: commonDenoArgs,
+  async fn() {
+    await listCommand.parse()
+  },
+})

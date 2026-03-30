@@ -165,6 +165,74 @@ await cliffySnapshotTest({
   },
 })
 
+await cliffySnapshotTest({
+  name: "Team List Command - JSON Output",
+  meta: import.meta,
+  colors: false,
+  args: ["--json"],
+  denoArgs,
+  async fn() {
+    const server = new MockLinearServer([
+      {
+        queryName: "GetTeams",
+        variables: { filter: undefined, first: 100, after: undefined },
+        response: {
+          data: {
+            teams: {
+              nodes: [
+                {
+                  id: "team-1",
+                  name: "Backend Team",
+                  key: "BACKEND",
+                  description: "Core backend development team",
+                  icon: "⚙️",
+                  color: "#3b82f6",
+                  cyclesEnabled: true,
+                  createdAt: "2023-12-01T10:00:00Z",
+                  updatedAt: "2024-01-20T15:30:00Z",
+                  archivedAt: null,
+                  organization: {
+                    id: "org-1",
+                    name: "Acme Corp",
+                  },
+                },
+              ],
+              pageInfo: {
+                hasNextPage: false,
+                endCursor: null,
+              },
+            },
+          },
+        },
+      },
+    ])
+
+    try {
+      await server.start()
+      Deno.env.set("LINEAR_GRAPHQL_ENDPOINT", server.getEndpoint())
+      Deno.env.set("LINEAR_API_KEY", "Bearer test-token")
+
+      await listCommand.parse()
+    } finally {
+      await server.stop()
+      Deno.env.delete("LINEAR_GRAPHQL_ENDPOINT")
+      Deno.env.delete("LINEAR_API_KEY")
+    }
+  },
+})
+
+await cliffySnapshotTest({
+  name: "Team List Command - JSON Rejects Web Flags",
+  meta: import.meta,
+  colors: false,
+  canFail: true,
+  args: ["--json", "--web"],
+  denoArgs,
+  async fn() {
+    await listCommand.parse()
+  },
+})
+
 // Test pagination - multiple pages
 await snapshotTest({
   name: "Team List Command - Pagination (Multiple Pages)",
