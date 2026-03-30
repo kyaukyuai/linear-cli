@@ -106,7 +106,7 @@ for bot and org-wide automation use cases, `linear-cli` defines a stable JSON co
 
 - v1 in scope: `issue list/view/create/update --json`, `issue relation add/delete/list --json`, `issue comment add --json`, `team members --json`, `issue parent/children/create-batch --json`
 - v2 additions: `project list/view --json`, `cycle list/view/current/next --json`, `milestone list/view --json`
-- v3 additions: `document list/view --json`, `webhook list/view --json`
+- v3 additions: `document list/view --json`, `webhook list/view --json`, `notification list/count --json`
 - out of scope: non-JSON terminal output, `linear api`, and other `--json` commands that are not listed above
 
 the contract fixes top-level success payload shapes and requires machine-readable failure payloads for the automation tier. see [docs/json-contracts.md](docs/json-contracts.md) for the full contract, compatibility rules, and example payloads. that guarantee also covers parser and argument validation failures when `--json` is present.
