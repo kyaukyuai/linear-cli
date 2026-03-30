@@ -2,6 +2,17 @@
 
 ## [Unreleased]
 
+## [2.12.0] - 2026-03-30
+
+### Added
+
+- added schema-style metadata to `linear capabilities --json` so agents can inspect command arguments, input modes, output semantics, and exit codes without scraping docs
+- added Automation Contract v5 coverage for `initiative list/view --json`, `project-update list --json`, and `initiative-update list --json`
+
+### Changed
+
+- upgraded write timeout handling to reconcile against Linear after client-side confirmation timeouts, distinguishing `probably_succeeded`, `definitely_failed`, and `partial_success` outcomes for high-value write commands
+
 ## [2.11.0] - 2026-03-30
 
 ### Added
