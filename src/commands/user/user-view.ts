@@ -2,8 +2,13 @@ import { Command } from "@cliffy/command"
 import { bold, gray } from "@std/fmt/colors"
 import { gql } from "../../__codegen__/gql.ts"
 import { getGraphQLClient } from "../../utils/graphql.ts"
-import { handleError } from "../../utils/errors.ts"
+import { NotFoundError } from "../../utils/errors.ts"
+import {
+  handleAutomationCommandError,
+  handleAutomationContractParseError,
+} from "../../utils/json_output.ts"
 import { withSpinner } from "../../utils/spinner.ts"
+import { buildUserDetailJsonPayload } from "./user-json.ts"
 
 const GetUser = gql(`
   query GetUser($id: String!) {
@@ -39,6 +44,13 @@ export const viewCommand = new Command()
   .description("View a user")
   .arguments("<userId:string>")
   .option("-j, --json", "Output as JSON")
+  .example(
+    "View a user as JSON",
+    "linear user view user-123 --json",
+  )
+  .error((error, cmd) => {
+    handleAutomationContractParseError(error, cmd, "Failed to view user")
+  })
   .action(async ({ json }, userId) => {
     try {
       const client = getGraphQLClient()
@@ -48,36 +60,12 @@ export const viewCommand = new Command()
       )
 
       const user = result.user
+      if (user == null) {
+        throw new NotFoundError("User", userId)
+      }
 
       if (json) {
-        console.log(JSON.stringify(
-          {
-            id: user.id,
-            name: user.name,
-            displayName: user.displayName,
-            email: user.email,
-            active: user.active,
-            guest: user.guest,
-            app: user.app,
-            isAssignable: user.isAssignable,
-            isMentionable: user.isMentionable,
-            description: user.description,
-            statusEmoji: user.statusEmoji,
-            statusLabel: user.statusLabel,
-            timezone: user.timezone,
-            lastSeen: user.lastSeen,
-            createdAt: user.createdAt,
-            updatedAt: user.updatedAt,
-            archivedAt: user.archivedAt,
-            url: user.url,
-            organization: {
-              name: user.organization.name,
-              urlKey: user.organization.urlKey,
-            },
-          },
-          null,
-          2,
-        ))
+        console.log(JSON.stringify(buildUserDetailJsonPayload(user), null, 2))
         return
       }
 
@@ -116,6 +104,6 @@ export const viewCommand = new Command()
         console.log(`${gray("Archived:")} ${user.archivedAt}`)
       }
     } catch (error) {
-      handleError(error, "Failed to view user")
+      handleAutomationCommandError(error, "Failed to view user", json)
     }
   })

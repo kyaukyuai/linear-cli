@@ -2,8 +2,13 @@ import { Command } from "@cliffy/command"
 import { bold, gray } from "@std/fmt/colors"
 import { gql } from "../../__codegen__/gql.ts"
 import { getGraphQLClient } from "../../utils/graphql.ts"
-import { handleError } from "../../utils/errors.ts"
+import { NotFoundError } from "../../utils/errors.ts"
+import {
+  handleAutomationCommandError,
+  handleAutomationContractParseError,
+} from "../../utils/json_output.ts"
 import { withSpinner } from "../../utils/spinner.ts"
+import { buildWorkflowStateJsonPayload } from "./workflow-state-json.ts"
 
 const GetWorkflowState = gql(`
   query GetWorkflowState($id: String!) {
@@ -36,6 +41,17 @@ export const viewCommand = new Command()
   .description("View a workflow state")
   .arguments("<workflowStateId:string>")
   .option("-j, --json", "Output as JSON")
+  .example(
+    "View a workflow state as JSON",
+    "linear workflow-state view state-123 --json",
+  )
+  .error((error, cmd) => {
+    handleAutomationContractParseError(
+      error,
+      cmd,
+      "Failed to view workflow state",
+    )
+  })
   .action(async ({ json }, workflowStateId) => {
     try {
       const client = getGraphQLClient()
@@ -45,37 +61,14 @@ export const viewCommand = new Command()
       )
 
       const workflowState = result.workflowState
+      if (workflowState == null) {
+        throw new NotFoundError("Workflow state", workflowStateId)
+      }
 
       if (json) {
-        console.log(JSON.stringify(
-          {
-            id: workflowState.id,
-            name: workflowState.name,
-            type: workflowState.type,
-            position: workflowState.position,
-            color: workflowState.color,
-            description: workflowState.description,
-            createdAt: workflowState.createdAt,
-            updatedAt: workflowState.updatedAt,
-            archivedAt: workflowState.archivedAt,
-            team: workflowState.team
-              ? {
-                id: workflowState.team.id,
-                key: workflowState.team.key,
-                name: workflowState.team.name,
-              }
-              : null,
-            inheritedFrom: workflowState.inheritedFrom
-              ? {
-                id: workflowState.inheritedFrom.id,
-                name: workflowState.inheritedFrom.name,
-                type: workflowState.inheritedFrom.type,
-              }
-              : null,
-          },
-          null,
-          2,
-        ))
+        console.log(
+          JSON.stringify(buildWorkflowStateJsonPayload(workflowState), null, 2),
+        )
         return
       }
 
@@ -105,6 +98,10 @@ export const viewCommand = new Command()
         console.log(`${gray("Archived:")} ${workflowState.archivedAt}`)
       }
     } catch (error) {
-      handleError(error, "Failed to view workflow state")
+      handleAutomationCommandError(
+        error,
+        "Failed to view workflow state",
+        json,
+      )
     }
   })

@@ -16,6 +16,10 @@ Options:
   -j, --json             - Output as JSON                            
   --no-pager             - Disable automatic paging for long output  
 
+Examples:
+
+  List workflow states as JSON linear workflow-state list --team ENG --json
+
 "
 stderr:
 ""
@@ -64,4 +68,20 @@ stdout:
 stderr:
 "✗ Failed to list workflow states: Team not found: NOPE
 "
+`;
+
+snapshot[`Workflow State List Command - JSON Team Not Found 1`] = `
+stdout:
+'{
+  "success": false,
+  "error": {
+    "type": "not_found",
+    "message": "Team not found: NOPE",
+    "suggestion": null,
+    "context": "Failed to list workflow states"
+  }
+}
+'
+stderr:
+""
 `;

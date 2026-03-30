@@ -264,6 +264,8 @@ For short inline text, `-d/--description` is fine. For Markdown content, prefer 
 
 ```bash
 linear team list       # list teams
+linear team list --json  # emit contract-stable team summaries
+linear team view ENG --json  # emit contract-stable team details
 linear team id         # print out the team id (e.g. for scripts)
 linear team members    # list team members
 linear team members ENG --json  # emit assignable candidates for a team
@@ -390,9 +392,22 @@ inspect workflow states directly, without going through issue mutations.
 
 ```bash
 linear workflow-state list --team ENG
-linear workflow-state list --json
+linear workflow-state list --team ENG --json
 linear workflow-state view <workflowStateId>
 linear workflow-state view <workflowStateId> --json
+```
+
+### label commands
+
+inspect issue labels and project labels directly with a primitive GraphQL-aligned surface.
+
+```bash
+linear label list
+linear label list --team ENG
+linear label list --json
+linear project-label list
+linear project-label list --include-archived
+linear project-label list --json
 ```
 
 ### project label commands
@@ -412,9 +427,9 @@ inspect workspace users directly with a primitive GraphQL-aligned surface.
 ```bash
 linear user list
 linear user list --all
-linear user list --json
+linear user list --json  # emit contract-stable user summaries
 linear user view <userId>
-linear user view <userId> --json
+linear user view <userId> --json  # emit contract-stable user details
 ```
 
 ### other commands

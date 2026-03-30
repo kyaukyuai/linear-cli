@@ -1,0 +1,80 @@
+export const snapshot = {};
+
+snapshot[`Team View Command - Help Text 1`] = `
+stdout:
+"
+Usage: view [teamKey]
+
+Description:
+
+  View a team
+
+Options:
+
+  -h, --help  - Show this help.  
+  -j, --json  - Output as JSON   
+
+Examples:
+
+  View a team as JSON linear team view ENG --json
+
+"
+stderr:
+""
+`;
+
+snapshot[`Team View Command - Shows Team 1`] = `
+stdout:
+"Engineering
+ID: team-1
+Key: ENG
+Description: Builds the product
+Icon: 🛠️
+Color: #3b82f6
+Cycles enabled: yes
+Organization: Kyaukyuai
+Created: 2026-03-10T10:00:00Z
+Updated: 2026-03-15T11:00:00Z
+"
+stderr:
+""
+`;
+
+snapshot[`Team View Command - JSON Output 1`] = `
+stdout:
+'{
+  "id": "team-1",
+  "name": "Engineering",
+  "key": "ENG",
+  "description": "Builds the product",
+  "icon": "🛠️",
+  "color": "#3b82f6",
+  "cyclesEnabled": true,
+  "createdAt": "2026-03-10T10:00:00Z",
+  "updatedAt": "2026-03-15T11:00:00Z",
+  "archivedAt": null,
+  "organization": {
+    "id": "org-1",
+    "name": "Kyaukyuai"
+  }
+}
+'
+stderr:
+""
+`;
+
+snapshot[`Team View Command - JSON Team Not Found 1`] = `
+stdout:
+'{
+  "success": false,
+  "error": {
+    "type": "not_found",
+    "message": "Team not found: NOPE",
+    "suggestion": null,
+    "context": "Failed to view team"
+  }
+}
+'
+stderr:
+""
+`;

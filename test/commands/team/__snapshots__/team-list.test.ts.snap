@@ -12,9 +12,14 @@ Description:
 Options:
 
   -h, --help  - Show this help.                           
+  -j, --json  - Output as JSON                            
   -w, --web   - Open in web browser                       
   -a, --app   - Open in Linear.app                        
   --no-pager  - Disable automatic paging for long output  
+
+Examples:
+
+  List teams as JSON linear team list --json
 
 "
 stderr:
@@ -25,6 +30,47 @@ snapshot[`Team List Command - No Teams Found 1`] = `
 stdout:
 "No teams found.
 "
+stderr:
+""
+`;
+
+snapshot[`Team List Command - JSON Output 1`] = `
+stdout:
+'[
+  {
+    "id": "team-1",
+    "name": "Backend Team",
+    "key": "BACKEND",
+    "description": "Core backend development team",
+    "icon": "⚙️",
+    "color": "#3b82f6",
+    "cyclesEnabled": true,
+    "createdAt": "2023-12-01T10:00:00Z",
+    "updatedAt": "2024-01-20T15:30:00Z",
+    "archivedAt": null,
+    "organization": {
+      "id": "org-1",
+      "name": "Acme Corp"
+    }
+  }
+]
+'
+stderr:
+""
+`;
+
+snapshot[`Team List Command - JSON Rejects Web Flags 1`] = `
+stdout:
+'{
+  "success": false,
+  "error": {
+    "type": "validation_error",
+    "message": "Cannot combine --json with --web or --app",
+    "suggestion": "Use either \`linear team list --json\` or \`linear team list --web\`.",
+    "context": "Failed to fetch teams"
+  }
+}
+'
 stderr:
 ""
 `;

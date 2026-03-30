@@ -104,6 +104,14 @@ const AUTOMATION_CONTRACT_CONTEXT_BY_PATH = new Map<string, string>([
   ["linear webhook view", "Failed to view webhook"],
   ["linear notification list", "Failed to list notifications"],
   ["linear notification count", "Failed to count notifications"],
+  ["linear team list", "Failed to fetch teams"],
+  ["linear team view", "Failed to view team"],
+  ["linear user list", "Failed to list users"],
+  ["linear user view", "Failed to view user"],
+  ["linear workflow-state list", "Failed to list workflow states"],
+  ["linear workflow-state view", "Failed to view workflow state"],
+  ["linear label list", "Failed to fetch labels"],
+  ["linear project-label list", "Failed to list project labels"],
 ])
 
 export function maybeHandleAutomationContractParseError(

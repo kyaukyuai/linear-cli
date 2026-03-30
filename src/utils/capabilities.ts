@@ -1,4 +1,4 @@
-export type AutomationContractVersion = "v1" | "v2" | "v3"
+export type AutomationContractVersion = "v1" | "v2" | "v3" | "v4"
 export type DryRunContractVersion = "v1"
 export type StdinPolicyVersion = "v1"
 export type CapabilitiesSchemaVersion = "v1"
@@ -65,7 +65,7 @@ export type CapabilitiesPayload = {
   commands: CapabilityCommand[]
 }
 
-const AUTOMATION_CONTRACT_VERSIONS = ["v1", "v2", "v3"] as const
+const AUTOMATION_CONTRACT_VERSIONS = ["v1", "v2", "v3", "v4"] as const
 const DRY_RUN_CONTRACT_VERSIONS = ["v1"] as const
 const STDIN_POLICY_VERSIONS = ["v1"] as const
 
@@ -370,6 +370,16 @@ const COMMANDS: CapabilityCommand[] = [
     notes: null,
   },
   {
+    path: "linear label list",
+    summary: "List issue labels",
+    json: jsonContract("v4"),
+    dryRun: dryRunContract(null),
+    stdin: stdin("none"),
+    confirmationBypass: null,
+    idempotency: idempotency("read_only"),
+    notes: null,
+  },
+  {
     path: "linear milestone create",
     summary: "Create a milestone",
     json: noJson(),
@@ -538,7 +548,17 @@ const COMMANDS: CapabilityCommand[] = [
   {
     path: "linear project-label list",
     summary: "List project labels",
-    json: jsonOptional(),
+    json: jsonContract("v4"),
+    dryRun: dryRunContract(null),
+    stdin: stdin("none"),
+    confirmationBypass: null,
+    idempotency: idempotency("read_only"),
+    notes: null,
+  },
+  {
+    path: "linear team list",
+    summary: "List teams",
+    json: jsonContract("v4"),
     dryRun: dryRunContract(null),
     stdin: stdin("none"),
     confirmationBypass: null,
@@ -556,9 +576,19 @@ const COMMANDS: CapabilityCommand[] = [
     notes: null,
   },
   {
+    path: "linear team view",
+    summary: "View a team",
+    json: jsonContract("v4"),
+    dryRun: dryRunContract(null),
+    stdin: stdin("none"),
+    confirmationBypass: null,
+    idempotency: idempotency("read_only"),
+    notes: null,
+  },
+  {
     path: "linear user list",
     summary: "List users",
-    json: jsonOptional(),
+    json: jsonContract("v4"),
     dryRun: dryRunContract(null),
     stdin: stdin("none"),
     confirmationBypass: null,
@@ -568,7 +598,7 @@ const COMMANDS: CapabilityCommand[] = [
   {
     path: "linear user view",
     summary: "View a user",
-    json: jsonOptional(),
+    json: jsonContract("v4"),
     dryRun: dryRunContract(null),
     stdin: stdin("none"),
     confirmationBypass: null,
@@ -628,7 +658,7 @@ const COMMANDS: CapabilityCommand[] = [
   {
     path: "linear workflow-state list",
     summary: "List workflow states",
-    json: jsonOptional(),
+    json: jsonContract("v4"),
     dryRun: dryRunContract(null),
     stdin: stdin("none"),
     confirmationBypass: null,
@@ -638,7 +668,7 @@ const COMMANDS: CapabilityCommand[] = [
   {
     path: "linear workflow-state view",
     summary: "View a workflow state",
-    json: jsonOptional(),
+    json: jsonContract("v4"),
     dryRun: dryRunContract(null),
     stdin: stdin("none"),
     confirmationBypass: null,
@@ -656,6 +686,7 @@ function buildAutomationTier() {
     v1: [] as string[],
     v2: [] as string[],
     v3: [] as string[],
+    v4: [] as string[],
   }
 
   for (const command of CAPABILITY_COMMANDS) {
@@ -666,12 +697,13 @@ function buildAutomationTier() {
   }
 
   return {
-    latestVersion: "v3" as const,
+    latestVersion: "v4" as const,
     byVersion,
     allCommands: [
       ...byVersion.v1,
       ...byVersion.v2,
       ...byVersion.v3,
+      ...byVersion.v4,
     ],
   }
 }
@@ -686,7 +718,7 @@ export function buildCapabilitiesPayload(version: string): CapabilitiesPayload {
     },
     contractVersions: {
       automation: {
-        latest: "v3",
+        latest: "v4",
         supported: [...AUTOMATION_CONTRACT_VERSIONS],
       },
       dryRunPreview: {

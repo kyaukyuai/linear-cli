@@ -17,6 +17,10 @@ Options:
   -j, --json                   - Output as JSON                                         
   --no-pager                   - Disable automatic paging for long output               
 
+Examples:
+
+  List project labels as JSON linear project-label list --json
+
 "
 stderr:
 ""
@@ -56,6 +60,22 @@ stdout:
     }
   }
 ]
+'
+stderr:
+""
+`;
+
+snapshot[`Project Label List Command - JSON Invalid Limit 1`] = `
+stdout:
+'{
+  "success": false,
+  "error": {
+    "type": "validation_error",
+    "message": "Limit must be between 1 and 250",
+    "suggestion": null,
+    "context": "Failed to list project labels"
+  }
+}
 '
 stderr:
 ""

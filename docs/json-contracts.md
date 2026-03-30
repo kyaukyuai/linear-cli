@@ -1286,6 +1286,338 @@ Top-level shape:
 }
 ```
 
+## Automation Contract v4
+
+Automation Contract v4 extends the stable read surface to team, user, workflow-state, issue label, and project label commands while preserving the v1/v2/v3 guarantees for existing automation-tier commands.
+
+The v4 additions are:
+
+- `linear team list --json`
+- `linear team view --json`
+- `linear user list --json`
+- `linear user view --json`
+- `linear workflow-state list --json`
+- `linear workflow-state view --json`
+- `linear label list --json`
+- `linear project-label list --json`
+
+V4 reuses the same failure envelope, value rules, and compatibility rules defined above.
+
+### `teamOrganizationRef`
+
+```json
+{
+  "id": "org-123",
+  "name": "Acme"
+}
+```
+
+### `teamRefDetailed`
+
+```json
+{
+  "id": "team-123",
+  "name": "Engineering",
+  "key": "ENG",
+  "description": "Builds the product",
+  "icon": "🛠️",
+  "color": "#3b82f6",
+  "cyclesEnabled": true,
+  "createdAt": "2026-03-28T00:00:00.000Z",
+  "updatedAt": "2026-03-29T00:00:00.000Z",
+  "archivedAt": null,
+  "organization": {
+    "id": "org-123",
+    "name": "Acme"
+  }
+}
+```
+
+### `team list --json`
+
+Top-level shape:
+
+```json
+[
+  {
+    "id": "team-123",
+    "name": "Engineering",
+    "key": "ENG",
+    "description": "Builds the product",
+    "icon": "🛠️",
+    "color": "#3b82f6",
+    "cyclesEnabled": true,
+    "createdAt": "2026-03-28T00:00:00.000Z",
+    "updatedAt": "2026-03-29T00:00:00.000Z",
+    "archivedAt": null,
+    "organization": {
+      "id": "org-123",
+      "name": "Acme"
+    }
+  }
+]
+```
+
+### `team view --json`
+
+Top-level shape:
+
+```json
+{
+  "id": "team-123",
+  "name": "Engineering",
+  "key": "ENG",
+  "description": "Builds the product",
+  "icon": "🛠️",
+  "color": "#3b82f6",
+  "cyclesEnabled": true,
+  "createdAt": "2026-03-28T00:00:00.000Z",
+  "updatedAt": "2026-03-29T00:00:00.000Z",
+  "archivedAt": null,
+  "organization": {
+    "id": "org-123",
+    "name": "Acme"
+  }
+}
+```
+
+### `workspaceUserRef`
+
+```json
+{
+  "id": "user-123",
+  "name": "alice.bot",
+  "displayName": "Alice Bot",
+  "email": "alice@example.com",
+  "active": true,
+  "guest": false,
+  "app": false,
+  "isAssignable": true,
+  "isMentionable": true,
+  "description": "Staff Engineer",
+  "statusEmoji": ":rocket:",
+  "statusLabel": "Shipping",
+  "timezone": "Asia/Tokyo"
+}
+```
+
+### `user list --json`
+
+Top-level shape:
+
+```json
+[
+  {
+    "id": "user-123",
+    "name": "alice.bot",
+    "displayName": "Alice Bot",
+    "email": "alice@example.com",
+    "active": true,
+    "guest": false,
+    "app": false,
+    "isAssignable": true,
+    "isMentionable": true,
+    "description": "Staff Engineer",
+    "statusEmoji": ":rocket:",
+    "statusLabel": "Shipping",
+    "timezone": "Asia/Tokyo"
+  }
+]
+```
+
+### `user view --json`
+
+Top-level shape:
+
+```json
+{
+  "id": "user-123",
+  "name": "alice.bot",
+  "displayName": "Alice Bot",
+  "email": "alice@example.com",
+  "active": true,
+  "guest": false,
+  "app": false,
+  "isAssignable": true,
+  "isMentionable": true,
+  "description": "Staff Engineer",
+  "statusEmoji": ":rocket:",
+  "statusLabel": "Shipping",
+  "timezone": "Asia/Tokyo",
+  "lastSeen": "2026-03-29T00:00:00.000Z",
+  "createdAt": "2026-03-28T00:00:00.000Z",
+  "updatedAt": "2026-03-29T00:00:00.000Z",
+  "archivedAt": null,
+  "url": "https://linear.app/acme/user/alice-bot",
+  "organization": {
+    "name": "Acme",
+    "urlKey": "acme"
+  }
+}
+```
+
+### `workflowStateInheritedRef`
+
+```json
+{
+  "id": "state-999",
+  "name": "In Progress",
+  "type": "started"
+}
+```
+
+### `workflowStateRef`
+
+```json
+{
+  "id": "state-123",
+  "name": "Backlog",
+  "type": "backlog",
+  "position": 0,
+  "color": "#888888",
+  "description": null,
+  "createdAt": "2026-03-28T00:00:00.000Z",
+  "updatedAt": "2026-03-29T00:00:00.000Z",
+  "archivedAt": null,
+  "team": {
+    "id": "team-123",
+    "key": "ENG",
+    "name": "Engineering"
+  },
+  "inheritedFrom": null
+}
+```
+
+### `workflow-state list --json`
+
+Top-level shape:
+
+```json
+[
+  {
+    "id": "state-123",
+    "name": "Backlog",
+    "type": "backlog",
+    "position": 0,
+    "color": "#888888",
+    "description": null,
+    "createdAt": "2026-03-28T00:00:00.000Z",
+    "updatedAt": "2026-03-29T00:00:00.000Z",
+    "archivedAt": null,
+    "team": {
+      "id": "team-123",
+      "key": "ENG",
+      "name": "Engineering"
+    },
+    "inheritedFrom": null
+  }
+]
+```
+
+### `workflow-state view --json`
+
+Top-level shape:
+
+```json
+{
+  "id": "state-123",
+  "name": "Backlog",
+  "type": "backlog",
+  "position": 0,
+  "color": "#888888",
+  "description": null,
+  "createdAt": "2026-03-28T00:00:00.000Z",
+  "updatedAt": "2026-03-29T00:00:00.000Z",
+  "archivedAt": null,
+  "team": {
+    "id": "team-123",
+    "key": "ENG",
+    "name": "Engineering"
+  },
+  "inheritedFrom": null
+}
+```
+
+### `issueLabelRef`
+
+```json
+{
+  "id": "label-123",
+  "name": "backend",
+  "description": "Backend work",
+  "color": "#5E6AD2",
+  "team": {
+    "id": "team-123",
+    "key": "ENG",
+    "name": "Engineering"
+  }
+}
+```
+
+### `label list --json`
+
+Top-level shape:
+
+```json
+[
+  {
+    "id": "label-123",
+    "name": "backend",
+    "description": "Backend work",
+    "color": "#5E6AD2",
+    "team": {
+      "id": "team-123",
+      "key": "ENG",
+      "name": "Engineering"
+    }
+  }
+]
+```
+
+### `projectLabelRef`
+
+```json
+{
+  "id": "plabel-123",
+  "name": "Customer-facing",
+  "description": "Visible in roadmap and updates",
+  "color": "#5E6AD2",
+  "isGroup": false,
+  "createdAt": "2026-03-28T00:00:00.000Z",
+  "updatedAt": "2026-03-29T00:00:00.000Z",
+  "archivedAt": null,
+  "retiredAt": null,
+  "parent": {
+    "id": "plabel-root",
+    "name": "Product"
+  }
+}
+```
+
+### `project-label list --json`
+
+Top-level shape:
+
+```json
+[
+  {
+    "id": "plabel-123",
+    "name": "Customer-facing",
+    "description": "Visible in roadmap and updates",
+    "color": "#5E6AD2",
+    "isGroup": false,
+    "createdAt": "2026-03-28T00:00:00.000Z",
+    "updatedAt": "2026-03-29T00:00:00.000Z",
+    "archivedAt": null,
+    "retiredAt": null,
+    "parent": {
+      "id": "plabel-root",
+      "name": "Product"
+    }
+  }
+]
+```
+
 ## Compatibility Rules
 
 Within a given Automation Contract version:

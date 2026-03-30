@@ -161,3 +161,30 @@ await snapshotTest({
     }
   },
 })
+
+await snapshotTest({
+  name: "Workflow State List Command - JSON Team Not Found",
+  meta: import.meta,
+  colors: false,
+  args: ["--team", "NOPE", "--json"],
+  canFail: true,
+  denoArgs: commonDenoArgs,
+  async fn() {
+    const { cleanup } = await setupMockLinearServer([
+      {
+        queryName: "GetWorkflowStates",
+        response: {
+          data: {
+            team: null,
+          },
+        },
+      },
+    ])
+
+    try {
+      await listCommand.parse()
+    } finally {
+      await cleanup()
+    }
+  },
+})

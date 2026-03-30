@@ -42,7 +42,11 @@ Options:
   -n, --limit      <limit>  - Maximum number of users                   (Default: 50)
   -a, --all                 - Include disabled users                                 
   -j, --json                - Output as JSON                                         
-  --no-pager                - Disable automatic paging for long output
+  --no-pager                - Disable automatic paging for long output               
+
+Examples:
+
+  List users as JSON linear user list --json
 ```
 
 ### view
@@ -60,5 +64,9 @@ Options:
 
   -h, --help               - Show this help.                      
   -w, --workspace  <slug>  - Target workspace (uses credentials)  
-  -j, --json               - Output as JSON
+  -j, --json               - Output as JSON                       
+
+Examples:
+
+  View a user as JSON linear user view user-123 --json
 ```

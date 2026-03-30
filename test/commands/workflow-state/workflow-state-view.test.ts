@@ -107,3 +107,31 @@ await snapshotTest({
     }
   },
 })
+
+await snapshotTest({
+  name: "Workflow State View Command - JSON Not Found",
+  meta: import.meta,
+  colors: false,
+  canFail: true,
+  args: ["missing-state", "--json"],
+  denoArgs: commonDenoArgs,
+  async fn() {
+    const { cleanup } = await setupMockLinearServer([
+      {
+        queryName: "GetWorkflowState",
+        variables: { id: "missing-state" },
+        response: {
+          data: {
+            workflowState: null,
+          },
+        },
+      },
+    ])
+
+    try {
+      await viewCommand.parse()
+    } finally {
+      await cleanup()
+    }
+  },
+})

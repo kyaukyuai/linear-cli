@@ -113,3 +113,31 @@ await snapshotTest({
     }
   },
 })
+
+await snapshotTest({
+  name: "User View Command - JSON User Not Found",
+  meta: import.meta,
+  colors: false,
+  canFail: true,
+  args: ["missing-user", "--json"],
+  denoArgs: commonDenoArgs,
+  async fn() {
+    const { cleanup } = await setupMockLinearServer([
+      {
+        queryName: "GetUser",
+        variables: { id: "missing-user" },
+        response: {
+          data: {
+            user: null,
+          },
+        },
+      },
+    ])
+
+    try {
+      await viewCommand.parse()
+    } finally {
+      await cleanup()
+    }
+  },
+})
