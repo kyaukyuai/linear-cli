@@ -30,7 +30,11 @@ export type WriteTimeoutDetails = {
   failureMode: "timeout_waiting_for_confirmation"
   timeoutMs: number
   operation: string
-  outcome: "unknown"
+  outcome:
+    | "unknown"
+    | "definitely_failed"
+    | "probably_succeeded"
+    | "partial_success"
 }
 
 /**
@@ -586,7 +590,12 @@ function extractWriteTimeoutDetails(
     failureMode !== "timeout_waiting_for_confirmation" ||
     typeof timeoutMs !== "number" ||
     typeof operation !== "string" ||
-    outcome !== "unknown"
+    (
+      outcome !== "unknown" &&
+      outcome !== "definitely_failed" &&
+      outcome !== "probably_succeeded" &&
+      outcome !== "partial_success"
+    )
   ) {
     return undefined
   }

@@ -11,8 +11,9 @@ Description:
 
 Options:
 
-  -h, --help  - Show this help.  
-  -j, --json  - Output as JSON   
+  -h, --help                 - Show this help.                                 
+  -j, --json                 - Output as JSON                                  
+  --timeout-ms  <timeoutMs>  - Timeout for write confirmation in milliseconds  
 
 "
 stderr:

@@ -25,6 +25,7 @@ import {
   NotFoundError,
   ValidationError,
 } from "../../utils/errors.ts"
+import { reconcileWriteTimeoutError } from "../../utils/write_reconciliation.ts"
 import { readTextFromStdin } from "../../utils/stdin.ts"
 import {
   buildWriteTimeoutSuggestion,
@@ -37,6 +38,11 @@ import { createIssueComment } from "./issue-comment-utils.ts"
 import { buildIssueUpdateDryRunPayload } from "./issue-dry-run-payload.ts"
 import { maybeHandleIssueDescriptionParseError } from "./issue-description-parse.ts"
 import { buildPartialSuccessDetails } from "../../utils/retry_semantics.ts"
+import {
+  findIssueCommentForTimeoutReconciliation,
+  type IssueUpdateReconciliationInput,
+  reconcileIssueUpdateTimeout,
+} from "./issue-reconciliation.ts"
 
 export const updateCommand = new Command()
   .name("update")
@@ -332,10 +338,7 @@ export const updateCommand = new Command()
         }
 
         // Build the update input object, only including fields that were provided
-        const input: Record<
-          string,
-          string | number | string[] | null | undefined
-        > = {}
+        const input: IssueUpdateReconciliationInput = {}
 
         if (title !== undefined) input.title = title
         if (assigneeId !== undefined) input.assigneeId = assigneeId
@@ -436,26 +439,37 @@ export const updateCommand = new Command()
         `)
 
         const client = getGraphQLClient()
-        const data = await withSpinner(
-          () =>
-            withWriteTimeout(
-              (signal) =>
-                client.request({
-                  document: updateIssueMutation,
-                  variables: {
-                    id: issueId,
-                    input,
-                  },
-                  signal,
-                }),
-              {
-                operation: "issue update",
-                timeoutMs: writeTimeoutMs,
-                suggestion: buildWriteTimeoutSuggestion(),
-              },
-            ),
-          { enabled: !json },
-        )
+        let data
+        try {
+          data = await withSpinner(
+            () =>
+              withWriteTimeout(
+                (signal) =>
+                  client.request({
+                    document: updateIssueMutation,
+                    variables: {
+                      id: issueId,
+                      input,
+                    },
+                    signal,
+                  }),
+                {
+                  operation: "issue update",
+                  timeoutMs: writeTimeoutMs,
+                  suggestion: buildWriteTimeoutSuggestion(),
+                },
+              ),
+            { enabled: !json },
+          )
+        } catch (error) {
+          if (isWriteTimeoutError(error)) {
+            await reconcileWriteTimeoutError(
+              error,
+              () => reconcileIssueUpdateTimeout(client, issueId, input),
+            )
+          }
+          throw error
+        }
 
         if (!data.issueUpdate.success) {
           throw new CliError("Issue update failed")
@@ -482,6 +496,71 @@ export const updateCommand = new Command()
               },
             )
           } catch (error) {
+            if (isWriteTimeoutError(error)) {
+              const timeoutContextError = buildIssueUpdateCommentFailureError(
+                issuePayload,
+                comment,
+                error,
+              )
+              await reconcileWriteTimeoutError(
+                timeoutContextError,
+                async () => {
+                  const retryCommand =
+                    `linear issue comment add ${issue.identifier} --body ${
+                      JSON.stringify(comment)
+                    }`
+                  const reconciledComment =
+                    await findIssueCommentForTimeoutReconciliation(
+                      client,
+                      issue.identifier,
+                      comment,
+                      {
+                        fallbackIssue: {
+                          id: issue.id,
+                          identifier: issue.identifier,
+                          title: issue.title,
+                          url: issue.url,
+                        },
+                      },
+                    )
+
+                  if (reconciledComment != null) {
+                    return {
+                      outcome: "probably_succeeded",
+                      suggestion:
+                        "Linear now shows the comment. Treat this combined write as succeeded unless you need stronger confirmation.",
+                      details: {
+                        failureStage: "comment_create",
+                        issue: issuePayload,
+                        comment: reconciledComment,
+                        commentObserved: true,
+                      },
+                    }
+                  }
+
+                  return {
+                    outcome: "partial_success",
+                    suggestion:
+                      `Retry with \`${retryCommand}\` if the comment is still missing.`,
+                    details: buildPartialSuccessDetails(
+                      {
+                        issueUpdated: true,
+                        commentAttempted: true,
+                        issue: issuePayload,
+                      },
+                      {
+                        failureStage: "comment_create",
+                        retryable: true,
+                        retryCommand,
+                        extraDetails: {
+                          commentObserved: false,
+                        },
+                      },
+                    ),
+                  }
+                },
+              )
+            }
             throw buildIssueUpdateCommentFailureError(
               issuePayload,
               comment,

@@ -556,6 +556,38 @@ Deno.test(
           },
         },
       },
+      {
+        queryName: "GetIssueForTimeoutReconciliation",
+        variables: { id: "ENG-123" },
+        response: {
+          data: {
+            issue: {
+              id: "issue-existing-123",
+              identifier: "ENG-123",
+              title: "Updated after timeout",
+              url:
+                "https://linear.app/test-team/issue/ENG-123/updated-after-timeout",
+              dueDate: null,
+              priority: null,
+              estimate: null,
+              description: null,
+              assignee: {
+                id: "user-self-123",
+                name: "alice.bot",
+                displayName: "Alice Bot",
+                initials: "AB",
+              },
+              parent: null,
+              state: null,
+              labels: { nodes: [] },
+              team: { id: "team-eng-id" },
+              project: null,
+              projectMilestone: null,
+              cycle: null,
+            },
+          },
+        },
+      },
     ])
 
     try {
@@ -591,7 +623,140 @@ Deno.test(
       )
       assertEquals(result.error.details.timeoutMs, 50)
       assertEquals(result.error.details.operation, "issue update")
-      assertEquals(result.error.details.outcome, "unknown")
+      assertEquals(result.error.details.outcome, "probably_succeeded")
+      assertEquals(result.error.details.reconciliationAttempted, true)
+      assertEquals(result.error.details.matchedFields, ["assignee", "team"])
+      assertEquals(
+        result.error.details.observedIssue.assignee.id,
+        "user-self-123",
+      )
+    } finally {
+      await server.stop()
+    }
+  },
+)
+
+Deno.test(
+  "Issue Update Command - JSON Output Reconciles Comment Timeout As Partial Success",
+  async () => {
+    const server = new MockLinearServer([
+      {
+        queryName: "GetTeamIdByKey",
+        variables: { team: "ENG" },
+        response: {
+          data: {
+            teams: {
+              nodes: [{ id: "team-eng-id" }],
+            },
+          },
+        },
+      },
+      {
+        queryName: "UpdateIssue",
+        response: {
+          data: {
+            issueUpdate: {
+              success: true,
+              issue: {
+                id: "issue-existing-123",
+                identifier: "ENG-123",
+                title: "Updated with timeout reconciliation",
+                url:
+                  "https://linear.app/test-team/issue/ENG-123/updated-with-timeout-reconciliation",
+                dueDate: null,
+                assignee: null,
+                parent: null,
+                state: {
+                  name: "Todo",
+                  color: "#bec2c8",
+                },
+              },
+            },
+          },
+        },
+      },
+      {
+        queryName: "AddComment",
+        delayMs: 250,
+        response: {
+          data: {
+            commentCreate: {
+              success: true,
+              comment: {
+                id: "comment-json-timeout-123",
+                body: "Investigating now",
+                createdAt: "2026-03-30T12:00:00Z",
+                url:
+                  "https://linear.app/test-team/issue/ENG-123/updated-with-timeout-reconciliation#comment-json-timeout-123",
+                parent: null,
+                issue: {
+                  id: "issue-existing-123",
+                  identifier: "ENG-123",
+                  title: "Updated with timeout reconciliation",
+                  url:
+                    "https://linear.app/test-team/issue/ENG-123/updated-with-timeout-reconciliation",
+                },
+                user: {
+                  name: "alice.bot",
+                  displayName: "Alice Bot",
+                },
+              },
+            },
+          },
+        },
+      },
+      {
+        queryName: "GetIssueCommentsForTimeoutReconciliation",
+        variables: { id: "ENG-123" },
+        response: {
+          data: {
+            issue: {
+              id: "issue-existing-123",
+              identifier: "ENG-123",
+              title: "Updated with timeout reconciliation",
+              url:
+                "https://linear.app/test-team/issue/ENG-123/updated-with-timeout-reconciliation",
+              comments: {
+                nodes: [],
+              },
+            },
+          },
+        },
+      },
+    ])
+
+    try {
+      await server.start()
+
+      const output = await runIssueUpdateSubprocess([
+        "ENG-123",
+        "--title",
+        "Updated with timeout reconciliation",
+        "--comment",
+        "Investigating now",
+        "--json",
+        "--timeout-ms",
+        "50",
+      ], {
+        LINEAR_GRAPHQL_ENDPOINT: server.getEndpoint(),
+        LINEAR_API_KEY: "Bearer test-token",
+        NO_COLOR: "1",
+      })
+
+      assertEquals(output.success, false)
+      assertEquals(output.code, 6)
+
+      const result = JSON.parse(new TextDecoder().decode(output.stdout))
+      assertEquals(result.error.type, "timeout_error")
+      assertEquals(
+        result.error.message,
+        "Issue ENG-123 was updated, but adding the comment did not complete in time.",
+      )
+      assertEquals(result.error.details.outcome, "partial_success")
+      assertEquals(result.error.details.commentObserved, false)
+      assertEquals(result.error.details.failureStage, "comment_create")
+      assertEquals(result.error.details.partialSuccess.issueUpdated, true)
+      assertEquals(result.error.details.partialSuccess.commentAttempted, true)
     } finally {
       await server.stop()
     }

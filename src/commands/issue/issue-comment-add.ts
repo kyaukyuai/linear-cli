@@ -16,12 +16,15 @@ import {
   handleAutomationContractParseError,
 } from "../../utils/json_output.ts"
 import { emitDryRunOutput } from "../../utils/dry_run.ts"
-import { ValidationError } from "../../utils/errors.ts"
+import { isWriteTimeoutError, ValidationError } from "../../utils/errors.ts"
 import { readTextFromStdin } from "../../utils/stdin.ts"
 import { resolveWriteTimeoutMs } from "../../utils/write_timeout.ts"
+import { getGraphQLClient } from "../../utils/graphql.ts"
+import { reconcileWriteTimeoutError } from "../../utils/write_reconciliation.ts"
 import { createIssueComment } from "./issue-comment-utils.ts"
 import { buildIssueCommentPayload } from "./issue-comment-payload.ts"
 import { buildIssueCommentDryRunPayload } from "./issue-dry-run-payload.ts"
+import { findIssueCommentForTimeoutReconciliation } from "./issue-reconciliation.ts"
 
 export const commentAddCommand = new Command()
   .name("add")
@@ -243,10 +246,57 @@ export const commentAddCommand = new Command()
         input.parentId = parent
       }
 
-      const comment = await createIssueComment(input, {
-        spinnerEnabled: !json,
-        timeoutMs: writeTimeoutMs,
-      })
+      const client = getGraphQLClient()
+      let comment
+      try {
+        comment = await createIssueComment(input, {
+          client,
+          spinnerEnabled: !json,
+          timeoutMs: writeTimeoutMs,
+        })
+      } catch (error) {
+        if (isWriteTimeoutError(error)) {
+          await reconcileWriteTimeoutError(error, async () => {
+            const reconciledComment =
+              await findIssueCommentForTimeoutReconciliation(
+                client,
+                resolvedIdentifier,
+                commentBody,
+                {
+                  parentId: parent,
+                  fallbackIssue: {
+                    id: resolvedIssueId,
+                    identifier: resolvedIdentifier,
+                    title: null,
+                    url: null,
+                  },
+                },
+              )
+
+            if (reconciledComment != null) {
+              return {
+                outcome: "probably_succeeded",
+                suggestion:
+                  "Linear now shows the comment. Treat this write as succeeded unless you need stronger confirmation.",
+                details: {
+                  commentObserved: true,
+                  comment: reconciledComment,
+                },
+              }
+            }
+
+            return {
+              outcome: "definitely_failed",
+              suggestion:
+                "Linear does not yet show the comment. Re-check the issue before retrying this write.",
+              details: {
+                commentObserved: false,
+              },
+            }
+          })
+        }
+        throw error
+      }
 
       if (json) {
         console.log(JSON.stringify(

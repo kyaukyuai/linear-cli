@@ -1,11 +1,17 @@
 import { assertEquals } from "@std/assert"
+import { fromFileUrl } from "@std/path"
 import { snapshotTest } from "@cliffy/testing"
 import { commentAddCommand } from "../../../src/commands/issue/issue-comment-add.ts"
+import { MockLinearServer } from "../../utils/mock_linear_server.ts"
 import {
   commonDenoArgs,
   setupMockLinearServer,
 } from "../../utils/test-helpers.ts"
 import { runSnapshotCommand } from "../../utils/snapshot_with_fake_time.ts"
+
+const repoRoot = fromFileUrl(new URL("../../../", import.meta.url))
+const denoJsonPath = fromFileUrl(new URL("../../../deno.json", import.meta.url))
+const mainPath = fromFileUrl(new URL("../../../src/main.ts", import.meta.url))
 
 // Test adding a comment with body flag
 await snapshotTest({
@@ -367,3 +373,132 @@ Deno.test("Issue Comment Add Command - Empty Stdin Validation Failure", async ()
   assertEquals(payload.error.type, "validation_error")
   assertEquals(payload.error.message, "Comment body cannot be empty")
 })
+
+Deno.test(
+  "Issue Comment Add Command - JSON Timeout Reconciles To Probably Succeeded",
+  async () => {
+    const server = new MockLinearServer([
+      {
+        queryName: "GetIssueId",
+        variables: { id: "TEST-123" },
+        response: {
+          data: {
+            issue: {
+              id: "issue-uuid-123",
+            },
+          },
+        },
+      },
+      {
+        queryName: "AddComment",
+        delayMs: 250,
+        response: {
+          data: {
+            commentCreate: {
+              success: true,
+              comment: {
+                id: "comment-timeout-123",
+                body: "Tracking follow-up",
+                createdAt: "2026-03-30T12:15:00Z",
+                url: "https://linear.app/issue/TEST-123#comment-timeout-123",
+                parent: null,
+                issue: {
+                  id: "issue-uuid-123",
+                  identifier: "TEST-123",
+                  title: "Tracking issue",
+                  url: "https://linear.app/issue/TEST-123",
+                },
+                user: {
+                  name: "testuser",
+                  displayName: "Test User",
+                },
+              },
+            },
+          },
+        },
+      },
+      {
+        queryName: "GetIssueCommentsForTimeoutReconciliation",
+        variables: { id: "TEST-123" },
+        response: {
+          data: {
+            issue: {
+              id: "issue-uuid-123",
+              identifier: "TEST-123",
+              title: "Tracking issue",
+              url: "https://linear.app/issue/TEST-123",
+              comments: {
+                nodes: [
+                  {
+                    id: "comment-timeout-123",
+                    body: "Tracking follow-up",
+                    createdAt: "2026-03-30T12:15:00Z",
+                    url:
+                      "https://linear.app/issue/TEST-123#comment-timeout-123",
+                    parent: null,
+                    user: {
+                      name: "testuser",
+                      displayName: "Test User",
+                    },
+                  },
+                ],
+              },
+            },
+          },
+        },
+      },
+    ])
+
+    try {
+      await server.start()
+
+      const output = await runIssueCommentAddSubprocess([
+        "TEST-123",
+        "--body",
+        "Tracking follow-up",
+        "--json",
+        "--timeout-ms",
+        "50",
+      ], {
+        LINEAR_GRAPHQL_ENDPOINT: server.getEndpoint(),
+        LINEAR_API_KEY: "Bearer test-token",
+        NO_COLOR: "1",
+      })
+
+      assertEquals(output.success, false)
+      assertEquals(output.code, 6)
+
+      const payload = JSON.parse(new TextDecoder().decode(output.stdout))
+      assertEquals(payload.error.type, "timeout_error")
+      assertEquals(payload.error.details.outcome, "probably_succeeded")
+      assertEquals(payload.error.details.commentObserved, true)
+      assertEquals(payload.error.details.comment.body, "Tracking follow-up")
+    } finally {
+      await server.stop()
+    }
+  },
+)
+
+async function runIssueCommentAddSubprocess(
+  args: string[],
+  env: Record<string, string>,
+): Promise<Deno.CommandOutput> {
+  return await new Deno.Command("deno", {
+    args: [
+      "run",
+      "-c",
+      denoJsonPath,
+      "--allow-all",
+      "--quiet",
+      mainPath,
+      "issue",
+      "comment",
+      "add",
+      ...args,
+    ],
+    cwd: repoRoot,
+    env,
+    stdout: "piped",
+    stderr: "piped",
+  }).output()
+}
