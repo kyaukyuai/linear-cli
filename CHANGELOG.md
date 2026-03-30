@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## [2.12.1] - 2026-03-30
+
+### Added
+
+- added `stateName` to `issue list --json` as an additive convenience field while keeping the nested `state` object unchanged
+
+### Changed
+
+- refreshed the README, agent workflow docs, and skills.sh install guidance to better position `linear-cli` as an agent-first Linear CLI
+
+### Fixed
+
+- preserved agent-first generated skill docs so `deno task generate-skill-docs` no longer reverts the published skill description and command guidance
+
 ## [2.12.0] - 2026-03-30
 
 ### Added
