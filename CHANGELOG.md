@@ -2,6 +2,21 @@
 
 ## [Unreleased]
 
+## [2.11.0] - 2026-03-30
+
+### Added
+
+- added `linear capabilities --json` so agents can discover supported JSON, dry-run, stdin, confirmation, and retry semantics without scraping help text
+- added Automation Contract v4 coverage for `team`, `user`, `workflow-state`, and label read surfaces
+
+### Changed
+
+- standardized write retry semantics with explicit idempotency categories, retry-safe notification archive/read behavior, and shared partial-success metadata
+
+### Fixed
+
+- improved write timeout semantics with distinct `timeout_error` JSON failures, exit code `6`, and clearer partial-success details for combined write flows such as `issue update --comment --json`
+
 ## [2.10.0] - 2026-03-30
 
 ### Added
