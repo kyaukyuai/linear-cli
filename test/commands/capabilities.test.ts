@@ -37,10 +37,33 @@ await cliffySnapshotTest({
 })
 
 await cliffySnapshotTest({
+  name: "Capabilities Command - JSON Output v2 Compatibility",
+  meta: import.meta,
+  colors: false,
+  args: ["--json", "--compat", "v2"],
+  denoArgs,
+  async fn() {
+    await capabilitiesCommand.parse()
+  },
+})
+
+await cliffySnapshotTest({
   name: "Capabilities Command - JSON Parse Failure",
   meta: import.meta,
   colors: false,
   args: ["--json", "--bogus"],
+  denoArgs,
+  canFail: true,
+  async fn() {
+    await capabilitiesCommand.parse()
+  },
+})
+
+await cliffySnapshotTest({
+  name: "Capabilities Command - Compat Requires JSON",
+  meta: import.meta,
+  colors: false,
+  args: ["--compat", "v2"],
   denoArgs,
   canFail: true,
   async fn() {

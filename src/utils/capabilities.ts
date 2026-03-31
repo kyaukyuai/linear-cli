@@ -2,6 +2,7 @@ export type AutomationContractVersion = "v1" | "v2" | "v3" | "v4" | "v5"
 export type DryRunContractVersion = "v1"
 export type StdinPolicyVersion = "v1"
 export type CapabilitiesSchemaVersion = "v1" | "v2"
+export type CapabilitiesCompatibilityVersion = CapabilitiesSchemaVersion
 
 export type CapabilityStdinMode = "none" | "implicit_text" | "explicit_bulk"
 export type CapabilityInputMode = "flags" | "stdin" | "file"
@@ -121,9 +122,9 @@ export type CapabilityCommand = {
 }
 
 type CapabilityRegistryEntry = Omit<CapabilityCommand, "schema" | "output">
+export type CapabilityCommandV1 = CapabilityRegistryEntry
 
-export type CapabilitiesPayload = {
-  schemaVersion: CapabilitiesSchemaVersion
+type CapabilitiesPayloadBase = {
   cli: {
     name: "linear-cli"
     binary: "linear"
@@ -148,8 +149,19 @@ export type CapabilitiesPayload = {
     byVersion: Record<AutomationContractVersion, string[]>
     allCommands: string[]
   }
+}
+
+export type CapabilitiesPayloadV1 = CapabilitiesPayloadBase & {
+  schemaVersion: "v1"
+  commands: CapabilityCommandV1[]
+}
+
+export type CapabilitiesPayloadV2 = CapabilitiesPayloadBase & {
+  schemaVersion: "v2"
   commands: CapabilityCommand[]
 }
+
+export type CapabilitiesPayload = CapabilitiesPayloadV1 | CapabilitiesPayloadV2
 
 const AUTOMATION_CONTRACT_VERSIONS = ["v1", "v2", "v3", "v4", "v5"] as const
 const DRY_RUN_CONTRACT_VERSIONS = ["v1"] as const
@@ -586,7 +598,8 @@ const COMMANDS: CapabilityRegistryEntry[] = [
     stdin: stdin("none"),
     confirmationBypass: null,
     idempotency: idempotency("read_only"),
-    notes: null,
+    notes:
+      "Default --json preserves the v1-compatible shape; use --compat v2 for richer schema and output metadata.",
   },
   {
     path: "linear cycle current",
@@ -1357,9 +1370,10 @@ function buildAutomationTier() {
   }
 }
 
-export function buildCapabilitiesPayload(version: string): CapabilitiesPayload {
+function buildCapabilitiesPayloadBase(
+  version: string,
+): CapabilitiesPayloadBase {
   return {
-    schemaVersion: "v2",
     cli: {
       name: "linear-cli",
       binary: "linear",
@@ -1380,6 +1394,27 @@ export function buildCapabilitiesPayload(version: string): CapabilitiesPayload {
       },
     },
     automationTier: buildAutomationTier(),
+  }
+}
+
+function buildCapabilitiesPayloadV1(version: string): CapabilitiesPayloadV1 {
+  return {
+    schemaVersion: "v1",
+    ...buildCapabilitiesPayloadBase(version),
+    commands: CAPABILITY_COMMANDS.map((command) => ({
+      ...command,
+      json: { ...command.json },
+      dryRun: { ...command.dryRun },
+      stdin: { ...command.stdin },
+      idempotency: { ...command.idempotency },
+    })),
+  }
+}
+
+function buildCapabilitiesPayloadV2(version: string): CapabilitiesPayloadV2 {
+  return {
+    schemaVersion: "v2",
+    ...buildCapabilitiesPayloadBase(version),
     commands: CAPABILITY_COMMANDS.map((command) => ({
       ...command,
       json: { ...command.json },
@@ -1390,4 +1425,30 @@ export function buildCapabilitiesPayload(version: string): CapabilitiesPayload {
       output: buildCommandOutput(command),
     })),
   }
+}
+
+export function buildCapabilitiesPayload(
+  version: string,
+): CapabilitiesPayloadV1
+export function buildCapabilitiesPayload(
+  version: string,
+  compat: "v1",
+): CapabilitiesPayloadV1
+export function buildCapabilitiesPayload(
+  version: string,
+  compat: "v2",
+): CapabilitiesPayloadV2
+export function buildCapabilitiesPayload(
+  version: string,
+  compat: CapabilitiesCompatibilityVersion,
+): CapabilitiesPayload
+export function buildCapabilitiesPayload(
+  version: string,
+  compat: CapabilitiesCompatibilityVersion = "v1",
+): CapabilitiesPayload {
+  if (compat === "v2") {
+    return buildCapabilitiesPayloadV2(version)
+  }
+
+  return buildCapabilitiesPayloadV1(version)
 }

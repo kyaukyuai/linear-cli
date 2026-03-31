@@ -18,19 +18,27 @@ It does not apply to:
 - commands outside the automation tier listed below
 - stderr output when `LINEAR_DEBUG=1`
 
-## Capabilities Discovery v2
+## Capabilities Discovery
 
 `linear capabilities --json` is a stable self-description surface for agents. It is versioned independently from the automation tier so callers can discover command traits without scraping `--help`, README content, or generated docs.
 
-Top-level shape:
+Compatibility rules:
+
+- `linear capabilities --json` defaults to the `v1` compatibility shape for runtime startup safety
+- richer schema and output metadata are opt-in via `linear capabilities --json --compat v2`
+- top-level `v1` fields stay backward compatible across minor releases
+- additive `v2` fields are allowed within `schemaVersion: "v2"`, but callers must opt in explicitly
+- machine-readable schema changes should be called out explicitly in release notes
+
+Default top-level shape:
 
 ```json
 {
-  "schemaVersion": "v2",
+  "schemaVersion": "v1",
   "cli": {
     "name": "linear-cli",
     "binary": "linear",
-    "version": "2.11.0"
+    "version": "2.12.1"
   },
   "contractVersions": {
     "automation": {
@@ -83,6 +91,20 @@ Top-level shape:
         "category": "conditional",
         "notes": "Field-only updates are retry-safe; adding --comment makes the command non-idempotent."
       },
+      "notes": null
+    }
+  ]
+}
+```
+
+`--compat v2` adds curated command schema metadata and output semantics:
+
+```json
+{
+  "schemaVersion": "v2",
+  "commands": [
+    {
+      "path": "linear issue update",
       "schema": {
         "coverage": "curated_primary_inputs",
         "arguments": [
@@ -100,34 +122,6 @@ Top-level shape:
             "required": false,
             "valueType": "boolean",
             "description": "Emit machine-readable JSON output."
-          },
-          {
-            "name": "--dry-run",
-            "short": null,
-            "required": false,
-            "valueType": "boolean",
-            "description": "Preview the command without mutating Linear."
-          },
-          {
-            "name": "--timeout-ms",
-            "short": null,
-            "required": false,
-            "valueType": "integer",
-            "description": "Override the write confirmation timeout in milliseconds."
-          },
-          {
-            "name": "--state",
-            "short": null,
-            "required": false,
-            "valueType": "state_ref",
-            "description": "Target workflow state."
-          },
-          {
-            "name": "--comment",
-            "short": null,
-            "required": false,
-            "valueType": "string",
-            "description": "Comment to append after the update."
           }
         ],
         "inputModes": ["flags", "stdin", "file"]
@@ -154,8 +148,7 @@ Top-level shape:
             { "code": 6, "meaning": "timeout_error" }
           ]
         }
-      },
-      "notes": null
+      }
     }
   ]
 }
@@ -163,21 +156,19 @@ Top-level shape:
 
 Rules:
 
-- `schemaVersion` changes when the self-description schema grows in a meaningful way; v2 adds curated command schema metadata and output semantics
 - `automationTier.byVersion` lists the commands added by each automation contract version
 - `automationTier.allCommands` is the cumulative ordered list of all automation-tier commands
 - `json.contractVersion` is `null` when a command supports `--json` but is outside the stable automation tier
+- `stdin.mode` is one of `none`, `implicit_text`, or `explicit_bulk`
+- `confirmationBypass` is `--yes` when the command supports canonical confirmation skipping, otherwise `null`
+- `idempotency.category` is one of `read_only`, `retry_safe_update`, `retry_safe_no_op`, `non_idempotent`, `resumable_batch`, `conditional`, or `destructive`
 - `schema.coverage` is currently `curated_primary_inputs`, meaning the metadata is intentionally focused on the primary agent-facing execution path and is not a full parser dump of every flag
 - `schema.arguments` and `schema.flags` are additive, machine-readable hints for the main positional arguments and high-value flags agents should care about first
 - `schema.inputModes` is a subset of `flags`, `stdin`, and `file`
-- `stdin.mode` is one of `none`, `implicit_text`, or `explicit_bulk`
 - `output.success.category` is one of `automation_contract`, `curated_json`, `json_default`, or `terminal_only`
 - `output.success.contractTarget` names the governing contract when one exists, for example `automation_contract:v4` or `capabilities_discovery:v2`
 - `output.failure.jsonWhenRequested` and `output.failure.parseErrorsJsonWhenRequested` tell agents whether they can expect machine-readable failures for the command
 - `output.failure.exitCodes` lists the reserved non-zero exit codes that matter for the command
-- `confirmationBypass` is `--yes` when the command supports canonical confirmation skipping, otherwise `null`
-- `idempotency.category` is one of `read_only`, `retry_safe_update`, `retry_safe_no_op`, `non_idempotent`, `resumable_batch`, `conditional`, or `destructive`
-- additive command entries and additive fields are allowed within `schemaVersion: "v2"`; removing fields or changing field types requires a new schema version
 
 ## Automation Contract v1
 

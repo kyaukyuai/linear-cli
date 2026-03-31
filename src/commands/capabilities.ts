@@ -1,6 +1,11 @@
 import { Command } from "@cliffy/command"
 import denoConfig from "../../deno.json" with { type: "json" }
-import { buildCapabilitiesPayload } from "../utils/capabilities.ts"
+import {
+  buildCapabilitiesPayload,
+  type CapabilitiesCompatibilityVersion,
+  type CapabilitiesPayloadV2,
+} from "../utils/capabilities.ts"
+import { ValidationError } from "../utils/errors.ts"
 import {
   handleAutomationCommandError,
   handleAutomationContractParseError,
@@ -18,11 +23,12 @@ function formatCapabilitySupport(
 }
 
 function renderCapabilitiesSummary(
-  payload: ReturnType<typeof buildCapabilitiesPayload>,
+  payload: CapabilitiesPayloadV2,
 ): string {
   const lines = [
     `linear-cli ${payload.cli.version}`,
-    `capabilities schema: ${payload.schemaVersion}`,
+    `capabilities schema latest: v2`,
+    `json compatibility default: v1`,
     `automation contract latest: ${payload.contractVersions.automation.latest}`,
     `dry-run preview contract: ${payload.contractVersions.dryRunPreview.latest}`,
     `stdin policy: ${payload.contractVersions.stdinPolicy.latest}`,
@@ -66,13 +72,38 @@ function renderCapabilitiesSummary(
   return lines.join("\n")
 }
 
+function parseCompatibilityVersion(
+  compat: string | undefined,
+): CapabilitiesCompatibilityVersion {
+  const normalized = compat ?? "v1"
+
+  if (normalized === "v1" || normalized === "v2") {
+    return normalized
+  }
+
+  throw new ValidationError(
+    `Unsupported capabilities compatibility version: ${normalized}`,
+    {
+      suggestion: "Use --compat v1 or --compat v2.",
+    },
+  )
+}
+
 export const capabilitiesCommand = new Command()
   .name("capabilities")
   .description("Describe the agent-facing command surface")
   .option("-j, --json", "Output the capabilities registry as JSON")
+  .option(
+    "--compat <version:string>",
+    "Select the machine-readable capabilities schema version (v1, v2). Requires --json.",
+  )
   .example(
     "Describe agent-facing capabilities as JSON",
     "linear capabilities --json",
+  )
+  .example(
+    "Request the richer v2 metadata shape",
+    "linear capabilities --json --compat v2",
   )
   .example(
     "Find commands that support dry-run",
@@ -85,15 +116,25 @@ export const capabilitiesCommand = new Command()
       "Failed to describe capabilities",
     )
   )
-  .action(({ json }) => {
+  .action(({ compat, json }) => {
     try {
-      const payload = buildCapabilitiesPayload(denoConfig.version)
+      if (!json && compat != null) {
+        throw new ValidationError("--compat requires --json.", {
+          suggestion:
+            "Use `linear capabilities --json --compat v2` or omit --compat for the human summary.",
+        })
+      }
 
       if (json) {
+        const payload = buildCapabilitiesPayload(
+          denoConfig.version,
+          parseCompatibilityVersion(compat),
+        )
         console.log(JSON.stringify(payload, null, 2))
         return
       }
 
+      const payload = buildCapabilitiesPayload(denoConfig.version, "v2")
       console.log(renderCapabilitiesSummary(payload))
     } catch (error) {
       handleAutomationCommandError(
