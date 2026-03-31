@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [2.12.3] - 2026-03-31
+
+### Fixed
+
+- strengthened `timeout_error` write contracts with machine-readable `appliedState` and `callerGuidance` so callers can distinguish between applied, uncertain, and failed outcomes after reconciliation
+
 ## [2.12.2] - 2026-03-31
 
 ### Fixed
