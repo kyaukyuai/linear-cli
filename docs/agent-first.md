@@ -10,6 +10,7 @@ Start with the self-describing registry:
 
 ```bash
 linear capabilities --json
+linear capabilities --json --compat v2
 ```
 
 This tells an agent:
@@ -19,6 +20,8 @@ This tells an agent:
 - which commands accept stdin or file input
 - which confirmation-bypass flag is canonical
 - which contract version or retry semantics apply
+
+Use the default `linear capabilities --json` shape for runtime startup compatibility. Reach for `--compat v2` only when the caller is ready to consume richer command schema and output metadata.
 
 ## 2. Read State With Stable JSON
 

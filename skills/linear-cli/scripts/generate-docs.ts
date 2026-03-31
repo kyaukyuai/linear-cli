@@ -285,6 +285,7 @@ function generateIndex(commands: CommandInfo[]): string {
   lines.push("```bash")
   lines.push("# Discover agent-facing capabilities")
   lines.push("linear capabilities --json")
+  lines.push("linear capabilities --json --compat v2")
   lines.push("")
   lines.push("# Get help for any command")
   lines.push("linear <command> --help")
@@ -295,7 +296,9 @@ function generateIndex(commands: CommandInfo[]): string {
   lines.push("")
   lines.push("Use the CLI in this order when possible:")
   lines.push("")
-  lines.push("1. Discover command traits with `linear capabilities --json`")
+  lines.push(
+    "1. Discover command traits with `linear capabilities --json`, then opt into `--compat v2` when richer schema metadata is needed",
+  )
   lines.push("2. Read state with `--json`")
   lines.push("3. Preview writes with `--dry-run --json`")
   lines.push("4. Apply writes with `--json`")

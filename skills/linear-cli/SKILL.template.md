@@ -12,7 +12,7 @@ An agent-first Linear CLI with stable JSON contracts, dry-run previews, timeout-
 
 When using this CLI from an agent, prefer this order:
 
-1. Discover command traits with `linear capabilities --json`
+1. Discover command traits with `linear capabilities --json` and opt into `--compat v2` only when richer schema metadata is needed
 2. Read Linear state with `--json`
 3. Preview writes with `--dry-run --json` when available
 4. Apply writes with `--json`
@@ -104,6 +104,7 @@ For machine-readable discovery, prefer:
 
 ```bash
 linear capabilities --json
+linear capabilities --json --compat v2
 ```
 
 ## Using the Linear GraphQL API Directly

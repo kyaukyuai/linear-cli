@@ -1,10 +1,10 @@
 import { assert, assertEquals } from "@std/assert"
 import { buildCapabilitiesPayload } from "../../src/utils/capabilities.ts"
 
-Deno.test("buildCapabilitiesPayload exposes stable top-level contract metadata", () => {
+Deno.test("buildCapabilitiesPayload defaults to the v1 compatibility shape", () => {
   const payload = buildCapabilitiesPayload("2.11.0")
 
-  assertEquals(payload.schemaVersion, "v2")
+  assertEquals(payload.schemaVersion, "v1")
   assertEquals(payload.cli, {
     name: "linear-cli",
     binary: "linear",
@@ -49,10 +49,17 @@ Deno.test("buildCapabilitiesPayload exposes stable top-level contract metadata",
   assert(
     payload.automationTier.byVersion.v5.includes("linear project-update list"),
   )
+
+  const issueUpdate = payload.commands.find((entry) =>
+    entry.path === "linear issue update"
+  )
+  assert(issueUpdate != null)
+  assertEquals("schema" in issueUpdate, false)
+  assertEquals("output" in issueUpdate, false)
 })
 
-Deno.test("buildCapabilitiesPayload includes issue update capability traits", () => {
-  const payload = buildCapabilitiesPayload("2.11.0")
+Deno.test("buildCapabilitiesPayload v2 includes issue update capability traits", () => {
+  const payload = buildCapabilitiesPayload("2.11.0", "v2")
   const command = payload.commands.find((entry) =>
     entry.path === "linear issue update"
   )
@@ -109,7 +116,7 @@ Deno.test("buildCapabilitiesPayload includes issue update capability traits", ()
 })
 
 Deno.test("buildCapabilitiesPayload includes raw api escape hatch traits", () => {
-  const payload = buildCapabilitiesPayload("2.11.0")
+  const payload = buildCapabilitiesPayload("2.11.0", "v2")
   const command = payload.commands.find((entry) => entry.path === "linear api")
 
   assert(command != null)
@@ -130,7 +137,7 @@ Deno.test("buildCapabilitiesPayload includes raw api escape hatch traits", () =>
 })
 
 Deno.test("buildCapabilitiesPayload classifies notification writes as retry-safe no-op", () => {
-  const payload = buildCapabilitiesPayload("2.11.0")
+  const payload = buildCapabilitiesPayload("2.11.0", "v2")
   const readCommand = payload.commands.find((entry) =>
     entry.path === "linear notification read"
   )

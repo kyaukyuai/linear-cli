@@ -6,6 +6,7 @@ if you want an agent to read Linear state, preview a write, apply it, and return
 
 ```bash
 linear capabilities --json
+linear capabilities --json --compat v2
 linear issue list --json
 linear issue view ENG-123 --json
 linear issue create -t "Backfill webhook contract docs" --team ENG --dry-run --json
@@ -20,7 +21,7 @@ interactive commands still exist for humans, but the primary design goal is that
 
 If an agent only reads one page, it should be this README plus the two contract docs below.
 
-- start with `linear capabilities --json` to discover which commands support `--json`, `--dry-run`, stdin, confirmation bypass, and stable automation contracts
+- start with `linear capabilities --json` for the stable startup-safe shape; use `linear capabilities --json --compat v2` when you also need primary input schema and output semantics
 - prefer stable read surfaces such as `issue`, `project`, `cycle`, `milestone`, `document`, `webhook`, `notification`, `team`, `user`, `workflow-state`, `label`, `initiative`, and update feeds with `--json`
 - preview writes with `--dry-run --json` before mutating Linear
 - apply writes with `--json`, then inspect exit codes and `error.details` instead of parsing terminal text
@@ -124,7 +125,7 @@ deno task install
 compared to upstream, this fork adds and maintains capabilities aimed at automation-heavy workflows:
 
 - stable JSON contracts for the automation tier, with machine-readable failures for parser, validation, and runtime errors
-- a self-describing `linear capabilities --json` surface so agents can discover contract coverage, primary input schema, output semantics, and command traits without scraping docs
+- a self-describing `linear capabilities --json` surface with a backward-compatible default and an explicit `--compat v2` mode for richer schema and output metadata
 - `--dry-run` previews for high-value write commands, including `issue start`, issue writes, and non-issue writes
 - stdin and pipeline support for high-value write paths
 - retry-safe semantics for relation add/delete, project label add/remove, notification read/archive, and structured partial-failure details
@@ -155,7 +156,7 @@ Use the docs in this order if you are building an agent integration:
 
 for bot and org-wide automation use cases, `linear-cli` defines a stable JSON contract for a focused automation tier.
 
-to discover the curated agent-facing command surface programmatically, use `linear capabilities --json`. it reports stable contract versions, automation-tier membership, and per-command support for `--json`, `--dry-run`, stdin, confirmation bypass, idempotency category, primary arguments and flags, and success/failure output semantics.
+to discover the curated agent-facing command surface programmatically, use `linear capabilities --json`. the default shape preserves the v1-compatible startup contract for existing bots. when you need richer metadata such as primary arguments, flags, and output semantics, opt into `linear capabilities --json --compat v2`.
 
 - v1 in scope: `issue list/view/create/update --json`, `issue relation add/delete/list --json`, `issue comment add --json`, `team members --json`, `issue parent/children/create-batch --json`
 - v2 additions: `project list/view --json`, `cycle list/view/current/next --json`, `milestone list/view --json`
