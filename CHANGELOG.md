@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [2.12.2] - 2026-03-31
+
+### Fixed
+
+- restored `linear capabilities --json` to a startup-safe `v1` machine-readable shape by default, while requiring `--compat v2` for richer schema metadata
+
 ## [2.12.1] - 2026-03-30
 
 ### Added
