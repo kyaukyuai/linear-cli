@@ -306,6 +306,10 @@ Write confirmation timeouts use `error.type = "timeout_error"` and should includ
 - `error.details.timeoutMs`
 - `error.details.operation`
 - `error.details.outcome`, which may be `"unknown"`, `"definitely_failed"`, `"probably_succeeded"`, or `"partial_success"`
+- `error.details.appliedState`, which may be `"unknown"`, `"not_applied"`, `"applied"`, or `"partially_applied"`
+- `error.details.callerGuidance`, with:
+  - `nextAction = "reconcile_before_retry" | "retry_command" | "treat_as_applied" | "resume_partial_write"`
+  - `readBeforeRetry = boolean`
 - `error.details.reconciliationAttempted = true` when the CLI successfully checked Linear after the timeout
 
 High-value write commands honor `LINEAR_WRITE_TIMEOUT_MS` and accept `--timeout-ms` for per-command overrides. Today that includes issue create/update/comment/relation/create-batch flows and notification read/archive.
@@ -714,7 +718,11 @@ These rules are intended for automation and agent callers.
 - `project label add` and `project label remove` are retry-safe no-op writes. They return success with `changed: false` when the requested label state is already satisfied.
 - `notification read` and `notification archive` are retry-safe no-op writes. They return success with `noOp: true` when the notification is already in the requested state.
 - `issue create-batch` is non-idempotent as a whole. Use `error.details.createdIdentifiers` and `failedStep` to resume manually instead of rerunning the same batch unchanged.
-- write confirmation timeouts do not prove that a mutation failed. Callers should use `error.details.outcome` when present, and only fall back to treating `timeout_error` as unknown-outcome when reconciliation could not reach a stronger conclusion.
+- write confirmation timeouts do not prove that a mutation failed. Callers should use `error.details.appliedState` and `error.details.callerGuidance.nextAction` when present, and only fall back to treating `timeout_error` as unknown-outcome when reconciliation could not reach a stronger conclusion.
+- `callerGuidance.nextAction = "reconcile_before_retry"` means the CLI could not prove the final state. Read the target object before retrying.
+- `callerGuidance.nextAction = "retry_command"` means reconciliation found no applied side effect and retrying the same command is the expected path.
+- `callerGuidance.nextAction = "treat_as_applied"` means Linear already shows the requested state. Callers should usually treat the write as successful instead of retrying.
+- `callerGuidance.nextAction = "resume_partial_write"` means some side effects were observed. Use `partialSuccess` and any command-specific retry hints to resume from the remaining step instead of replaying the whole write.
 
 ## Automation Contract v2
 

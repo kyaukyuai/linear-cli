@@ -471,6 +471,11 @@ Deno.test(
       const payload = JSON.parse(new TextDecoder().decode(output.stdout))
       assertEquals(payload.error.type, "timeout_error")
       assertEquals(payload.error.details.outcome, "probably_succeeded")
+      assertEquals(payload.error.details.appliedState, "applied")
+      assertEquals(payload.error.details.callerGuidance, {
+        nextAction: "treat_as_applied",
+        readBeforeRetry: false,
+      })
       assertEquals(payload.error.details.commentObserved, true)
       assertEquals(payload.error.details.comment.body, "Tracking follow-up")
     } finally {

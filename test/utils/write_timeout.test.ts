@@ -72,5 +72,10 @@ Deno.test("withWriteTimeout throws WriteTimeoutError with stable details", async
     timeoutMs: 10,
     operation: "issue update",
     outcome: "unknown",
+    appliedState: "unknown",
+    callerGuidance: {
+      nextAction: "reconcile_before_retry",
+      readBeforeRetry: true,
+    },
   })
 })

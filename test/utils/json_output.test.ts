@@ -95,6 +95,11 @@ Deno.test("buildJsonErrorEnvelope maps WriteTimeoutError", () => {
     timeoutMs: 30000,
     operation: "issue update",
     outcome: "unknown",
+    appliedState: "unknown",
+    callerGuidance: {
+      nextAction: "reconcile_before_retry",
+      readBeforeRetry: true,
+    },
   })
 })
 
@@ -156,6 +161,11 @@ Deno.test("buildJsonErrorEnvelope preserves timeout details for wrapped CliError
     timeoutMs: 45000,
     operation: "issue update",
     outcome: "unknown",
+    appliedState: "unknown",
+    callerGuidance: {
+      nextAction: "reconcile_before_retry",
+      readBeforeRetry: true,
+    },
   })
 })
 

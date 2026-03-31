@@ -75,10 +75,17 @@ Look for:
 
 - `failureMode = "timeout_waiting_for_confirmation"`
 - `outcome = "definitely_failed" | "probably_succeeded" | "partial_success" | "unknown"`
+- `appliedState = "not_applied" | "applied" | "partially_applied" | "unknown"`
+- `callerGuidance.nextAction`
 - `partialSuccess`
 - `retryCommand`
 
-This is the intended path for workflow-safe automation after uncertain writes.
+This is the intended path for workflow-safe automation after uncertain writes. Prefer `callerGuidance.nextAction` over custom heuristics:
+
+- `reconcile_before_retry`: read the target object before retrying
+- `retry_command`: the CLI observed no applied side effect, so retrying is the intended path
+- `treat_as_applied`: treat the write as successful
+- `resume_partial_write`: use `partialSuccess` and any retry hint to continue from the remaining step
 
 ## 6. Prefer stdin And File Input For Markdown
 

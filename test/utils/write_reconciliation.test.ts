@@ -25,6 +25,11 @@ Deno.test("buildReconciledTimeoutError updates timeout outcome", () => {
     timeoutMs: 30000,
     operation: "issue update",
     outcome: "probably_succeeded",
+    appliedState: "applied",
+    callerGuidance: {
+      nextAction: "treat_as_applied",
+      readBeforeRetry: false,
+    },
     reconciliationAttempted: true,
     matchedFields: ["assignee"],
   })
@@ -67,6 +72,11 @@ Deno.test("buildReconciledTimeoutError preserves wrapped CliError message", () =
     timeoutMs: 45000,
     operation: "issue comment creation",
     outcome: "partial_success",
+    appliedState: "partially_applied",
+    callerGuidance: {
+      nextAction: "resume_partial_write",
+      readBeforeRetry: false,
+    },
     reconciliationAttempted: true,
     commentObserved: false,
   })
@@ -88,5 +98,10 @@ Deno.test("reconcileWriteTimeoutError falls back to the original timeout error",
     timeoutMs: 10,
     operation: "issue relation creation",
     outcome: "unknown",
+    appliedState: "unknown",
+    callerGuidance: {
+      nextAction: "reconcile_before_retry",
+      readBeforeRetry: true,
+    },
   })
 })
