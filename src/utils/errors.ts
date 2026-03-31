@@ -26,15 +26,36 @@ export type RateLimitDetails = {
   reset?: string
 }
 
+export type WriteTimeoutOutcome =
+  | "unknown"
+  | "definitely_failed"
+  | "probably_succeeded"
+  | "partial_success"
+
+export type WriteTimeoutAppliedState =
+  | "unknown"
+  | "not_applied"
+  | "applied"
+  | "partially_applied"
+
+export type WriteTimeoutCallerAction =
+  | "reconcile_before_retry"
+  | "retry_command"
+  | "treat_as_applied"
+  | "resume_partial_write"
+
+export type WriteTimeoutCallerGuidance = {
+  nextAction: WriteTimeoutCallerAction
+  readBeforeRetry: boolean
+}
+
 export type WriteTimeoutDetails = {
   failureMode: "timeout_waiting_for_confirmation"
   timeoutMs: number
   operation: string
-  outcome:
-    | "unknown"
-    | "definitely_failed"
-    | "probably_succeeded"
-    | "partial_success"
+  outcome: WriteTimeoutOutcome
+  appliedState: WriteTimeoutAppliedState
+  callerGuidance: WriteTimeoutCallerGuidance
 }
 
 /**
@@ -157,7 +178,7 @@ export class WriteTimeoutError extends CliError {
           failureMode: "timeout_waiting_for_confirmation",
           timeoutMs,
           operation,
-          outcome: "unknown",
+          ...buildWriteTimeoutContractDetails("unknown"),
           ...(options?.details ?? {}),
         },
       },
@@ -165,6 +186,67 @@ export class WriteTimeoutError extends CliError {
     this.name = "WriteTimeoutError"
     this.operation = operation
     this.timeoutMs = timeoutMs
+  }
+}
+
+export function deriveWriteTimeoutAppliedState(
+  outcome: WriteTimeoutOutcome,
+): WriteTimeoutAppliedState {
+  switch (outcome) {
+    case "definitely_failed":
+      return "not_applied"
+    case "probably_succeeded":
+      return "applied"
+    case "partial_success":
+      return "partially_applied"
+    case "unknown":
+    default:
+      return "unknown"
+  }
+}
+
+export function deriveWriteTimeoutCallerGuidance(
+  appliedState: WriteTimeoutAppliedState,
+): WriteTimeoutCallerGuidance {
+  switch (appliedState) {
+    case "not_applied":
+      return {
+        nextAction: "retry_command",
+        readBeforeRetry: false,
+      }
+    case "applied":
+      return {
+        nextAction: "treat_as_applied",
+        readBeforeRetry: false,
+      }
+    case "partially_applied":
+      return {
+        nextAction: "resume_partial_write",
+        readBeforeRetry: false,
+      }
+    case "unknown":
+    default:
+      return {
+        nextAction: "reconcile_before_retry",
+        readBeforeRetry: true,
+      }
+  }
+}
+
+export function buildWriteTimeoutContractDetails(
+  outcome: WriteTimeoutOutcome,
+  options?: {
+    appliedState?: WriteTimeoutAppliedState
+    callerGuidance?: WriteTimeoutCallerGuidance
+  },
+): Pick<WriteTimeoutDetails, "outcome" | "appliedState" | "callerGuidance"> {
+  const appliedState = options?.appliedState ??
+    deriveWriteTimeoutAppliedState(outcome)
+  return {
+    outcome,
+    appliedState,
+    callerGuidance: options?.callerGuidance ??
+      deriveWriteTimeoutCallerGuidance(appliedState),
   }
 }
 
@@ -585,6 +667,8 @@ function extractWriteTimeoutDetails(
   const timeoutMs = details.timeoutMs
   const operation = details.operation
   const outcome = details.outcome
+  const appliedState = details.appliedState
+  const callerGuidance = details.callerGuidance
 
   if (
     failureMode !== "timeout_waiting_for_confirmation" ||
@@ -600,12 +684,48 @@ function extractWriteTimeoutDetails(
     return undefined
   }
 
+  const extractedAppliedState = (
+      appliedState === "unknown" ||
+      appliedState === "not_applied" ||
+      appliedState === "applied" ||
+      appliedState === "partially_applied"
+    )
+    ? appliedState
+    : deriveWriteTimeoutAppliedState(outcome)
+
+  const extractedCallerGuidance = isWriteTimeoutCallerGuidance(
+      callerGuidance,
+    )
+    ? callerGuidance
+    : deriveWriteTimeoutCallerGuidance(extractedAppliedState)
+
   return {
     failureMode,
     timeoutMs,
     operation,
     outcome,
+    appliedState: extractedAppliedState,
+    callerGuidance: extractedCallerGuidance,
   }
+}
+
+function isWriteTimeoutCallerGuidance(
+  value: unknown,
+): value is WriteTimeoutCallerGuidance {
+  if (value == null || typeof value !== "object") {
+    return false
+  }
+
+  const candidate = value as Record<string, unknown>
+  const nextAction = candidate.nextAction
+  const readBeforeRetry = candidate.readBeforeRetry
+
+  return (
+    nextAction === "reconcile_before_retry" ||
+    nextAction === "retry_command" ||
+    nextAction === "treat_as_applied" ||
+    nextAction === "resume_partial_write"
+  ) && typeof readBeforeRetry === "boolean"
 }
 
 function buildRateLimitSuggestion(

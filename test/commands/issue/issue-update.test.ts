@@ -624,6 +624,11 @@ Deno.test(
       assertEquals(result.error.details.timeoutMs, 50)
       assertEquals(result.error.details.operation, "issue update")
       assertEquals(result.error.details.outcome, "probably_succeeded")
+      assertEquals(result.error.details.appliedState, "applied")
+      assertEquals(result.error.details.callerGuidance, {
+        nextAction: "treat_as_applied",
+        readBeforeRetry: false,
+      })
       assertEquals(result.error.details.reconciliationAttempted, true)
       assertEquals(result.error.details.matchedFields, ["assignee", "team"])
       assertEquals(
@@ -753,6 +758,11 @@ Deno.test(
         "Issue ENG-123 was updated, but adding the comment did not complete in time.",
       )
       assertEquals(result.error.details.outcome, "partial_success")
+      assertEquals(result.error.details.appliedState, "partially_applied")
+      assertEquals(result.error.details.callerGuidance, {
+        nextAction: "resume_partial_write",
+        readBeforeRetry: false,
+      })
       assertEquals(result.error.details.commentObserved, false)
       assertEquals(result.error.details.failureStage, "comment_create")
       assertEquals(result.error.details.partialSuccess.issueUpdated, true)

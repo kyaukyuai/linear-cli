@@ -1,7 +1,10 @@
 import {
+  buildWriteTimeoutContractDetails,
   CliError,
   getWriteTimeoutDetails,
   isWriteTimeoutError,
+  type WriteTimeoutAppliedState,
+  type WriteTimeoutCallerGuidance,
   WriteTimeoutError,
 } from "./errors.ts"
 
@@ -12,6 +15,8 @@ export type WriteReconciliationOutcome =
 
 export type WriteReconciliationResult = {
   outcome: WriteReconciliationOutcome
+  appliedState?: WriteTimeoutAppliedState
+  callerGuidance?: WriteTimeoutCallerGuidance
   details?: Record<string, unknown>
   suggestion?: string
 }
@@ -32,7 +37,10 @@ export function buildReconciledTimeoutError(
     ...existingDetails,
     ...timeoutDetails,
     reconciliationAttempted: true,
-    outcome: result.outcome,
+    ...buildWriteTimeoutContractDetails(result.outcome, {
+      appliedState: result.appliedState,
+      callerGuidance: result.callerGuidance,
+    }),
     ...(result.details ?? {}),
   }
   const suggestion = result.suggestion ??
