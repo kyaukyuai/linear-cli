@@ -103,6 +103,11 @@ Default top-level shape:
 ```json
 {
   "schemaVersion": "v2",
+  "compatibility": {
+    "defaultSchemaVersion": "v1",
+    "latestSchemaVersion": "v2",
+    "supportedSchemaVersions": ["v1", "v2"]
+  },
   "commands": [
     {
       "path": "linear issue update",
@@ -113,7 +118,8 @@ Default top-level shape:
             "name": "issue",
             "required": false,
             "valueType": "issue_ref",
-            "description": "Issue identifier or internal ID. Defaults to the current issue."
+            "description": "Issue identifier or internal ID. Defaults to the current issue.",
+            "allowedValues": null
           }
         ],
         "flags": [
@@ -122,21 +128,41 @@ Default top-level shape:
             "short": "-j",
             "required": false,
             "valueType": "boolean",
-            "description": "Emit machine-readable JSON output."
+            "description": "Emit machine-readable JSON output.",
+            "allowedValues": null
           }
         ],
-        "inputModes": ["flags", "stdin", "file"]
+        "inputModes": ["flags", "stdin", "file"],
+        "requiredInputs": [],
+        "optionalInputs": [
+          { "source": "argument", "name": "issue" },
+          { "source": "flag", "name": "--json" }
+        ],
+        "stdinTargets": [
+          { "field": "description", "viaFlags": [] }
+        ],
+        "fileTargets": [
+          { "field": "description", "viaFlags": ["--description-file"] }
+        ]
       },
       "output": {
         "success": {
           "category": "automation_contract",
           "contractTarget": "automation_contract:v1",
+          "contract": {
+            "kind": "automation_contract",
+            "version": "v1"
+          },
           "shape": "object",
           "exitCode": 0
         },
         "preview": {
           "supported": true,
           "contractTarget": "dry_run_preview:v1",
+          "contract": {
+            "kind": "dry_run_preview",
+            "version": "v1"
+          },
           "shape": "object",
           "exitCode": 0
         },
@@ -149,6 +175,12 @@ Default top-level shape:
             { "code": 6, "meaning": "timeout_error" }
           ]
         }
+      },
+      "writeSemantics": {
+        "timeoutAware": true,
+        "timeoutReconciliation": true,
+        "mayReturnNoOp": false,
+        "mayReturnPartialSuccess": true
       }
     }
   ]
@@ -163,13 +195,19 @@ Rules:
 - `stdin.mode` is one of `none`, `implicit_text`, or `explicit_bulk`
 - `confirmationBypass` is `--yes` when the command supports canonical confirmation skipping, otherwise `null`
 - `idempotency.category` is one of `read_only`, `retry_safe_update`, `retry_safe_no_op`, `non_idempotent`, `resumable_batch`, `conditional`, or `destructive`
+- `compatibility` describes the default, latest, and supported machine-readable capabilities schema versions
 - `schema.coverage` is currently `curated_primary_inputs`, meaning the metadata is intentionally focused on the primary agent-facing execution path and is not a full parser dump of every flag
 - `schema.arguments` and `schema.flags` are additive, machine-readable hints for the main positional arguments and high-value flags agents should care about first
+- `schema.requiredInputs` and `schema.optionalInputs` summarize the curated primary execution path without forcing callers to re-derive requiredness from each entry
 - `schema.inputModes` is a subset of `flags`, `stdin`, and `file`
+- `schema.stdinTargets` and `schema.fileTargets` describe which semantic field each non-flag input channel populates
+- `allowedValues` is present when a primary argument or flag has a practical constrained set, such as `relationType` or `--compat`
 - `output.success.category` is one of `automation_contract`, `curated_json`, `json_default`, or `terminal_only`
 - `output.success.contractTarget` names the governing contract when one exists, for example `automation_contract:v4` or `capabilities_discovery:v2`
+- `output.success.contract` and `output.preview.contract` expose that governing contract in a structured `kind/version` form
 - `output.failure.jsonWhenRequested` and `output.failure.parseErrorsJsonWhenRequested` tell agents whether they can expect machine-readable failures for the command
 - `output.failure.exitCodes` lists the reserved non-zero exit codes that matter for the command
+- `writeSemantics` highlights timeout-aware, no-op-safe, and partial-success traits without forcing callers to parse `idempotency.notes`
 
 ## Automation Contract v1
 

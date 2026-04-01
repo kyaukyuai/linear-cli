@@ -7,6 +7,7 @@ export type CapabilitiesCompatibilityVersion = CapabilitiesSchemaVersion
 export type CapabilityStdinMode = "none" | "implicit_text" | "explicit_bulk"
 export type CapabilityInputMode = "flags" | "stdin" | "file"
 export type CapabilitySchemaCoverage = "curated_primary_inputs"
+export type CapabilityInputReferenceSource = "argument" | "flag"
 export type CapabilityValueType =
   | "boolean"
   | "string"
@@ -28,11 +29,17 @@ export type CapabilityValueType =
   | "relation_type"
   | "url"
 
+export type CapabilityAllowedValue = {
+  value: string
+  description: string | null
+}
+
 export type CapabilityArgumentSchema = {
   name: string
   required: boolean
   valueType: CapabilityValueType
   description: string
+  allowedValues: CapabilityAllowedValue[] | null
 }
 
 export type CapabilityFlagSchema = {
@@ -41,6 +48,17 @@ export type CapabilityFlagSchema = {
   required: boolean
   valueType: CapabilityValueType
   description: string
+  allowedValues: CapabilityAllowedValue[] | null
+}
+
+export type CapabilityInputReference = {
+  source: CapabilityInputReferenceSource
+  name: string
+}
+
+export type CapabilityInputChannelTarget = {
+  field: string
+  viaFlags: string[]
 }
 
 export type CapabilityCommandSchema = {
@@ -48,6 +66,10 @@ export type CapabilityCommandSchema = {
   arguments: CapabilityArgumentSchema[]
   flags: CapabilityFlagSchema[]
   inputModes: CapabilityInputMode[]
+  requiredInputs: CapabilityInputReference[]
+  optionalInputs: CapabilityInputReference[]
+  stdinTargets: CapabilityInputChannelTarget[]
+  fileTargets: CapabilityInputChannelTarget[]
 }
 
 export type CapabilityOutputCategory =
@@ -68,16 +90,29 @@ export type CapabilityExitCode = {
   meaning: CapabilityExitCodeMeaning
 }
 
+export type CapabilityOutputContractKind =
+  | "automation_contract"
+  | "dry_run_preview"
+  | "capabilities_discovery"
+  | "raw_graphql_response"
+
+export type CapabilityOutputContract = {
+  kind: CapabilityOutputContractKind
+  version: string | null
+}
+
 export type CapabilityOutputSemantics = {
   success: {
     category: CapabilityOutputCategory
     contractTarget: string | null
+    contract: CapabilityOutputContract | null
     shape: CapabilityOutputShape
     exitCode: 0
   }
   preview: {
     supported: boolean
     contractTarget: string | null
+    contract: CapabilityOutputContract | null
     shape: CapabilityOutputShape | null
     exitCode: 0 | null
   }
@@ -96,6 +131,13 @@ export type CapabilityIdempotencyCategory =
   | "resumable_batch"
   | "conditional"
   | "destructive"
+
+export type CapabilityWriteSemantics = {
+  timeoutAware: boolean
+  timeoutReconciliation: boolean
+  mayReturnNoOp: boolean
+  mayReturnPartialSuccess: boolean
+}
 
 export type CapabilityCommand = {
   path: string
@@ -116,12 +158,16 @@ export type CapabilityCommand = {
     category: CapabilityIdempotencyCategory
     notes: string | null
   }
+  writeSemantics: CapabilityWriteSemantics
   schema: CapabilityCommandSchema
   output: CapabilityOutputSemantics
   notes: string | null
 }
 
-type CapabilityRegistryEntry = Omit<CapabilityCommand, "schema" | "output">
+type CapabilityRegistryEntry = Omit<
+  CapabilityCommand,
+  "schema" | "output" | "writeSemantics"
+>
 export type CapabilityCommandV1 = CapabilityRegistryEntry
 
 type CapabilitiesPayloadBase = {
@@ -158,6 +204,11 @@ export type CapabilitiesPayloadV1 = CapabilitiesPayloadBase & {
 
 export type CapabilitiesPayloadV2 = CapabilitiesPayloadBase & {
   schemaVersion: "v2"
+  compatibility: {
+    defaultSchemaVersion: "v1"
+    latestSchemaVersion: "v2"
+    supportedSchemaVersions: CapabilitiesCompatibilityVersion[]
+  }
   commands: CapabilityCommand[]
 }
 
@@ -166,6 +217,18 @@ export type CapabilitiesPayload = CapabilitiesPayloadV1 | CapabilitiesPayloadV2
 const AUTOMATION_CONTRACT_VERSIONS = ["v1", "v2", "v3", "v4", "v5"] as const
 const DRY_RUN_CONTRACT_VERSIONS = ["v1"] as const
 const STDIN_POLICY_VERSIONS = ["v1"] as const
+const CAPABILITIES_COMPATIBILITY_VERSIONS = ["v1", "v2"] as const
+const RELATION_TYPE_VALUES = [
+  "blocks",
+  "blocked-by",
+  "related",
+  "duplicate",
+] as const
+const INITIATIVE_STATUS_VALUES = [
+  "active",
+  "planned",
+  "completed",
+] as const
 
 function jsonContract(
   contractVersion: AutomationContractVersion | null,
@@ -215,12 +278,14 @@ function argument(
   valueType: CapabilityValueType,
   description: string,
   required = true,
+  allowedValues: CapabilityAllowedValue[] | null = null,
 ): CapabilityArgumentSchema {
   return {
     name,
     required,
     valueType,
     description,
+    allowedValues,
   }
 }
 
@@ -230,6 +295,7 @@ function flag(
   valueType: CapabilityValueType,
   description: string,
   required = false,
+  allowedValues: CapabilityAllowedValue[] | null = null,
 ): CapabilityFlagSchema {
   return {
     name,
@@ -237,7 +303,15 @@ function flag(
     required,
     valueType,
     description,
+    allowedValues,
   }
+}
+
+function enumValues(values: readonly string[]): CapabilityAllowedValue[] {
+  return values.map((value) => ({
+    value,
+    description: null,
+  }))
 }
 
 const JSON_FAILURE_COMMANDS = new Set<string>([
@@ -303,6 +377,11 @@ const PLAN_LIMIT_COMMANDS = new Set<string>([
   "linear webhook create",
 ])
 
+const PARTIAL_SUCCESS_COMMANDS = new Set<string>([
+  "linear issue create-batch",
+  "linear issue update",
+])
+
 const PRIMARY_ARGUMENTS: Record<string, CapabilityArgumentSchema[]> = {
   "linear document delete": [
     argument("documentIds", "document_id", "One or more document IDs.", false),
@@ -345,7 +424,13 @@ const PRIMARY_ARGUMENTS: Record<string, CapabilityArgumentSchema[]> = {
   ],
   "linear issue relation add": [
     argument("issue", "issue_ref", "Source issue identifier or internal ID."),
-    argument("relationType", "relation_type", "Relation type keyword."),
+    argument(
+      "relationType",
+      "relation_type",
+      "Relation type keyword.",
+      true,
+      enumValues(RELATION_TYPE_VALUES),
+    ),
     argument(
       "relatedIssue",
       "issue_ref",
@@ -354,7 +439,13 @@ const PRIMARY_ARGUMENTS: Record<string, CapabilityArgumentSchema[]> = {
   ],
   "linear issue relation delete": [
     argument("issue", "issue_ref", "Source issue identifier or internal ID."),
-    argument("relationType", "relation_type", "Relation type keyword."),
+    argument(
+      "relationType",
+      "relation_type",
+      "Relation type keyword.",
+      true,
+      enumValues(RELATION_TYPE_VALUES),
+    ),
     argument(
       "relatedIssue",
       "issue_ref",
@@ -451,6 +542,16 @@ const PRIMARY_ARGUMENTS: Record<string, CapabilityArgumentSchema[]> = {
 }
 
 const FLAG_OVERRIDES: Record<string, CapabilityFlagSchema[]> = {
+  "linear capabilities": [
+    flag(
+      "--compat",
+      null,
+      "string",
+      "Select the machine-readable capabilities schema version.",
+      false,
+      enumValues(CAPABILITIES_COMPATIBILITY_VERSIONS),
+    ),
+  ],
   "linear cycle current": [
     flag(
       "--team",
@@ -475,6 +576,33 @@ const FLAG_OVERRIDES: Record<string, CapabilityFlagSchema[]> = {
       "Team key. Falls back to the configured current team.",
     ),
   ],
+  "linear document create": [
+    flag("--title", "-t", "string", "Document title.", true),
+    flag("--content", "-c", "string", "Document content as inline markdown."),
+    flag("--content-file", "-f", "path", "Read document content from a file."),
+    flag("--project", null, "project_ref", "Attach the document to a project."),
+    flag("--issue", null, "issue_ref", "Attach the document to an issue."),
+  ],
+  "linear document delete": [
+    flag(
+      "--bulk",
+      null,
+      "document_id",
+      "Delete multiple documents by slug or ID.",
+    ),
+    flag(
+      "--bulk-file",
+      null,
+      "path",
+      "Read document slugs or IDs from a file.",
+    ),
+    flag(
+      "--bulk-stdin",
+      null,
+      "boolean",
+      "Read document slugs or IDs from stdin.",
+    ),
+  ],
   "linear document list": [
     flag(
       "--issue",
@@ -482,6 +610,18 @@ const FLAG_OVERRIDES: Record<string, CapabilityFlagSchema[]> = {
       "issue_ref",
       "Filter documents attached to a specific issue.",
     ),
+  ],
+  "linear document update": [
+    flag("--title", "-t", "string", "Replacement document title."),
+    flag("--content", "-c", "string", "Replacement document content."),
+    flag(
+      "--content-file",
+      "-f",
+      "path",
+      "Read replacement document content from a file.",
+    ),
+    flag("--icon", null, "string", "Replacement icon."),
+    flag("--edit", "-e", "boolean", "Open the current content in an editor."),
   ],
   "linear issue comment add": [
     flag("--body", null, "string", "Comment body as inline text."),
@@ -544,7 +684,14 @@ const FLAG_OVERRIDES: Record<string, CapabilityFlagSchema[]> = {
     flag("--no-comments", null, "boolean", "Skip raw comments in JSON output."),
   ],
   "linear initiative list": [
-    flag("--status", "-s", "string", "Filter by initiative status."),
+    flag(
+      "--status",
+      "-s",
+      "string",
+      "Filter by initiative status.",
+      false,
+      enumValues(INITIATIVE_STATUS_VALUES),
+    ),
     flag("--all-statuses", null, "boolean", "Include all initiative statuses."),
     flag("--owner", "-o", "user_ref", "Filter by owner username or email."),
     flag("--archived", null, "boolean", "Include archived initiatives."),
@@ -557,6 +704,47 @@ const FLAG_OVERRIDES: Record<string, CapabilityFlagSchema[]> = {
   ],
   "linear project-update list": [
     flag("--limit", null, "integer", "Limit returned project updates."),
+  ],
+}
+
+const STDIN_TARGETS: Record<string, CapabilityInputChannelTarget[]> = {
+  "linear api": [{ field: "query", viaFlags: [] }],
+  "linear document create": [{ field: "content", viaFlags: [] }],
+  "linear document delete": [{
+    field: "documentIds",
+    viaFlags: ["--bulk-stdin"],
+  }],
+  "linear document update": [{ field: "content", viaFlags: [] }],
+  "linear issue comment add": [{ field: "body", viaFlags: [] }],
+  "linear issue comment update": [{ field: "body", viaFlags: [] }],
+  "linear issue create": [{ field: "description", viaFlags: [] }],
+  "linear issue update": [{ field: "description", viaFlags: [] }],
+}
+
+const FILE_TARGETS: Record<string, CapabilityInputChannelTarget[]> = {
+  "linear document create": [
+    { field: "content", viaFlags: ["--content-file"] },
+  ],
+  "linear document delete": [
+    { field: "documentIds", viaFlags: ["--bulk-file"] },
+  ],
+  "linear document update": [
+    { field: "content", viaFlags: ["--content-file"] },
+  ],
+  "linear issue comment add": [
+    { field: "body", viaFlags: ["--body-file"] },
+  ],
+  "linear issue comment update": [
+    { field: "body", viaFlags: ["--body-file"] },
+  ],
+  "linear issue create": [
+    { field: "description", viaFlags: ["--description-file"] },
+  ],
+  "linear issue create-batch": [
+    { field: "batch", viaFlags: ["--file"] },
+  ],
+  "linear issue update": [
+    { field: "description", viaFlags: ["--description-file"] },
   ],
 }
 
@@ -1214,7 +1402,7 @@ function uniqueFlags(flags: CapabilityFlagSchema[]): CapabilityFlagSchema[] {
 function buildCommandSchema(
   command: CapabilityRegistryEntry,
 ): CapabilityCommandSchema {
-  const flags = [
+  const flags = uniqueFlags([
     ...(command.json.supported
       ? [flag("--json", "-j", "boolean", "Emit machine-readable JSON output.")]
       : []),
@@ -1249,7 +1437,8 @@ function buildCommandSchema(
       ]
       : []),
     ...(FLAG_OVERRIDES[command.path] ?? []),
-  ]
+  ])
+  const arguments_ = PRIMARY_ARGUMENTS[command.path] ?? []
 
   const inputModes: CapabilityInputMode[] = ["flags"]
   if (command.stdin.mode !== "none") {
@@ -1263,11 +1452,32 @@ function buildCommandSchema(
     inputModes.push("file")
   }
 
+  const requiredInputs: CapabilityInputReference[] = [
+    ...arguments_
+      .filter((entry) => entry.required)
+      .map((entry) => ({ source: "argument" as const, name: entry.name })),
+    ...flags
+      .filter((entry) => entry.required)
+      .map((entry) => ({ source: "flag" as const, name: entry.name })),
+  ]
+  const optionalInputs: CapabilityInputReference[] = [
+    ...arguments_
+      .filter((entry) => !entry.required)
+      .map((entry) => ({ source: "argument" as const, name: entry.name })),
+    ...flags
+      .filter((entry) => !entry.required)
+      .map((entry) => ({ source: "flag" as const, name: entry.name })),
+  ]
+
   return {
     coverage: "curated_primary_inputs",
-    arguments: PRIMARY_ARGUMENTS[command.path] ?? [],
-    flags: uniqueFlags(flags),
+    arguments: arguments_,
+    flags,
     inputModes,
+    requiredInputs,
+    optionalInputs,
+    stdinTargets: STDIN_TARGETS[command.path] ?? [],
+    fileTargets: FILE_TARGETS[command.path] ?? [],
   }
 }
 
@@ -1318,10 +1528,25 @@ function buildCommandOutput(
     category = "curated_json"
   }
 
+  const successContract: CapabilityOutputContract | null =
+    command.path === "linear api"
+      ? { kind: "raw_graphql_response", version: null }
+      : command.path === "linear capabilities"
+      ? { kind: "capabilities_discovery", version: "v2" }
+      : command.json.contractVersion == null
+      ? null
+      : { kind: "automation_contract", version: command.json.contractVersion }
+
+  const previewContract: CapabilityOutputContract | null =
+    command.dryRun.contractVersion == null
+      ? null
+      : { kind: "dry_run_preview", version: command.dryRun.contractVersion }
+
   return {
     success: {
       category,
       contractTarget,
+      contract: successContract,
       shape,
       exitCode: 0,
     },
@@ -1330,6 +1555,7 @@ function buildCommandOutput(
       contractTarget: command.dryRun.contractVersion == null
         ? null
         : `dry_run_preview:${command.dryRun.contractVersion}`,
+      contract: previewContract,
       shape: command.dryRun.supported ? "object" : null,
       exitCode: command.dryRun.supported ? 0 : null,
     },
@@ -1338,6 +1564,19 @@ function buildCommandOutput(
       parseErrorsJsonWhenRequested: JSON_FAILURE_COMMANDS.has(command.path),
       exitCodes: buildFailureExitCodes(command),
     },
+  }
+}
+
+function buildWriteSemantics(
+  command: CapabilityRegistryEntry,
+): CapabilityWriteSemantics {
+  const timeoutAware = WRITE_TIMEOUT_COMMANDS.has(command.path)
+
+  return {
+    timeoutAware,
+    timeoutReconciliation: timeoutAware,
+    mayReturnNoOp: command.idempotency.category === "retry_safe_no_op",
+    mayReturnPartialSuccess: PARTIAL_SUCCESS_COMMANDS.has(command.path),
   }
 }
 
@@ -1415,12 +1654,18 @@ function buildCapabilitiesPayloadV2(version: string): CapabilitiesPayloadV2 {
   return {
     schemaVersion: "v2",
     ...buildCapabilitiesPayloadBase(version),
+    compatibility: {
+      defaultSchemaVersion: "v1",
+      latestSchemaVersion: "v2",
+      supportedSchemaVersions: [...CAPABILITIES_COMPATIBILITY_VERSIONS],
+    },
     commands: CAPABILITY_COMMANDS.map((command) => ({
       ...command,
       json: { ...command.json },
       dryRun: { ...command.dryRun },
       stdin: { ...command.stdin },
       idempotency: { ...command.idempotency },
+      writeSemantics: buildWriteSemantics(command),
       schema: buildCommandSchema(command),
       output: buildCommandOutput(command),
     })),
