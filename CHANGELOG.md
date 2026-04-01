@@ -2,6 +2,21 @@
 
 ## [Unreleased]
 
+## [2.12.4] - 2026-04-02
+
+### Added
+
+- enriched `linear capabilities --json --compat v2` with required and optional input metadata, constrained values, stdin/file targets, and structured output contract hints for agents
+
+### Changed
+
+- release-gated the startup-critical agent contracts in CI so the default `linear capabilities --json` shape and core read entrypoints cannot drift silently across releases
+
+### Fixed
+
+- made generated skill docs template-driven so `deno task generate-skill-docs` no longer drifts from the maintained source guidance
+- added automated checks that keep contract docs and high-value agent examples aligned with the current CLI version and capabilities compatibility semantics
+
 ## [2.12.3] - 2026-03-31
 
 ### Fixed
