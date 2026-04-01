@@ -21,7 +21,7 @@ This tells an agent:
 - which confirmation-bypass flag is canonical
 - which contract version or retry semantics apply
 
-Use the default `linear capabilities --json` shape for runtime startup compatibility. Reach for `--compat v2` only when the caller is ready to consume richer command schema and output metadata.
+Use the default `linear capabilities --json` shape for runtime startup compatibility. Reach for `--compat v2` only when the caller is ready to consume richer command schema metadata such as required inputs, constrained values, stdin/file targets, structured output contracts, and write semantics.
 
 The default capabilities shape and the read entrypoints below are treated as startup-critical contracts and are release-gated in CI.
 

@@ -50,10 +50,10 @@ agent-facing commands
   linear cycle list :: json=v2 dry-run=no inputs=flags success=automation_contract confirm=none idempotency=read_only
   linear cycle next :: json=v2 dry-run=no inputs=flags success=automation_contract confirm=none idempotency=read_only
   linear cycle view :: json=v2 dry-run=no inputs=flags success=automation_contract confirm=none idempotency=read_only
-  linear document create :: json=no dry-run=v1 inputs=flags,stdin success=terminal_only confirm=none idempotency=non_idempotent
-  linear document delete :: json=no dry-run=v1 inputs=flags,stdin success=terminal_only confirm=--yes idempotency=destructive
+  linear document create :: json=no dry-run=v1 inputs=flags,stdin,file success=terminal_only confirm=none idempotency=non_idempotent
+  linear document delete :: json=no dry-run=v1 inputs=flags,stdin,file success=terminal_only confirm=--yes idempotency=destructive
   linear document list :: json=v3 dry-run=no inputs=flags success=automation_contract confirm=none idempotency=read_only
-  linear document update :: json=no dry-run=v1 inputs=flags,stdin success=terminal_only confirm=none idempotency=retry_safe_update
+  linear document update :: json=no dry-run=v1 inputs=flags,stdin,file success=terminal_only confirm=none idempotency=retry_safe_update
   linear document view :: json=v3 dry-run=no inputs=flags success=automation_contract confirm=none idempotency=read_only
   linear initiative list :: json=v5 dry-run=no inputs=flags success=automation_contract confirm=none idempotency=read_only
   linear initiative view :: json=v5 dry-run=no inputs=flags success=automation_contract confirm=none idempotency=read_only
@@ -1595,6 +1595,14 @@ stdout:
       "linear project-update list"
     ]
   },
+  "compatibility": {
+    "defaultSchemaVersion": "v1",
+    "latestSchemaVersion": "v2",
+    "supportedSchemaVersions": [
+      "v1",
+      "v2"
+    ]
+  },
   "commands": [
     {
       "path": "linear api",
@@ -1616,6 +1624,12 @@ stdout:
         "notes": null
       },
       "notes": "Outputs JSON by default and accepts stdin, but does not use a --json flag.",
+      "writeSemantics": {
+        "timeoutAware": false,
+        "timeoutReconciliation": false,
+        "mayReturnNoOp": false,
+        "mayReturnPartialSuccess": false
+      },
       "schema": {
         "coverage": "curated_primary_inputs",
         "arguments": [],
@@ -1623,18 +1637,32 @@ stdout:
         "inputModes": [
           "flags",
           "stdin"
-        ]
+        ],
+        "requiredInputs": [],
+        "optionalInputs": [],
+        "stdinTargets": [
+          {
+            "field": "query",
+            "viaFlags": []
+          }
+        ],
+        "fileTargets": []
       },
       "output": {
         "success": {
           "category": "json_default",
           "contractTarget": "raw_graphql_response",
+          "contract": {
+            "kind": "raw_graphql_response",
+            "version": null
+          },
           "shape": "unknown",
           "exitCode": 0
         },
         "preview": {
           "supported": false,
           "contractTarget": null,
+          "contract": null,
           "shape": null,
           "exitCode": null
         },
@@ -1674,6 +1702,12 @@ stdout:
         "notes": null
       },
       "notes": "Default --json preserves the v1-compatible shape; use --compat v2 for richer schema and output metadata.",
+      "writeSemantics": {
+        "timeoutAware": false,
+        "timeoutReconciliation": false,
+        "mayReturnNoOp": false,
+        "mayReturnPartialSuccess": false
+      },
       "schema": {
         "coverage": "curated_primary_inputs",
         "arguments": [],
@@ -1683,23 +1717,59 @@ stdout:
             "short": "-j",
             "required": false,
             "valueType": "boolean",
-            "description": "Emit machine-readable JSON output."
+            "description": "Emit machine-readable JSON output.",
+            "allowedValues": null
+          },
+          {
+            "name": "--compat",
+            "short": null,
+            "required": false,
+            "valueType": "string",
+            "description": "Select the machine-readable capabilities schema version.",
+            "allowedValues": [
+              {
+                "value": "v1",
+                "description": null
+              },
+              {
+                "value": "v2",
+                "description": null
+              }
+            ]
           }
         ],
         "inputModes": [
           "flags"
-        ]
+        ],
+        "requiredInputs": [],
+        "optionalInputs": [
+          {
+            "source": "flag",
+            "name": "--json"
+          },
+          {
+            "source": "flag",
+            "name": "--compat"
+          }
+        ],
+        "stdinTargets": [],
+        "fileTargets": []
       },
       "output": {
         "success": {
           "category": "curated_json",
           "contractTarget": "capabilities_discovery:v2",
+          "contract": {
+            "kind": "capabilities_discovery",
+            "version": "v2"
+          },
           "shape": "object",
           "exitCode": 0
         },
         "preview": {
           "supported": false,
           "contractTarget": null,
+          "contract": null,
           "shape": null,
           "exitCode": null
         },
@@ -1735,6 +1805,12 @@ stdout:
         "notes": null
       },
       "notes": null,
+      "writeSemantics": {
+        "timeoutAware": false,
+        "timeoutReconciliation": false,
+        "mayReturnNoOp": false,
+        "mayReturnPartialSuccess": false
+      },
       "schema": {
         "coverage": "curated_primary_inputs",
         "arguments": [],
@@ -1744,30 +1820,50 @@ stdout:
             "short": "-j",
             "required": false,
             "valueType": "boolean",
-            "description": "Emit machine-readable JSON output."
+            "description": "Emit machine-readable JSON output.",
+            "allowedValues": null
           },
           {
             "name": "--team",
             "short": null,
             "required": false,
             "valueType": "team_key",
-            "description": "Team key. Falls back to the configured current team."
+            "description": "Team key. Falls back to the configured current team.",
+            "allowedValues": null
           }
         ],
         "inputModes": [
           "flags"
-        ]
+        ],
+        "requiredInputs": [],
+        "optionalInputs": [
+          {
+            "source": "flag",
+            "name": "--json"
+          },
+          {
+            "source": "flag",
+            "name": "--team"
+          }
+        ],
+        "stdinTargets": [],
+        "fileTargets": []
       },
       "output": {
         "success": {
           "category": "automation_contract",
           "contractTarget": "automation_contract:v2",
+          "contract": {
+            "kind": "automation_contract",
+            "version": "v2"
+          },
           "shape": "object",
           "exitCode": 0
         },
         "preview": {
           "supported": false,
           "contractTarget": null,
+          "contract": null,
           "shape": null,
           "exitCode": null
         },
@@ -1807,6 +1903,12 @@ stdout:
         "notes": null
       },
       "notes": null,
+      "writeSemantics": {
+        "timeoutAware": false,
+        "timeoutReconciliation": false,
+        "mayReturnNoOp": false,
+        "mayReturnPartialSuccess": false
+      },
       "schema": {
         "coverage": "curated_primary_inputs",
         "arguments": [],
@@ -1816,30 +1918,50 @@ stdout:
             "short": "-j",
             "required": false,
             "valueType": "boolean",
-            "description": "Emit machine-readable JSON output."
+            "description": "Emit machine-readable JSON output.",
+            "allowedValues": null
           },
           {
             "name": "--team",
             "short": null,
             "required": false,
             "valueType": "team_key",
-            "description": "Team key. Falls back to the configured current team."
+            "description": "Team key. Falls back to the configured current team.",
+            "allowedValues": null
           }
         ],
         "inputModes": [
           "flags"
-        ]
+        ],
+        "requiredInputs": [],
+        "optionalInputs": [
+          {
+            "source": "flag",
+            "name": "--json"
+          },
+          {
+            "source": "flag",
+            "name": "--team"
+          }
+        ],
+        "stdinTargets": [],
+        "fileTargets": []
       },
       "output": {
         "success": {
           "category": "automation_contract",
           "contractTarget": "automation_contract:v2",
+          "contract": {
+            "kind": "automation_contract",
+            "version": "v2"
+          },
           "shape": "array",
           "exitCode": 0
         },
         "preview": {
           "supported": false,
           "contractTarget": null,
+          "contract": null,
           "shape": null,
           "exitCode": null
         },
@@ -1879,6 +2001,12 @@ stdout:
         "notes": null
       },
       "notes": null,
+      "writeSemantics": {
+        "timeoutAware": false,
+        "timeoutReconciliation": false,
+        "mayReturnNoOp": false,
+        "mayReturnPartialSuccess": false
+      },
       "schema": {
         "coverage": "curated_primary_inputs",
         "arguments": [],
@@ -1888,30 +2016,50 @@ stdout:
             "short": "-j",
             "required": false,
             "valueType": "boolean",
-            "description": "Emit machine-readable JSON output."
+            "description": "Emit machine-readable JSON output.",
+            "allowedValues": null
           },
           {
             "name": "--team",
             "short": null,
             "required": false,
             "valueType": "team_key",
-            "description": "Team key. Falls back to the configured current team."
+            "description": "Team key. Falls back to the configured current team.",
+            "allowedValues": null
           }
         ],
         "inputModes": [
           "flags"
-        ]
+        ],
+        "requiredInputs": [],
+        "optionalInputs": [
+          {
+            "source": "flag",
+            "name": "--json"
+          },
+          {
+            "source": "flag",
+            "name": "--team"
+          }
+        ],
+        "stdinTargets": [],
+        "fileTargets": []
       },
       "output": {
         "success": {
           "category": "automation_contract",
           "contractTarget": "automation_contract:v2",
+          "contract": {
+            "kind": "automation_contract",
+            "version": "v2"
+          },
           "shape": "object",
           "exitCode": 0
         },
         "preview": {
           "supported": false,
           "contractTarget": null,
+          "contract": null,
           "shape": null,
           "exitCode": null
         },
@@ -1951,6 +2099,12 @@ stdout:
         "notes": null
       },
       "notes": null,
+      "writeSemantics": {
+        "timeoutAware": false,
+        "timeoutReconciliation": false,
+        "mayReturnNoOp": false,
+        "mayReturnPartialSuccess": false
+      },
       "schema": {
         "coverage": "curated_primary_inputs",
         "arguments": [
@@ -1958,7 +2112,8 @@ stdout:
             "name": "cycle",
             "required": true,
             "valueType": "cycle_ref",
-            "description": "Cycle number, ID, or reference."
+            "description": "Cycle number, ID, or reference.",
+            "allowedValues": null
           }
         ],
         "flags": [
@@ -1967,23 +2122,43 @@ stdout:
             "short": "-j",
             "required": false,
             "valueType": "boolean",
-            "description": "Emit machine-readable JSON output."
+            "description": "Emit machine-readable JSON output.",
+            "allowedValues": null
           }
         ],
         "inputModes": [
           "flags"
-        ]
+        ],
+        "requiredInputs": [
+          {
+            "source": "argument",
+            "name": "cycle"
+          }
+        ],
+        "optionalInputs": [
+          {
+            "source": "flag",
+            "name": "--json"
+          }
+        ],
+        "stdinTargets": [],
+        "fileTargets": []
       },
       "output": {
         "success": {
           "category": "automation_contract",
           "contractTarget": "automation_contract:v2",
+          "contract": {
+            "kind": "automation_contract",
+            "version": "v2"
+          },
           "shape": "object",
           "exitCode": 0
         },
         "preview": {
           "supported": false,
           "contractTarget": null,
+          "contract": null,
           "shape": null,
           "exitCode": null
         },
@@ -2023,6 +2198,12 @@ stdout:
         "notes": null
       },
       "notes": null,
+      "writeSemantics": {
+        "timeoutAware": false,
+        "timeoutReconciliation": false,
+        "mayReturnNoOp": false,
+        "mayReturnPartialSuccess": false
+      },
       "schema": {
         "coverage": "curated_primary_inputs",
         "arguments": [],
@@ -2032,24 +2213,113 @@ stdout:
             "short": null,
             "required": false,
             "valueType": "boolean",
-            "description": "Preview the command without mutating Linear."
+            "description": "Preview the command without mutating Linear.",
+            "allowedValues": null
+          },
+          {
+            "name": "--title",
+            "short": "-t",
+            "required": true,
+            "valueType": "string",
+            "description": "Document title.",
+            "allowedValues": null
+          },
+          {
+            "name": "--content",
+            "short": "-c",
+            "required": false,
+            "valueType": "string",
+            "description": "Document content as inline markdown.",
+            "allowedValues": null
+          },
+          {
+            "name": "--content-file",
+            "short": "-f",
+            "required": false,
+            "valueType": "path",
+            "description": "Read document content from a file.",
+            "allowedValues": null
+          },
+          {
+            "name": "--project",
+            "short": null,
+            "required": false,
+            "valueType": "project_ref",
+            "description": "Attach the document to a project.",
+            "allowedValues": null
+          },
+          {
+            "name": "--issue",
+            "short": null,
+            "required": false,
+            "valueType": "issue_ref",
+            "description": "Attach the document to an issue.",
+            "allowedValues": null
           }
         ],
         "inputModes": [
           "flags",
-          "stdin"
+          "stdin",
+          "file"
+        ],
+        "requiredInputs": [
+          {
+            "source": "flag",
+            "name": "--title"
+          }
+        ],
+        "optionalInputs": [
+          {
+            "source": "flag",
+            "name": "--dry-run"
+          },
+          {
+            "source": "flag",
+            "name": "--content"
+          },
+          {
+            "source": "flag",
+            "name": "--content-file"
+          },
+          {
+            "source": "flag",
+            "name": "--project"
+          },
+          {
+            "source": "flag",
+            "name": "--issue"
+          }
+        ],
+        "stdinTargets": [
+          {
+            "field": "content",
+            "viaFlags": []
+          }
+        ],
+        "fileTargets": [
+          {
+            "field": "content",
+            "viaFlags": [
+              "--content-file"
+            ]
+          }
         ]
       },
       "output": {
         "success": {
           "category": "terminal_only",
           "contractTarget": null,
+          "contract": null,
           "shape": "object",
           "exitCode": 0
         },
         "preview": {
           "supported": true,
           "contractTarget": "dry_run_preview:v1",
+          "contract": {
+            "kind": "dry_run_preview",
+            "version": "v1"
+          },
           "shape": "object",
           "exitCode": 0
         },
@@ -2093,6 +2363,12 @@ stdout:
         "notes": null
       },
       "notes": null,
+      "writeSemantics": {
+        "timeoutAware": false,
+        "timeoutReconciliation": false,
+        "mayReturnNoOp": false,
+        "mayReturnPartialSuccess": false
+      },
       "schema": {
         "coverage": "curated_primary_inputs",
         "arguments": [
@@ -2100,7 +2376,8 @@ stdout:
             "name": "documentIds",
             "required": false,
             "valueType": "document_id",
-            "description": "One or more document IDs."
+            "description": "One or more document IDs.",
+            "allowedValues": null
           }
         ],
         "flags": [
@@ -2109,31 +2386,106 @@ stdout:
             "short": null,
             "required": false,
             "valueType": "boolean",
-            "description": "Preview the command without mutating Linear."
+            "description": "Preview the command without mutating Linear.",
+            "allowedValues": null
           },
           {
             "name": "--yes",
             "short": null,
             "required": false,
             "valueType": "boolean",
-            "description": "Skip the confirmation prompt."
+            "description": "Skip the confirmation prompt.",
+            "allowedValues": null
+          },
+          {
+            "name": "--bulk",
+            "short": null,
+            "required": false,
+            "valueType": "document_id",
+            "description": "Delete multiple documents by slug or ID.",
+            "allowedValues": null
+          },
+          {
+            "name": "--bulk-file",
+            "short": null,
+            "required": false,
+            "valueType": "path",
+            "description": "Read document slugs or IDs from a file.",
+            "allowedValues": null
+          },
+          {
+            "name": "--bulk-stdin",
+            "short": null,
+            "required": false,
+            "valueType": "boolean",
+            "description": "Read document slugs or IDs from stdin.",
+            "allowedValues": null
           }
         ],
         "inputModes": [
           "flags",
-          "stdin"
+          "stdin",
+          "file"
+        ],
+        "requiredInputs": [],
+        "optionalInputs": [
+          {
+            "source": "argument",
+            "name": "documentIds"
+          },
+          {
+            "source": "flag",
+            "name": "--dry-run"
+          },
+          {
+            "source": "flag",
+            "name": "--yes"
+          },
+          {
+            "source": "flag",
+            "name": "--bulk"
+          },
+          {
+            "source": "flag",
+            "name": "--bulk-file"
+          },
+          {
+            "source": "flag",
+            "name": "--bulk-stdin"
+          }
+        ],
+        "stdinTargets": [
+          {
+            "field": "documentIds",
+            "viaFlags": [
+              "--bulk-stdin"
+            ]
+          }
+        ],
+        "fileTargets": [
+          {
+            "field": "documentIds",
+            "viaFlags": [
+              "--bulk-file"
+            ]
+          }
         ]
       },
       "output": {
         "success": {
           "category": "terminal_only",
           "contractTarget": null,
+          "contract": null,
           "shape": "object",
           "exitCode": 0
         },
         "preview": {
           "supported": true,
           "contractTarget": "dry_run_preview:v1",
+          "contract": {
+            "kind": "dry_run_preview",
+            "version": "v1"
+          },
           "shape": "object",
           "exitCode": 0
         },
@@ -2173,6 +2525,12 @@ stdout:
         "notes": null
       },
       "notes": null,
+      "writeSemantics": {
+        "timeoutAware": false,
+        "timeoutReconciliation": false,
+        "mayReturnNoOp": false,
+        "mayReturnPartialSuccess": false
+      },
       "schema": {
         "coverage": "curated_primary_inputs",
         "arguments": [],
@@ -2182,30 +2540,50 @@ stdout:
             "short": "-j",
             "required": false,
             "valueType": "boolean",
-            "description": "Emit machine-readable JSON output."
+            "description": "Emit machine-readable JSON output.",
+            "allowedValues": null
           },
           {
             "name": "--issue",
             "short": null,
             "required": false,
             "valueType": "issue_ref",
-            "description": "Filter documents attached to a specific issue."
+            "description": "Filter documents attached to a specific issue.",
+            "allowedValues": null
           }
         ],
         "inputModes": [
           "flags"
-        ]
+        ],
+        "requiredInputs": [],
+        "optionalInputs": [
+          {
+            "source": "flag",
+            "name": "--json"
+          },
+          {
+            "source": "flag",
+            "name": "--issue"
+          }
+        ],
+        "stdinTargets": [],
+        "fileTargets": []
       },
       "output": {
         "success": {
           "category": "automation_contract",
           "contractTarget": "automation_contract:v3",
+          "contract": {
+            "kind": "automation_contract",
+            "version": "v3"
+          },
           "shape": "array",
           "exitCode": 0
         },
         "preview": {
           "supported": false,
           "contractTarget": null,
+          "contract": null,
           "shape": null,
           "exitCode": null
         },
@@ -2245,6 +2623,12 @@ stdout:
         "notes": null
       },
       "notes": null,
+      "writeSemantics": {
+        "timeoutAware": false,
+        "timeoutReconciliation": false,
+        "mayReturnNoOp": false,
+        "mayReturnPartialSuccess": false
+      },
       "schema": {
         "coverage": "curated_primary_inputs",
         "arguments": [],
@@ -2254,24 +2638,112 @@ stdout:
             "short": null,
             "required": false,
             "valueType": "boolean",
-            "description": "Preview the command without mutating Linear."
+            "description": "Preview the command without mutating Linear.",
+            "allowedValues": null
+          },
+          {
+            "name": "--title",
+            "short": "-t",
+            "required": false,
+            "valueType": "string",
+            "description": "Replacement document title.",
+            "allowedValues": null
+          },
+          {
+            "name": "--content",
+            "short": "-c",
+            "required": false,
+            "valueType": "string",
+            "description": "Replacement document content.",
+            "allowedValues": null
+          },
+          {
+            "name": "--content-file",
+            "short": "-f",
+            "required": false,
+            "valueType": "path",
+            "description": "Read replacement document content from a file.",
+            "allowedValues": null
+          },
+          {
+            "name": "--icon",
+            "short": null,
+            "required": false,
+            "valueType": "string",
+            "description": "Replacement icon.",
+            "allowedValues": null
+          },
+          {
+            "name": "--edit",
+            "short": "-e",
+            "required": false,
+            "valueType": "boolean",
+            "description": "Open the current content in an editor.",
+            "allowedValues": null
           }
         ],
         "inputModes": [
           "flags",
-          "stdin"
+          "stdin",
+          "file"
+        ],
+        "requiredInputs": [],
+        "optionalInputs": [
+          {
+            "source": "flag",
+            "name": "--dry-run"
+          },
+          {
+            "source": "flag",
+            "name": "--title"
+          },
+          {
+            "source": "flag",
+            "name": "--content"
+          },
+          {
+            "source": "flag",
+            "name": "--content-file"
+          },
+          {
+            "source": "flag",
+            "name": "--icon"
+          },
+          {
+            "source": "flag",
+            "name": "--edit"
+          }
+        ],
+        "stdinTargets": [
+          {
+            "field": "content",
+            "viaFlags": []
+          }
+        ],
+        "fileTargets": [
+          {
+            "field": "content",
+            "viaFlags": [
+              "--content-file"
+            ]
+          }
         ]
       },
       "output": {
         "success": {
           "category": "terminal_only",
           "contractTarget": null,
+          "contract": null,
           "shape": "object",
           "exitCode": 0
         },
         "preview": {
           "supported": true,
           "contractTarget": "dry_run_preview:v1",
+          "contract": {
+            "kind": "dry_run_preview",
+            "version": "v1"
+          },
           "shape": "object",
           "exitCode": 0
         },
@@ -2311,6 +2783,12 @@ stdout:
         "notes": null
       },
       "notes": null,
+      "writeSemantics": {
+        "timeoutAware": false,
+        "timeoutReconciliation": false,
+        "mayReturnNoOp": false,
+        "mayReturnPartialSuccess": false
+      },
       "schema": {
         "coverage": "curated_primary_inputs",
         "arguments": [
@@ -2318,7 +2796,8 @@ stdout:
             "name": "document",
             "required": true,
             "valueType": "document_id",
-            "description": "Document ID."
+            "description": "Document ID.",
+            "allowedValues": null
           }
         ],
         "flags": [
@@ -2327,23 +2806,43 @@ stdout:
             "short": "-j",
             "required": false,
             "valueType": "boolean",
-            "description": "Emit machine-readable JSON output."
+            "description": "Emit machine-readable JSON output.",
+            "allowedValues": null
           }
         ],
         "inputModes": [
           "flags"
-        ]
+        ],
+        "requiredInputs": [
+          {
+            "source": "argument",
+            "name": "document"
+          }
+        ],
+        "optionalInputs": [
+          {
+            "source": "flag",
+            "name": "--json"
+          }
+        ],
+        "stdinTargets": [],
+        "fileTargets": []
       },
       "output": {
         "success": {
           "category": "automation_contract",
           "contractTarget": "automation_contract:v3",
+          "contract": {
+            "kind": "automation_contract",
+            "version": "v3"
+          },
           "shape": "object",
           "exitCode": 0
         },
         "preview": {
           "supported": false,
           "contractTarget": null,
+          "contract": null,
           "shape": null,
           "exitCode": null
         },
@@ -2383,6 +2882,12 @@ stdout:
         "notes": null
       },
       "notes": null,
+      "writeSemantics": {
+        "timeoutAware": false,
+        "timeoutReconciliation": false,
+        "mayReturnNoOp": false,
+        "mayReturnPartialSuccess": false
+      },
       "schema": {
         "coverage": "curated_primary_inputs",
         "arguments": [],
@@ -2392,51 +2897,99 @@ stdout:
             "short": "-j",
             "required": false,
             "valueType": "boolean",
-            "description": "Emit machine-readable JSON output."
+            "description": "Emit machine-readable JSON output.",
+            "allowedValues": null
           },
           {
             "name": "--status",
             "short": "-s",
             "required": false,
             "valueType": "string",
-            "description": "Filter by initiative status."
+            "description": "Filter by initiative status.",
+            "allowedValues": [
+              {
+                "value": "active",
+                "description": null
+              },
+              {
+                "value": "planned",
+                "description": null
+              },
+              {
+                "value": "completed",
+                "description": null
+              }
+            ]
           },
           {
             "name": "--all-statuses",
             "short": null,
             "required": false,
             "valueType": "boolean",
-            "description": "Include all initiative statuses."
+            "description": "Include all initiative statuses.",
+            "allowedValues": null
           },
           {
             "name": "--owner",
             "short": "-o",
             "required": false,
             "valueType": "user_ref",
-            "description": "Filter by owner username or email."
+            "description": "Filter by owner username or email.",
+            "allowedValues": null
           },
           {
             "name": "--archived",
             "short": null,
             "required": false,
             "valueType": "boolean",
-            "description": "Include archived initiatives."
+            "description": "Include archived initiatives.",
+            "allowedValues": null
           }
         ],
         "inputModes": [
           "flags"
-        ]
+        ],
+        "requiredInputs": [],
+        "optionalInputs": [
+          {
+            "source": "flag",
+            "name": "--json"
+          },
+          {
+            "source": "flag",
+            "name": "--status"
+          },
+          {
+            "source": "flag",
+            "name": "--all-statuses"
+          },
+          {
+            "source": "flag",
+            "name": "--owner"
+          },
+          {
+            "source": "flag",
+            "name": "--archived"
+          }
+        ],
+        "stdinTargets": [],
+        "fileTargets": []
       },
       "output": {
         "success": {
           "category": "automation_contract",
           "contractTarget": "automation_contract:v5",
+          "contract": {
+            "kind": "automation_contract",
+            "version": "v5"
+          },
           "shape": "array",
           "exitCode": 0
         },
         "preview": {
           "supported": false,
           "contractTarget": null,
+          "contract": null,
           "shape": null,
           "exitCode": null
         },
@@ -2476,6 +3029,12 @@ stdout:
         "notes": null
       },
       "notes": null,
+      "writeSemantics": {
+        "timeoutAware": false,
+        "timeoutReconciliation": false,
+        "mayReturnNoOp": false,
+        "mayReturnPartialSuccess": false
+      },
       "schema": {
         "coverage": "curated_primary_inputs",
         "arguments": [
@@ -2483,7 +3042,8 @@ stdout:
             "name": "initiative",
             "required": true,
             "valueType": "string",
-            "description": "Initiative ID, slug, or name."
+            "description": "Initiative ID, slug, or name.",
+            "allowedValues": null
           }
         ],
         "flags": [
@@ -2492,23 +3052,43 @@ stdout:
             "short": "-j",
             "required": false,
             "valueType": "boolean",
-            "description": "Emit machine-readable JSON output."
+            "description": "Emit machine-readable JSON output.",
+            "allowedValues": null
           }
         ],
         "inputModes": [
           "flags"
-        ]
+        ],
+        "requiredInputs": [
+          {
+            "source": "argument",
+            "name": "initiative"
+          }
+        ],
+        "optionalInputs": [
+          {
+            "source": "flag",
+            "name": "--json"
+          }
+        ],
+        "stdinTargets": [],
+        "fileTargets": []
       },
       "output": {
         "success": {
           "category": "automation_contract",
           "contractTarget": "automation_contract:v5",
+          "contract": {
+            "kind": "automation_contract",
+            "version": "v5"
+          },
           "shape": "object",
           "exitCode": 0
         },
         "preview": {
           "supported": false,
           "contractTarget": null,
+          "contract": null,
           "shape": null,
           "exitCode": null
         },
@@ -2548,6 +3128,12 @@ stdout:
         "notes": null
       },
       "notes": null,
+      "writeSemantics": {
+        "timeoutAware": false,
+        "timeoutReconciliation": false,
+        "mayReturnNoOp": false,
+        "mayReturnPartialSuccess": false
+      },
       "schema": {
         "coverage": "curated_primary_inputs",
         "arguments": [
@@ -2555,7 +3141,8 @@ stdout:
             "name": "initiative",
             "required": true,
             "valueType": "string",
-            "description": "Initiative ID, slug, or name."
+            "description": "Initiative ID, slug, or name.",
+            "allowedValues": null
           }
         ],
         "flags": [
@@ -2564,30 +3151,55 @@ stdout:
             "short": "-j",
             "required": false,
             "valueType": "boolean",
-            "description": "Emit machine-readable JSON output."
+            "description": "Emit machine-readable JSON output.",
+            "allowedValues": null
           },
           {
             "name": "--limit",
             "short": null,
             "required": false,
             "valueType": "integer",
-            "description": "Limit returned initiative updates."
+            "description": "Limit returned initiative updates.",
+            "allowedValues": null
           }
         ],
         "inputModes": [
           "flags"
-        ]
+        ],
+        "requiredInputs": [
+          {
+            "source": "argument",
+            "name": "initiative"
+          }
+        ],
+        "optionalInputs": [
+          {
+            "source": "flag",
+            "name": "--json"
+          },
+          {
+            "source": "flag",
+            "name": "--limit"
+          }
+        ],
+        "stdinTargets": [],
+        "fileTargets": []
       },
       "output": {
         "success": {
           "category": "automation_contract",
           "contractTarget": "automation_contract:v5",
+          "contract": {
+            "kind": "automation_contract",
+            "version": "v5"
+          },
           "shape": "object",
           "exitCode": 0
         },
         "preview": {
           "supported": false,
           "contractTarget": null,
+          "contract": null,
           "shape": null,
           "exitCode": null
         },
@@ -2627,6 +3239,12 @@ stdout:
         "notes": null
       },
       "notes": null,
+      "writeSemantics": {
+        "timeoutAware": false,
+        "timeoutReconciliation": false,
+        "mayReturnNoOp": false,
+        "mayReturnPartialSuccess": false
+      },
       "schema": {
         "coverage": "curated_primary_inputs",
         "arguments": [
@@ -2634,7 +3252,8 @@ stdout:
             "name": "issue",
             "required": false,
             "valueType": "issue_ref",
-            "description": "Issue identifier or internal ID. Defaults to the current issue."
+            "description": "Issue identifier or internal ID. Defaults to the current issue.",
+            "allowedValues": null
           }
         ],
         "flags": [
@@ -2643,23 +3262,42 @@ stdout:
             "short": "-j",
             "required": false,
             "valueType": "boolean",
-            "description": "Emit machine-readable JSON output."
+            "description": "Emit machine-readable JSON output.",
+            "allowedValues": null
           }
         ],
         "inputModes": [
           "flags"
-        ]
+        ],
+        "requiredInputs": [],
+        "optionalInputs": [
+          {
+            "source": "argument",
+            "name": "issue"
+          },
+          {
+            "source": "flag",
+            "name": "--json"
+          }
+        ],
+        "stdinTargets": [],
+        "fileTargets": []
       },
       "output": {
         "success": {
           "category": "automation_contract",
           "contractTarget": "automation_contract:v1",
+          "contract": {
+            "kind": "automation_contract",
+            "version": "v1"
+          },
           "shape": "array",
           "exitCode": 0
         },
         "preview": {
           "supported": false,
           "contractTarget": null,
+          "contract": null,
           "shape": null,
           "exitCode": null
         },
@@ -2699,6 +3337,12 @@ stdout:
         "notes": null
       },
       "notes": null,
+      "writeSemantics": {
+        "timeoutAware": true,
+        "timeoutReconciliation": true,
+        "mayReturnNoOp": false,
+        "mayReturnPartialSuccess": false
+      },
       "schema": {
         "coverage": "curated_primary_inputs",
         "arguments": [
@@ -2706,13 +3350,15 @@ stdout:
             "name": "issue",
             "required": false,
             "valueType": "issue_ref",
-            "description": "Issue identifier or internal ID. Defaults to the current issue."
+            "description": "Issue identifier or internal ID. Defaults to the current issue.",
+            "allowedValues": null
           },
           {
             "name": "body",
             "required": false,
             "valueType": "string",
-            "description": "Inline comment body. Omit to provide it with --body, --body-file, or stdin."
+            "description": "Inline comment body. Omit to provide it with --body, --body-file, or stdin.",
+            "allowedValues": null
           }
         ],
         "flags": [
@@ -2721,53 +3367,111 @@ stdout:
             "short": "-j",
             "required": false,
             "valueType": "boolean",
-            "description": "Emit machine-readable JSON output."
+            "description": "Emit machine-readable JSON output.",
+            "allowedValues": null
           },
           {
             "name": "--dry-run",
             "short": null,
             "required": false,
             "valueType": "boolean",
-            "description": "Preview the command without mutating Linear."
+            "description": "Preview the command without mutating Linear.",
+            "allowedValues": null
           },
           {
             "name": "--timeout-ms",
             "short": null,
             "required": false,
             "valueType": "integer",
-            "description": "Override the write confirmation timeout in milliseconds."
+            "description": "Override the write confirmation timeout in milliseconds.",
+            "allowedValues": null
           },
           {
             "name": "--body",
             "short": null,
             "required": false,
             "valueType": "string",
-            "description": "Comment body as inline text."
+            "description": "Comment body as inline text.",
+            "allowedValues": null
           },
           {
             "name": "--body-file",
             "short": null,
             "required": false,
             "valueType": "path",
-            "description": "Read the comment body from a file."
+            "description": "Read the comment body from a file.",
+            "allowedValues": null
           }
         ],
         "inputModes": [
           "flags",
           "stdin",
           "file"
+        ],
+        "requiredInputs": [],
+        "optionalInputs": [
+          {
+            "source": "argument",
+            "name": "issue"
+          },
+          {
+            "source": "argument",
+            "name": "body"
+          },
+          {
+            "source": "flag",
+            "name": "--json"
+          },
+          {
+            "source": "flag",
+            "name": "--dry-run"
+          },
+          {
+            "source": "flag",
+            "name": "--timeout-ms"
+          },
+          {
+            "source": "flag",
+            "name": "--body"
+          },
+          {
+            "source": "flag",
+            "name": "--body-file"
+          }
+        ],
+        "stdinTargets": [
+          {
+            "field": "body",
+            "viaFlags": []
+          }
+        ],
+        "fileTargets": [
+          {
+            "field": "body",
+            "viaFlags": [
+              "--body-file"
+            ]
+          }
         ]
       },
       "output": {
         "success": {
           "category": "automation_contract",
           "contractTarget": "automation_contract:v1",
+          "contract": {
+            "kind": "automation_contract",
+            "version": "v1"
+          },
           "shape": "object",
           "exitCode": 0
         },
         "preview": {
           "supported": true,
           "contractTarget": "dry_run_preview:v1",
+          "contract": {
+            "kind": "dry_run_preview",
+            "version": "v1"
+          },
           "shape": "object",
           "exitCode": 0
         },
@@ -2811,6 +3515,12 @@ stdout:
         "notes": null
       },
       "notes": null,
+      "writeSemantics": {
+        "timeoutAware": true,
+        "timeoutReconciliation": true,
+        "mayReturnNoOp": false,
+        "mayReturnPartialSuccess": false
+      },
       "schema": {
         "coverage": "curated_primary_inputs",
         "arguments": [
@@ -2818,7 +3528,8 @@ stdout:
             "name": "comment",
             "required": true,
             "valueType": "string",
-            "description": "Comment ID."
+            "description": "Comment ID.",
+            "allowedValues": null
           }
         ],
         "flags": [
@@ -2827,39 +3538,78 @@ stdout:
             "short": null,
             "required": false,
             "valueType": "integer",
-            "description": "Override the write confirmation timeout in milliseconds."
+            "description": "Override the write confirmation timeout in milliseconds.",
+            "allowedValues": null
           },
           {
             "name": "--body",
             "short": null,
             "required": false,
             "valueType": "string",
-            "description": "Replacement comment body as inline text."
+            "description": "Replacement comment body as inline text.",
+            "allowedValues": null
           },
           {
             "name": "--body-file",
             "short": null,
             "required": false,
             "valueType": "path",
-            "description": "Read the replacement body from a file."
+            "description": "Read the replacement body from a file.",
+            "allowedValues": null
           }
         ],
         "inputModes": [
           "flags",
           "stdin",
           "file"
+        ],
+        "requiredInputs": [
+          {
+            "source": "argument",
+            "name": "comment"
+          }
+        ],
+        "optionalInputs": [
+          {
+            "source": "flag",
+            "name": "--timeout-ms"
+          },
+          {
+            "source": "flag",
+            "name": "--body"
+          },
+          {
+            "source": "flag",
+            "name": "--body-file"
+          }
+        ],
+        "stdinTargets": [
+          {
+            "field": "body",
+            "viaFlags": []
+          }
+        ],
+        "fileTargets": [
+          {
+            "field": "body",
+            "viaFlags": [
+              "--body-file"
+            ]
+          }
         ]
       },
       "output": {
         "success": {
           "category": "terminal_only",
           "contractTarget": null,
+          "contract": null,
           "shape": "object",
           "exitCode": 0
         },
         "preview": {
           "supported": false,
           "contractTarget": null,
+          "contract": null,
           "shape": null,
           "exitCode": null
         },
@@ -2903,6 +3653,12 @@ stdout:
         "notes": null
       },
       "notes": null,
+      "writeSemantics": {
+        "timeoutAware": true,
+        "timeoutReconciliation": true,
+        "mayReturnNoOp": false,
+        "mayReturnPartialSuccess": false
+      },
       "schema": {
         "coverage": "curated_primary_inputs",
         "arguments": [],
@@ -2912,74 +3668,140 @@ stdout:
             "short": "-j",
             "required": false,
             "valueType": "boolean",
-            "description": "Emit machine-readable JSON output."
+            "description": "Emit machine-readable JSON output.",
+            "allowedValues": null
           },
           {
             "name": "--dry-run",
             "short": null,
             "required": false,
             "valueType": "boolean",
-            "description": "Preview the command without mutating Linear."
+            "description": "Preview the command without mutating Linear.",
+            "allowedValues": null
           },
           {
             "name": "--timeout-ms",
             "short": null,
             "required": false,
             "valueType": "integer",
-            "description": "Override the write confirmation timeout in milliseconds."
+            "description": "Override the write confirmation timeout in milliseconds.",
+            "allowedValues": null
           },
           {
             "name": "--title",
             "short": "-t",
             "required": true,
             "valueType": "string",
-            "description": "Issue title."
+            "description": "Issue title.",
+            "allowedValues": null
           },
           {
             "name": "--team",
             "short": null,
             "required": true,
             "valueType": "team_key",
-            "description": "Team key."
+            "description": "Team key.",
+            "allowedValues": null
           },
           {
             "name": "--description",
             "short": "-d",
             "required": false,
             "valueType": "string",
-            "description": "Issue description as inline text."
+            "description": "Issue description as inline text.",
+            "allowedValues": null
           },
           {
             "name": "--description-file",
             "short": null,
             "required": false,
             "valueType": "path",
-            "description": "Read the description from a file."
+            "description": "Read the description from a file.",
+            "allowedValues": null
           },
           {
             "name": "--state",
             "short": null,
             "required": false,
             "valueType": "state_ref",
-            "description": "Initial workflow state."
+            "description": "Initial workflow state.",
+            "allowedValues": null
           }
         ],
         "inputModes": [
           "flags",
           "stdin",
           "file"
+        ],
+        "requiredInputs": [
+          {
+            "source": "flag",
+            "name": "--title"
+          },
+          {
+            "source": "flag",
+            "name": "--team"
+          }
+        ],
+        "optionalInputs": [
+          {
+            "source": "flag",
+            "name": "--json"
+          },
+          {
+            "source": "flag",
+            "name": "--dry-run"
+          },
+          {
+            "source": "flag",
+            "name": "--timeout-ms"
+          },
+          {
+            "source": "flag",
+            "name": "--description"
+          },
+          {
+            "source": "flag",
+            "name": "--description-file"
+          },
+          {
+            "source": "flag",
+            "name": "--state"
+          }
+        ],
+        "stdinTargets": [
+          {
+            "field": "description",
+            "viaFlags": []
+          }
+        ],
+        "fileTargets": [
+          {
+            "field": "description",
+            "viaFlags": [
+              "--description-file"
+            ]
+          }
         ]
       },
       "output": {
         "success": {
           "category": "automation_contract",
           "contractTarget": "automation_contract:v1",
+          "contract": {
+            "kind": "automation_contract",
+            "version": "v1"
+          },
           "shape": "object",
           "exitCode": 0
         },
         "preview": {
           "supported": true,
           "contractTarget": "dry_run_preview:v1",
+          "contract": {
+            "kind": "dry_run_preview",
+            "version": "v1"
+          },
           "shape": "object",
           "exitCode": 0
         },
@@ -3027,6 +3849,12 @@ stdout:
         "notes": "Partial failures return createdIdentifiers and failedStep details."
       },
       "notes": null,
+      "writeSemantics": {
+        "timeoutAware": true,
+        "timeoutReconciliation": true,
+        "mayReturnNoOp": false,
+        "mayReturnPartialSuccess": true
+      },
       "schema": {
         "coverage": "curated_primary_inputs",
         "arguments": [],
@@ -3036,45 +3864,86 @@ stdout:
             "short": "-j",
             "required": false,
             "valueType": "boolean",
-            "description": "Emit machine-readable JSON output."
+            "description": "Emit machine-readable JSON output.",
+            "allowedValues": null
           },
           {
             "name": "--dry-run",
             "short": null,
             "required": false,
             "valueType": "boolean",
-            "description": "Preview the command without mutating Linear."
+            "description": "Preview the command without mutating Linear.",
+            "allowedValues": null
           },
           {
             "name": "--timeout-ms",
             "short": null,
             "required": false,
             "valueType": "integer",
-            "description": "Override the write confirmation timeout in milliseconds."
+            "description": "Override the write confirmation timeout in milliseconds.",
+            "allowedValues": null
           },
           {
             "name": "--file",
             "short": "-f",
             "required": true,
             "valueType": "json_file",
-            "description": "Path to the JSON batch description."
+            "description": "Path to the JSON batch description.",
+            "allowedValues": null
           }
         ],
         "inputModes": [
           "flags",
           "file"
+        ],
+        "requiredInputs": [
+          {
+            "source": "flag",
+            "name": "--file"
+          }
+        ],
+        "optionalInputs": [
+          {
+            "source": "flag",
+            "name": "--json"
+          },
+          {
+            "source": "flag",
+            "name": "--dry-run"
+          },
+          {
+            "source": "flag",
+            "name": "--timeout-ms"
+          }
+        ],
+        "stdinTargets": [],
+        "fileTargets": [
+          {
+            "field": "batch",
+            "viaFlags": [
+              "--file"
+            ]
+          }
         ]
       },
       "output": {
         "success": {
           "category": "automation_contract",
           "contractTarget": "automation_contract:v1",
+          "contract": {
+            "kind": "automation_contract",
+            "version": "v1"
+          },
           "shape": "object",
           "exitCode": 0
         },
         "preview": {
           "supported": true,
           "contractTarget": "dry_run_preview:v1",
+          "contract": {
+            "kind": "dry_run_preview",
+            "version": "v1"
+          },
           "shape": "object",
           "exitCode": 0
         },
@@ -3122,6 +3991,12 @@ stdout:
         "notes": null
       },
       "notes": "Issue list JSON keeps the nested state object and adds a stateName convenience field.",
+      "writeSemantics": {
+        "timeoutAware": false,
+        "timeoutReconciliation": false,
+        "mayReturnNoOp": false,
+        "mayReturnPartialSuccess": false
+      },
       "schema": {
         "coverage": "curated_primary_inputs",
         "arguments": [],
@@ -3131,58 +4006,98 @@ stdout:
             "short": "-j",
             "required": false,
             "valueType": "boolean",
-            "description": "Emit machine-readable JSON output."
+            "description": "Emit machine-readable JSON output.",
+            "allowedValues": null
           },
           {
             "name": "--all",
             "short": null,
             "required": false,
             "valueType": "boolean",
-            "description": "List all assignees and all states."
+            "description": "List all assignees and all states.",
+            "allowedValues": null
           },
           {
             "name": "--state",
             "short": "-s",
             "required": false,
             "valueType": "state_ref",
-            "description": "Filter by workflow state."
+            "description": "Filter by workflow state.",
+            "allowedValues": null
           },
           {
             "name": "--query",
             "short": null,
             "required": false,
             "valueType": "string",
-            "description": "Filter by search text."
+            "description": "Filter by search text.",
+            "allowedValues": null
           },
           {
             "name": "--team",
             "short": null,
             "required": false,
             "valueType": "team_key",
-            "description": "Resolve team-scoped filters and aliases."
+            "description": "Resolve team-scoped filters and aliases.",
+            "allowedValues": null
           },
           {
             "name": "--parent",
             "short": null,
             "required": false,
             "valueType": "issue_ref",
-            "description": "Filter child issues of a parent issue."
+            "description": "Filter child issues of a parent issue.",
+            "allowedValues": null
           }
         ],
         "inputModes": [
           "flags"
-        ]
+        ],
+        "requiredInputs": [],
+        "optionalInputs": [
+          {
+            "source": "flag",
+            "name": "--json"
+          },
+          {
+            "source": "flag",
+            "name": "--all"
+          },
+          {
+            "source": "flag",
+            "name": "--state"
+          },
+          {
+            "source": "flag",
+            "name": "--query"
+          },
+          {
+            "source": "flag",
+            "name": "--team"
+          },
+          {
+            "source": "flag",
+            "name": "--parent"
+          }
+        ],
+        "stdinTargets": [],
+        "fileTargets": []
       },
       "output": {
         "success": {
           "category": "automation_contract",
           "contractTarget": "automation_contract:v1",
+          "contract": {
+            "kind": "automation_contract",
+            "version": "v1"
+          },
           "shape": "array",
           "exitCode": 0
         },
         "preview": {
           "supported": false,
           "contractTarget": null,
+          "contract": null,
           "shape": null,
           "exitCode": null
         },
@@ -3222,6 +4137,12 @@ stdout:
         "notes": null
       },
       "notes": null,
+      "writeSemantics": {
+        "timeoutAware": false,
+        "timeoutReconciliation": false,
+        "mayReturnNoOp": false,
+        "mayReturnPartialSuccess": false
+      },
       "schema": {
         "coverage": "curated_primary_inputs",
         "arguments": [
@@ -3229,7 +4150,8 @@ stdout:
             "name": "issue",
             "required": false,
             "valueType": "issue_ref",
-            "description": "Issue identifier or internal ID. Defaults to the current issue."
+            "description": "Issue identifier or internal ID. Defaults to the current issue.",
+            "allowedValues": null
           }
         ],
         "flags": [
@@ -3238,23 +4160,42 @@ stdout:
             "short": "-j",
             "required": false,
             "valueType": "boolean",
-            "description": "Emit machine-readable JSON output."
+            "description": "Emit machine-readable JSON output.",
+            "allowedValues": null
           }
         ],
         "inputModes": [
           "flags"
-        ]
+        ],
+        "requiredInputs": [],
+        "optionalInputs": [
+          {
+            "source": "argument",
+            "name": "issue"
+          },
+          {
+            "source": "flag",
+            "name": "--json"
+          }
+        ],
+        "stdinTargets": [],
+        "fileTargets": []
       },
       "output": {
         "success": {
           "category": "automation_contract",
           "contractTarget": "automation_contract:v1",
+          "contract": {
+            "kind": "automation_contract",
+            "version": "v1"
+          },
           "shape": "object",
           "exitCode": 0
         },
         "preview": {
           "supported": false,
           "contractTarget": null,
+          "contract": null,
           "shape": null,
           "exitCode": null
         },
@@ -3294,6 +4235,12 @@ stdout:
         "notes": "Adding an existing relation succeeds with noOp: true."
       },
       "notes": null,
+      "writeSemantics": {
+        "timeoutAware": true,
+        "timeoutReconciliation": true,
+        "mayReturnNoOp": true,
+        "mayReturnPartialSuccess": false
+      },
       "schema": {
         "coverage": "curated_primary_inputs",
         "arguments": [
@@ -3301,19 +4248,39 @@ stdout:
             "name": "issue",
             "required": true,
             "valueType": "issue_ref",
-            "description": "Source issue identifier or internal ID."
+            "description": "Source issue identifier or internal ID.",
+            "allowedValues": null
           },
           {
             "name": "relationType",
             "required": true,
             "valueType": "relation_type",
-            "description": "Relation type keyword."
+            "description": "Relation type keyword.",
+            "allowedValues": [
+              {
+                "value": "blocks",
+                "description": null
+              },
+              {
+                "value": "blocked-by",
+                "description": null
+              },
+              {
+                "value": "related",
+                "description": null
+              },
+              {
+                "value": "duplicate",
+                "description": null
+              }
+            ]
           },
           {
             "name": "relatedIssue",
             "required": true,
             "valueType": "issue_ref",
-            "description": "Related issue identifier or internal ID."
+            "description": "Related issue identifier or internal ID.",
+            "allowedValues": null
           }
         ],
         "flags": [
@@ -3322,37 +4289,78 @@ stdout:
             "short": "-j",
             "required": false,
             "valueType": "boolean",
-            "description": "Emit machine-readable JSON output."
+            "description": "Emit machine-readable JSON output.",
+            "allowedValues": null
           },
           {
             "name": "--dry-run",
             "short": null,
             "required": false,
             "valueType": "boolean",
-            "description": "Preview the command without mutating Linear."
+            "description": "Preview the command without mutating Linear.",
+            "allowedValues": null
           },
           {
             "name": "--timeout-ms",
             "short": null,
             "required": false,
             "valueType": "integer",
-            "description": "Override the write confirmation timeout in milliseconds."
+            "description": "Override the write confirmation timeout in milliseconds.",
+            "allowedValues": null
           }
         ],
         "inputModes": [
           "flags"
-        ]
+        ],
+        "requiredInputs": [
+          {
+            "source": "argument",
+            "name": "issue"
+          },
+          {
+            "source": "argument",
+            "name": "relationType"
+          },
+          {
+            "source": "argument",
+            "name": "relatedIssue"
+          }
+        ],
+        "optionalInputs": [
+          {
+            "source": "flag",
+            "name": "--json"
+          },
+          {
+            "source": "flag",
+            "name": "--dry-run"
+          },
+          {
+            "source": "flag",
+            "name": "--timeout-ms"
+          }
+        ],
+        "stdinTargets": [],
+        "fileTargets": []
       },
       "output": {
         "success": {
           "category": "automation_contract",
           "contractTarget": "automation_contract:v1",
+          "contract": {
+            "kind": "automation_contract",
+            "version": "v1"
+          },
           "shape": "object",
           "exitCode": 0
         },
         "preview": {
           "supported": true,
           "contractTarget": "dry_run_preview:v1",
+          "contract": {
+            "kind": "dry_run_preview",
+            "version": "v1"
+          },
           "shape": "object",
           "exitCode": 0
         },
@@ -3396,6 +4404,12 @@ stdout:
         "notes": "Deleting a missing relation succeeds with noOp: true."
       },
       "notes": null,
+      "writeSemantics": {
+        "timeoutAware": true,
+        "timeoutReconciliation": true,
+        "mayReturnNoOp": true,
+        "mayReturnPartialSuccess": false
+      },
       "schema": {
         "coverage": "curated_primary_inputs",
         "arguments": [
@@ -3403,19 +4417,39 @@ stdout:
             "name": "issue",
             "required": true,
             "valueType": "issue_ref",
-            "description": "Source issue identifier or internal ID."
+            "description": "Source issue identifier or internal ID.",
+            "allowedValues": null
           },
           {
             "name": "relationType",
             "required": true,
             "valueType": "relation_type",
-            "description": "Relation type keyword."
+            "description": "Relation type keyword.",
+            "allowedValues": [
+              {
+                "value": "blocks",
+                "description": null
+              },
+              {
+                "value": "blocked-by",
+                "description": null
+              },
+              {
+                "value": "related",
+                "description": null
+              },
+              {
+                "value": "duplicate",
+                "description": null
+              }
+            ]
           },
           {
             "name": "relatedIssue",
             "required": true,
             "valueType": "issue_ref",
-            "description": "Related issue identifier or internal ID."
+            "description": "Related issue identifier or internal ID.",
+            "allowedValues": null
           }
         ],
         "flags": [
@@ -3424,37 +4458,78 @@ stdout:
             "short": "-j",
             "required": false,
             "valueType": "boolean",
-            "description": "Emit machine-readable JSON output."
+            "description": "Emit machine-readable JSON output.",
+            "allowedValues": null
           },
           {
             "name": "--dry-run",
             "short": null,
             "required": false,
             "valueType": "boolean",
-            "description": "Preview the command without mutating Linear."
+            "description": "Preview the command without mutating Linear.",
+            "allowedValues": null
           },
           {
             "name": "--timeout-ms",
             "short": null,
             "required": false,
             "valueType": "integer",
-            "description": "Override the write confirmation timeout in milliseconds."
+            "description": "Override the write confirmation timeout in milliseconds.",
+            "allowedValues": null
           }
         ],
         "inputModes": [
           "flags"
-        ]
+        ],
+        "requiredInputs": [
+          {
+            "source": "argument",
+            "name": "issue"
+          },
+          {
+            "source": "argument",
+            "name": "relationType"
+          },
+          {
+            "source": "argument",
+            "name": "relatedIssue"
+          }
+        ],
+        "optionalInputs": [
+          {
+            "source": "flag",
+            "name": "--json"
+          },
+          {
+            "source": "flag",
+            "name": "--dry-run"
+          },
+          {
+            "source": "flag",
+            "name": "--timeout-ms"
+          }
+        ],
+        "stdinTargets": [],
+        "fileTargets": []
       },
       "output": {
         "success": {
           "category": "automation_contract",
           "contractTarget": "automation_contract:v1",
+          "contract": {
+            "kind": "automation_contract",
+            "version": "v1"
+          },
           "shape": "object",
           "exitCode": 0
         },
         "preview": {
           "supported": true,
           "contractTarget": "dry_run_preview:v1",
+          "contract": {
+            "kind": "dry_run_preview",
+            "version": "v1"
+          },
           "shape": "object",
           "exitCode": 0
         },
@@ -3498,6 +4573,12 @@ stdout:
         "notes": null
       },
       "notes": null,
+      "writeSemantics": {
+        "timeoutAware": false,
+        "timeoutReconciliation": false,
+        "mayReturnNoOp": false,
+        "mayReturnPartialSuccess": false
+      },
       "schema": {
         "coverage": "curated_primary_inputs",
         "arguments": [
@@ -3505,7 +4586,8 @@ stdout:
             "name": "issue",
             "required": false,
             "valueType": "issue_ref",
-            "description": "Issue identifier or internal ID. Defaults to the current issue."
+            "description": "Issue identifier or internal ID. Defaults to the current issue.",
+            "allowedValues": null
           }
         ],
         "flags": [
@@ -3514,23 +4596,42 @@ stdout:
             "short": "-j",
             "required": false,
             "valueType": "boolean",
-            "description": "Emit machine-readable JSON output."
+            "description": "Emit machine-readable JSON output.",
+            "allowedValues": null
           }
         ],
         "inputModes": [
           "flags"
-        ]
+        ],
+        "requiredInputs": [],
+        "optionalInputs": [
+          {
+            "source": "argument",
+            "name": "issue"
+          },
+          {
+            "source": "flag",
+            "name": "--json"
+          }
+        ],
+        "stdinTargets": [],
+        "fileTargets": []
       },
       "output": {
         "success": {
           "category": "automation_contract",
           "contractTarget": "automation_contract:v1",
+          "contract": {
+            "kind": "automation_contract",
+            "version": "v1"
+          },
           "shape": "array",
           "exitCode": 0
         },
         "preview": {
           "supported": false,
           "contractTarget": null,
+          "contract": null,
           "shape": null,
           "exitCode": null
         },
@@ -3570,6 +4671,12 @@ stdout:
         "notes": "The dry-run is safe to repeat; the live path mutates both Linear state and local VCS state."
       },
       "notes": null,
+      "writeSemantics": {
+        "timeoutAware": false,
+        "timeoutReconciliation": false,
+        "mayReturnNoOp": false,
+        "mayReturnPartialSuccess": false
+      },
       "schema": {
         "coverage": "curated_primary_inputs",
         "arguments": [
@@ -3577,7 +4684,8 @@ stdout:
             "name": "issue",
             "required": false,
             "valueType": "issue_ref",
-            "description": "Issue identifier or internal ID. Defaults to the current issue."
+            "description": "Issue identifier or internal ID. Defaults to the current issue.",
+            "allowedValues": null
           }
         ],
         "flags": [
@@ -3586,23 +4694,42 @@ stdout:
             "short": null,
             "required": false,
             "valueType": "boolean",
-            "description": "Preview the command without mutating Linear."
+            "description": "Preview the command without mutating Linear.",
+            "allowedValues": null
           }
         ],
         "inputModes": [
           "flags"
-        ]
+        ],
+        "requiredInputs": [],
+        "optionalInputs": [
+          {
+            "source": "argument",
+            "name": "issue"
+          },
+          {
+            "source": "flag",
+            "name": "--dry-run"
+          }
+        ],
+        "stdinTargets": [],
+        "fileTargets": []
       },
       "output": {
         "success": {
           "category": "terminal_only",
           "contractTarget": null,
+          "contract": null,
           "shape": "object",
           "exitCode": 0
         },
         "preview": {
           "supported": true,
           "contractTarget": "dry_run_preview:v1",
+          "contract": {
+            "kind": "dry_run_preview",
+            "version": "v1"
+          },
           "shape": "object",
           "exitCode": 0
         },
@@ -3642,6 +4769,12 @@ stdout:
         "notes": "Field-only updates are retry-safe; adding --comment makes the command non-idempotent."
       },
       "notes": null,
+      "writeSemantics": {
+        "timeoutAware": true,
+        "timeoutReconciliation": true,
+        "mayReturnNoOp": false,
+        "mayReturnPartialSuccess": true
+      },
       "schema": {
         "coverage": "curated_primary_inputs",
         "arguments": [
@@ -3649,7 +4782,8 @@ stdout:
             "name": "issue",
             "required": false,
             "valueType": "issue_ref",
-            "description": "Issue identifier or internal ID. Defaults to the current issue."
+            "description": "Issue identifier or internal ID. Defaults to the current issue.",
+            "allowedValues": null
           }
         ],
         "flags": [
@@ -3658,67 +4792,131 @@ stdout:
             "short": "-j",
             "required": false,
             "valueType": "boolean",
-            "description": "Emit machine-readable JSON output."
+            "description": "Emit machine-readable JSON output.",
+            "allowedValues": null
           },
           {
             "name": "--dry-run",
             "short": null,
             "required": false,
             "valueType": "boolean",
-            "description": "Preview the command without mutating Linear."
+            "description": "Preview the command without mutating Linear.",
+            "allowedValues": null
           },
           {
             "name": "--timeout-ms",
             "short": null,
             "required": false,
             "valueType": "integer",
-            "description": "Override the write confirmation timeout in milliseconds."
+            "description": "Override the write confirmation timeout in milliseconds.",
+            "allowedValues": null
           },
           {
             "name": "--state",
             "short": null,
             "required": false,
             "valueType": "state_ref",
-            "description": "Target workflow state."
+            "description": "Target workflow state.",
+            "allowedValues": null
           },
           {
             "name": "--comment",
             "short": null,
             "required": false,
             "valueType": "string",
-            "description": "Comment to append after the update."
+            "description": "Comment to append after the update.",
+            "allowedValues": null
           },
           {
             "name": "--description",
             "short": "-d",
             "required": false,
             "valueType": "string",
-            "description": "Replacement description text."
+            "description": "Replacement description text.",
+            "allowedValues": null
           },
           {
             "name": "--description-file",
             "short": null,
             "required": false,
             "valueType": "path",
-            "description": "Read the replacement description from a file."
+            "description": "Read the replacement description from a file.",
+            "allowedValues": null
           }
         ],
         "inputModes": [
           "flags",
           "stdin",
           "file"
+        ],
+        "requiredInputs": [],
+        "optionalInputs": [
+          {
+            "source": "argument",
+            "name": "issue"
+          },
+          {
+            "source": "flag",
+            "name": "--json"
+          },
+          {
+            "source": "flag",
+            "name": "--dry-run"
+          },
+          {
+            "source": "flag",
+            "name": "--timeout-ms"
+          },
+          {
+            "source": "flag",
+            "name": "--state"
+          },
+          {
+            "source": "flag",
+            "name": "--comment"
+          },
+          {
+            "source": "flag",
+            "name": "--description"
+          },
+          {
+            "source": "flag",
+            "name": "--description-file"
+          }
+        ],
+        "stdinTargets": [
+          {
+            "field": "description",
+            "viaFlags": []
+          }
+        ],
+        "fileTargets": [
+          {
+            "field": "description",
+            "viaFlags": [
+              "--description-file"
+            ]
+          }
         ]
       },
       "output": {
         "success": {
           "category": "automation_contract",
           "contractTarget": "automation_contract:v1",
+          "contract": {
+            "kind": "automation_contract",
+            "version": "v1"
+          },
           "shape": "object",
           "exitCode": 0
         },
         "preview": {
           "supported": true,
           "contractTarget": "dry_run_preview:v1",
+          "contract": {
+            "kind": "dry_run_preview",
+            "version": "v1"
+          },
           "shape": "object",
           "exitCode": 0
         },
@@ -3762,6 +4960,12 @@ stdout:
         "notes": null
       },
       "notes": null,
+      "writeSemantics": {
+        "timeoutAware": false,
+        "timeoutReconciliation": false,
+        "mayReturnNoOp": false,
+        "mayReturnPartialSuccess": false
+      },
       "schema": {
         "coverage": "curated_primary_inputs",
         "arguments": [
@@ -3769,7 +4973,8 @@ stdout:
             "name": "issue",
             "required": false,
             "valueType": "issue_ref",
-            "description": "Issue identifier or internal ID. Defaults to the current issue."
+            "description": "Issue identifier or internal ID. Defaults to the current issue.",
+            "allowedValues": null
           }
         ],
         "flags": [
@@ -3778,30 +4983,54 @@ stdout:
             "short": "-j",
             "required": false,
             "valueType": "boolean",
-            "description": "Emit machine-readable JSON output."
+            "description": "Emit machine-readable JSON output.",
+            "allowedValues": null
           },
           {
             "name": "--no-comments",
             "short": null,
             "required": false,
             "valueType": "boolean",
-            "description": "Skip raw comments in JSON output."
+            "description": "Skip raw comments in JSON output.",
+            "allowedValues": null
           }
         ],
         "inputModes": [
           "flags"
-        ]
+        ],
+        "requiredInputs": [],
+        "optionalInputs": [
+          {
+            "source": "argument",
+            "name": "issue"
+          },
+          {
+            "source": "flag",
+            "name": "--json"
+          },
+          {
+            "source": "flag",
+            "name": "--no-comments"
+          }
+        ],
+        "stdinTargets": [],
+        "fileTargets": []
       },
       "output": {
         "success": {
           "category": "automation_contract",
           "contractTarget": "automation_contract:v1",
+          "contract": {
+            "kind": "automation_contract",
+            "version": "v1"
+          },
           "shape": "object",
           "exitCode": 0
         },
         "preview": {
           "supported": false,
           "contractTarget": null,
+          "contract": null,
           "shape": null,
           "exitCode": null
         },
@@ -3841,6 +5070,12 @@ stdout:
         "notes": null
       },
       "notes": null,
+      "writeSemantics": {
+        "timeoutAware": false,
+        "timeoutReconciliation": false,
+        "mayReturnNoOp": false,
+        "mayReturnPartialSuccess": false
+      },
       "schema": {
         "coverage": "curated_primary_inputs",
         "arguments": [],
@@ -3850,23 +5085,38 @@ stdout:
             "short": "-j",
             "required": false,
             "valueType": "boolean",
-            "description": "Emit machine-readable JSON output."
+            "description": "Emit machine-readable JSON output.",
+            "allowedValues": null
           }
         ],
         "inputModes": [
           "flags"
-        ]
+        ],
+        "requiredInputs": [],
+        "optionalInputs": [
+          {
+            "source": "flag",
+            "name": "--json"
+          }
+        ],
+        "stdinTargets": [],
+        "fileTargets": []
       },
       "output": {
         "success": {
           "category": "automation_contract",
           "contractTarget": "automation_contract:v4",
+          "contract": {
+            "kind": "automation_contract",
+            "version": "v4"
+          },
           "shape": "array",
           "exitCode": 0
         },
         "preview": {
           "supported": false,
           "contractTarget": null,
+          "contract": null,
           "shape": null,
           "exitCode": null
         },
@@ -3906,6 +5156,12 @@ stdout:
         "notes": null
       },
       "notes": null,
+      "writeSemantics": {
+        "timeoutAware": false,
+        "timeoutReconciliation": false,
+        "mayReturnNoOp": false,
+        "mayReturnPartialSuccess": false
+      },
       "schema": {
         "coverage": "curated_primary_inputs",
         "arguments": [],
@@ -3915,23 +5171,38 @@ stdout:
             "short": null,
             "required": false,
             "valueType": "boolean",
-            "description": "Preview the command without mutating Linear."
+            "description": "Preview the command without mutating Linear.",
+            "allowedValues": null
           }
         ],
         "inputModes": [
           "flags"
-        ]
+        ],
+        "requiredInputs": [],
+        "optionalInputs": [
+          {
+            "source": "flag",
+            "name": "--dry-run"
+          }
+        ],
+        "stdinTargets": [],
+        "fileTargets": []
       },
       "output": {
         "success": {
           "category": "terminal_only",
           "contractTarget": null,
+          "contract": null,
           "shape": "object",
           "exitCode": 0
         },
         "preview": {
           "supported": true,
           "contractTarget": "dry_run_preview:v1",
+          "contract": {
+            "kind": "dry_run_preview",
+            "version": "v1"
+          },
           "shape": "object",
           "exitCode": 0
         },
@@ -3975,6 +5246,12 @@ stdout:
         "notes": null
       },
       "notes": null,
+      "writeSemantics": {
+        "timeoutAware": false,
+        "timeoutReconciliation": false,
+        "mayReturnNoOp": false,
+        "mayReturnPartialSuccess": false
+      },
       "schema": {
         "coverage": "curated_primary_inputs",
         "arguments": [],
@@ -3984,30 +5261,50 @@ stdout:
             "short": null,
             "required": false,
             "valueType": "boolean",
-            "description": "Preview the command without mutating Linear."
+            "description": "Preview the command without mutating Linear.",
+            "allowedValues": null
           },
           {
             "name": "--yes",
             "short": null,
             "required": false,
             "valueType": "boolean",
-            "description": "Skip the confirmation prompt."
+            "description": "Skip the confirmation prompt.",
+            "allowedValues": null
           }
         ],
         "inputModes": [
           "flags"
-        ]
+        ],
+        "requiredInputs": [],
+        "optionalInputs": [
+          {
+            "source": "flag",
+            "name": "--dry-run"
+          },
+          {
+            "source": "flag",
+            "name": "--yes"
+          }
+        ],
+        "stdinTargets": [],
+        "fileTargets": []
       },
       "output": {
         "success": {
           "category": "terminal_only",
           "contractTarget": null,
+          "contract": null,
           "shape": "object",
           "exitCode": 0
         },
         "preview": {
           "supported": true,
           "contractTarget": "dry_run_preview:v1",
+          "contract": {
+            "kind": "dry_run_preview",
+            "version": "v1"
+          },
           "shape": "object",
           "exitCode": 0
         },
@@ -4047,6 +5344,12 @@ stdout:
         "notes": null
       },
       "notes": null,
+      "writeSemantics": {
+        "timeoutAware": false,
+        "timeoutReconciliation": false,
+        "mayReturnNoOp": false,
+        "mayReturnPartialSuccess": false
+      },
       "schema": {
         "coverage": "curated_primary_inputs",
         "arguments": [],
@@ -4056,23 +5359,38 @@ stdout:
             "short": "-j",
             "required": false,
             "valueType": "boolean",
-            "description": "Emit machine-readable JSON output."
+            "description": "Emit machine-readable JSON output.",
+            "allowedValues": null
           }
         ],
         "inputModes": [
           "flags"
-        ]
+        ],
+        "requiredInputs": [],
+        "optionalInputs": [
+          {
+            "source": "flag",
+            "name": "--json"
+          }
+        ],
+        "stdinTargets": [],
+        "fileTargets": []
       },
       "output": {
         "success": {
           "category": "automation_contract",
           "contractTarget": "automation_contract:v2",
+          "contract": {
+            "kind": "automation_contract",
+            "version": "v2"
+          },
           "shape": "array",
           "exitCode": 0
         },
         "preview": {
           "supported": false,
           "contractTarget": null,
+          "contract": null,
           "shape": null,
           "exitCode": null
         },
@@ -4112,6 +5430,12 @@ stdout:
         "notes": null
       },
       "notes": null,
+      "writeSemantics": {
+        "timeoutAware": false,
+        "timeoutReconciliation": false,
+        "mayReturnNoOp": false,
+        "mayReturnPartialSuccess": false
+      },
       "schema": {
         "coverage": "curated_primary_inputs",
         "arguments": [],
@@ -4121,23 +5445,38 @@ stdout:
             "short": null,
             "required": false,
             "valueType": "boolean",
-            "description": "Preview the command without mutating Linear."
+            "description": "Preview the command without mutating Linear.",
+            "allowedValues": null
           }
         ],
         "inputModes": [
           "flags"
-        ]
+        ],
+        "requiredInputs": [],
+        "optionalInputs": [
+          {
+            "source": "flag",
+            "name": "--dry-run"
+          }
+        ],
+        "stdinTargets": [],
+        "fileTargets": []
       },
       "output": {
         "success": {
           "category": "terminal_only",
           "contractTarget": null,
+          "contract": null,
           "shape": "object",
           "exitCode": 0
         },
         "preview": {
           "supported": true,
           "contractTarget": "dry_run_preview:v1",
+          "contract": {
+            "kind": "dry_run_preview",
+            "version": "v1"
+          },
           "shape": "object",
           "exitCode": 0
         },
@@ -4177,6 +5516,12 @@ stdout:
         "notes": null
       },
       "notes": null,
+      "writeSemantics": {
+        "timeoutAware": false,
+        "timeoutReconciliation": false,
+        "mayReturnNoOp": false,
+        "mayReturnPartialSuccess": false
+      },
       "schema": {
         "coverage": "curated_primary_inputs",
         "arguments": [
@@ -4184,7 +5529,8 @@ stdout:
             "name": "milestone",
             "required": true,
             "valueType": "milestone_ref",
-            "description": "Milestone ID, slug, or name."
+            "description": "Milestone ID, slug, or name.",
+            "allowedValues": null
           }
         ],
         "flags": [
@@ -4193,23 +5539,43 @@ stdout:
             "short": "-j",
             "required": false,
             "valueType": "boolean",
-            "description": "Emit machine-readable JSON output."
+            "description": "Emit machine-readable JSON output.",
+            "allowedValues": null
           }
         ],
         "inputModes": [
           "flags"
-        ]
+        ],
+        "requiredInputs": [
+          {
+            "source": "argument",
+            "name": "milestone"
+          }
+        ],
+        "optionalInputs": [
+          {
+            "source": "flag",
+            "name": "--json"
+          }
+        ],
+        "stdinTargets": [],
+        "fileTargets": []
       },
       "output": {
         "success": {
           "category": "automation_contract",
           "contractTarget": "automation_contract:v2",
+          "contract": {
+            "kind": "automation_contract",
+            "version": "v2"
+          },
           "shape": "object",
           "exitCode": 0
         },
         "preview": {
           "supported": false,
           "contractTarget": null,
+          "contract": null,
           "shape": null,
           "exitCode": null
         },
@@ -4249,6 +5615,12 @@ stdout:
         "notes": "Archiving an already-archived notification succeeds with noOp: true."
       },
       "notes": null,
+      "writeSemantics": {
+        "timeoutAware": true,
+        "timeoutReconciliation": true,
+        "mayReturnNoOp": true,
+        "mayReturnPartialSuccess": false
+      },
       "schema": {
         "coverage": "curated_primary_inputs",
         "arguments": [
@@ -4256,7 +5628,8 @@ stdout:
             "name": "notification",
             "required": true,
             "valueType": "notification_id",
-            "description": "Notification ID."
+            "description": "Notification ID.",
+            "allowedValues": null
           }
         ],
         "flags": [
@@ -4265,30 +5638,52 @@ stdout:
             "short": "-j",
             "required": false,
             "valueType": "boolean",
-            "description": "Emit machine-readable JSON output."
+            "description": "Emit machine-readable JSON output.",
+            "allowedValues": null
           },
           {
             "name": "--timeout-ms",
             "short": null,
             "required": false,
             "valueType": "integer",
-            "description": "Override the write confirmation timeout in milliseconds."
+            "description": "Override the write confirmation timeout in milliseconds.",
+            "allowedValues": null
           }
         ],
         "inputModes": [
           "flags"
-        ]
+        ],
+        "requiredInputs": [
+          {
+            "source": "argument",
+            "name": "notification"
+          }
+        ],
+        "optionalInputs": [
+          {
+            "source": "flag",
+            "name": "--json"
+          },
+          {
+            "source": "flag",
+            "name": "--timeout-ms"
+          }
+        ],
+        "stdinTargets": [],
+        "fileTargets": []
       },
       "output": {
         "success": {
           "category": "curated_json",
           "contractTarget": null,
+          "contract": null,
           "shape": "object",
           "exitCode": 0
         },
         "preview": {
           "supported": false,
           "contractTarget": null,
+          "contract": null,
           "shape": null,
           "exitCode": null
         },
@@ -4332,6 +5727,12 @@ stdout:
         "notes": null
       },
       "notes": null,
+      "writeSemantics": {
+        "timeoutAware": false,
+        "timeoutReconciliation": false,
+        "mayReturnNoOp": false,
+        "mayReturnPartialSuccess": false
+      },
       "schema": {
         "coverage": "curated_primary_inputs",
         "arguments": [],
@@ -4341,23 +5742,38 @@ stdout:
             "short": "-j",
             "required": false,
             "valueType": "boolean",
-            "description": "Emit machine-readable JSON output."
+            "description": "Emit machine-readable JSON output.",
+            "allowedValues": null
           }
         ],
         "inputModes": [
           "flags"
-        ]
+        ],
+        "requiredInputs": [],
+        "optionalInputs": [
+          {
+            "source": "flag",
+            "name": "--json"
+          }
+        ],
+        "stdinTargets": [],
+        "fileTargets": []
       },
       "output": {
         "success": {
           "category": "automation_contract",
           "contractTarget": "automation_contract:v3",
+          "contract": {
+            "kind": "automation_contract",
+            "version": "v3"
+          },
           "shape": "object",
           "exitCode": 0
         },
         "preview": {
           "supported": false,
           "contractTarget": null,
+          "contract": null,
           "shape": null,
           "exitCode": null
         },
@@ -4397,6 +5813,12 @@ stdout:
         "notes": null
       },
       "notes": null,
+      "writeSemantics": {
+        "timeoutAware": false,
+        "timeoutReconciliation": false,
+        "mayReturnNoOp": false,
+        "mayReturnPartialSuccess": false
+      },
       "schema": {
         "coverage": "curated_primary_inputs",
         "arguments": [],
@@ -4406,23 +5828,38 @@ stdout:
             "short": "-j",
             "required": false,
             "valueType": "boolean",
-            "description": "Emit machine-readable JSON output."
+            "description": "Emit machine-readable JSON output.",
+            "allowedValues": null
           }
         ],
         "inputModes": [
           "flags"
-        ]
+        ],
+        "requiredInputs": [],
+        "optionalInputs": [
+          {
+            "source": "flag",
+            "name": "--json"
+          }
+        ],
+        "stdinTargets": [],
+        "fileTargets": []
       },
       "output": {
         "success": {
           "category": "automation_contract",
           "contractTarget": "automation_contract:v3",
+          "contract": {
+            "kind": "automation_contract",
+            "version": "v3"
+          },
           "shape": "array",
           "exitCode": 0
         },
         "preview": {
           "supported": false,
           "contractTarget": null,
+          "contract": null,
           "shape": null,
           "exitCode": null
         },
@@ -4462,6 +5899,12 @@ stdout:
         "notes": "Reading an already-read notification succeeds with noOp: true."
       },
       "notes": null,
+      "writeSemantics": {
+        "timeoutAware": true,
+        "timeoutReconciliation": true,
+        "mayReturnNoOp": true,
+        "mayReturnPartialSuccess": false
+      },
       "schema": {
         "coverage": "curated_primary_inputs",
         "arguments": [
@@ -4469,7 +5912,8 @@ stdout:
             "name": "notification",
             "required": true,
             "valueType": "notification_id",
-            "description": "Notification ID."
+            "description": "Notification ID.",
+            "allowedValues": null
           }
         ],
         "flags": [
@@ -4478,30 +5922,52 @@ stdout:
             "short": "-j",
             "required": false,
             "valueType": "boolean",
-            "description": "Emit machine-readable JSON output."
+            "description": "Emit machine-readable JSON output.",
+            "allowedValues": null
           },
           {
             "name": "--timeout-ms",
             "short": null,
             "required": false,
             "valueType": "integer",
-            "description": "Override the write confirmation timeout in milliseconds."
+            "description": "Override the write confirmation timeout in milliseconds.",
+            "allowedValues": null
           }
         ],
         "inputModes": [
           "flags"
-        ]
+        ],
+        "requiredInputs": [
+          {
+            "source": "argument",
+            "name": "notification"
+          }
+        ],
+        "optionalInputs": [
+          {
+            "source": "flag",
+            "name": "--json"
+          },
+          {
+            "source": "flag",
+            "name": "--timeout-ms"
+          }
+        ],
+        "stdinTargets": [],
+        "fileTargets": []
       },
       "output": {
         "success": {
           "category": "curated_json",
           "contractTarget": null,
+          "contract": null,
           "shape": "object",
           "exitCode": 0
         },
         "preview": {
           "supported": false,
           "contractTarget": null,
+          "contract": null,
           "shape": null,
           "exitCode": null
         },
@@ -4545,6 +6011,12 @@ stdout:
         "notes": null
       },
       "notes": null,
+      "writeSemantics": {
+        "timeoutAware": false,
+        "timeoutReconciliation": false,
+        "mayReturnNoOp": false,
+        "mayReturnPartialSuccess": false
+      },
       "schema": {
         "coverage": "curated_primary_inputs",
         "arguments": [],
@@ -4554,30 +6026,50 @@ stdout:
             "short": "-j",
             "required": false,
             "valueType": "boolean",
-            "description": "Emit machine-readable JSON output."
+            "description": "Emit machine-readable JSON output.",
+            "allowedValues": null
           },
           {
             "name": "--dry-run",
             "short": null,
             "required": false,
             "valueType": "boolean",
-            "description": "Preview the command without mutating Linear."
+            "description": "Preview the command without mutating Linear.",
+            "allowedValues": null
           }
         ],
         "inputModes": [
           "flags"
-        ]
+        ],
+        "requiredInputs": [],
+        "optionalInputs": [
+          {
+            "source": "flag",
+            "name": "--json"
+          },
+          {
+            "source": "flag",
+            "name": "--dry-run"
+          }
+        ],
+        "stdinTargets": [],
+        "fileTargets": []
       },
       "output": {
         "success": {
           "category": "curated_json",
           "contractTarget": null,
+          "contract": null,
           "shape": "object",
           "exitCode": 0
         },
         "preview": {
           "supported": true,
           "contractTarget": "dry_run_preview:v1",
+          "contract": {
+            "kind": "dry_run_preview",
+            "version": "v1"
+          },
           "shape": "object",
           "exitCode": 0
         },
@@ -4621,6 +6113,12 @@ stdout:
         "notes": null
       },
       "notes": null,
+      "writeSemantics": {
+        "timeoutAware": false,
+        "timeoutReconciliation": false,
+        "mayReturnNoOp": false,
+        "mayReturnPartialSuccess": false
+      },
       "schema": {
         "coverage": "curated_primary_inputs",
         "arguments": [
@@ -4628,7 +6126,8 @@ stdout:
             "name": "project",
             "required": true,
             "valueType": "project_ref",
-            "description": "Project ID or slug."
+            "description": "Project ID or slug.",
+            "allowedValues": null
           }
         ],
         "flags": [
@@ -4637,30 +6136,55 @@ stdout:
             "short": null,
             "required": false,
             "valueType": "boolean",
-            "description": "Preview the command without mutating Linear."
+            "description": "Preview the command without mutating Linear.",
+            "allowedValues": null
           },
           {
             "name": "--yes",
             "short": null,
             "required": false,
             "valueType": "boolean",
-            "description": "Skip the confirmation prompt."
+            "description": "Skip the confirmation prompt.",
+            "allowedValues": null
           }
         ],
         "inputModes": [
           "flags"
-        ]
+        ],
+        "requiredInputs": [
+          {
+            "source": "argument",
+            "name": "project"
+          }
+        ],
+        "optionalInputs": [
+          {
+            "source": "flag",
+            "name": "--dry-run"
+          },
+          {
+            "source": "flag",
+            "name": "--yes"
+          }
+        ],
+        "stdinTargets": [],
+        "fileTargets": []
       },
       "output": {
         "success": {
           "category": "terminal_only",
           "contractTarget": null,
+          "contract": null,
           "shape": "object",
           "exitCode": 0
         },
         "preview": {
           "supported": true,
           "contractTarget": "dry_run_preview:v1",
+          "contract": {
+            "kind": "dry_run_preview",
+            "version": "v1"
+          },
           "shape": "object",
           "exitCode": 0
         },
@@ -4700,6 +6224,12 @@ stdout:
         "notes": "Adding an already-attached label succeeds with changed: false."
       },
       "notes": null,
+      "writeSemantics": {
+        "timeoutAware": false,
+        "timeoutReconciliation": false,
+        "mayReturnNoOp": true,
+        "mayReturnPartialSuccess": false
+      },
       "schema": {
         "coverage": "curated_primary_inputs",
         "arguments": [],
@@ -4709,23 +6239,35 @@ stdout:
             "short": "-j",
             "required": false,
             "valueType": "boolean",
-            "description": "Emit machine-readable JSON output."
+            "description": "Emit machine-readable JSON output.",
+            "allowedValues": null
           }
         ],
         "inputModes": [
           "flags"
-        ]
+        ],
+        "requiredInputs": [],
+        "optionalInputs": [
+          {
+            "source": "flag",
+            "name": "--json"
+          }
+        ],
+        "stdinTargets": [],
+        "fileTargets": []
       },
       "output": {
         "success": {
           "category": "curated_json",
           "contractTarget": null,
+          "contract": null,
           "shape": "object",
           "exitCode": 0
         },
         "preview": {
           "supported": false,
           "contractTarget": null,
+          "contract": null,
           "shape": null,
           "exitCode": null
         },
@@ -4765,6 +6307,12 @@ stdout:
         "notes": "Removing a missing label succeeds with changed: false."
       },
       "notes": null,
+      "writeSemantics": {
+        "timeoutAware": false,
+        "timeoutReconciliation": false,
+        "mayReturnNoOp": true,
+        "mayReturnPartialSuccess": false
+      },
       "schema": {
         "coverage": "curated_primary_inputs",
         "arguments": [],
@@ -4774,23 +6322,35 @@ stdout:
             "short": "-j",
             "required": false,
             "valueType": "boolean",
-            "description": "Emit machine-readable JSON output."
+            "description": "Emit machine-readable JSON output.",
+            "allowedValues": null
           }
         ],
         "inputModes": [
           "flags"
-        ]
+        ],
+        "requiredInputs": [],
+        "optionalInputs": [
+          {
+            "source": "flag",
+            "name": "--json"
+          }
+        ],
+        "stdinTargets": [],
+        "fileTargets": []
       },
       "output": {
         "success": {
           "category": "curated_json",
           "contractTarget": null,
+          "contract": null,
           "shape": "object",
           "exitCode": 0
         },
         "preview": {
           "supported": false,
           "contractTarget": null,
+          "contract": null,
           "shape": null,
           "exitCode": null
         },
@@ -4830,6 +6390,12 @@ stdout:
         "notes": null
       },
       "notes": null,
+      "writeSemantics": {
+        "timeoutAware": false,
+        "timeoutReconciliation": false,
+        "mayReturnNoOp": false,
+        "mayReturnPartialSuccess": false
+      },
       "schema": {
         "coverage": "curated_primary_inputs",
         "arguments": [],
@@ -4839,30 +6405,50 @@ stdout:
             "short": "-j",
             "required": false,
             "valueType": "boolean",
-            "description": "Emit machine-readable JSON output."
+            "description": "Emit machine-readable JSON output.",
+            "allowedValues": null
           },
           {
             "name": "--team",
             "short": null,
             "required": false,
             "valueType": "team_key",
-            "description": "Filter by team key."
+            "description": "Filter by team key.",
+            "allowedValues": null
           }
         ],
         "inputModes": [
           "flags"
-        ]
+        ],
+        "requiredInputs": [],
+        "optionalInputs": [
+          {
+            "source": "flag",
+            "name": "--json"
+          },
+          {
+            "source": "flag",
+            "name": "--team"
+          }
+        ],
+        "stdinTargets": [],
+        "fileTargets": []
       },
       "output": {
         "success": {
           "category": "automation_contract",
           "contractTarget": "automation_contract:v2",
+          "contract": {
+            "kind": "automation_contract",
+            "version": "v2"
+          },
           "shape": "array",
           "exitCode": 0
         },
         "preview": {
           "supported": false,
           "contractTarget": null,
+          "contract": null,
           "shape": null,
           "exitCode": null
         },
@@ -4902,6 +6488,12 @@ stdout:
         "notes": null
       },
       "notes": null,
+      "writeSemantics": {
+        "timeoutAware": false,
+        "timeoutReconciliation": false,
+        "mayReturnNoOp": false,
+        "mayReturnPartialSuccess": false
+      },
       "schema": {
         "coverage": "curated_primary_inputs",
         "arguments": [],
@@ -4911,23 +6503,38 @@ stdout:
             "short": null,
             "required": false,
             "valueType": "boolean",
-            "description": "Preview the command without mutating Linear."
+            "description": "Preview the command without mutating Linear.",
+            "allowedValues": null
           }
         ],
         "inputModes": [
           "flags"
-        ]
+        ],
+        "requiredInputs": [],
+        "optionalInputs": [
+          {
+            "source": "flag",
+            "name": "--dry-run"
+          }
+        ],
+        "stdinTargets": [],
+        "fileTargets": []
       },
       "output": {
         "success": {
           "category": "terminal_only",
           "contractTarget": null,
+          "contract": null,
           "shape": "object",
           "exitCode": 0
         },
         "preview": {
           "supported": true,
           "contractTarget": "dry_run_preview:v1",
+          "contract": {
+            "kind": "dry_run_preview",
+            "version": "v1"
+          },
           "shape": "object",
           "exitCode": 0
         },
@@ -4967,6 +6574,12 @@ stdout:
         "notes": null
       },
       "notes": null,
+      "writeSemantics": {
+        "timeoutAware": false,
+        "timeoutReconciliation": false,
+        "mayReturnNoOp": false,
+        "mayReturnPartialSuccess": false
+      },
       "schema": {
         "coverage": "curated_primary_inputs",
         "arguments": [
@@ -4974,7 +6587,8 @@ stdout:
             "name": "project",
             "required": true,
             "valueType": "project_ref",
-            "description": "Project ID or slug."
+            "description": "Project ID or slug.",
+            "allowedValues": null
           }
         ],
         "flags": [
@@ -4983,23 +6597,43 @@ stdout:
             "short": "-j",
             "required": false,
             "valueType": "boolean",
-            "description": "Emit machine-readable JSON output."
+            "description": "Emit machine-readable JSON output.",
+            "allowedValues": null
           }
         ],
         "inputModes": [
           "flags"
-        ]
+        ],
+        "requiredInputs": [
+          {
+            "source": "argument",
+            "name": "project"
+          }
+        ],
+        "optionalInputs": [
+          {
+            "source": "flag",
+            "name": "--json"
+          }
+        ],
+        "stdinTargets": [],
+        "fileTargets": []
       },
       "output": {
         "success": {
           "category": "automation_contract",
           "contractTarget": "automation_contract:v2",
+          "contract": {
+            "kind": "automation_contract",
+            "version": "v2"
+          },
           "shape": "object",
           "exitCode": 0
         },
         "preview": {
           "supported": false,
           "contractTarget": null,
+          "contract": null,
           "shape": null,
           "exitCode": null
         },
@@ -5039,6 +6673,12 @@ stdout:
         "notes": null
       },
       "notes": null,
+      "writeSemantics": {
+        "timeoutAware": false,
+        "timeoutReconciliation": false,
+        "mayReturnNoOp": false,
+        "mayReturnPartialSuccess": false
+      },
       "schema": {
         "coverage": "curated_primary_inputs",
         "arguments": [],
@@ -5048,23 +6688,38 @@ stdout:
             "short": "-j",
             "required": false,
             "valueType": "boolean",
-            "description": "Emit machine-readable JSON output."
+            "description": "Emit machine-readable JSON output.",
+            "allowedValues": null
           }
         ],
         "inputModes": [
           "flags"
-        ]
+        ],
+        "requiredInputs": [],
+        "optionalInputs": [
+          {
+            "source": "flag",
+            "name": "--json"
+          }
+        ],
+        "stdinTargets": [],
+        "fileTargets": []
       },
       "output": {
         "success": {
           "category": "automation_contract",
           "contractTarget": "automation_contract:v4",
+          "contract": {
+            "kind": "automation_contract",
+            "version": "v4"
+          },
           "shape": "array",
           "exitCode": 0
         },
         "preview": {
           "supported": false,
           "contractTarget": null,
+          "contract": null,
           "shape": null,
           "exitCode": null
         },
@@ -5104,6 +6759,12 @@ stdout:
         "notes": null
       },
       "notes": null,
+      "writeSemantics": {
+        "timeoutAware": false,
+        "timeoutReconciliation": false,
+        "mayReturnNoOp": false,
+        "mayReturnPartialSuccess": false
+      },
       "schema": {
         "coverage": "curated_primary_inputs",
         "arguments": [
@@ -5111,7 +6772,8 @@ stdout:
             "name": "project",
             "required": true,
             "valueType": "project_ref",
-            "description": "Project ID or slug."
+            "description": "Project ID or slug.",
+            "allowedValues": null
           }
         ],
         "flags": [
@@ -5120,30 +6782,55 @@ stdout:
             "short": "-j",
             "required": false,
             "valueType": "boolean",
-            "description": "Emit machine-readable JSON output."
+            "description": "Emit machine-readable JSON output.",
+            "allowedValues": null
           },
           {
             "name": "--limit",
             "short": null,
             "required": false,
             "valueType": "integer",
-            "description": "Limit returned project updates."
+            "description": "Limit returned project updates.",
+            "allowedValues": null
           }
         ],
         "inputModes": [
           "flags"
-        ]
+        ],
+        "requiredInputs": [
+          {
+            "source": "argument",
+            "name": "project"
+          }
+        ],
+        "optionalInputs": [
+          {
+            "source": "flag",
+            "name": "--json"
+          },
+          {
+            "source": "flag",
+            "name": "--limit"
+          }
+        ],
+        "stdinTargets": [],
+        "fileTargets": []
       },
       "output": {
         "success": {
           "category": "automation_contract",
           "contractTarget": "automation_contract:v5",
+          "contract": {
+            "kind": "automation_contract",
+            "version": "v5"
+          },
           "shape": "object",
           "exitCode": 0
         },
         "preview": {
           "supported": false,
           "contractTarget": null,
+          "contract": null,
           "shape": null,
           "exitCode": null
         },
@@ -5183,6 +6870,12 @@ stdout:
         "notes": null
       },
       "notes": null,
+      "writeSemantics": {
+        "timeoutAware": false,
+        "timeoutReconciliation": false,
+        "mayReturnNoOp": false,
+        "mayReturnPartialSuccess": false
+      },
       "schema": {
         "coverage": "curated_primary_inputs",
         "arguments": [],
@@ -5192,23 +6885,38 @@ stdout:
             "short": "-j",
             "required": false,
             "valueType": "boolean",
-            "description": "Emit machine-readable JSON output."
+            "description": "Emit machine-readable JSON output.",
+            "allowedValues": null
           }
         ],
         "inputModes": [
           "flags"
-        ]
+        ],
+        "requiredInputs": [],
+        "optionalInputs": [
+          {
+            "source": "flag",
+            "name": "--json"
+          }
+        ],
+        "stdinTargets": [],
+        "fileTargets": []
       },
       "output": {
         "success": {
           "category": "automation_contract",
           "contractTarget": "automation_contract:v4",
+          "contract": {
+            "kind": "automation_contract",
+            "version": "v4"
+          },
           "shape": "array",
           "exitCode": 0
         },
         "preview": {
           "supported": false,
           "contractTarget": null,
+          "contract": null,
           "shape": null,
           "exitCode": null
         },
@@ -5248,6 +6956,12 @@ stdout:
         "notes": null
       },
       "notes": null,
+      "writeSemantics": {
+        "timeoutAware": false,
+        "timeoutReconciliation": false,
+        "mayReturnNoOp": false,
+        "mayReturnPartialSuccess": false
+      },
       "schema": {
         "coverage": "curated_primary_inputs",
         "arguments": [
@@ -5255,7 +6969,8 @@ stdout:
             "name": "team",
             "required": false,
             "valueType": "team_key",
-            "description": "Team key. Defaults to the configured current team."
+            "description": "Team key. Defaults to the configured current team.",
+            "allowedValues": null
           }
         ],
         "flags": [
@@ -5264,23 +6979,42 @@ stdout:
             "short": "-j",
             "required": false,
             "valueType": "boolean",
-            "description": "Emit machine-readable JSON output."
+            "description": "Emit machine-readable JSON output.",
+            "allowedValues": null
           }
         ],
         "inputModes": [
           "flags"
-        ]
+        ],
+        "requiredInputs": [],
+        "optionalInputs": [
+          {
+            "source": "argument",
+            "name": "team"
+          },
+          {
+            "source": "flag",
+            "name": "--json"
+          }
+        ],
+        "stdinTargets": [],
+        "fileTargets": []
       },
       "output": {
         "success": {
           "category": "automation_contract",
           "contractTarget": "automation_contract:v1",
+          "contract": {
+            "kind": "automation_contract",
+            "version": "v1"
+          },
           "shape": "object",
           "exitCode": 0
         },
         "preview": {
           "supported": false,
           "contractTarget": null,
+          "contract": null,
           "shape": null,
           "exitCode": null
         },
@@ -5320,6 +7054,12 @@ stdout:
         "notes": null
       },
       "notes": null,
+      "writeSemantics": {
+        "timeoutAware": false,
+        "timeoutReconciliation": false,
+        "mayReturnNoOp": false,
+        "mayReturnPartialSuccess": false
+      },
       "schema": {
         "coverage": "curated_primary_inputs",
         "arguments": [
@@ -5327,7 +7067,8 @@ stdout:
             "name": "team",
             "required": false,
             "valueType": "team_key",
-            "description": "Team key. Defaults to the configured current team."
+            "description": "Team key. Defaults to the configured current team.",
+            "allowedValues": null
           }
         ],
         "flags": [
@@ -5336,23 +7077,42 @@ stdout:
             "short": "-j",
             "required": false,
             "valueType": "boolean",
-            "description": "Emit machine-readable JSON output."
+            "description": "Emit machine-readable JSON output.",
+            "allowedValues": null
           }
         ],
         "inputModes": [
           "flags"
-        ]
+        ],
+        "requiredInputs": [],
+        "optionalInputs": [
+          {
+            "source": "argument",
+            "name": "team"
+          },
+          {
+            "source": "flag",
+            "name": "--json"
+          }
+        ],
+        "stdinTargets": [],
+        "fileTargets": []
       },
       "output": {
         "success": {
           "category": "automation_contract",
           "contractTarget": "automation_contract:v4",
+          "contract": {
+            "kind": "automation_contract",
+            "version": "v4"
+          },
           "shape": "object",
           "exitCode": 0
         },
         "preview": {
           "supported": false,
           "contractTarget": null,
+          "contract": null,
           "shape": null,
           "exitCode": null
         },
@@ -5392,6 +7152,12 @@ stdout:
         "notes": null
       },
       "notes": null,
+      "writeSemantics": {
+        "timeoutAware": false,
+        "timeoutReconciliation": false,
+        "mayReturnNoOp": false,
+        "mayReturnPartialSuccess": false
+      },
       "schema": {
         "coverage": "curated_primary_inputs",
         "arguments": [],
@@ -5401,23 +7167,38 @@ stdout:
             "short": "-j",
             "required": false,
             "valueType": "boolean",
-            "description": "Emit machine-readable JSON output."
+            "description": "Emit machine-readable JSON output.",
+            "allowedValues": null
           }
         ],
         "inputModes": [
           "flags"
-        ]
+        ],
+        "requiredInputs": [],
+        "optionalInputs": [
+          {
+            "source": "flag",
+            "name": "--json"
+          }
+        ],
+        "stdinTargets": [],
+        "fileTargets": []
       },
       "output": {
         "success": {
           "category": "automation_contract",
           "contractTarget": "automation_contract:v4",
+          "contract": {
+            "kind": "automation_contract",
+            "version": "v4"
+          },
           "shape": "array",
           "exitCode": 0
         },
         "preview": {
           "supported": false,
           "contractTarget": null,
+          "contract": null,
           "shape": null,
           "exitCode": null
         },
@@ -5457,6 +7238,12 @@ stdout:
         "notes": null
       },
       "notes": null,
+      "writeSemantics": {
+        "timeoutAware": false,
+        "timeoutReconciliation": false,
+        "mayReturnNoOp": false,
+        "mayReturnPartialSuccess": false
+      },
       "schema": {
         "coverage": "curated_primary_inputs",
         "arguments": [
@@ -5464,7 +7251,8 @@ stdout:
             "name": "user",
             "required": true,
             "valueType": "user_ref",
-            "description": "User ID, email, or username."
+            "description": "User ID, email, or username.",
+            "allowedValues": null
           }
         ],
         "flags": [
@@ -5473,23 +7261,43 @@ stdout:
             "short": "-j",
             "required": false,
             "valueType": "boolean",
-            "description": "Emit machine-readable JSON output."
+            "description": "Emit machine-readable JSON output.",
+            "allowedValues": null
           }
         ],
         "inputModes": [
           "flags"
-        ]
+        ],
+        "requiredInputs": [
+          {
+            "source": "argument",
+            "name": "user"
+          }
+        ],
+        "optionalInputs": [
+          {
+            "source": "flag",
+            "name": "--json"
+          }
+        ],
+        "stdinTargets": [],
+        "fileTargets": []
       },
       "output": {
         "success": {
           "category": "automation_contract",
           "contractTarget": "automation_contract:v4",
+          "contract": {
+            "kind": "automation_contract",
+            "version": "v4"
+          },
           "shape": "object",
           "exitCode": 0
         },
         "preview": {
           "supported": false,
           "contractTarget": null,
+          "contract": null,
           "shape": null,
           "exitCode": null
         },
@@ -5529,6 +7337,12 @@ stdout:
         "notes": null
       },
       "notes": null,
+      "writeSemantics": {
+        "timeoutAware": false,
+        "timeoutReconciliation": false,
+        "mayReturnNoOp": false,
+        "mayReturnPartialSuccess": false
+      },
       "schema": {
         "coverage": "curated_primary_inputs",
         "arguments": [],
@@ -5538,30 +7352,50 @@ stdout:
             "short": "-j",
             "required": false,
             "valueType": "boolean",
-            "description": "Emit machine-readable JSON output."
+            "description": "Emit machine-readable JSON output.",
+            "allowedValues": null
           },
           {
             "name": "--dry-run",
             "short": null,
             "required": false,
             "valueType": "boolean",
-            "description": "Preview the command without mutating Linear."
+            "description": "Preview the command without mutating Linear.",
+            "allowedValues": null
           }
         ],
         "inputModes": [
           "flags"
-        ]
+        ],
+        "requiredInputs": [],
+        "optionalInputs": [
+          {
+            "source": "flag",
+            "name": "--json"
+          },
+          {
+            "source": "flag",
+            "name": "--dry-run"
+          }
+        ],
+        "stdinTargets": [],
+        "fileTargets": []
       },
       "output": {
         "success": {
           "category": "curated_json",
           "contractTarget": null,
+          "contract": null,
           "shape": "object",
           "exitCode": 0
         },
         "preview": {
           "supported": true,
           "contractTarget": "dry_run_preview:v1",
+          "contract": {
+            "kind": "dry_run_preview",
+            "version": "v1"
+          },
           "shape": "object",
           "exitCode": 0
         },
@@ -5605,6 +7439,12 @@ stdout:
         "notes": null
       },
       "notes": null,
+      "writeSemantics": {
+        "timeoutAware": false,
+        "timeoutReconciliation": false,
+        "mayReturnNoOp": false,
+        "mayReturnPartialSuccess": false
+      },
       "schema": {
         "coverage": "curated_primary_inputs",
         "arguments": [
@@ -5612,7 +7452,8 @@ stdout:
             "name": "webhook",
             "required": true,
             "valueType": "webhook_id",
-            "description": "Webhook ID."
+            "description": "Webhook ID.",
+            "allowedValues": null
           }
         ],
         "flags": [
@@ -5621,37 +7462,67 @@ stdout:
             "short": "-j",
             "required": false,
             "valueType": "boolean",
-            "description": "Emit machine-readable JSON output."
+            "description": "Emit machine-readable JSON output.",
+            "allowedValues": null
           },
           {
             "name": "--dry-run",
             "short": null,
             "required": false,
             "valueType": "boolean",
-            "description": "Preview the command without mutating Linear."
+            "description": "Preview the command without mutating Linear.",
+            "allowedValues": null
           },
           {
             "name": "--yes",
             "short": null,
             "required": false,
             "valueType": "boolean",
-            "description": "Skip the confirmation prompt."
+            "description": "Skip the confirmation prompt.",
+            "allowedValues": null
           }
         ],
         "inputModes": [
           "flags"
-        ]
+        ],
+        "requiredInputs": [
+          {
+            "source": "argument",
+            "name": "webhook"
+          }
+        ],
+        "optionalInputs": [
+          {
+            "source": "flag",
+            "name": "--json"
+          },
+          {
+            "source": "flag",
+            "name": "--dry-run"
+          },
+          {
+            "source": "flag",
+            "name": "--yes"
+          }
+        ],
+        "stdinTargets": [],
+        "fileTargets": []
       },
       "output": {
         "success": {
           "category": "curated_json",
           "contractTarget": null,
+          "contract": null,
           "shape": "object",
           "exitCode": 0
         },
         "preview": {
           "supported": true,
           "contractTarget": "dry_run_preview:v1",
+          "contract": {
+            "kind": "dry_run_preview",
+            "version": "v1"
+          },
           "shape": "object",
           "exitCode": 0
         },
@@ -5691,6 +7562,12 @@ stdout:
         "notes": null
       },
       "notes": null,
+      "writeSemantics": {
+        "timeoutAware": false,
+        "timeoutReconciliation": false,
+        "mayReturnNoOp": false,
+        "mayReturnPartialSuccess": false
+      },
       "schema": {
         "coverage": "curated_primary_inputs",
         "arguments": [],
@@ -5700,23 +7577,38 @@ stdout:
             "short": "-j",
             "required": false,
             "valueType": "boolean",
-            "description": "Emit machine-readable JSON output."
+            "description": "Emit machine-readable JSON output.",
+            "allowedValues": null
           }
         ],
         "inputModes": [
           "flags"
-        ]
+        ],
+        "requiredInputs": [],
+        "optionalInputs": [
+          {
+            "source": "flag",
+            "name": "--json"
+          }
+        ],
+        "stdinTargets": [],
+        "fileTargets": []
       },
       "output": {
         "success": {
           "category": "automation_contract",
           "contractTarget": "automation_contract:v3",
+          "contract": {
+            "kind": "automation_contract",
+            "version": "v3"
+          },
           "shape": "array",
           "exitCode": 0
         },
         "preview": {
           "supported": false,
           "contractTarget": null,
+          "contract": null,
           "shape": null,
           "exitCode": null
         },
@@ -5756,6 +7648,12 @@ stdout:
         "notes": null
       },
       "notes": null,
+      "writeSemantics": {
+        "timeoutAware": false,
+        "timeoutReconciliation": false,
+        "mayReturnNoOp": false,
+        "mayReturnPartialSuccess": false
+      },
       "schema": {
         "coverage": "curated_primary_inputs",
         "arguments": [],
@@ -5765,30 +7663,50 @@ stdout:
             "short": "-j",
             "required": false,
             "valueType": "boolean",
-            "description": "Emit machine-readable JSON output."
+            "description": "Emit machine-readable JSON output.",
+            "allowedValues": null
           },
           {
             "name": "--dry-run",
             "short": null,
             "required": false,
             "valueType": "boolean",
-            "description": "Preview the command without mutating Linear."
+            "description": "Preview the command without mutating Linear.",
+            "allowedValues": null
           }
         ],
         "inputModes": [
           "flags"
-        ]
+        ],
+        "requiredInputs": [],
+        "optionalInputs": [
+          {
+            "source": "flag",
+            "name": "--json"
+          },
+          {
+            "source": "flag",
+            "name": "--dry-run"
+          }
+        ],
+        "stdinTargets": [],
+        "fileTargets": []
       },
       "output": {
         "success": {
           "category": "curated_json",
           "contractTarget": null,
+          "contract": null,
           "shape": "object",
           "exitCode": 0
         },
         "preview": {
           "supported": true,
           "contractTarget": "dry_run_preview:v1",
+          "contract": {
+            "kind": "dry_run_preview",
+            "version": "v1"
+          },
           "shape": "object",
           "exitCode": 0
         },
@@ -5828,6 +7746,12 @@ stdout:
         "notes": null
       },
       "notes": null,
+      "writeSemantics": {
+        "timeoutAware": false,
+        "timeoutReconciliation": false,
+        "mayReturnNoOp": false,
+        "mayReturnPartialSuccess": false
+      },
       "schema": {
         "coverage": "curated_primary_inputs",
         "arguments": [
@@ -5835,7 +7759,8 @@ stdout:
             "name": "webhook",
             "required": true,
             "valueType": "webhook_id",
-            "description": "Webhook ID."
+            "description": "Webhook ID.",
+            "allowedValues": null
           }
         ],
         "flags": [
@@ -5844,23 +7769,43 @@ stdout:
             "short": "-j",
             "required": false,
             "valueType": "boolean",
-            "description": "Emit machine-readable JSON output."
+            "description": "Emit machine-readable JSON output.",
+            "allowedValues": null
           }
         ],
         "inputModes": [
           "flags"
-        ]
+        ],
+        "requiredInputs": [
+          {
+            "source": "argument",
+            "name": "webhook"
+          }
+        ],
+        "optionalInputs": [
+          {
+            "source": "flag",
+            "name": "--json"
+          }
+        ],
+        "stdinTargets": [],
+        "fileTargets": []
       },
       "output": {
         "success": {
           "category": "automation_contract",
           "contractTarget": "automation_contract:v3",
+          "contract": {
+            "kind": "automation_contract",
+            "version": "v3"
+          },
           "shape": "object",
           "exitCode": 0
         },
         "preview": {
           "supported": false,
           "contractTarget": null,
+          "contract": null,
           "shape": null,
           "exitCode": null
         },
@@ -5900,6 +7845,12 @@ stdout:
         "notes": null
       },
       "notes": null,
+      "writeSemantics": {
+        "timeoutAware": false,
+        "timeoutReconciliation": false,
+        "mayReturnNoOp": false,
+        "mayReturnPartialSuccess": false
+      },
       "schema": {
         "coverage": "curated_primary_inputs",
         "arguments": [],
@@ -5909,23 +7860,38 @@ stdout:
             "short": "-j",
             "required": false,
             "valueType": "boolean",
-            "description": "Emit machine-readable JSON output."
+            "description": "Emit machine-readable JSON output.",
+            "allowedValues": null
           }
         ],
         "inputModes": [
           "flags"
-        ]
+        ],
+        "requiredInputs": [],
+        "optionalInputs": [
+          {
+            "source": "flag",
+            "name": "--json"
+          }
+        ],
+        "stdinTargets": [],
+        "fileTargets": []
       },
       "output": {
         "success": {
           "category": "automation_contract",
           "contractTarget": "automation_contract:v4",
+          "contract": {
+            "kind": "automation_contract",
+            "version": "v4"
+          },
           "shape": "array",
           "exitCode": 0
         },
         "preview": {
           "supported": false,
           "contractTarget": null,
+          "contract": null,
           "shape": null,
           "exitCode": null
         },
@@ -5965,6 +7931,12 @@ stdout:
         "notes": null
       },
       "notes": null,
+      "writeSemantics": {
+        "timeoutAware": false,
+        "timeoutReconciliation": false,
+        "mayReturnNoOp": false,
+        "mayReturnPartialSuccess": false
+      },
       "schema": {
         "coverage": "curated_primary_inputs",
         "arguments": [
@@ -5972,7 +7944,8 @@ stdout:
             "name": "workflowState",
             "required": true,
             "valueType": "workflow_state_id",
-            "description": "Workflow state ID."
+            "description": "Workflow state ID.",
+            "allowedValues": null
           }
         ],
         "flags": [
@@ -5981,23 +7954,43 @@ stdout:
             "short": "-j",
             "required": false,
             "valueType": "boolean",
-            "description": "Emit machine-readable JSON output."
+            "description": "Emit machine-readable JSON output.",
+            "allowedValues": null
           }
         ],
         "inputModes": [
           "flags"
-        ]
+        ],
+        "requiredInputs": [
+          {
+            "source": "argument",
+            "name": "workflowState"
+          }
+        ],
+        "optionalInputs": [
+          {
+            "source": "flag",
+            "name": "--json"
+          }
+        ],
+        "stdinTargets": [],
+        "fileTargets": []
       },
       "output": {
         "success": {
           "category": "automation_contract",
           "contractTarget": "automation_contract:v4",
+          "contract": {
+            "kind": "automation_contract",
+            "version": "v4"
+          },
           "shape": "object",
           "exitCode": 0
         },
         "preview": {
           "supported": false,
           "contractTarget": null,
+          "contract": null,
           "shape": null,
           "exitCode": null
         },
