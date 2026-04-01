@@ -22,6 +22,8 @@ It does not apply to:
 
 `linear capabilities --json` is a stable self-description surface for agents. It is versioned independently from the automation tier so callers can discover command traits without scraping `--help`, README content, or generated docs.
 
+The example payloads below are validated in CI against the current CLI version and compatibility semantics.
+
 Compatibility rules:
 
 - `linear capabilities --json` defaults to the `v1` compatibility shape for runtime startup safety
@@ -39,7 +41,7 @@ Default top-level shape:
   "cli": {
     "name": "linear-cli",
     "binary": "linear",
-    "version": "2.12.2"
+    "version": "2.12.3"
   },
   "contractVersions": {
     "automation": {
