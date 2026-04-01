@@ -12,14 +12,16 @@ const SKILL_DIR = join(SCRIPT_DIR, "..")
 const REFERENCES_DIR = join(SKILL_DIR, "references")
 const SKILL_MD = join(SKILL_DIR, "SKILL.md")
 const SKILL_TEMPLATE = join(SKILL_DIR, "SKILL.template.md")
+const COMMANDS_REFERENCE = join(REFERENCES_DIR, "commands.md")
+const COMMANDS_TEMPLATE = join(REFERENCES_DIR, "commands.template.md")
 
 // Files to preserve (not generated from help)
-const PRESERVED_FILES = ["organization-features.md"]
+const PRESERVED_FILES = ["organization-features.md", "commands.template.md"]
 
 // Commands to skip (shell completions, not useful for docs)
 const SKIP_COMMANDS = ["completions"]
 
-interface CommandInfo {
+export interface CommandInfo {
   name: string
   description: string
   help: string
@@ -241,8 +243,8 @@ async function main() {
   }
 
   // Generate index file
-  const indexContent = generateIndex(commands)
-  await Deno.writeTextFile(join(REFERENCES_DIR, "commands.md"), indexContent)
+  const indexContent = await generateCommandsReference(commands)
+  await Deno.writeTextFile(COMMANDS_REFERENCE, indexContent)
   console.log("  Generated: commands.md")
 
   // Generate SKILL.md from template
@@ -266,50 +268,44 @@ async function main() {
   console.log(`\nDone! Generated ${commands.length + 2} files.`)
 }
 
-function generateIndex(commands: CommandInfo[]): string {
-  const lines: string[] = []
+const COMMANDS_SECTION_PLACEHOLDER = "{{COMMANDS_LIST}}"
+const SKILL_COMMANDS_PLACEHOLDER = "{{COMMANDS}}"
+const REFERENCE_TOC_PLACEHOLDER = "{{REFERENCE_TOC}}"
 
-  lines.push("# Linear CLI Command Reference")
-  lines.push("")
-  lines.push("## Commands")
-  lines.push("")
+export function renderTemplate(
+  template: string,
+  replacements: Record<string, string>,
+): string {
+  let rendered = template
 
-  for (const cmd of commands) {
-    const cmdName = cmd.name.replace(/^linear /, "")
-    lines.push(`- [${cmdName}](./${cmdName}.md) - ${cmd.description}`)
+  for (const [placeholder, replacement] of Object.entries(replacements)) {
+    if (!rendered.includes(placeholder)) {
+      throw new Error(
+        `Template is missing required placeholder: ${placeholder}`,
+      )
+    }
+    rendered = rendered.replace(placeholder, replacement)
   }
 
-  lines.push("")
-  lines.push("## Quick Reference")
-  lines.push("")
-  lines.push("```bash")
-  lines.push("# Discover agent-facing capabilities")
-  lines.push("linear capabilities --json")
-  lines.push("linear capabilities --json --compat v2")
-  lines.push("")
-  lines.push("# Get help for any command")
-  lines.push("linear <command> --help")
-  lines.push("linear <command> <subcommand> --help")
-  lines.push("```")
-  lines.push("")
-  lines.push("## Agent Workflow")
-  lines.push("")
-  lines.push("Use the CLI in this order when possible:")
-  lines.push("")
-  lines.push(
-    "1. Discover command traits with `linear capabilities --json`, then opt into `--compat v2` when richer schema metadata is needed",
-  )
-  lines.push("2. Read state with `--json`")
-  lines.push("3. Preview writes with `--dry-run --json`")
-  lines.push("4. Apply writes with `--json`")
-  lines.push(
-    "5. Inspect exit codes and `error.details` for retries or reconciliation",
-  )
-
-  return lines.join("\n") + "\n"
+  return rendered
 }
 
-function generateCommandsSection(commands: CommandInfo[]): string {
+export function generateIndex(
+  commands: CommandInfo[],
+  template: string,
+): string {
+  const commandLines = commands.map((cmd) =>
+    `- [${cmd.name.replace(/^linear /, "")}](./${
+      cmd.name.replace(/^linear /, "")
+    }.md) - ${cmd.description}`
+  ).join("\n")
+
+  return renderTemplate(template, {
+    [COMMANDS_SECTION_PLACEHOLDER]: commandLines,
+  }).trimEnd() + "\n"
+}
+
+export function generateCommandsSection(commands: CommandInfo[]): string {
   const lines: string[] = []
   lines.push("```")
 
@@ -325,7 +321,7 @@ function generateCommandsSection(commands: CommandInfo[]): string {
   return lines.join("\n")
 }
 
-function generateReferenceToc(commands: CommandInfo[]): string {
+export function generateReferenceToc(commands: CommandInfo[]): string {
   const lines: string[] = []
 
   for (const cmd of commands) {
@@ -341,9 +337,19 @@ async function generateSkillMd(
   commands: CommandInfo[],
 ): Promise<string> {
   const template = await Deno.readTextFile(SKILL_TEMPLATE)
-  return template
-    .replace("{{COMMANDS}}", generateCommandsSection(commands))
-    .replace("{{REFERENCE_TOC}}", generateReferenceToc(commands))
+  return renderTemplate(template, {
+    [SKILL_COMMANDS_PLACEHOLDER]: generateCommandsSection(commands),
+    [REFERENCE_TOC_PLACEHOLDER]: generateReferenceToc(commands),
+  }).trimEnd() + "\n"
 }
 
-main()
+async function generateCommandsReference(
+  commands: CommandInfo[],
+): Promise<string> {
+  const template = await Deno.readTextFile(COMMANDS_TEMPLATE)
+  return generateIndex(commands, template)
+}
+
+if (import.meta.main) {
+  await main()
+}
