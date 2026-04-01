@@ -23,6 +23,8 @@ This tells an agent:
 
 Use the default `linear capabilities --json` shape for runtime startup compatibility. Reach for `--compat v2` only when the caller is ready to consume richer command schema and output metadata.
 
+The default capabilities shape and the read entrypoints below are treated as startup-critical contracts and are release-gated in CI.
+
 ## 2. Read State With Stable JSON
 
 Prefer commands that are part of the automation contract:

@@ -29,6 +29,7 @@ Compatibility rules:
 - top-level `v1` fields stay backward compatible across minor releases
 - additive `v2` fields are allowed within `schemaVersion: "v2"`, but callers must opt in explicitly
 - machine-readable schema changes should be called out explicitly in release notes
+- the top-level JSON shape of the agent-first read entrypoints in [agent-first.md](./agent-first.md) is also guarded in CI as a startup contract
 
 Default top-level shape:
 
