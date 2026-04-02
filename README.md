@@ -21,7 +21,7 @@ interactive commands still exist for humans, but the primary design goal is that
 
 If an agent only reads one page, it should be this README plus the two contract docs below.
 
-- start with `linear capabilities --json` for the stable startup-safe shape; use `linear capabilities --json --compat v2` when you also need required/optional input refs, constrained values, stdin/file targets, and structured output semantics
+- start with `linear capabilities --json` for the stable startup-safe shape; use `linear capabilities --json --compat v2` when you also need required/optional input refs, constrained values, defaults, context resolution hints, input constraints, canonical argv examples, stdin/file targets, and structured output semantics
 - prefer stable read surfaces such as `issue`, `project`, `cycle`, `milestone`, `document`, `webhook`, `notification`, `team`, `user`, `workflow-state`, `label`, `initiative`, and update feeds with `--json`
 - preview writes with `--dry-run --json` before mutating Linear
 - apply writes with `--json`, then inspect exit codes and `error.details` instead of parsing terminal text
@@ -156,7 +156,7 @@ Use the docs in this order if you are building an agent integration:
 
 for bot and org-wide automation use cases, `linear-cli` defines a stable JSON contract for a focused automation tier.
 
-to discover the curated agent-facing command surface programmatically, use `linear capabilities --json`. the default shape preserves the v1-compatible startup contract for existing bots. when you need richer metadata such as required vs optional primary inputs, constrained values, stdin/file targets, structured output semantics, and timeout/no-op traits, opt into `linear capabilities --json --compat v2`.
+to discover the curated agent-facing command surface programmatically, use `linear capabilities --json`. the default shape preserves the v1-compatible startup contract for existing bots. when you need richer metadata such as required vs optional primary inputs, constrained values, defaults, context resolution hints, input constraints, canonical argv examples, stdin/file targets, structured output semantics, and timeout/no-op traits, opt into `linear capabilities --json --compat v2`.
 
 - v1 in scope: `issue list/view/create/update --json`, `issue relation add/delete/list --json`, `issue comment add --json`, `team members --json`, `issue parent/children/create-batch --json`
 - v2 additions: `project list/view --json`, `cycle list/view/current/next --json`, `milestone list/view --json`
