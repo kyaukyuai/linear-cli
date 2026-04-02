@@ -1640,13 +1640,17 @@ stdout:
         ],
         "requiredInputs": [],
         "optionalInputs": [],
+        "defaults": [],
+        "resolutions": [],
+        "constraints": [],
         "stdinTargets": [
           {
             "field": "query",
             "viaFlags": []
           }
         ],
-        "fileTargets": []
+        "fileTargets": [],
+        "examples": []
       },
       "output": {
         "success": {
@@ -1657,14 +1661,18 @@ stdout:
             "version": null
           },
           "shape": "unknown",
-          "exitCode": 0
+          "exitCode": 0,
+          "topLevelFields": [
+            "data"
+          ]
         },
         "preview": {
           "supported": false,
           "contractTarget": null,
           "contract": null,
           "shape": null,
-          "exitCode": null
+          "exitCode": null,
+          "topLevelFields": null
         },
         "failure": {
           "jsonWhenRequested": false,
@@ -1678,7 +1686,10 @@ stdout:
               "code": 4,
               "meaning": "auth_error"
             }
-          ]
+          ],
+          "topLevelFields": [],
+          "errorFields": [],
+          "detailFields": []
         }
       }
     },
@@ -1752,8 +1763,53 @@ stdout:
             "name": "--compat"
           }
         ],
+        "defaults": [
+          {
+            "source": "flag",
+            "name": "--compat",
+            "description": "Defaults to the startup-safe capabilities schema shape.",
+            "value": "v1"
+          }
+        ],
+        "resolutions": [],
+        "constraints": [
+          {
+            "source": {
+              "source": "flag",
+              "name": "--compat"
+            },
+            "kind": "requires_all_of",
+            "targets": [
+              {
+                "source": "flag",
+                "name": "--json"
+              }
+            ],
+            "reason": "--compat only applies to the machine-readable JSON output."
+          }
+        ],
         "stdinTargets": [],
-        "fileTargets": []
+        "fileTargets": [],
+        "examples": [
+          {
+            "description": "Read the startup-safe capabilities registry.",
+            "argv": [
+              "linear",
+              "capabilities",
+              "--json"
+            ]
+          },
+          {
+            "description": "Opt into richer schema metadata for advanced agents.",
+            "argv": [
+              "linear",
+              "capabilities",
+              "--json",
+              "--compat",
+              "v2"
+            ]
+          }
+        ]
       },
       "output": {
         "success": {
@@ -1764,14 +1820,23 @@ stdout:
             "version": "v2"
           },
           "shape": "object",
-          "exitCode": 0
+          "exitCode": 0,
+          "topLevelFields": [
+            "schemaVersion",
+            "cli",
+            "contractVersions",
+            "automationTier",
+            "commands",
+            "compatibility"
+          ]
         },
         "preview": {
           "supported": false,
           "contractTarget": null,
           "contract": null,
           "shape": null,
-          "exitCode": null
+          "exitCode": null,
+          "topLevelFields": null
         },
         "failure": {
           "jsonWhenRequested": true,
@@ -1781,7 +1846,19 @@ stdout:
               "code": 1,
               "meaning": "generic_failure"
             }
-          ]
+          ],
+          "topLevelFields": [
+            "success",
+            "error"
+          ],
+          "errorFields": [
+            "type",
+            "message",
+            "suggestion",
+            "context",
+            "details"
+          ],
+          "detailFields": []
         }
       }
     },
@@ -1846,8 +1923,26 @@ stdout:
             "name": "--team"
           }
         ],
+        "defaults": [
+          {
+            "source": "flag",
+            "name": "--team",
+            "description": "Falls back to the configured current team when omitted.",
+            "value": null
+          }
+        ],
+        "resolutions": [
+          {
+            "source": "flag",
+            "name": "--team",
+            "strategy": "configured_team_context",
+            "description": "If omitted, the CLI resolves the team from the configured current team."
+          }
+        ],
+        "constraints": [],
         "stdinTargets": [],
-        "fileTargets": []
+        "fileTargets": [],
+        "examples": []
       },
       "output": {
         "success": {
@@ -1858,14 +1953,19 @@ stdout:
             "version": "v2"
           },
           "shape": "object",
-          "exitCode": 0
+          "exitCode": 0,
+          "topLevelFields": [
+            "success",
+            "data"
+          ]
         },
         "preview": {
           "supported": false,
           "contractTarget": null,
           "contract": null,
           "shape": null,
-          "exitCode": null
+          "exitCode": null,
+          "topLevelFields": null
         },
         "failure": {
           "jsonWhenRequested": true,
@@ -1879,7 +1979,19 @@ stdout:
               "code": 4,
               "meaning": "auth_error"
             }
-          ]
+          ],
+          "topLevelFields": [
+            "success",
+            "error"
+          ],
+          "errorFields": [
+            "type",
+            "message",
+            "suggestion",
+            "context",
+            "details"
+          ],
+          "detailFields": []
         }
       }
     },
@@ -1944,8 +2056,26 @@ stdout:
             "name": "--team"
           }
         ],
+        "defaults": [
+          {
+            "source": "flag",
+            "name": "--team",
+            "description": "Falls back to the configured current team when omitted.",
+            "value": null
+          }
+        ],
+        "resolutions": [
+          {
+            "source": "flag",
+            "name": "--team",
+            "strategy": "configured_team_context",
+            "description": "If omitted, the CLI resolves the team from the configured current team."
+          }
+        ],
+        "constraints": [],
         "stdinTargets": [],
-        "fileTargets": []
+        "fileTargets": [],
+        "examples": []
       },
       "output": {
         "success": {
@@ -1956,14 +2086,19 @@ stdout:
             "version": "v2"
           },
           "shape": "array",
-          "exitCode": 0
+          "exitCode": 0,
+          "topLevelFields": [
+            "success",
+            "data"
+          ]
         },
         "preview": {
           "supported": false,
           "contractTarget": null,
           "contract": null,
           "shape": null,
-          "exitCode": null
+          "exitCode": null,
+          "topLevelFields": null
         },
         "failure": {
           "jsonWhenRequested": true,
@@ -1977,7 +2112,19 @@ stdout:
               "code": 4,
               "meaning": "auth_error"
             }
-          ]
+          ],
+          "topLevelFields": [
+            "success",
+            "error"
+          ],
+          "errorFields": [
+            "type",
+            "message",
+            "suggestion",
+            "context",
+            "details"
+          ],
+          "detailFields": []
         }
       }
     },
@@ -2042,8 +2189,26 @@ stdout:
             "name": "--team"
           }
         ],
+        "defaults": [
+          {
+            "source": "flag",
+            "name": "--team",
+            "description": "Falls back to the configured current team when omitted.",
+            "value": null
+          }
+        ],
+        "resolutions": [
+          {
+            "source": "flag",
+            "name": "--team",
+            "strategy": "configured_team_context",
+            "description": "If omitted, the CLI resolves the team from the configured current team."
+          }
+        ],
+        "constraints": [],
         "stdinTargets": [],
-        "fileTargets": []
+        "fileTargets": [],
+        "examples": []
       },
       "output": {
         "success": {
@@ -2054,14 +2219,19 @@ stdout:
             "version": "v2"
           },
           "shape": "object",
-          "exitCode": 0
+          "exitCode": 0,
+          "topLevelFields": [
+            "success",
+            "data"
+          ]
         },
         "preview": {
           "supported": false,
           "contractTarget": null,
           "contract": null,
           "shape": null,
-          "exitCode": null
+          "exitCode": null,
+          "topLevelFields": null
         },
         "failure": {
           "jsonWhenRequested": true,
@@ -2075,7 +2245,19 @@ stdout:
               "code": 4,
               "meaning": "auth_error"
             }
-          ]
+          ],
+          "topLevelFields": [
+            "success",
+            "error"
+          ],
+          "errorFields": [
+            "type",
+            "message",
+            "suggestion",
+            "context",
+            "details"
+          ],
+          "detailFields": []
         }
       }
     },
@@ -2141,8 +2323,12 @@ stdout:
             "name": "--json"
           }
         ],
+        "defaults": [],
+        "resolutions": [],
+        "constraints": [],
         "stdinTargets": [],
-        "fileTargets": []
+        "fileTargets": [],
+        "examples": []
       },
       "output": {
         "success": {
@@ -2153,14 +2339,19 @@ stdout:
             "version": "v2"
           },
           "shape": "object",
-          "exitCode": 0
+          "exitCode": 0,
+          "topLevelFields": [
+            "success",
+            "data"
+          ]
         },
         "preview": {
           "supported": false,
           "contractTarget": null,
           "contract": null,
           "shape": null,
-          "exitCode": null
+          "exitCode": null,
+          "topLevelFields": null
         },
         "failure": {
           "jsonWhenRequested": true,
@@ -2174,7 +2365,19 @@ stdout:
               "code": 4,
               "meaning": "auth_error"
             }
-          ]
+          ],
+          "topLevelFields": [
+            "success",
+            "error"
+          ],
+          "errorFields": [
+            "type",
+            "message",
+            "suggestion",
+            "context",
+            "details"
+          ],
+          "detailFields": []
         }
       }
     },
@@ -2290,6 +2493,9 @@ stdout:
             "name": "--issue"
           }
         ],
+        "defaults": [],
+        "resolutions": [],
+        "constraints": [],
         "stdinTargets": [
           {
             "field": "content",
@@ -2303,7 +2509,8 @@ stdout:
               "--content-file"
             ]
           }
-        ]
+        ],
+        "examples": []
       },
       "output": {
         "success": {
@@ -2311,7 +2518,8 @@ stdout:
           "contractTarget": null,
           "contract": null,
           "shape": "object",
-          "exitCode": 0
+          "exitCode": 0,
+          "topLevelFields": []
         },
         "preview": {
           "supported": true,
@@ -2321,7 +2529,13 @@ stdout:
             "version": "v1"
           },
           "shape": "object",
-          "exitCode": 0
+          "exitCode": 0,
+          "topLevelFields": [
+            "success",
+            "dryRun",
+            "summary",
+            "data"
+          ]
         },
         "failure": {
           "jsonWhenRequested": false,
@@ -2339,7 +2553,10 @@ stdout:
               "code": 5,
               "meaning": "plan_limit"
             }
-          ]
+          ],
+          "topLevelFields": [],
+          "errorFields": [],
+          "detailFields": []
         }
       }
     },
@@ -2454,6 +2671,9 @@ stdout:
             "name": "--bulk-stdin"
           }
         ],
+        "defaults": [],
+        "resolutions": [],
+        "constraints": [],
         "stdinTargets": [
           {
             "field": "documentIds",
@@ -2469,7 +2689,8 @@ stdout:
               "--bulk-file"
             ]
           }
-        ]
+        ],
+        "examples": []
       },
       "output": {
         "success": {
@@ -2477,7 +2698,8 @@ stdout:
           "contractTarget": null,
           "contract": null,
           "shape": "object",
-          "exitCode": 0
+          "exitCode": 0,
+          "topLevelFields": []
         },
         "preview": {
           "supported": true,
@@ -2487,7 +2709,13 @@ stdout:
             "version": "v1"
           },
           "shape": "object",
-          "exitCode": 0
+          "exitCode": 0,
+          "topLevelFields": [
+            "success",
+            "dryRun",
+            "summary",
+            "data"
+          ]
         },
         "failure": {
           "jsonWhenRequested": false,
@@ -2501,7 +2729,10 @@ stdout:
               "code": 4,
               "meaning": "auth_error"
             }
-          ]
+          ],
+          "topLevelFields": [],
+          "errorFields": [],
+          "detailFields": []
         }
       }
     },
@@ -2566,8 +2797,12 @@ stdout:
             "name": "--issue"
           }
         ],
+        "defaults": [],
+        "resolutions": [],
+        "constraints": [],
         "stdinTargets": [],
-        "fileTargets": []
+        "fileTargets": [],
+        "examples": []
       },
       "output": {
         "success": {
@@ -2578,14 +2813,19 @@ stdout:
             "version": "v3"
           },
           "shape": "array",
-          "exitCode": 0
+          "exitCode": 0,
+          "topLevelFields": [
+            "success",
+            "data"
+          ]
         },
         "preview": {
           "supported": false,
           "contractTarget": null,
           "contract": null,
           "shape": null,
-          "exitCode": null
+          "exitCode": null,
+          "topLevelFields": null
         },
         "failure": {
           "jsonWhenRequested": true,
@@ -2599,7 +2839,19 @@ stdout:
               "code": 4,
               "meaning": "auth_error"
             }
-          ]
+          ],
+          "topLevelFields": [
+            "success",
+            "error"
+          ],
+          "errorFields": [
+            "type",
+            "message",
+            "suggestion",
+            "context",
+            "details"
+          ],
+          "detailFields": []
         }
       }
     },
@@ -2714,6 +2966,9 @@ stdout:
             "name": "--edit"
           }
         ],
+        "defaults": [],
+        "resolutions": [],
+        "constraints": [],
         "stdinTargets": [
           {
             "field": "content",
@@ -2727,7 +2982,8 @@ stdout:
               "--content-file"
             ]
           }
-        ]
+        ],
+        "examples": []
       },
       "output": {
         "success": {
@@ -2735,7 +2991,8 @@ stdout:
           "contractTarget": null,
           "contract": null,
           "shape": "object",
-          "exitCode": 0
+          "exitCode": 0,
+          "topLevelFields": []
         },
         "preview": {
           "supported": true,
@@ -2745,7 +3002,13 @@ stdout:
             "version": "v1"
           },
           "shape": "object",
-          "exitCode": 0
+          "exitCode": 0,
+          "topLevelFields": [
+            "success",
+            "dryRun",
+            "summary",
+            "data"
+          ]
         },
         "failure": {
           "jsonWhenRequested": false,
@@ -2759,7 +3022,10 @@ stdout:
               "code": 4,
               "meaning": "auth_error"
             }
-          ]
+          ],
+          "topLevelFields": [],
+          "errorFields": [],
+          "detailFields": []
         }
       }
     },
@@ -2825,8 +3091,12 @@ stdout:
             "name": "--json"
           }
         ],
+        "defaults": [],
+        "resolutions": [],
+        "constraints": [],
         "stdinTargets": [],
-        "fileTargets": []
+        "fileTargets": [],
+        "examples": []
       },
       "output": {
         "success": {
@@ -2837,14 +3107,19 @@ stdout:
             "version": "v3"
           },
           "shape": "object",
-          "exitCode": 0
+          "exitCode": 0,
+          "topLevelFields": [
+            "success",
+            "data"
+          ]
         },
         "preview": {
           "supported": false,
           "contractTarget": null,
           "contract": null,
           "shape": null,
-          "exitCode": null
+          "exitCode": null,
+          "topLevelFields": null
         },
         "failure": {
           "jsonWhenRequested": true,
@@ -2858,7 +3133,19 @@ stdout:
               "code": 4,
               "meaning": "auth_error"
             }
-          ]
+          ],
+          "topLevelFields": [
+            "success",
+            "error"
+          ],
+          "errorFields": [
+            "type",
+            "message",
+            "suggestion",
+            "context",
+            "details"
+          ],
+          "detailFields": []
         }
       }
     },
@@ -2972,8 +3259,12 @@ stdout:
             "name": "--archived"
           }
         ],
+        "defaults": [],
+        "resolutions": [],
+        "constraints": [],
         "stdinTargets": [],
-        "fileTargets": []
+        "fileTargets": [],
+        "examples": []
       },
       "output": {
         "success": {
@@ -2984,14 +3275,19 @@ stdout:
             "version": "v5"
           },
           "shape": "array",
-          "exitCode": 0
+          "exitCode": 0,
+          "topLevelFields": [
+            "success",
+            "data"
+          ]
         },
         "preview": {
           "supported": false,
           "contractTarget": null,
           "contract": null,
           "shape": null,
-          "exitCode": null
+          "exitCode": null,
+          "topLevelFields": null
         },
         "failure": {
           "jsonWhenRequested": true,
@@ -3005,7 +3301,19 @@ stdout:
               "code": 4,
               "meaning": "auth_error"
             }
-          ]
+          ],
+          "topLevelFields": [
+            "success",
+            "error"
+          ],
+          "errorFields": [
+            "type",
+            "message",
+            "suggestion",
+            "context",
+            "details"
+          ],
+          "detailFields": []
         }
       }
     },
@@ -3071,8 +3379,12 @@ stdout:
             "name": "--json"
           }
         ],
+        "defaults": [],
+        "resolutions": [],
+        "constraints": [],
         "stdinTargets": [],
-        "fileTargets": []
+        "fileTargets": [],
+        "examples": []
       },
       "output": {
         "success": {
@@ -3083,14 +3395,19 @@ stdout:
             "version": "v5"
           },
           "shape": "object",
-          "exitCode": 0
+          "exitCode": 0,
+          "topLevelFields": [
+            "success",
+            "data"
+          ]
         },
         "preview": {
           "supported": false,
           "contractTarget": null,
           "contract": null,
           "shape": null,
-          "exitCode": null
+          "exitCode": null,
+          "topLevelFields": null
         },
         "failure": {
           "jsonWhenRequested": true,
@@ -3104,7 +3421,19 @@ stdout:
               "code": 4,
               "meaning": "auth_error"
             }
-          ]
+          ],
+          "topLevelFields": [
+            "success",
+            "error"
+          ],
+          "errorFields": [
+            "type",
+            "message",
+            "suggestion",
+            "context",
+            "details"
+          ],
+          "detailFields": []
         }
       }
     },
@@ -3182,8 +3511,12 @@ stdout:
             "name": "--limit"
           }
         ],
+        "defaults": [],
+        "resolutions": [],
+        "constraints": [],
         "stdinTargets": [],
-        "fileTargets": []
+        "fileTargets": [],
+        "examples": []
       },
       "output": {
         "success": {
@@ -3194,14 +3527,19 @@ stdout:
             "version": "v5"
           },
           "shape": "object",
-          "exitCode": 0
+          "exitCode": 0,
+          "topLevelFields": [
+            "success",
+            "data"
+          ]
         },
         "preview": {
           "supported": false,
           "contractTarget": null,
           "contract": null,
           "shape": null,
-          "exitCode": null
+          "exitCode": null,
+          "topLevelFields": null
         },
         "failure": {
           "jsonWhenRequested": true,
@@ -3215,7 +3553,19 @@ stdout:
               "code": 4,
               "meaning": "auth_error"
             }
-          ]
+          ],
+          "topLevelFields": [
+            "success",
+            "error"
+          ],
+          "errorFields": [
+            "type",
+            "message",
+            "suggestion",
+            "context",
+            "details"
+          ],
+          "detailFields": []
         }
       }
     },
@@ -3280,8 +3630,26 @@ stdout:
             "name": "--json"
           }
         ],
+        "defaults": [
+          {
+            "source": "argument",
+            "name": "issue",
+            "description": "Defaults to the current issue from the branch name or jj trailer.",
+            "value": null
+          }
+        ],
+        "resolutions": [
+          {
+            "source": "argument",
+            "name": "issue",
+            "strategy": "current_issue_context",
+            "description": "If omitted, the CLI resolves the current issue from the branch name or jj trailer."
+          }
+        ],
+        "constraints": [],
         "stdinTargets": [],
-        "fileTargets": []
+        "fileTargets": [],
+        "examples": []
       },
       "output": {
         "success": {
@@ -3292,14 +3660,19 @@ stdout:
             "version": "v1"
           },
           "shape": "array",
-          "exitCode": 0
+          "exitCode": 0,
+          "topLevelFields": [
+            "success",
+            "data"
+          ]
         },
         "preview": {
           "supported": false,
           "contractTarget": null,
           "contract": null,
           "shape": null,
-          "exitCode": null
+          "exitCode": null,
+          "topLevelFields": null
         },
         "failure": {
           "jsonWhenRequested": true,
@@ -3313,7 +3686,19 @@ stdout:
               "code": 4,
               "meaning": "auth_error"
             }
-          ]
+          ],
+          "topLevelFields": [
+            "success",
+            "error"
+          ],
+          "errorFields": [
+            "type",
+            "message",
+            "suggestion",
+            "context",
+            "details"
+          ],
+          "detailFields": []
         }
       }
     },
@@ -3439,6 +3824,50 @@ stdout:
             "name": "--body-file"
           }
         ],
+        "defaults": [
+          {
+            "source": "argument",
+            "name": "issue",
+            "description": "Defaults to the current issue from the branch name or jj trailer.",
+            "value": null
+          },
+          {
+            "source": "flag",
+            "name": "--timeout-ms",
+            "description": "Falls back to LINEAR_WRITE_TIMEOUT_MS or the built-in timeout.",
+            "value": null
+          }
+        ],
+        "resolutions": [
+          {
+            "source": "argument",
+            "name": "issue",
+            "strategy": "current_issue_context",
+            "description": "If omitted, the CLI resolves the current issue from the branch name or jj trailer."
+          },
+          {
+            "source": "flag",
+            "name": "--timeout-ms",
+            "strategy": "env_or_internal_default",
+            "description": "The timeout falls back to LINEAR_WRITE_TIMEOUT_MS or the built-in default when omitted."
+          }
+        ],
+        "constraints": [
+          {
+            "source": {
+              "source": "flag",
+              "name": "--body"
+            },
+            "kind": "conflicts_with",
+            "targets": [
+              {
+                "source": "flag",
+                "name": "--body-file"
+              }
+            ],
+            "reason": "Choose either inline body text or a body file for the comment content."
+          }
+        ],
         "stdinTargets": [
           {
             "field": "body",
@@ -3452,7 +3881,8 @@ stdout:
               "--body-file"
             ]
           }
-        ]
+        ],
+        "examples": []
       },
       "output": {
         "success": {
@@ -3463,7 +3893,11 @@ stdout:
             "version": "v1"
           },
           "shape": "object",
-          "exitCode": 0
+          "exitCode": 0,
+          "topLevelFields": [
+            "success",
+            "data"
+          ]
         },
         "preview": {
           "supported": true,
@@ -3473,7 +3907,13 @@ stdout:
             "version": "v1"
           },
           "shape": "object",
-          "exitCode": 0
+          "exitCode": 0,
+          "topLevelFields": [
+            "success",
+            "dryRun",
+            "summary",
+            "data"
+          ]
         },
         "failure": {
           "jsonWhenRequested": true,
@@ -3491,6 +3931,23 @@ stdout:
               "code": 6,
               "meaning": "timeout_error"
             }
+          ],
+          "topLevelFields": [
+            "success",
+            "error"
+          ],
+          "errorFields": [
+            "type",
+            "message",
+            "suggestion",
+            "context",
+            "details"
+          ],
+          "detailFields": [
+            "failureMode",
+            "outcome",
+            "appliedState",
+            "callerGuidance"
           ]
         }
       }
@@ -3583,6 +4040,38 @@ stdout:
             "name": "--body-file"
           }
         ],
+        "defaults": [
+          {
+            "source": "flag",
+            "name": "--timeout-ms",
+            "description": "Falls back to LINEAR_WRITE_TIMEOUT_MS or the built-in timeout.",
+            "value": null
+          }
+        ],
+        "resolutions": [
+          {
+            "source": "flag",
+            "name": "--timeout-ms",
+            "strategy": "env_or_internal_default",
+            "description": "The timeout falls back to LINEAR_WRITE_TIMEOUT_MS or the built-in default when omitted."
+          }
+        ],
+        "constraints": [
+          {
+            "source": {
+              "source": "flag",
+              "name": "--body"
+            },
+            "kind": "conflicts_with",
+            "targets": [
+              {
+                "source": "flag",
+                "name": "--body-file"
+              }
+            ],
+            "reason": "Choose either inline body text or a body file for the replacement comment content."
+          }
+        ],
         "stdinTargets": [
           {
             "field": "body",
@@ -3596,7 +4085,8 @@ stdout:
               "--body-file"
             ]
           }
-        ]
+        ],
+        "examples": []
       },
       "output": {
         "success": {
@@ -3604,14 +4094,16 @@ stdout:
           "contractTarget": null,
           "contract": null,
           "shape": "object",
-          "exitCode": 0
+          "exitCode": 0,
+          "topLevelFields": []
         },
         "preview": {
           "supported": false,
           "contractTarget": null,
           "contract": null,
           "shape": null,
-          "exitCode": null
+          "exitCode": null,
+          "topLevelFields": null
         },
         "failure": {
           "jsonWhenRequested": false,
@@ -3629,7 +4121,10 @@ stdout:
               "code": 6,
               "meaning": "timeout_error"
             }
-          ]
+          ],
+          "topLevelFields": [],
+          "errorFields": [],
+          "detailFields": []
         }
       }
     },
@@ -3769,6 +4264,38 @@ stdout:
             "name": "--state"
           }
         ],
+        "defaults": [
+          {
+            "source": "flag",
+            "name": "--timeout-ms",
+            "description": "Falls back to LINEAR_WRITE_TIMEOUT_MS or the built-in timeout.",
+            "value": null
+          }
+        ],
+        "resolutions": [
+          {
+            "source": "flag",
+            "name": "--timeout-ms",
+            "strategy": "env_or_internal_default",
+            "description": "The timeout falls back to LINEAR_WRITE_TIMEOUT_MS or the built-in default when omitted."
+          }
+        ],
+        "constraints": [
+          {
+            "source": {
+              "source": "flag",
+              "name": "--description"
+            },
+            "kind": "conflicts_with",
+            "targets": [
+              {
+                "source": "flag",
+                "name": "--description-file"
+              }
+            ],
+            "reason": "Choose either inline description text or a description file."
+          }
+        ],
         "stdinTargets": [
           {
             "field": "description",
@@ -3782,6 +4309,22 @@ stdout:
               "--description-file"
             ]
           }
+        ],
+        "examples": [
+          {
+            "description": "Preview a new issue before creating it.",
+            "argv": [
+              "linear",
+              "issue",
+              "create",
+              "--title",
+              "Backfill docs",
+              "--team",
+              "ENG",
+              "--dry-run",
+              "--json"
+            ]
+          }
         ]
       },
       "output": {
@@ -3793,7 +4336,11 @@ stdout:
             "version": "v1"
           },
           "shape": "object",
-          "exitCode": 0
+          "exitCode": 0,
+          "topLevelFields": [
+            "success",
+            "data"
+          ]
         },
         "preview": {
           "supported": true,
@@ -3803,7 +4350,13 @@ stdout:
             "version": "v1"
           },
           "shape": "object",
-          "exitCode": 0
+          "exitCode": 0,
+          "topLevelFields": [
+            "success",
+            "dryRun",
+            "summary",
+            "data"
+          ]
         },
         "failure": {
           "jsonWhenRequested": true,
@@ -3825,6 +4378,23 @@ stdout:
               "code": 6,
               "meaning": "timeout_error"
             }
+          ],
+          "topLevelFields": [
+            "success",
+            "error"
+          ],
+          "errorFields": [
+            "type",
+            "message",
+            "suggestion",
+            "context",
+            "details"
+          ],
+          "detailFields": [
+            "failureMode",
+            "outcome",
+            "appliedState",
+            "callerGuidance"
           ]
         }
       }
@@ -3916,6 +4486,23 @@ stdout:
             "name": "--timeout-ms"
           }
         ],
+        "defaults": [
+          {
+            "source": "flag",
+            "name": "--timeout-ms",
+            "description": "Falls back to LINEAR_WRITE_TIMEOUT_MS or the built-in timeout.",
+            "value": null
+          }
+        ],
+        "resolutions": [
+          {
+            "source": "flag",
+            "name": "--timeout-ms",
+            "strategy": "env_or_internal_default",
+            "description": "The timeout falls back to LINEAR_WRITE_TIMEOUT_MS or the built-in default when omitted."
+          }
+        ],
+        "constraints": [],
         "stdinTargets": [],
         "fileTargets": [
           {
@@ -3924,7 +4511,8 @@ stdout:
               "--file"
             ]
           }
-        ]
+        ],
+        "examples": []
       },
       "output": {
         "success": {
@@ -3935,7 +4523,11 @@ stdout:
             "version": "v1"
           },
           "shape": "object",
-          "exitCode": 0
+          "exitCode": 0,
+          "topLevelFields": [
+            "success",
+            "data"
+          ]
         },
         "preview": {
           "supported": true,
@@ -3945,7 +4537,13 @@ stdout:
             "version": "v1"
           },
           "shape": "object",
-          "exitCode": 0
+          "exitCode": 0,
+          "topLevelFields": [
+            "success",
+            "dryRun",
+            "summary",
+            "data"
+          ]
         },
         "failure": {
           "jsonWhenRequested": true,
@@ -3967,6 +4565,30 @@ stdout:
               "code": 6,
               "meaning": "timeout_error"
             }
+          ],
+          "topLevelFields": [
+            "success",
+            "error"
+          ],
+          "errorFields": [
+            "type",
+            "message",
+            "suggestion",
+            "context",
+            "details"
+          ],
+          "detailFields": [
+            "failureMode",
+            "outcome",
+            "appliedState",
+            "callerGuidance",
+            "partialSuccess",
+            "retryCommand",
+            "createdIdentifiers",
+            "createdCount",
+            "failedStep",
+            "retryable",
+            "retryHint"
           ]
         }
       }
@@ -4018,6 +4640,14 @@ stdout:
             "allowedValues": null
           },
           {
+            "name": "--all-states",
+            "short": null,
+            "required": false,
+            "valueType": "boolean",
+            "description": "Include every workflow state while keeping assignee selection unchanged.",
+            "allowedValues": null
+          },
+          {
             "name": "--state",
             "short": "-s",
             "required": false,
@@ -4065,6 +4695,10 @@ stdout:
           },
           {
             "source": "flag",
+            "name": "--all-states"
+          },
+          {
+            "source": "flag",
             "name": "--state"
           },
           {
@@ -4080,8 +4714,49 @@ stdout:
             "name": "--parent"
           }
         ],
+        "defaults": [],
+        "resolutions": [],
+        "constraints": [
+          {
+            "source": {
+              "source": "flag",
+              "name": "--all-states"
+            },
+            "kind": "conflicts_with",
+            "targets": [
+              {
+                "source": "flag",
+                "name": "--state"
+              }
+            ],
+            "reason": "--all-states already includes every state, so it cannot be combined with --state."
+          }
+        ],
         "stdinTargets": [],
-        "fileTargets": []
+        "fileTargets": [],
+        "examples": [
+          {
+            "description": "Read issue list data with a stable JSON envelope.",
+            "argv": [
+              "linear",
+              "issue",
+              "list",
+              "--json"
+            ]
+          },
+          {
+            "description": "List all assignees with a state filter.",
+            "argv": [
+              "linear",
+              "issue",
+              "list",
+              "--all",
+              "--state",
+              "started",
+              "--json"
+            ]
+          }
+        ]
       },
       "output": {
         "success": {
@@ -4092,14 +4767,19 @@ stdout:
             "version": "v1"
           },
           "shape": "array",
-          "exitCode": 0
+          "exitCode": 0,
+          "topLevelFields": [
+            "success",
+            "data"
+          ]
         },
         "preview": {
           "supported": false,
           "contractTarget": null,
           "contract": null,
           "shape": null,
-          "exitCode": null
+          "exitCode": null,
+          "topLevelFields": null
         },
         "failure": {
           "jsonWhenRequested": true,
@@ -4113,7 +4793,19 @@ stdout:
               "code": 4,
               "meaning": "auth_error"
             }
-          ]
+          ],
+          "topLevelFields": [
+            "success",
+            "error"
+          ],
+          "errorFields": [
+            "type",
+            "message",
+            "suggestion",
+            "context",
+            "details"
+          ],
+          "detailFields": []
         }
       }
     },
@@ -4178,8 +4870,26 @@ stdout:
             "name": "--json"
           }
         ],
+        "defaults": [
+          {
+            "source": "argument",
+            "name": "issue",
+            "description": "Defaults to the current issue from the branch name or jj trailer.",
+            "value": null
+          }
+        ],
+        "resolutions": [
+          {
+            "source": "argument",
+            "name": "issue",
+            "strategy": "current_issue_context",
+            "description": "If omitted, the CLI resolves the current issue from the branch name or jj trailer."
+          }
+        ],
+        "constraints": [],
         "stdinTargets": [],
-        "fileTargets": []
+        "fileTargets": [],
+        "examples": []
       },
       "output": {
         "success": {
@@ -4190,14 +4900,19 @@ stdout:
             "version": "v1"
           },
           "shape": "object",
-          "exitCode": 0
+          "exitCode": 0,
+          "topLevelFields": [
+            "success",
+            "data"
+          ]
         },
         "preview": {
           "supported": false,
           "contractTarget": null,
           "contract": null,
           "shape": null,
-          "exitCode": null
+          "exitCode": null,
+          "topLevelFields": null
         },
         "failure": {
           "jsonWhenRequested": true,
@@ -4211,7 +4926,19 @@ stdout:
               "code": 4,
               "meaning": "auth_error"
             }
-          ]
+          ],
+          "topLevelFields": [
+            "success",
+            "error"
+          ],
+          "errorFields": [
+            "type",
+            "message",
+            "suggestion",
+            "context",
+            "details"
+          ],
+          "detailFields": []
         }
       }
     },
@@ -4340,8 +5067,12 @@ stdout:
             "name": "--timeout-ms"
           }
         ],
+        "defaults": [],
+        "resolutions": [],
+        "constraints": [],
         "stdinTargets": [],
-        "fileTargets": []
+        "fileTargets": [],
+        "examples": []
       },
       "output": {
         "success": {
@@ -4352,7 +5083,11 @@ stdout:
             "version": "v1"
           },
           "shape": "object",
-          "exitCode": 0
+          "exitCode": 0,
+          "topLevelFields": [
+            "success",
+            "data"
+          ]
         },
         "preview": {
           "supported": true,
@@ -4362,7 +5097,13 @@ stdout:
             "version": "v1"
           },
           "shape": "object",
-          "exitCode": 0
+          "exitCode": 0,
+          "topLevelFields": [
+            "success",
+            "dryRun",
+            "summary",
+            "data"
+          ]
         },
         "failure": {
           "jsonWhenRequested": true,
@@ -4380,6 +5121,23 @@ stdout:
               "code": 6,
               "meaning": "timeout_error"
             }
+          ],
+          "topLevelFields": [
+            "success",
+            "error"
+          ],
+          "errorFields": [
+            "type",
+            "message",
+            "suggestion",
+            "context",
+            "details"
+          ],
+          "detailFields": [
+            "failureMode",
+            "outcome",
+            "appliedState",
+            "callerGuidance"
           ]
         }
       }
@@ -4509,8 +5267,12 @@ stdout:
             "name": "--timeout-ms"
           }
         ],
+        "defaults": [],
+        "resolutions": [],
+        "constraints": [],
         "stdinTargets": [],
-        "fileTargets": []
+        "fileTargets": [],
+        "examples": []
       },
       "output": {
         "success": {
@@ -4521,7 +5283,11 @@ stdout:
             "version": "v1"
           },
           "shape": "object",
-          "exitCode": 0
+          "exitCode": 0,
+          "topLevelFields": [
+            "success",
+            "data"
+          ]
         },
         "preview": {
           "supported": true,
@@ -4531,7 +5297,13 @@ stdout:
             "version": "v1"
           },
           "shape": "object",
-          "exitCode": 0
+          "exitCode": 0,
+          "topLevelFields": [
+            "success",
+            "dryRun",
+            "summary",
+            "data"
+          ]
         },
         "failure": {
           "jsonWhenRequested": true,
@@ -4549,6 +5321,23 @@ stdout:
               "code": 6,
               "meaning": "timeout_error"
             }
+          ],
+          "topLevelFields": [
+            "success",
+            "error"
+          ],
+          "errorFields": [
+            "type",
+            "message",
+            "suggestion",
+            "context",
+            "details"
+          ],
+          "detailFields": [
+            "failureMode",
+            "outcome",
+            "appliedState",
+            "callerGuidance"
           ]
         }
       }
@@ -4614,8 +5403,26 @@ stdout:
             "name": "--json"
           }
         ],
+        "defaults": [
+          {
+            "source": "argument",
+            "name": "issue",
+            "description": "Defaults to the current issue from the branch name or jj trailer.",
+            "value": null
+          }
+        ],
+        "resolutions": [
+          {
+            "source": "argument",
+            "name": "issue",
+            "strategy": "current_issue_context",
+            "description": "If omitted, the CLI resolves the current issue from the branch name or jj trailer."
+          }
+        ],
+        "constraints": [],
         "stdinTargets": [],
-        "fileTargets": []
+        "fileTargets": [],
+        "examples": []
       },
       "output": {
         "success": {
@@ -4626,14 +5433,19 @@ stdout:
             "version": "v1"
           },
           "shape": "array",
-          "exitCode": 0
+          "exitCode": 0,
+          "topLevelFields": [
+            "success",
+            "data"
+          ]
         },
         "preview": {
           "supported": false,
           "contractTarget": null,
           "contract": null,
           "shape": null,
-          "exitCode": null
+          "exitCode": null,
+          "topLevelFields": null
         },
         "failure": {
           "jsonWhenRequested": true,
@@ -4647,7 +5459,19 @@ stdout:
               "code": 4,
               "meaning": "auth_error"
             }
-          ]
+          ],
+          "topLevelFields": [
+            "success",
+            "error"
+          ],
+          "errorFields": [
+            "type",
+            "message",
+            "suggestion",
+            "context",
+            "details"
+          ],
+          "detailFields": []
         }
       }
     },
@@ -4712,8 +5536,26 @@ stdout:
             "name": "--dry-run"
           }
         ],
+        "defaults": [
+          {
+            "source": "argument",
+            "name": "issue",
+            "description": "Defaults to the current issue from the branch name or jj trailer.",
+            "value": null
+          }
+        ],
+        "resolutions": [
+          {
+            "source": "argument",
+            "name": "issue",
+            "strategy": "current_issue_context",
+            "description": "If omitted, the CLI resolves the current issue from the branch name or jj trailer."
+          }
+        ],
+        "constraints": [],
         "stdinTargets": [],
-        "fileTargets": []
+        "fileTargets": [],
+        "examples": []
       },
       "output": {
         "success": {
@@ -4721,7 +5563,8 @@ stdout:
           "contractTarget": null,
           "contract": null,
           "shape": "object",
-          "exitCode": 0
+          "exitCode": 0,
+          "topLevelFields": []
         },
         "preview": {
           "supported": true,
@@ -4731,7 +5574,13 @@ stdout:
             "version": "v1"
           },
           "shape": "object",
-          "exitCode": 0
+          "exitCode": 0,
+          "topLevelFields": [
+            "success",
+            "dryRun",
+            "summary",
+            "data"
+          ]
         },
         "failure": {
           "jsonWhenRequested": false,
@@ -4745,7 +5594,10 @@ stdout:
               "code": 4,
               "meaning": "auth_error"
             }
-          ]
+          ],
+          "topLevelFields": [],
+          "errorFields": [],
+          "detailFields": []
         }
       }
     },
@@ -4884,6 +5736,50 @@ stdout:
             "name": "--description-file"
           }
         ],
+        "defaults": [
+          {
+            "source": "argument",
+            "name": "issue",
+            "description": "Defaults to the current issue from the branch name or jj trailer.",
+            "value": null
+          },
+          {
+            "source": "flag",
+            "name": "--timeout-ms",
+            "description": "Falls back to LINEAR_WRITE_TIMEOUT_MS or the built-in timeout.",
+            "value": null
+          }
+        ],
+        "resolutions": [
+          {
+            "source": "argument",
+            "name": "issue",
+            "strategy": "current_issue_context",
+            "description": "If omitted, the CLI resolves the current issue from the branch name or jj trailer."
+          },
+          {
+            "source": "flag",
+            "name": "--timeout-ms",
+            "strategy": "env_or_internal_default",
+            "description": "The timeout falls back to LINEAR_WRITE_TIMEOUT_MS or the built-in default when omitted."
+          }
+        ],
+        "constraints": [
+          {
+            "source": {
+              "source": "flag",
+              "name": "--description"
+            },
+            "kind": "conflicts_with",
+            "targets": [
+              {
+                "source": "flag",
+                "name": "--description-file"
+              }
+            ],
+            "reason": "Choose either inline replacement description text or a description file."
+          }
+        ],
         "stdinTargets": [
           {
             "field": "description",
@@ -4897,6 +5793,35 @@ stdout:
               "--description-file"
             ]
           }
+        ],
+        "examples": [
+          {
+            "description": "Preview an issue update with dry-run JSON.",
+            "argv": [
+              "linear",
+              "issue",
+              "update",
+              "ENG-123",
+              "--state",
+              "done",
+              "--dry-run",
+              "--json"
+            ]
+          },
+          {
+            "description": "Apply an update and append a comment.",
+            "argv": [
+              "linear",
+              "issue",
+              "update",
+              "ENG-123",
+              "--state",
+              "done",
+              "--comment",
+              "Shipped",
+              "--json"
+            ]
+          }
         ]
       },
       "output": {
@@ -4908,7 +5833,11 @@ stdout:
             "version": "v1"
           },
           "shape": "object",
-          "exitCode": 0
+          "exitCode": 0,
+          "topLevelFields": [
+            "success",
+            "data"
+          ]
         },
         "preview": {
           "supported": true,
@@ -4918,7 +5847,13 @@ stdout:
             "version": "v1"
           },
           "shape": "object",
-          "exitCode": 0
+          "exitCode": 0,
+          "topLevelFields": [
+            "success",
+            "dryRun",
+            "summary",
+            "data"
+          ]
         },
         "failure": {
           "jsonWhenRequested": true,
@@ -4936,6 +5871,25 @@ stdout:
               "code": 6,
               "meaning": "timeout_error"
             }
+          ],
+          "topLevelFields": [
+            "success",
+            "error"
+          ],
+          "errorFields": [
+            "type",
+            "message",
+            "suggestion",
+            "context",
+            "details"
+          ],
+          "detailFields": [
+            "failureMode",
+            "outcome",
+            "appliedState",
+            "callerGuidance",
+            "partialSuccess",
+            "retryCommand"
           ]
         }
       }
@@ -5013,8 +5967,26 @@ stdout:
             "name": "--no-comments"
           }
         ],
+        "defaults": [
+          {
+            "source": "argument",
+            "name": "issue",
+            "description": "Defaults to the current issue from the branch name or jj trailer.",
+            "value": null
+          }
+        ],
+        "resolutions": [
+          {
+            "source": "argument",
+            "name": "issue",
+            "strategy": "current_issue_context",
+            "description": "If omitted, the CLI resolves the current issue from the branch name or jj trailer."
+          }
+        ],
+        "constraints": [],
         "stdinTargets": [],
-        "fileTargets": []
+        "fileTargets": [],
+        "examples": []
       },
       "output": {
         "success": {
@@ -5025,14 +5997,19 @@ stdout:
             "version": "v1"
           },
           "shape": "object",
-          "exitCode": 0
+          "exitCode": 0,
+          "topLevelFields": [
+            "success",
+            "data"
+          ]
         },
         "preview": {
           "supported": false,
           "contractTarget": null,
           "contract": null,
           "shape": null,
-          "exitCode": null
+          "exitCode": null,
+          "topLevelFields": null
         },
         "failure": {
           "jsonWhenRequested": true,
@@ -5046,7 +6023,19 @@ stdout:
               "code": 4,
               "meaning": "auth_error"
             }
-          ]
+          ],
+          "topLevelFields": [
+            "success",
+            "error"
+          ],
+          "errorFields": [
+            "type",
+            "message",
+            "suggestion",
+            "context",
+            "details"
+          ],
+          "detailFields": []
         }
       }
     },
@@ -5099,8 +6088,12 @@ stdout:
             "name": "--json"
           }
         ],
+        "defaults": [],
+        "resolutions": [],
+        "constraints": [],
         "stdinTargets": [],
-        "fileTargets": []
+        "fileTargets": [],
+        "examples": []
       },
       "output": {
         "success": {
@@ -5111,14 +6104,19 @@ stdout:
             "version": "v4"
           },
           "shape": "array",
-          "exitCode": 0
+          "exitCode": 0,
+          "topLevelFields": [
+            "success",
+            "data"
+          ]
         },
         "preview": {
           "supported": false,
           "contractTarget": null,
           "contract": null,
           "shape": null,
-          "exitCode": null
+          "exitCode": null,
+          "topLevelFields": null
         },
         "failure": {
           "jsonWhenRequested": true,
@@ -5132,7 +6130,19 @@ stdout:
               "code": 4,
               "meaning": "auth_error"
             }
-          ]
+          ],
+          "topLevelFields": [
+            "success",
+            "error"
+          ],
+          "errorFields": [
+            "type",
+            "message",
+            "suggestion",
+            "context",
+            "details"
+          ],
+          "detailFields": []
         }
       }
     },
@@ -5185,8 +6195,12 @@ stdout:
             "name": "--dry-run"
           }
         ],
+        "defaults": [],
+        "resolutions": [],
+        "constraints": [],
         "stdinTargets": [],
-        "fileTargets": []
+        "fileTargets": [],
+        "examples": []
       },
       "output": {
         "success": {
@@ -5194,7 +6208,8 @@ stdout:
           "contractTarget": null,
           "contract": null,
           "shape": "object",
-          "exitCode": 0
+          "exitCode": 0,
+          "topLevelFields": []
         },
         "preview": {
           "supported": true,
@@ -5204,7 +6219,13 @@ stdout:
             "version": "v1"
           },
           "shape": "object",
-          "exitCode": 0
+          "exitCode": 0,
+          "topLevelFields": [
+            "success",
+            "dryRun",
+            "summary",
+            "data"
+          ]
         },
         "failure": {
           "jsonWhenRequested": false,
@@ -5222,7 +6243,10 @@ stdout:
               "code": 5,
               "meaning": "plan_limit"
             }
-          ]
+          ],
+          "topLevelFields": [],
+          "errorFields": [],
+          "detailFields": []
         }
       }
     },
@@ -5287,8 +6311,12 @@ stdout:
             "name": "--yes"
           }
         ],
+        "defaults": [],
+        "resolutions": [],
+        "constraints": [],
         "stdinTargets": [],
-        "fileTargets": []
+        "fileTargets": [],
+        "examples": []
       },
       "output": {
         "success": {
@@ -5296,7 +6324,8 @@ stdout:
           "contractTarget": null,
           "contract": null,
           "shape": "object",
-          "exitCode": 0
+          "exitCode": 0,
+          "topLevelFields": []
         },
         "preview": {
           "supported": true,
@@ -5306,7 +6335,13 @@ stdout:
             "version": "v1"
           },
           "shape": "object",
-          "exitCode": 0
+          "exitCode": 0,
+          "topLevelFields": [
+            "success",
+            "dryRun",
+            "summary",
+            "data"
+          ]
         },
         "failure": {
           "jsonWhenRequested": false,
@@ -5320,7 +6355,10 @@ stdout:
               "code": 4,
               "meaning": "auth_error"
             }
-          ]
+          ],
+          "topLevelFields": [],
+          "errorFields": [],
+          "detailFields": []
         }
       }
     },
@@ -5373,8 +6411,12 @@ stdout:
             "name": "--json"
           }
         ],
+        "defaults": [],
+        "resolutions": [],
+        "constraints": [],
         "stdinTargets": [],
-        "fileTargets": []
+        "fileTargets": [],
+        "examples": []
       },
       "output": {
         "success": {
@@ -5385,14 +6427,19 @@ stdout:
             "version": "v2"
           },
           "shape": "array",
-          "exitCode": 0
+          "exitCode": 0,
+          "topLevelFields": [
+            "success",
+            "data"
+          ]
         },
         "preview": {
           "supported": false,
           "contractTarget": null,
           "contract": null,
           "shape": null,
-          "exitCode": null
+          "exitCode": null,
+          "topLevelFields": null
         },
         "failure": {
           "jsonWhenRequested": true,
@@ -5406,7 +6453,19 @@ stdout:
               "code": 4,
               "meaning": "auth_error"
             }
-          ]
+          ],
+          "topLevelFields": [
+            "success",
+            "error"
+          ],
+          "errorFields": [
+            "type",
+            "message",
+            "suggestion",
+            "context",
+            "details"
+          ],
+          "detailFields": []
         }
       }
     },
@@ -5459,8 +6518,12 @@ stdout:
             "name": "--dry-run"
           }
         ],
+        "defaults": [],
+        "resolutions": [],
+        "constraints": [],
         "stdinTargets": [],
-        "fileTargets": []
+        "fileTargets": [],
+        "examples": []
       },
       "output": {
         "success": {
@@ -5468,7 +6531,8 @@ stdout:
           "contractTarget": null,
           "contract": null,
           "shape": "object",
-          "exitCode": 0
+          "exitCode": 0,
+          "topLevelFields": []
         },
         "preview": {
           "supported": true,
@@ -5478,7 +6542,13 @@ stdout:
             "version": "v1"
           },
           "shape": "object",
-          "exitCode": 0
+          "exitCode": 0,
+          "topLevelFields": [
+            "success",
+            "dryRun",
+            "summary",
+            "data"
+          ]
         },
         "failure": {
           "jsonWhenRequested": false,
@@ -5492,7 +6562,10 @@ stdout:
               "code": 4,
               "meaning": "auth_error"
             }
-          ]
+          ],
+          "topLevelFields": [],
+          "errorFields": [],
+          "detailFields": []
         }
       }
     },
@@ -5558,8 +6631,12 @@ stdout:
             "name": "--json"
           }
         ],
+        "defaults": [],
+        "resolutions": [],
+        "constraints": [],
         "stdinTargets": [],
-        "fileTargets": []
+        "fileTargets": [],
+        "examples": []
       },
       "output": {
         "success": {
@@ -5570,14 +6647,19 @@ stdout:
             "version": "v2"
           },
           "shape": "object",
-          "exitCode": 0
+          "exitCode": 0,
+          "topLevelFields": [
+            "success",
+            "data"
+          ]
         },
         "preview": {
           "supported": false,
           "contractTarget": null,
           "contract": null,
           "shape": null,
-          "exitCode": null
+          "exitCode": null,
+          "topLevelFields": null
         },
         "failure": {
           "jsonWhenRequested": true,
@@ -5591,7 +6673,19 @@ stdout:
               "code": 4,
               "meaning": "auth_error"
             }
-          ]
+          ],
+          "topLevelFields": [
+            "success",
+            "error"
+          ],
+          "errorFields": [
+            "type",
+            "message",
+            "suggestion",
+            "context",
+            "details"
+          ],
+          "detailFields": []
         }
       }
     },
@@ -5669,8 +6763,26 @@ stdout:
             "name": "--timeout-ms"
           }
         ],
+        "defaults": [
+          {
+            "source": "flag",
+            "name": "--timeout-ms",
+            "description": "Falls back to LINEAR_WRITE_TIMEOUT_MS or the built-in timeout.",
+            "value": null
+          }
+        ],
+        "resolutions": [
+          {
+            "source": "flag",
+            "name": "--timeout-ms",
+            "strategy": "env_or_internal_default",
+            "description": "The timeout falls back to LINEAR_WRITE_TIMEOUT_MS or the built-in default when omitted."
+          }
+        ],
+        "constraints": [],
         "stdinTargets": [],
-        "fileTargets": []
+        "fileTargets": [],
+        "examples": []
       },
       "output": {
         "success": {
@@ -5678,14 +6790,19 @@ stdout:
           "contractTarget": null,
           "contract": null,
           "shape": "object",
-          "exitCode": 0
+          "exitCode": 0,
+          "topLevelFields": [
+            "success",
+            "data"
+          ]
         },
         "preview": {
           "supported": false,
           "contractTarget": null,
           "contract": null,
           "shape": null,
-          "exitCode": null
+          "exitCode": null,
+          "topLevelFields": null
         },
         "failure": {
           "jsonWhenRequested": false,
@@ -5703,7 +6820,10 @@ stdout:
               "code": 6,
               "meaning": "timeout_error"
             }
-          ]
+          ],
+          "topLevelFields": [],
+          "errorFields": [],
+          "detailFields": []
         }
       }
     },
@@ -5756,8 +6876,12 @@ stdout:
             "name": "--json"
           }
         ],
+        "defaults": [],
+        "resolutions": [],
+        "constraints": [],
         "stdinTargets": [],
-        "fileTargets": []
+        "fileTargets": [],
+        "examples": []
       },
       "output": {
         "success": {
@@ -5768,14 +6892,19 @@ stdout:
             "version": "v3"
           },
           "shape": "object",
-          "exitCode": 0
+          "exitCode": 0,
+          "topLevelFields": [
+            "success",
+            "data"
+          ]
         },
         "preview": {
           "supported": false,
           "contractTarget": null,
           "contract": null,
           "shape": null,
-          "exitCode": null
+          "exitCode": null,
+          "topLevelFields": null
         },
         "failure": {
           "jsonWhenRequested": true,
@@ -5789,7 +6918,19 @@ stdout:
               "code": 4,
               "meaning": "auth_error"
             }
-          ]
+          ],
+          "topLevelFields": [
+            "success",
+            "error"
+          ],
+          "errorFields": [
+            "type",
+            "message",
+            "suggestion",
+            "context",
+            "details"
+          ],
+          "detailFields": []
         }
       }
     },
@@ -5842,8 +6983,12 @@ stdout:
             "name": "--json"
           }
         ],
+        "defaults": [],
+        "resolutions": [],
+        "constraints": [],
         "stdinTargets": [],
-        "fileTargets": []
+        "fileTargets": [],
+        "examples": []
       },
       "output": {
         "success": {
@@ -5854,14 +6999,19 @@ stdout:
             "version": "v3"
           },
           "shape": "array",
-          "exitCode": 0
+          "exitCode": 0,
+          "topLevelFields": [
+            "success",
+            "data"
+          ]
         },
         "preview": {
           "supported": false,
           "contractTarget": null,
           "contract": null,
           "shape": null,
-          "exitCode": null
+          "exitCode": null,
+          "topLevelFields": null
         },
         "failure": {
           "jsonWhenRequested": true,
@@ -5875,7 +7025,19 @@ stdout:
               "code": 4,
               "meaning": "auth_error"
             }
-          ]
+          ],
+          "topLevelFields": [
+            "success",
+            "error"
+          ],
+          "errorFields": [
+            "type",
+            "message",
+            "suggestion",
+            "context",
+            "details"
+          ],
+          "detailFields": []
         }
       }
     },
@@ -5953,8 +7115,37 @@ stdout:
             "name": "--timeout-ms"
           }
         ],
+        "defaults": [
+          {
+            "source": "flag",
+            "name": "--timeout-ms",
+            "description": "Falls back to LINEAR_WRITE_TIMEOUT_MS or the built-in timeout.",
+            "value": null
+          }
+        ],
+        "resolutions": [
+          {
+            "source": "flag",
+            "name": "--timeout-ms",
+            "strategy": "env_or_internal_default",
+            "description": "The timeout falls back to LINEAR_WRITE_TIMEOUT_MS or the built-in default when omitted."
+          }
+        ],
+        "constraints": [],
         "stdinTargets": [],
-        "fileTargets": []
+        "fileTargets": [],
+        "examples": [
+          {
+            "description": "Mark a notification as read with machine-readable output.",
+            "argv": [
+              "linear",
+              "notification",
+              "read",
+              "notif_123",
+              "--json"
+            ]
+          }
+        ]
       },
       "output": {
         "success": {
@@ -5962,14 +7153,19 @@ stdout:
           "contractTarget": null,
           "contract": null,
           "shape": "object",
-          "exitCode": 0
+          "exitCode": 0,
+          "topLevelFields": [
+            "success",
+            "data"
+          ]
         },
         "preview": {
           "supported": false,
           "contractTarget": null,
           "contract": null,
           "shape": null,
-          "exitCode": null
+          "exitCode": null,
+          "topLevelFields": null
         },
         "failure": {
           "jsonWhenRequested": false,
@@ -5987,7 +7183,10 @@ stdout:
               "code": 6,
               "meaning": "timeout_error"
             }
-          ]
+          ],
+          "topLevelFields": [],
+          "errorFields": [],
+          "detailFields": []
         }
       }
     },
@@ -6052,8 +7251,12 @@ stdout:
             "name": "--dry-run"
           }
         ],
+        "defaults": [],
+        "resolutions": [],
+        "constraints": [],
         "stdinTargets": [],
-        "fileTargets": []
+        "fileTargets": [],
+        "examples": []
       },
       "output": {
         "success": {
@@ -6061,7 +7264,11 @@ stdout:
           "contractTarget": null,
           "contract": null,
           "shape": "object",
-          "exitCode": 0
+          "exitCode": 0,
+          "topLevelFields": [
+            "success",
+            "data"
+          ]
         },
         "preview": {
           "supported": true,
@@ -6071,7 +7278,13 @@ stdout:
             "version": "v1"
           },
           "shape": "object",
-          "exitCode": 0
+          "exitCode": 0,
+          "topLevelFields": [
+            "success",
+            "dryRun",
+            "summary",
+            "data"
+          ]
         },
         "failure": {
           "jsonWhenRequested": false,
@@ -6089,7 +7302,10 @@ stdout:
               "code": 5,
               "meaning": "plan_limit"
             }
-          ]
+          ],
+          "topLevelFields": [],
+          "errorFields": [],
+          "detailFields": []
         }
       }
     },
@@ -6167,8 +7383,12 @@ stdout:
             "name": "--yes"
           }
         ],
+        "defaults": [],
+        "resolutions": [],
+        "constraints": [],
         "stdinTargets": [],
-        "fileTargets": []
+        "fileTargets": [],
+        "examples": []
       },
       "output": {
         "success": {
@@ -6176,7 +7396,8 @@ stdout:
           "contractTarget": null,
           "contract": null,
           "shape": "object",
-          "exitCode": 0
+          "exitCode": 0,
+          "topLevelFields": []
         },
         "preview": {
           "supported": true,
@@ -6186,7 +7407,13 @@ stdout:
             "version": "v1"
           },
           "shape": "object",
-          "exitCode": 0
+          "exitCode": 0,
+          "topLevelFields": [
+            "success",
+            "dryRun",
+            "summary",
+            "data"
+          ]
         },
         "failure": {
           "jsonWhenRequested": false,
@@ -6200,7 +7427,10 @@ stdout:
               "code": 4,
               "meaning": "auth_error"
             }
-          ]
+          ],
+          "topLevelFields": [],
+          "errorFields": [],
+          "detailFields": []
         }
       }
     },
@@ -6253,8 +7483,12 @@ stdout:
             "name": "--json"
           }
         ],
+        "defaults": [],
+        "resolutions": [],
+        "constraints": [],
         "stdinTargets": [],
-        "fileTargets": []
+        "fileTargets": [],
+        "examples": []
       },
       "output": {
         "success": {
@@ -6262,14 +7496,19 @@ stdout:
           "contractTarget": null,
           "contract": null,
           "shape": "object",
-          "exitCode": 0
+          "exitCode": 0,
+          "topLevelFields": [
+            "success",
+            "data"
+          ]
         },
         "preview": {
           "supported": false,
           "contractTarget": null,
           "contract": null,
           "shape": null,
-          "exitCode": null
+          "exitCode": null,
+          "topLevelFields": null
         },
         "failure": {
           "jsonWhenRequested": false,
@@ -6283,7 +7522,10 @@ stdout:
               "code": 4,
               "meaning": "auth_error"
             }
-          ]
+          ],
+          "topLevelFields": [],
+          "errorFields": [],
+          "detailFields": []
         }
       }
     },
@@ -6336,8 +7578,12 @@ stdout:
             "name": "--json"
           }
         ],
+        "defaults": [],
+        "resolutions": [],
+        "constraints": [],
         "stdinTargets": [],
-        "fileTargets": []
+        "fileTargets": [],
+        "examples": []
       },
       "output": {
         "success": {
@@ -6345,14 +7591,19 @@ stdout:
           "contractTarget": null,
           "contract": null,
           "shape": "object",
-          "exitCode": 0
+          "exitCode": 0,
+          "topLevelFields": [
+            "success",
+            "data"
+          ]
         },
         "preview": {
           "supported": false,
           "contractTarget": null,
           "contract": null,
           "shape": null,
-          "exitCode": null
+          "exitCode": null,
+          "topLevelFields": null
         },
         "failure": {
           "jsonWhenRequested": false,
@@ -6366,7 +7617,10 @@ stdout:
               "code": 4,
               "meaning": "auth_error"
             }
-          ]
+          ],
+          "topLevelFields": [],
+          "errorFields": [],
+          "detailFields": []
         }
       }
     },
@@ -6431,8 +7685,12 @@ stdout:
             "name": "--team"
           }
         ],
+        "defaults": [],
+        "resolutions": [],
+        "constraints": [],
         "stdinTargets": [],
-        "fileTargets": []
+        "fileTargets": [],
+        "examples": []
       },
       "output": {
         "success": {
@@ -6443,14 +7701,19 @@ stdout:
             "version": "v2"
           },
           "shape": "array",
-          "exitCode": 0
+          "exitCode": 0,
+          "topLevelFields": [
+            "success",
+            "data"
+          ]
         },
         "preview": {
           "supported": false,
           "contractTarget": null,
           "contract": null,
           "shape": null,
-          "exitCode": null
+          "exitCode": null,
+          "topLevelFields": null
         },
         "failure": {
           "jsonWhenRequested": true,
@@ -6464,7 +7727,19 @@ stdout:
               "code": 4,
               "meaning": "auth_error"
             }
-          ]
+          ],
+          "topLevelFields": [
+            "success",
+            "error"
+          ],
+          "errorFields": [
+            "type",
+            "message",
+            "suggestion",
+            "context",
+            "details"
+          ],
+          "detailFields": []
         }
       }
     },
@@ -6517,8 +7792,12 @@ stdout:
             "name": "--dry-run"
           }
         ],
+        "defaults": [],
+        "resolutions": [],
+        "constraints": [],
         "stdinTargets": [],
-        "fileTargets": []
+        "fileTargets": [],
+        "examples": []
       },
       "output": {
         "success": {
@@ -6526,7 +7805,8 @@ stdout:
           "contractTarget": null,
           "contract": null,
           "shape": "object",
-          "exitCode": 0
+          "exitCode": 0,
+          "topLevelFields": []
         },
         "preview": {
           "supported": true,
@@ -6536,7 +7816,13 @@ stdout:
             "version": "v1"
           },
           "shape": "object",
-          "exitCode": 0
+          "exitCode": 0,
+          "topLevelFields": [
+            "success",
+            "dryRun",
+            "summary",
+            "data"
+          ]
         },
         "failure": {
           "jsonWhenRequested": false,
@@ -6550,7 +7836,10 @@ stdout:
               "code": 4,
               "meaning": "auth_error"
             }
-          ]
+          ],
+          "topLevelFields": [],
+          "errorFields": [],
+          "detailFields": []
         }
       }
     },
@@ -6616,8 +7905,12 @@ stdout:
             "name": "--json"
           }
         ],
+        "defaults": [],
+        "resolutions": [],
+        "constraints": [],
         "stdinTargets": [],
-        "fileTargets": []
+        "fileTargets": [],
+        "examples": []
       },
       "output": {
         "success": {
@@ -6628,14 +7921,19 @@ stdout:
             "version": "v2"
           },
           "shape": "object",
-          "exitCode": 0
+          "exitCode": 0,
+          "topLevelFields": [
+            "success",
+            "data"
+          ]
         },
         "preview": {
           "supported": false,
           "contractTarget": null,
           "contract": null,
           "shape": null,
-          "exitCode": null
+          "exitCode": null,
+          "topLevelFields": null
         },
         "failure": {
           "jsonWhenRequested": true,
@@ -6649,7 +7947,19 @@ stdout:
               "code": 4,
               "meaning": "auth_error"
             }
-          ]
+          ],
+          "topLevelFields": [
+            "success",
+            "error"
+          ],
+          "errorFields": [
+            "type",
+            "message",
+            "suggestion",
+            "context",
+            "details"
+          ],
+          "detailFields": []
         }
       }
     },
@@ -6702,8 +8012,12 @@ stdout:
             "name": "--json"
           }
         ],
+        "defaults": [],
+        "resolutions": [],
+        "constraints": [],
         "stdinTargets": [],
-        "fileTargets": []
+        "fileTargets": [],
+        "examples": []
       },
       "output": {
         "success": {
@@ -6714,14 +8028,19 @@ stdout:
             "version": "v4"
           },
           "shape": "array",
-          "exitCode": 0
+          "exitCode": 0,
+          "topLevelFields": [
+            "success",
+            "data"
+          ]
         },
         "preview": {
           "supported": false,
           "contractTarget": null,
           "contract": null,
           "shape": null,
-          "exitCode": null
+          "exitCode": null,
+          "topLevelFields": null
         },
         "failure": {
           "jsonWhenRequested": true,
@@ -6735,7 +8054,19 @@ stdout:
               "code": 4,
               "meaning": "auth_error"
             }
-          ]
+          ],
+          "topLevelFields": [
+            "success",
+            "error"
+          ],
+          "errorFields": [
+            "type",
+            "message",
+            "suggestion",
+            "context",
+            "details"
+          ],
+          "detailFields": []
         }
       }
     },
@@ -6813,8 +8144,12 @@ stdout:
             "name": "--limit"
           }
         ],
+        "defaults": [],
+        "resolutions": [],
+        "constraints": [],
         "stdinTargets": [],
-        "fileTargets": []
+        "fileTargets": [],
+        "examples": []
       },
       "output": {
         "success": {
@@ -6825,14 +8160,19 @@ stdout:
             "version": "v5"
           },
           "shape": "object",
-          "exitCode": 0
+          "exitCode": 0,
+          "topLevelFields": [
+            "success",
+            "data"
+          ]
         },
         "preview": {
           "supported": false,
           "contractTarget": null,
           "contract": null,
           "shape": null,
-          "exitCode": null
+          "exitCode": null,
+          "topLevelFields": null
         },
         "failure": {
           "jsonWhenRequested": true,
@@ -6846,7 +8186,19 @@ stdout:
               "code": 4,
               "meaning": "auth_error"
             }
-          ]
+          ],
+          "topLevelFields": [
+            "success",
+            "error"
+          ],
+          "errorFields": [
+            "type",
+            "message",
+            "suggestion",
+            "context",
+            "details"
+          ],
+          "detailFields": []
         }
       }
     },
@@ -6899,8 +8251,12 @@ stdout:
             "name": "--json"
           }
         ],
+        "defaults": [],
+        "resolutions": [],
+        "constraints": [],
         "stdinTargets": [],
-        "fileTargets": []
+        "fileTargets": [],
+        "examples": []
       },
       "output": {
         "success": {
@@ -6911,14 +8267,19 @@ stdout:
             "version": "v4"
           },
           "shape": "array",
-          "exitCode": 0
+          "exitCode": 0,
+          "topLevelFields": [
+            "success",
+            "data"
+          ]
         },
         "preview": {
           "supported": false,
           "contractTarget": null,
           "contract": null,
           "shape": null,
-          "exitCode": null
+          "exitCode": null,
+          "topLevelFields": null
         },
         "failure": {
           "jsonWhenRequested": true,
@@ -6932,7 +8293,19 @@ stdout:
               "code": 4,
               "meaning": "auth_error"
             }
-          ]
+          ],
+          "topLevelFields": [
+            "success",
+            "error"
+          ],
+          "errorFields": [
+            "type",
+            "message",
+            "suggestion",
+            "context",
+            "details"
+          ],
+          "detailFields": []
         }
       }
     },
@@ -6997,8 +8370,26 @@ stdout:
             "name": "--json"
           }
         ],
+        "defaults": [
+          {
+            "source": "argument",
+            "name": "team",
+            "description": "Falls back to the configured current team when omitted.",
+            "value": null
+          }
+        ],
+        "resolutions": [
+          {
+            "source": "argument",
+            "name": "team",
+            "strategy": "configured_team_context",
+            "description": "If omitted, the CLI resolves the team from the configured current team."
+          }
+        ],
+        "constraints": [],
         "stdinTargets": [],
-        "fileTargets": []
+        "fileTargets": [],
+        "examples": []
       },
       "output": {
         "success": {
@@ -7009,14 +8400,19 @@ stdout:
             "version": "v1"
           },
           "shape": "object",
-          "exitCode": 0
+          "exitCode": 0,
+          "topLevelFields": [
+            "success",
+            "data"
+          ]
         },
         "preview": {
           "supported": false,
           "contractTarget": null,
           "contract": null,
           "shape": null,
-          "exitCode": null
+          "exitCode": null,
+          "topLevelFields": null
         },
         "failure": {
           "jsonWhenRequested": true,
@@ -7030,7 +8426,19 @@ stdout:
               "code": 4,
               "meaning": "auth_error"
             }
-          ]
+          ],
+          "topLevelFields": [
+            "success",
+            "error"
+          ],
+          "errorFields": [
+            "type",
+            "message",
+            "suggestion",
+            "context",
+            "details"
+          ],
+          "detailFields": []
         }
       }
     },
@@ -7095,8 +8503,26 @@ stdout:
             "name": "--json"
           }
         ],
+        "defaults": [
+          {
+            "source": "argument",
+            "name": "team",
+            "description": "Falls back to the configured current team when omitted.",
+            "value": null
+          }
+        ],
+        "resolutions": [
+          {
+            "source": "argument",
+            "name": "team",
+            "strategy": "configured_team_context",
+            "description": "If omitted, the CLI resolves the team from the configured current team."
+          }
+        ],
+        "constraints": [],
         "stdinTargets": [],
-        "fileTargets": []
+        "fileTargets": [],
+        "examples": []
       },
       "output": {
         "success": {
@@ -7107,14 +8533,19 @@ stdout:
             "version": "v4"
           },
           "shape": "object",
-          "exitCode": 0
+          "exitCode": 0,
+          "topLevelFields": [
+            "success",
+            "data"
+          ]
         },
         "preview": {
           "supported": false,
           "contractTarget": null,
           "contract": null,
           "shape": null,
-          "exitCode": null
+          "exitCode": null,
+          "topLevelFields": null
         },
         "failure": {
           "jsonWhenRequested": true,
@@ -7128,7 +8559,19 @@ stdout:
               "code": 4,
               "meaning": "auth_error"
             }
-          ]
+          ],
+          "topLevelFields": [
+            "success",
+            "error"
+          ],
+          "errorFields": [
+            "type",
+            "message",
+            "suggestion",
+            "context",
+            "details"
+          ],
+          "detailFields": []
         }
       }
     },
@@ -7181,8 +8624,12 @@ stdout:
             "name": "--json"
           }
         ],
+        "defaults": [],
+        "resolutions": [],
+        "constraints": [],
         "stdinTargets": [],
-        "fileTargets": []
+        "fileTargets": [],
+        "examples": []
       },
       "output": {
         "success": {
@@ -7193,14 +8640,19 @@ stdout:
             "version": "v4"
           },
           "shape": "array",
-          "exitCode": 0
+          "exitCode": 0,
+          "topLevelFields": [
+            "success",
+            "data"
+          ]
         },
         "preview": {
           "supported": false,
           "contractTarget": null,
           "contract": null,
           "shape": null,
-          "exitCode": null
+          "exitCode": null,
+          "topLevelFields": null
         },
         "failure": {
           "jsonWhenRequested": true,
@@ -7214,7 +8666,19 @@ stdout:
               "code": 4,
               "meaning": "auth_error"
             }
-          ]
+          ],
+          "topLevelFields": [
+            "success",
+            "error"
+          ],
+          "errorFields": [
+            "type",
+            "message",
+            "suggestion",
+            "context",
+            "details"
+          ],
+          "detailFields": []
         }
       }
     },
@@ -7280,8 +8744,12 @@ stdout:
             "name": "--json"
           }
         ],
+        "defaults": [],
+        "resolutions": [],
+        "constraints": [],
         "stdinTargets": [],
-        "fileTargets": []
+        "fileTargets": [],
+        "examples": []
       },
       "output": {
         "success": {
@@ -7292,14 +8760,19 @@ stdout:
             "version": "v4"
           },
           "shape": "object",
-          "exitCode": 0
+          "exitCode": 0,
+          "topLevelFields": [
+            "success",
+            "data"
+          ]
         },
         "preview": {
           "supported": false,
           "contractTarget": null,
           "contract": null,
           "shape": null,
-          "exitCode": null
+          "exitCode": null,
+          "topLevelFields": null
         },
         "failure": {
           "jsonWhenRequested": true,
@@ -7313,7 +8786,19 @@ stdout:
               "code": 4,
               "meaning": "auth_error"
             }
-          ]
+          ],
+          "topLevelFields": [
+            "success",
+            "error"
+          ],
+          "errorFields": [
+            "type",
+            "message",
+            "suggestion",
+            "context",
+            "details"
+          ],
+          "detailFields": []
         }
       }
     },
@@ -7378,8 +8863,12 @@ stdout:
             "name": "--dry-run"
           }
         ],
+        "defaults": [],
+        "resolutions": [],
+        "constraints": [],
         "stdinTargets": [],
-        "fileTargets": []
+        "fileTargets": [],
+        "examples": []
       },
       "output": {
         "success": {
@@ -7387,7 +8876,11 @@ stdout:
           "contractTarget": null,
           "contract": null,
           "shape": "object",
-          "exitCode": 0
+          "exitCode": 0,
+          "topLevelFields": [
+            "success",
+            "data"
+          ]
         },
         "preview": {
           "supported": true,
@@ -7397,7 +8890,13 @@ stdout:
             "version": "v1"
           },
           "shape": "object",
-          "exitCode": 0
+          "exitCode": 0,
+          "topLevelFields": [
+            "success",
+            "dryRun",
+            "summary",
+            "data"
+          ]
         },
         "failure": {
           "jsonWhenRequested": false,
@@ -7415,7 +8914,10 @@ stdout:
               "code": 5,
               "meaning": "plan_limit"
             }
-          ]
+          ],
+          "topLevelFields": [],
+          "errorFields": [],
+          "detailFields": []
         }
       }
     },
@@ -7505,8 +9007,12 @@ stdout:
             "name": "--yes"
           }
         ],
+        "defaults": [],
+        "resolutions": [],
+        "constraints": [],
         "stdinTargets": [],
-        "fileTargets": []
+        "fileTargets": [],
+        "examples": []
       },
       "output": {
         "success": {
@@ -7514,7 +9020,11 @@ stdout:
           "contractTarget": null,
           "contract": null,
           "shape": "object",
-          "exitCode": 0
+          "exitCode": 0,
+          "topLevelFields": [
+            "success",
+            "data"
+          ]
         },
         "preview": {
           "supported": true,
@@ -7524,7 +9034,13 @@ stdout:
             "version": "v1"
           },
           "shape": "object",
-          "exitCode": 0
+          "exitCode": 0,
+          "topLevelFields": [
+            "success",
+            "dryRun",
+            "summary",
+            "data"
+          ]
         },
         "failure": {
           "jsonWhenRequested": false,
@@ -7538,7 +9054,10 @@ stdout:
               "code": 4,
               "meaning": "auth_error"
             }
-          ]
+          ],
+          "topLevelFields": [],
+          "errorFields": [],
+          "detailFields": []
         }
       }
     },
@@ -7591,8 +9110,12 @@ stdout:
             "name": "--json"
           }
         ],
+        "defaults": [],
+        "resolutions": [],
+        "constraints": [],
         "stdinTargets": [],
-        "fileTargets": []
+        "fileTargets": [],
+        "examples": []
       },
       "output": {
         "success": {
@@ -7603,14 +9126,19 @@ stdout:
             "version": "v3"
           },
           "shape": "array",
-          "exitCode": 0
+          "exitCode": 0,
+          "topLevelFields": [
+            "success",
+            "data"
+          ]
         },
         "preview": {
           "supported": false,
           "contractTarget": null,
           "contract": null,
           "shape": null,
-          "exitCode": null
+          "exitCode": null,
+          "topLevelFields": null
         },
         "failure": {
           "jsonWhenRequested": true,
@@ -7624,7 +9152,19 @@ stdout:
               "code": 4,
               "meaning": "auth_error"
             }
-          ]
+          ],
+          "topLevelFields": [
+            "success",
+            "error"
+          ],
+          "errorFields": [
+            "type",
+            "message",
+            "suggestion",
+            "context",
+            "details"
+          ],
+          "detailFields": []
         }
       }
     },
@@ -7689,8 +9229,12 @@ stdout:
             "name": "--dry-run"
           }
         ],
+        "defaults": [],
+        "resolutions": [],
+        "constraints": [],
         "stdinTargets": [],
-        "fileTargets": []
+        "fileTargets": [],
+        "examples": []
       },
       "output": {
         "success": {
@@ -7698,7 +9242,11 @@ stdout:
           "contractTarget": null,
           "contract": null,
           "shape": "object",
-          "exitCode": 0
+          "exitCode": 0,
+          "topLevelFields": [
+            "success",
+            "data"
+          ]
         },
         "preview": {
           "supported": true,
@@ -7708,7 +9256,13 @@ stdout:
             "version": "v1"
           },
           "shape": "object",
-          "exitCode": 0
+          "exitCode": 0,
+          "topLevelFields": [
+            "success",
+            "dryRun",
+            "summary",
+            "data"
+          ]
         },
         "failure": {
           "jsonWhenRequested": false,
@@ -7722,7 +9276,10 @@ stdout:
               "code": 4,
               "meaning": "auth_error"
             }
-          ]
+          ],
+          "topLevelFields": [],
+          "errorFields": [],
+          "detailFields": []
         }
       }
     },
@@ -7788,8 +9345,12 @@ stdout:
             "name": "--json"
           }
         ],
+        "defaults": [],
+        "resolutions": [],
+        "constraints": [],
         "stdinTargets": [],
-        "fileTargets": []
+        "fileTargets": [],
+        "examples": []
       },
       "output": {
         "success": {
@@ -7800,14 +9361,19 @@ stdout:
             "version": "v3"
           },
           "shape": "object",
-          "exitCode": 0
+          "exitCode": 0,
+          "topLevelFields": [
+            "success",
+            "data"
+          ]
         },
         "preview": {
           "supported": false,
           "contractTarget": null,
           "contract": null,
           "shape": null,
-          "exitCode": null
+          "exitCode": null,
+          "topLevelFields": null
         },
         "failure": {
           "jsonWhenRequested": true,
@@ -7821,7 +9387,19 @@ stdout:
               "code": 4,
               "meaning": "auth_error"
             }
-          ]
+          ],
+          "topLevelFields": [
+            "success",
+            "error"
+          ],
+          "errorFields": [
+            "type",
+            "message",
+            "suggestion",
+            "context",
+            "details"
+          ],
+          "detailFields": []
         }
       }
     },
@@ -7874,8 +9452,12 @@ stdout:
             "name": "--json"
           }
         ],
+        "defaults": [],
+        "resolutions": [],
+        "constraints": [],
         "stdinTargets": [],
-        "fileTargets": []
+        "fileTargets": [],
+        "examples": []
       },
       "output": {
         "success": {
@@ -7886,14 +9468,19 @@ stdout:
             "version": "v4"
           },
           "shape": "array",
-          "exitCode": 0
+          "exitCode": 0,
+          "topLevelFields": [
+            "success",
+            "data"
+          ]
         },
         "preview": {
           "supported": false,
           "contractTarget": null,
           "contract": null,
           "shape": null,
-          "exitCode": null
+          "exitCode": null,
+          "topLevelFields": null
         },
         "failure": {
           "jsonWhenRequested": true,
@@ -7907,7 +9494,19 @@ stdout:
               "code": 4,
               "meaning": "auth_error"
             }
-          ]
+          ],
+          "topLevelFields": [
+            "success",
+            "error"
+          ],
+          "errorFields": [
+            "type",
+            "message",
+            "suggestion",
+            "context",
+            "details"
+          ],
+          "detailFields": []
         }
       }
     },
@@ -7973,8 +9572,12 @@ stdout:
             "name": "--json"
           }
         ],
+        "defaults": [],
+        "resolutions": [],
+        "constraints": [],
         "stdinTargets": [],
-        "fileTargets": []
+        "fileTargets": [],
+        "examples": []
       },
       "output": {
         "success": {
@@ -7985,14 +9588,19 @@ stdout:
             "version": "v4"
           },
           "shape": "object",
-          "exitCode": 0
+          "exitCode": 0,
+          "topLevelFields": [
+            "success",
+            "data"
+          ]
         },
         "preview": {
           "supported": false,
           "contractTarget": null,
           "contract": null,
           "shape": null,
-          "exitCode": null
+          "exitCode": null,
+          "topLevelFields": null
         },
         "failure": {
           "jsonWhenRequested": true,
@@ -8006,7 +9614,19 @@ stdout:
               "code": 4,
               "meaning": "auth_error"
             }
-          ]
+          ],
+          "topLevelFields": [
+            "success",
+            "error"
+          ],
+          "errorFields": [
+            "type",
+            "message",
+            "suggestion",
+            "context",
+            "details"
+          ],
+          "detailFields": []
         }
       }
     }

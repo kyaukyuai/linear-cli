@@ -140,11 +140,50 @@ Default top-level shape:
           { "source": "argument", "name": "issue" },
           { "source": "flag", "name": "--json" }
         ],
+        "defaults": [
+          {
+            "source": "argument",
+            "name": "issue",
+            "value": null,
+            "description": "Defaults to the current issue from the branch name or jj trailer."
+          }
+        ],
+        "resolutions": [
+          {
+            "source": "argument",
+            "name": "issue",
+            "strategy": "current_issue_context",
+            "description": "If omitted, the CLI resolves the current issue from the branch name or jj trailer."
+          }
+        ],
+        "constraints": [
+          {
+            "source": { "source": "flag", "name": "--description" },
+            "kind": "conflicts_with",
+            "targets": [{ "source": "flag", "name": "--description-file" }],
+            "reason": "Choose either inline replacement description text or a description file."
+          }
+        ],
         "stdinTargets": [
           { "field": "description", "viaFlags": [] }
         ],
         "fileTargets": [
           { "field": "description", "viaFlags": ["--description-file"] }
+        ],
+        "examples": [
+          {
+            "description": "Preview an issue update with dry-run JSON.",
+            "argv": [
+              "linear",
+              "issue",
+              "update",
+              "ENG-123",
+              "--state",
+              "done",
+              "--dry-run",
+              "--json"
+            ]
+          }
         ]
       },
       "output": {
@@ -156,7 +195,8 @@ Default top-level shape:
             "version": "v1"
           },
           "shape": "object",
-          "exitCode": 0
+          "exitCode": 0,
+          "topLevelFields": ["success", "data"]
         },
         "preview": {
           "supported": true,
@@ -166,7 +206,8 @@ Default top-level shape:
             "version": "v1"
           },
           "shape": "object",
-          "exitCode": 0
+          "exitCode": 0,
+          "topLevelFields": ["success", "dryRun", "summary", "data"]
         },
         "failure": {
           "jsonWhenRequested": true,
@@ -175,6 +216,22 @@ Default top-level shape:
             { "code": 1, "meaning": "generic_failure" },
             { "code": 4, "meaning": "auth_error" },
             { "code": 6, "meaning": "timeout_error" }
+          ],
+          "topLevelFields": ["success", "error"],
+          "errorFields": [
+            "type",
+            "message",
+            "suggestion",
+            "context",
+            "details"
+          ],
+          "detailFields": [
+            "failureMode",
+            "outcome",
+            "appliedState",
+            "callerGuidance",
+            "partialSuccess",
+            "retryCommand"
           ]
         }
       },
@@ -201,14 +258,20 @@ Rules:
 - `schema.coverage` is currently `curated_primary_inputs`, meaning the metadata is intentionally focused on the primary agent-facing execution path and is not a full parser dump of every flag
 - `schema.arguments` and `schema.flags` are additive, machine-readable hints for the main positional arguments and high-value flags agents should care about first
 - `schema.requiredInputs` and `schema.optionalInputs` summarize the curated primary execution path without forcing callers to re-derive requiredness from each entry
+- `schema.defaults` lists curated defaults and fallbacks that matter for agents, such as `--compat = v1`, current-issue resolution, and timeout fallback behavior
+- `schema.resolutions` explains when the CLI resolves an input from current issue context, configured team context, or environment-backed defaults
+- `schema.constraints` lists high-value machine-readable relationships such as `requires_all_of` and `conflicts_with`
 - `schema.inputModes` is a subset of `flags`, `stdin`, and `file`
 - `schema.stdinTargets` and `schema.fileTargets` describe which semantic field each non-flag input channel populates
+- `schema.examples` provides canonical argv examples that agents can adapt without scraping prose help output
 - `allowedValues` is present when a primary argument or flag has a practical constrained set, such as `relationType` or `--compat`
 - `output.success.category` is one of `automation_contract`, `curated_json`, `json_default`, or `terminal_only`
 - `output.success.contractTarget` names the governing contract when one exists, for example `automation_contract:v4` or `capabilities_discovery:v2`
 - `output.success.contract` and `output.preview.contract` expose that governing contract in a structured `kind/version` form
+- `output.success.topLevelFields`, `output.preview.topLevelFields`, and `output.failure.topLevelFields` describe the top-level JSON envelope fields for the command's primary machine-readable modes
 - `output.failure.jsonWhenRequested` and `output.failure.parseErrorsJsonWhenRequested` tell agents whether they can expect machine-readable failures for the command
 - `output.failure.exitCodes` lists the reserved non-zero exit codes that matter for the command
+- `output.failure.errorFields` and `output.failure.detailFields` call out the structured error envelope fields and any command-specific `error.details` traits
 - `writeSemantics` highlights timeout-aware, no-op-safe, and partial-success traits without forcing callers to parse `idempotency.notes`
 
 ## Automation Contract v1

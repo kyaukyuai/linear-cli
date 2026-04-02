@@ -114,11 +114,81 @@ Deno.test("buildCapabilitiesPayload v2 includes issue update capability traits",
     { source: "flag", name: "--description" },
     { source: "flag", name: "--description-file" },
   ])
+  assertEquals(command.schema.defaults, [
+    {
+      source: "argument",
+      name: "issue",
+      value: null,
+      description:
+        "Defaults to the current issue from the branch name or jj trailer.",
+    },
+    {
+      source: "flag",
+      name: "--timeout-ms",
+      value: null,
+      description:
+        "Falls back to LINEAR_WRITE_TIMEOUT_MS or the built-in timeout.",
+    },
+  ])
+  assertEquals(command.schema.resolutions, [
+    {
+      source: "argument",
+      name: "issue",
+      strategy: "current_issue_context",
+      description:
+        "If omitted, the CLI resolves the current issue from the branch name or jj trailer.",
+    },
+    {
+      source: "flag",
+      name: "--timeout-ms",
+      strategy: "env_or_internal_default",
+      description:
+        "The timeout falls back to LINEAR_WRITE_TIMEOUT_MS or the built-in default when omitted.",
+    },
+  ])
+  assertEquals(command.schema.constraints, [
+    {
+      source: { source: "flag", name: "--description" },
+      kind: "conflicts_with",
+      targets: [{ source: "flag", name: "--description-file" }],
+      reason:
+        "Choose either inline replacement description text or a description file.",
+    },
+  ])
   assertEquals(command.schema.stdinTargets, [
     { field: "description", viaFlags: [] },
   ])
   assertEquals(command.schema.fileTargets, [
     { field: "description", viaFlags: ["--description-file"] },
+  ])
+  assertEquals(command.schema.examples, [
+    {
+      description: "Preview an issue update with dry-run JSON.",
+      argv: [
+        "linear",
+        "issue",
+        "update",
+        "ENG-123",
+        "--state",
+        "done",
+        "--dry-run",
+        "--json",
+      ],
+    },
+    {
+      description: "Apply an update and append a comment.",
+      argv: [
+        "linear",
+        "issue",
+        "update",
+        "ENG-123",
+        "--state",
+        "done",
+        "--comment",
+        "Shipped",
+        "--json",
+      ],
+    },
   ])
   assert(command.schema.flags.some((flag) => flag.name === "--state"))
   assert(command.schema.flags.some((flag) => flag.name === "--comment"))
@@ -134,6 +204,7 @@ Deno.test("buildCapabilitiesPayload v2 includes issue update capability traits",
     },
     shape: "object",
     exitCode: 0,
+    topLevelFields: ["success", "data"],
   })
   assertEquals(command.output.preview, {
     supported: true,
@@ -144,12 +215,29 @@ Deno.test("buildCapabilitiesPayload v2 includes issue update capability traits",
     },
     shape: "object",
     exitCode: 0,
+    topLevelFields: ["success", "dryRun", "summary", "data"],
   })
   assertEquals(command.output.failure.jsonWhenRequested, true)
   assertEquals(command.output.failure.parseErrorsJsonWhenRequested, true)
   assert(command.output.failure.exitCodes.some((entry) => entry.code === 1))
   assert(command.output.failure.exitCodes.some((entry) => entry.code === 4))
   assert(command.output.failure.exitCodes.some((entry) => entry.code === 6))
+  assertEquals(command.output.failure.topLevelFields, ["success", "error"])
+  assertEquals(command.output.failure.errorFields, [
+    "type",
+    "message",
+    "suggestion",
+    "context",
+    "details",
+  ])
+  assertEquals(command.output.failure.detailFields, [
+    "failureMode",
+    "outcome",
+    "appliedState",
+    "callerGuidance",
+    "partialSuccess",
+    "retryCommand",
+  ])
 })
 
 Deno.test("buildCapabilitiesPayload includes raw api escape hatch traits", () => {
@@ -243,4 +331,30 @@ Deno.test("buildCapabilitiesPayload v2 exposes constrained values where practica
       { value: "v2", description: null },
     ],
   )
+  assertEquals(capabilitiesCommand.schema.defaults, [
+    {
+      source: "flag",
+      name: "--compat",
+      value: "v1",
+      description: "Defaults to the startup-safe capabilities schema shape.",
+    },
+  ])
+  assertEquals(capabilitiesCommand.schema.constraints, [
+    {
+      source: { source: "flag", name: "--compat" },
+      kind: "requires_all_of",
+      targets: [{ source: "flag", name: "--json" }],
+      reason: "--compat only applies to the machine-readable JSON output.",
+    },
+  ])
+  assertEquals(capabilitiesCommand.schema.examples, [
+    {
+      description: "Read the startup-safe capabilities registry.",
+      argv: ["linear", "capabilities", "--json"],
+    },
+    {
+      description: "Opt into richer schema metadata for advanced agents.",
+      argv: ["linear", "capabilities", "--json", "--compat", "v2"],
+    },
+  ])
 })

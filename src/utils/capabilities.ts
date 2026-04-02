@@ -8,6 +8,7 @@ export type CapabilityStdinMode = "none" | "implicit_text" | "explicit_bulk"
 export type CapabilityInputMode = "flags" | "stdin" | "file"
 export type CapabilitySchemaCoverage = "curated_primary_inputs"
 export type CapabilityInputReferenceSource = "argument" | "flag"
+export type CapabilityLiteralValue = string | number | boolean
 export type CapabilityValueType =
   | "boolean"
   | "string"
@@ -56,9 +57,38 @@ export type CapabilityInputReference = {
   name: string
 }
 
+export type CapabilityInputDefault = CapabilityInputReference & {
+  value: CapabilityLiteralValue | null
+  description: string
+}
+
+export type CapabilityInputResolutionStrategy =
+  | "current_issue_context"
+  | "configured_team_context"
+  | "env_or_internal_default"
+
+export type CapabilityInputResolution = CapabilityInputReference & {
+  strategy: CapabilityInputResolutionStrategy
+  description: string
+}
+
+export type CapabilityConstraintKind = "conflicts_with" | "requires_all_of"
+
+export type CapabilityConstraint = {
+  source: CapabilityInputReference
+  kind: CapabilityConstraintKind
+  targets: CapabilityInputReference[]
+  reason: string
+}
+
 export type CapabilityInputChannelTarget = {
   field: string
   viaFlags: string[]
+}
+
+export type CapabilityCommandExample = {
+  description: string
+  argv: string[]
 }
 
 export type CapabilityCommandSchema = {
@@ -68,8 +98,12 @@ export type CapabilityCommandSchema = {
   inputModes: CapabilityInputMode[]
   requiredInputs: CapabilityInputReference[]
   optionalInputs: CapabilityInputReference[]
+  defaults: CapabilityInputDefault[]
+  resolutions: CapabilityInputResolution[]
+  constraints: CapabilityConstraint[]
   stdinTargets: CapabilityInputChannelTarget[]
   fileTargets: CapabilityInputChannelTarget[]
+  examples: CapabilityCommandExample[]
 }
 
 export type CapabilityOutputCategory =
@@ -108,6 +142,7 @@ export type CapabilityOutputSemantics = {
     contract: CapabilityOutputContract | null
     shape: CapabilityOutputShape
     exitCode: 0
+    topLevelFields: string[]
   }
   preview: {
     supported: boolean
@@ -115,11 +150,15 @@ export type CapabilityOutputSemantics = {
     contract: CapabilityOutputContract | null
     shape: CapabilityOutputShape | null
     exitCode: 0 | null
+    topLevelFields: string[] | null
   }
   failure: {
     jsonWhenRequested: boolean
     parseErrorsJsonWhenRequested: boolean
     exitCodes: CapabilityExitCode[]
+    topLevelFields: string[]
+    errorFields: string[]
+    detailFields: string[]
   }
 }
 
@@ -312,6 +351,47 @@ function enumValues(values: readonly string[]): CapabilityAllowedValue[] {
     value,
     description: null,
   }))
+}
+
+function inputRef(
+  source: CapabilityInputReferenceSource,
+  name: string,
+): CapabilityInputReference {
+  return { source, name }
+}
+
+function inputDefault(
+  source: CapabilityInputReferenceSource,
+  name: string,
+  description: string,
+  value: CapabilityLiteralValue | null = null,
+): CapabilityInputDefault {
+  return { source, name, description, value }
+}
+
+function inputResolution(
+  source: CapabilityInputReferenceSource,
+  name: string,
+  strategy: CapabilityInputResolutionStrategy,
+  description: string,
+): CapabilityInputResolution {
+  return { source, name, strategy, description }
+}
+
+function constraint(
+  source: CapabilityInputReference,
+  kind: CapabilityConstraintKind,
+  targets: CapabilityInputReference[],
+  reason: string,
+): CapabilityConstraint {
+  return { source, kind, targets, reason }
+}
+
+function example(
+  description: string,
+  argv: string[],
+): CapabilityCommandExample {
+  return { description, argv }
 }
 
 const JSON_FAILURE_COMMANDS = new Set<string>([
@@ -654,6 +734,12 @@ const FLAG_OVERRIDES: Record<string, CapabilityFlagSchema[]> = {
   ],
   "linear issue list": [
     flag("--all", null, "boolean", "List all assignees and all states."),
+    flag(
+      "--all-states",
+      null,
+      "boolean",
+      "Include every workflow state while keeping assignee selection unchanged.",
+    ),
     flag("--state", "-s", "state_ref", "Filter by workflow state."),
     flag("--query", null, "string", "Filter by search text."),
     flag(
@@ -745,6 +831,427 @@ const FILE_TARGETS: Record<string, CapabilityInputChannelTarget[]> = {
   ],
   "linear issue update": [
     { field: "description", viaFlags: ["--description-file"] },
+  ],
+}
+
+const INPUT_DEFAULTS: Record<string, CapabilityInputDefault[]> = {
+  "linear capabilities": [
+    inputDefault(
+      "flag",
+      "--compat",
+      "Defaults to the startup-safe capabilities schema shape.",
+      "v1",
+    ),
+  ],
+  "linear cycle current": [
+    inputDefault(
+      "flag",
+      "--team",
+      "Falls back to the configured current team when omitted.",
+    ),
+  ],
+  "linear cycle list": [
+    inputDefault(
+      "flag",
+      "--team",
+      "Falls back to the configured current team when omitted.",
+    ),
+  ],
+  "linear cycle next": [
+    inputDefault(
+      "flag",
+      "--team",
+      "Falls back to the configured current team when omitted.",
+    ),
+  ],
+  "linear issue children": [
+    inputDefault(
+      "argument",
+      "issue",
+      "Defaults to the current issue from the branch name or jj trailer.",
+    ),
+  ],
+  "linear issue comment add": [
+    inputDefault(
+      "argument",
+      "issue",
+      "Defaults to the current issue from the branch name or jj trailer.",
+    ),
+    inputDefault(
+      "flag",
+      "--timeout-ms",
+      "Falls back to LINEAR_WRITE_TIMEOUT_MS or the built-in timeout.",
+    ),
+  ],
+  "linear issue comment update": [
+    inputDefault(
+      "flag",
+      "--timeout-ms",
+      "Falls back to LINEAR_WRITE_TIMEOUT_MS or the built-in timeout.",
+    ),
+  ],
+  "linear issue create": [
+    inputDefault(
+      "flag",
+      "--timeout-ms",
+      "Falls back to LINEAR_WRITE_TIMEOUT_MS or the built-in timeout.",
+    ),
+  ],
+  "linear issue create-batch": [
+    inputDefault(
+      "flag",
+      "--timeout-ms",
+      "Falls back to LINEAR_WRITE_TIMEOUT_MS or the built-in timeout.",
+    ),
+  ],
+  "linear issue parent": [
+    inputDefault(
+      "argument",
+      "issue",
+      "Defaults to the current issue from the branch name or jj trailer.",
+    ),
+  ],
+  "linear issue relation list": [
+    inputDefault(
+      "argument",
+      "issue",
+      "Defaults to the current issue from the branch name or jj trailer.",
+    ),
+  ],
+  "linear issue start": [
+    inputDefault(
+      "argument",
+      "issue",
+      "Defaults to the current issue from the branch name or jj trailer.",
+    ),
+  ],
+  "linear issue update": [
+    inputDefault(
+      "argument",
+      "issue",
+      "Defaults to the current issue from the branch name or jj trailer.",
+    ),
+    inputDefault(
+      "flag",
+      "--timeout-ms",
+      "Falls back to LINEAR_WRITE_TIMEOUT_MS or the built-in timeout.",
+    ),
+  ],
+  "linear issue view": [
+    inputDefault(
+      "argument",
+      "issue",
+      "Defaults to the current issue from the branch name or jj trailer.",
+    ),
+  ],
+  "linear notification archive": [
+    inputDefault(
+      "flag",
+      "--timeout-ms",
+      "Falls back to LINEAR_WRITE_TIMEOUT_MS or the built-in timeout.",
+    ),
+  ],
+  "linear notification read": [
+    inputDefault(
+      "flag",
+      "--timeout-ms",
+      "Falls back to LINEAR_WRITE_TIMEOUT_MS or the built-in timeout.",
+    ),
+  ],
+  "linear team members": [
+    inputDefault(
+      "argument",
+      "team",
+      "Falls back to the configured current team when omitted.",
+    ),
+  ],
+  "linear team view": [
+    inputDefault(
+      "argument",
+      "team",
+      "Falls back to the configured current team when omitted.",
+    ),
+  ],
+}
+
+const INPUT_RESOLUTIONS: Record<string, CapabilityInputResolution[]> = {
+  "linear cycle current": [
+    inputResolution(
+      "flag",
+      "--team",
+      "configured_team_context",
+      "If omitted, the CLI resolves the team from the configured current team.",
+    ),
+  ],
+  "linear cycle list": [
+    inputResolution(
+      "flag",
+      "--team",
+      "configured_team_context",
+      "If omitted, the CLI resolves the team from the configured current team.",
+    ),
+  ],
+  "linear cycle next": [
+    inputResolution(
+      "flag",
+      "--team",
+      "configured_team_context",
+      "If omitted, the CLI resolves the team from the configured current team.",
+    ),
+  ],
+  "linear issue children": [
+    inputResolution(
+      "argument",
+      "issue",
+      "current_issue_context",
+      "If omitted, the CLI resolves the current issue from the branch name or jj trailer.",
+    ),
+  ],
+  "linear issue comment add": [
+    inputResolution(
+      "argument",
+      "issue",
+      "current_issue_context",
+      "If omitted, the CLI resolves the current issue from the branch name or jj trailer.",
+    ),
+    inputResolution(
+      "flag",
+      "--timeout-ms",
+      "env_or_internal_default",
+      "The timeout falls back to LINEAR_WRITE_TIMEOUT_MS or the built-in default when omitted.",
+    ),
+  ],
+  "linear issue comment update": [
+    inputResolution(
+      "flag",
+      "--timeout-ms",
+      "env_or_internal_default",
+      "The timeout falls back to LINEAR_WRITE_TIMEOUT_MS or the built-in default when omitted.",
+    ),
+  ],
+  "linear issue create": [
+    inputResolution(
+      "flag",
+      "--timeout-ms",
+      "env_or_internal_default",
+      "The timeout falls back to LINEAR_WRITE_TIMEOUT_MS or the built-in default when omitted.",
+    ),
+  ],
+  "linear issue create-batch": [
+    inputResolution(
+      "flag",
+      "--timeout-ms",
+      "env_or_internal_default",
+      "The timeout falls back to LINEAR_WRITE_TIMEOUT_MS or the built-in default when omitted.",
+    ),
+  ],
+  "linear issue parent": [
+    inputResolution(
+      "argument",
+      "issue",
+      "current_issue_context",
+      "If omitted, the CLI resolves the current issue from the branch name or jj trailer.",
+    ),
+  ],
+  "linear issue relation list": [
+    inputResolution(
+      "argument",
+      "issue",
+      "current_issue_context",
+      "If omitted, the CLI resolves the current issue from the branch name or jj trailer.",
+    ),
+  ],
+  "linear issue start": [
+    inputResolution(
+      "argument",
+      "issue",
+      "current_issue_context",
+      "If omitted, the CLI resolves the current issue from the branch name or jj trailer.",
+    ),
+  ],
+  "linear issue update": [
+    inputResolution(
+      "argument",
+      "issue",
+      "current_issue_context",
+      "If omitted, the CLI resolves the current issue from the branch name or jj trailer.",
+    ),
+    inputResolution(
+      "flag",
+      "--timeout-ms",
+      "env_or_internal_default",
+      "The timeout falls back to LINEAR_WRITE_TIMEOUT_MS or the built-in default when omitted.",
+    ),
+  ],
+  "linear issue view": [
+    inputResolution(
+      "argument",
+      "issue",
+      "current_issue_context",
+      "If omitted, the CLI resolves the current issue from the branch name or jj trailer.",
+    ),
+  ],
+  "linear notification archive": [
+    inputResolution(
+      "flag",
+      "--timeout-ms",
+      "env_or_internal_default",
+      "The timeout falls back to LINEAR_WRITE_TIMEOUT_MS or the built-in default when omitted.",
+    ),
+  ],
+  "linear notification read": [
+    inputResolution(
+      "flag",
+      "--timeout-ms",
+      "env_or_internal_default",
+      "The timeout falls back to LINEAR_WRITE_TIMEOUT_MS or the built-in default when omitted.",
+    ),
+  ],
+  "linear team members": [
+    inputResolution(
+      "argument",
+      "team",
+      "configured_team_context",
+      "If omitted, the CLI resolves the team from the configured current team.",
+    ),
+  ],
+  "linear team view": [
+    inputResolution(
+      "argument",
+      "team",
+      "configured_team_context",
+      "If omitted, the CLI resolves the team from the configured current team.",
+    ),
+  ],
+}
+
+const COMMAND_CONSTRAINTS: Record<string, CapabilityConstraint[]> = {
+  "linear capabilities": [
+    constraint(
+      inputRef("flag", "--compat"),
+      "requires_all_of",
+      [inputRef("flag", "--json")],
+      "--compat only applies to the machine-readable JSON output.",
+    ),
+  ],
+  "linear issue comment add": [
+    constraint(
+      inputRef("flag", "--body"),
+      "conflicts_with",
+      [inputRef("flag", "--body-file")],
+      "Choose either inline body text or a body file for the comment content.",
+    ),
+  ],
+  "linear issue comment update": [
+    constraint(
+      inputRef("flag", "--body"),
+      "conflicts_with",
+      [inputRef("flag", "--body-file")],
+      "Choose either inline body text or a body file for the replacement comment content.",
+    ),
+  ],
+  "linear issue create": [
+    constraint(
+      inputRef("flag", "--description"),
+      "conflicts_with",
+      [inputRef("flag", "--description-file")],
+      "Choose either inline description text or a description file.",
+    ),
+  ],
+  "linear issue list": [
+    constraint(
+      inputRef("flag", "--all-states"),
+      "conflicts_with",
+      [inputRef("flag", "--state")],
+      "--all-states already includes every state, so it cannot be combined with --state.",
+    ),
+  ],
+  "linear issue update": [
+    constraint(
+      inputRef("flag", "--description"),
+      "conflicts_with",
+      [inputRef("flag", "--description-file")],
+      "Choose either inline replacement description text or a description file.",
+    ),
+  ],
+}
+
+const COMMAND_EXAMPLES: Record<string, CapabilityCommandExample[]> = {
+  "linear capabilities": [
+    example("Read the startup-safe capabilities registry.", [
+      "linear",
+      "capabilities",
+      "--json",
+    ]),
+    example("Opt into richer schema metadata for advanced agents.", [
+      "linear",
+      "capabilities",
+      "--json",
+      "--compat",
+      "v2",
+    ]),
+  ],
+  "linear issue create": [
+    example("Preview a new issue before creating it.", [
+      "linear",
+      "issue",
+      "create",
+      "--title",
+      "Backfill docs",
+      "--team",
+      "ENG",
+      "--dry-run",
+      "--json",
+    ]),
+  ],
+  "linear issue list": [
+    example("Read issue list data with a stable JSON envelope.", [
+      "linear",
+      "issue",
+      "list",
+      "--json",
+    ]),
+    example("List all assignees with a state filter.", [
+      "linear",
+      "issue",
+      "list",
+      "--all",
+      "--state",
+      "started",
+      "--json",
+    ]),
+  ],
+  "linear issue update": [
+    example("Preview an issue update with dry-run JSON.", [
+      "linear",
+      "issue",
+      "update",
+      "ENG-123",
+      "--state",
+      "done",
+      "--dry-run",
+      "--json",
+    ]),
+    example("Apply an update and append a comment.", [
+      "linear",
+      "issue",
+      "update",
+      "ENG-123",
+      "--state",
+      "done",
+      "--comment",
+      "Shipped",
+      "--json",
+    ]),
+  ],
+  "linear notification read": [
+    example("Mark a notification as read with machine-readable output.", [
+      "linear",
+      "notification",
+      "read",
+      "notif_123",
+      "--json",
+    ]),
   ],
 }
 
@@ -1476,9 +1983,66 @@ function buildCommandSchema(
     inputModes,
     requiredInputs,
     optionalInputs,
+    defaults: INPUT_DEFAULTS[command.path] ?? [],
+    resolutions: INPUT_RESOLUTIONS[command.path] ?? [],
+    constraints: COMMAND_CONSTRAINTS[command.path] ?? [],
     stdinTargets: STDIN_TARGETS[command.path] ?? [],
     fileTargets: FILE_TARGETS[command.path] ?? [],
+    examples: COMMAND_EXAMPLES[command.path] ?? [],
   }
+}
+
+function buildSuccessTopLevelFields(
+  command: CapabilityRegistryEntry,
+): string[] {
+  if (command.path === "linear capabilities") {
+    return [
+      "schemaVersion",
+      "cli",
+      "contractVersions",
+      "automationTier",
+      "commands",
+      "compatibility",
+    ]
+  }
+
+  if (command.path === "linear api") {
+    return ["data"]
+  }
+
+  if (command.json.supported) {
+    return ["success", "data"]
+  }
+
+  return []
+}
+
+function buildFailureDetailFields(
+  command: CapabilityRegistryEntry,
+): string[] {
+  const fields = new Set<string>()
+
+  if (WRITE_TIMEOUT_COMMANDS.has(command.path)) {
+    fields.add("failureMode")
+    fields.add("outcome")
+    fields.add("appliedState")
+    fields.add("callerGuidance")
+  }
+
+  if (PARTIAL_SUCCESS_COMMANDS.has(command.path)) {
+    fields.add("partialSuccess")
+    fields.add("retryCommand")
+  }
+
+  if (command.path === "linear issue create-batch") {
+    fields.add("createdIdentifiers")
+    fields.add("createdCount")
+    fields.add("failedStep")
+    fields.add("retryable")
+    fields.add("retryHint")
+  }
+
+  return [...fields]
 }
 
 function buildFailureExitCodes(
@@ -1549,6 +2113,7 @@ function buildCommandOutput(
       contract: successContract,
       shape,
       exitCode: 0,
+      topLevelFields: buildSuccessTopLevelFields(command),
     },
     preview: {
       supported: command.dryRun.supported,
@@ -1558,11 +2123,23 @@ function buildCommandOutput(
       contract: previewContract,
       shape: command.dryRun.supported ? "object" : null,
       exitCode: command.dryRun.supported ? 0 : null,
+      topLevelFields: command.dryRun.supported
+        ? ["success", "dryRun", "summary", "data"]
+        : null,
     },
     failure: {
       jsonWhenRequested: JSON_FAILURE_COMMANDS.has(command.path),
       parseErrorsJsonWhenRequested: JSON_FAILURE_COMMANDS.has(command.path),
       exitCodes: buildFailureExitCodes(command),
+      topLevelFields: JSON_FAILURE_COMMANDS.has(command.path)
+        ? ["success", "error"]
+        : [],
+      errorFields: JSON_FAILURE_COMMANDS.has(command.path)
+        ? ["type", "message", "suggestion", "context", "details"]
+        : [],
+      detailFields: JSON_FAILURE_COMMANDS.has(command.path)
+        ? buildFailureDetailFields(command)
+        : [],
     },
   }
 }
