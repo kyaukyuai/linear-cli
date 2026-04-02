@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [2.13.0] - 2026-04-02
+
+### Added
+
+- enriched `linear capabilities --json --compat v2` with defaults, context resolution hints, input constraints, canonical argv examples, and explicit success/failure envelope fields so agents can assemble commands with less help-text scraping
+
 ## [2.12.4] - 2026-04-02
 
 ### Added
