@@ -82,7 +82,8 @@ export const createCommand = new Command()
         // Non-interactive mode requires title
         if (!title) {
           throw new ValidationError("Title is required", {
-            suggestion: "Use --title or pass --interactive.",
+            suggestion:
+              "Use --title or pass --profile human-debug --interactive.",
           })
         }
 

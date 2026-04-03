@@ -114,11 +114,11 @@ Default top-level shape from `linear capabilities`:
     "supportedSchemaVersions": ["v1", "v2"]
   },
   "executionProfiles": {
-    "defaultProfile": null,
+    "defaultProfile": "agent-safe",
     "availableProfiles": [
       {
         "name": "agent-safe",
-        "description": "Opt-in profile for agent and automation runs that prefer predictable non-interactive defaults.",
+        "description": "Default profile for agent and automation runs that prefer predictable non-interactive defaults.",
         "semantics": {
           "disablePagerByDefault": true,
           "preferJsonWhenSupported": true,
@@ -129,7 +129,23 @@ Default top-level shape from `linear capabilities`:
         "nonGoals": [
           "Does not force --json when the caller omits it.",
           "Does not auto-confirm destructive actions; use --yes explicitly.",
-          "Does not replace missing required inputs or every interactive data-entry fallback."
+          "Does not replace missing required inputs; human/debug prompt flows still require explicit --profile human-debug --interactive opt-in."
+        ]
+      },
+      {
+        "name": "human-debug",
+        "description": "Opt-in profile for human-guided debugging that re-enables prompt and pager defaults.",
+        "semantics": {
+          "disablePagerByDefault": false,
+          "preferJsonWhenSupported": false,
+          "requireExplicitConfirmationBypass": false,
+          "defaultWriteTimeoutMs": 30000,
+          "allowInteractivePrompts": true
+        },
+        "nonGoals": [
+          "Does not revert default-JSON command surfaces; use --text for human-readable output.",
+          "Does not auto-confirm destructive actions when --interactive is omitted.",
+          "Does not change startup-safe capabilities compatibility defaults."
         ]
       }
     ]
@@ -279,7 +295,7 @@ Rules:
 - `confirmationBypass` is `--yes` when the command supports canonical confirmation skipping, otherwise `null`
 - `idempotency.category` is one of `read_only`, `retry_safe_update`, `retry_safe_no_op`, `non_idempotent`, `resumable_batch`, `conditional`, or `destructive`
 - `compatibility` describes the default, latest, and supported machine-readable capabilities schema versions
-- `executionProfiles` describes opt-in runtime profiles such as `agent-safe` and their non-interactive defaults
+- `executionProfiles` describes runtime profiles and their non-interactive defaults; `defaultProfile` shows which profile is active when callers do not override it
 - `schema.coverage` is currently `curated_primary_inputs`, meaning the metadata is intentionally focused on the primary agent-facing execution path and is not a full parser dump of every flag
 
 Release-gated downstream certification currently covers:

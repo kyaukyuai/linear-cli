@@ -35,8 +35,8 @@ export const defaultCommand = new Command()
       if (!workspace) {
         ensureInteractiveInputAvailable(
           { interactive },
-          "Workspace is required unless --interactive is used",
-          `Pass a workspace name directly, or use --interactive to choose from: ${
+          "Workspace is required unless --profile human-debug --interactive is used",
+          `Pass a workspace name directly, or use --profile human-debug --interactive to choose from: ${
             workspaces.join(", ")
           }`,
         )

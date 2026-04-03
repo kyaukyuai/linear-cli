@@ -45,7 +45,7 @@ snapshot[`Issue Start Command - Requires Explicit Interactive Selection 1`] = `
 stdout:
 ""
 stderr:
-"✗ Failed to start issue: Issue ID is required unless --interactive is used
-  Pass an issue ID like \`linear issue start ENG-123\`, or use --interactive to pick from a list.
+"✗ Failed to start issue: Issue ID is required unless --profile human-debug --interactive is used
+  Pass an issue ID like \`linear issue start ENG-123\`, or use --profile human-debug --interactive to pick from a list.
 "
 `;

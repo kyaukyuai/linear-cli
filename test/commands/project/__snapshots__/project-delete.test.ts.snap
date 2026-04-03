@@ -58,6 +58,6 @@ stdout:
 ""
 stderr:
 "✗ Failed to delete project: Interactive confirmation required
-  Use --yes to skip confirmation, or pass --interactive to confirm in a terminal.
+  Use --yes to skip confirmation, or pass --profile human-debug --interactive to confirm in a terminal.
 "
 `;

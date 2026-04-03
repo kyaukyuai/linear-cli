@@ -1,7 +1,7 @@
 import { assertEquals } from "@std/assert"
 import {
-  AGENT_SAFE_PROFILE,
   getCliExecutionProfile,
+  HUMAN_DEBUG_PROFILE,
   setCliExecutionProfile,
 } from "../../src/utils/execution_profile.ts"
 import { getPagerCommand, shouldUsePager } from "../../src/utils/pager.ts"
@@ -39,11 +39,13 @@ Deno.test({
   fn() {
     // Mock stdout.isTerminal to return true
     const originalIsTerminal = Deno.stdout.isTerminal
+    const originalProfile = getCliExecutionProfile()
     Deno.stdout.isTerminal = () => true
 
     // Mock consoleSize to return a small terminal
     const originalConsoleSize = Deno.consoleSize
     Deno.consoleSize = () => ({ columns: 80, rows: 10 })
+    setCliExecutionProfile(HUMAN_DEBUG_PROFILE)
 
     try {
       // Create output longer than terminal height (10 - 2 = 8)
@@ -52,6 +54,7 @@ Deno.test({
     } finally {
       Deno.stdout.isTerminal = originalIsTerminal
       Deno.consoleSize = originalConsoleSize
+      setCliExecutionProfile(originalProfile)
     }
   },
 })
@@ -61,11 +64,13 @@ Deno.test({
   fn() {
     // Mock stdout.isTerminal to return true
     const originalIsTerminal = Deno.stdout.isTerminal
+    const originalProfile = getCliExecutionProfile()
     Deno.stdout.isTerminal = () => true
 
     // Mock consoleSize to return a large terminal
     const originalConsoleSize = Deno.consoleSize
     Deno.consoleSize = () => ({ columns: 80, rows: 50 })
+    setCliExecutionProfile(HUMAN_DEBUG_PROFILE)
 
     try {
       // Create output shorter than terminal height (50 - 2 = 48)
@@ -74,13 +79,14 @@ Deno.test({
     } finally {
       Deno.stdout.isTerminal = originalIsTerminal
       Deno.consoleSize = originalConsoleSize
+      setCliExecutionProfile(originalProfile)
     }
   },
 })
 
 Deno.test({
   name:
-    "shouldUsePager - returns false when agent-safe disables pager by default",
+    "shouldUsePager - returns false when the default execution profile disables pager",
   fn() {
     const originalIsTerminal = Deno.stdout.isTerminal
     const originalConsoleSize = Deno.consoleSize
@@ -88,7 +94,7 @@ Deno.test({
 
     Deno.stdout.isTerminal = () => true
     Deno.consoleSize = () => ({ columns: 80, rows: 10 })
-    setCliExecutionProfile(AGENT_SAFE_PROFILE)
+    setCliExecutionProfile(undefined)
 
     try {
       const outputLines = Array.from({ length: 20 }, (_, i) => `Line ${i + 1}`)

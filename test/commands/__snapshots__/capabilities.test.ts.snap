@@ -43,7 +43,8 @@ automation tier
   v3: linear document list, linear document view, linear notification count, linear notification list, linear webhook list, linear webhook view
 
 execution profiles
-  agent-safe: pager=off json=preferred timeout=45000ms confirm=explicit --yes
+  agent-safe (default): pager=off json=preferred timeout=45000ms confirm=explicit --yes
+  human-debug: pager=on json=optional timeout=30000ms confirm=interactive or --yes
 
 agent-facing commands
   linear api :: json=no dry-run=no inputs=flags,stdin success=json_default confirm=none idempotency=read_only
@@ -1749,11 +1750,11 @@ stdout:
     ]
   },
   "executionProfiles": {
-    "defaultProfile": null,
+    "defaultProfile": "agent-safe",
     "availableProfiles": [
       {
         "name": "agent-safe",
-        "description": "Opt-in profile for agent and automation runs that prefer predictable non-interactive defaults.",
+        "description": "Default profile for agent and automation runs that prefer predictable non-interactive defaults.",
         "semantics": {
           "disablePagerByDefault": true,
           "preferJsonWhenSupported": true,
@@ -1764,7 +1765,23 @@ stdout:
         "nonGoals": [
           "Does not force --json when the caller omits it.",
           "Does not auto-confirm destructive actions; use --yes explicitly.",
-          "Does not replace missing required inputs or every interactive data-entry fallback."
+          "Does not replace missing required inputs; human/debug prompt flows still require explicit --profile human-debug --interactive opt-in."
+        ]
+      },
+      {
+        "name": "human-debug",
+        "description": "Opt-in profile for human-guided debugging that re-enables prompt and pager defaults.",
+        "semantics": {
+          "disablePagerByDefault": false,
+          "preferJsonWhenSupported": false,
+          "requireExplicitConfirmationBypass": false,
+          "defaultWriteTimeoutMs": 30000,
+          "allowInteractivePrompts": true
+        },
+        "nonGoals": [
+          "Does not revert default-JSON command surfaces; use --text for human-readable output.",
+          "Does not auto-confirm destructive actions when --interactive is omitted.",
+          "Does not change startup-safe capabilities compatibility defaults."
         ]
       }
     ]

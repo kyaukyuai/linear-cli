@@ -1,6 +1,7 @@
 import {
   AGENT_SAFE_PROFILE,
   AGENT_SAFE_WRITE_TIMEOUT_MS,
+  HUMAN_DEBUG_PROFILE,
 } from "./execution_profile.ts"
 
 export type AutomationContractVersion =
@@ -189,7 +190,7 @@ export type CapabilityWriteSemantics = {
   mayReturnPartialSuccess: boolean
 }
 
-export type CapabilityExecutionProfileName = "agent-safe"
+export type CapabilityExecutionProfileName = "agent-safe" | "human-debug"
 
 export type CapabilityExecutionProfile = {
   name: CapabilityExecutionProfileName
@@ -205,7 +206,7 @@ export type CapabilityExecutionProfile = {
 }
 
 export type CapabilityExecutionProfiles = {
-  defaultProfile: CapabilityExecutionProfileName | null
+  defaultProfile: CapabilityExecutionProfileName
   availableProfiles: CapabilityExecutionProfile[]
 }
 
@@ -2663,12 +2664,12 @@ function buildAutomationTier() {
 
 function buildExecutionProfiles(): CapabilityExecutionProfiles {
   return {
-    defaultProfile: null,
+    defaultProfile: AGENT_SAFE_PROFILE,
     availableProfiles: [
       {
         name: AGENT_SAFE_PROFILE,
         description:
-          "Opt-in profile for agent and automation runs that prefer predictable non-interactive defaults.",
+          "Default profile for agent and automation runs that prefer predictable non-interactive defaults.",
         semantics: {
           disablePagerByDefault: true,
           preferJsonWhenSupported: true,
@@ -2679,7 +2680,24 @@ function buildExecutionProfiles(): CapabilityExecutionProfiles {
         nonGoals: [
           "Does not force --json when the caller omits it.",
           "Does not auto-confirm destructive actions; use --yes explicitly.",
-          "Does not replace missing required inputs or every interactive data-entry fallback.",
+          "Does not replace missing required inputs; human/debug prompt flows still require explicit --profile human-debug --interactive opt-in.",
+        ],
+      },
+      {
+        name: HUMAN_DEBUG_PROFILE,
+        description:
+          "Opt-in profile for human-guided debugging that re-enables prompt and pager defaults.",
+        semantics: {
+          disablePagerByDefault: false,
+          preferJsonWhenSupported: false,
+          requireExplicitConfirmationBypass: false,
+          defaultWriteTimeoutMs: 30_000,
+          allowInteractivePrompts: true,
+        },
+        nonGoals: [
+          "Does not revert default-JSON command surfaces; use --text for human-readable output.",
+          "Does not auto-confirm destructive actions when --interactive is omitted.",
+          "Does not change startup-safe capabilities compatibility defaults.",
         ],
       },
     ],

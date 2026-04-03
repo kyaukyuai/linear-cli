@@ -71,12 +71,12 @@ Deno.test("buildCapabilitiesPayload v2 includes issue update capability traits",
     supportedSchemaVersions: ["v1", "v2"],
   })
   assertEquals(payload.executionProfiles, {
-    defaultProfile: null,
+    defaultProfile: "agent-safe",
     availableProfiles: [
       {
         name: "agent-safe",
         description:
-          "Opt-in profile for agent and automation runs that prefer predictable non-interactive defaults.",
+          "Default profile for agent and automation runs that prefer predictable non-interactive defaults.",
         semantics: {
           disablePagerByDefault: true,
           preferJsonWhenSupported: true,
@@ -87,7 +87,24 @@ Deno.test("buildCapabilitiesPayload v2 includes issue update capability traits",
         nonGoals: [
           "Does not force --json when the caller omits it.",
           "Does not auto-confirm destructive actions; use --yes explicitly.",
-          "Does not replace missing required inputs or every interactive data-entry fallback.",
+          "Does not replace missing required inputs; human/debug prompt flows still require explicit --profile human-debug --interactive opt-in.",
+        ],
+      },
+      {
+        name: "human-debug",
+        description:
+          "Opt-in profile for human-guided debugging that re-enables prompt and pager defaults.",
+        semantics: {
+          disablePagerByDefault: false,
+          preferJsonWhenSupported: false,
+          requireExplicitConfirmationBypass: false,
+          defaultWriteTimeoutMs: 30000,
+          allowInteractivePrompts: true,
+        },
+        nonGoals: [
+          "Does not revert default-JSON command surfaces; use --text for human-readable output.",
+          "Does not auto-confirm destructive actions when --interactive is omitted.",
+          "Does not change startup-safe capabilities compatibility defaults.",
         ],
       },
     ],

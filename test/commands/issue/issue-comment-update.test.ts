@@ -129,6 +129,6 @@ Deno.test("Issue Comment Update Command - Empty Stdin Validation Failure", async
   assertEquals(stdout, "")
   assertEquals(
     stderr,
-    "✗ Failed to update comment: Comment body cannot be empty\n  Provide --body, --body-file, or pipe the updated comment body on stdin. Use --interactive to edit it in a terminal.\n",
+    "✗ Failed to update comment: Comment body cannot be empty\n  Provide --body, --body-file, or pipe the updated comment body on stdin. Use --profile human-debug --interactive to edit it in a terminal.\n",
   )
 })

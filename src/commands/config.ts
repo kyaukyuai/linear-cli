@@ -34,7 +34,7 @@ export const configCommand = new Command()
       ensureInteractiveInputAvailable(
         { interactive },
         "Config generation is interactive only",
-        "Pass --interactive to generate configuration in a terminal.",
+        "Pass --profile human-debug --interactive to generate configuration in a terminal.",
       )
       console.log(`
 ██      ██ ███    ██ ███████  █████  ██████      ██████ ██      ██

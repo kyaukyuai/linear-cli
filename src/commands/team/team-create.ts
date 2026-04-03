@@ -115,9 +115,10 @@ export const createCommand = new Command()
         // Fallback to flag-based mode
         if (!name) {
           throw new ValidationError(
-            "Team name is required unless --interactive is used",
+            "Team name is required unless --profile human-debug --interactive is used",
             {
-              suggestion: "Use --name, or pass --interactive.",
+              suggestion:
+                "Use --name, or pass --profile human-debug --interactive.",
             },
           )
         }

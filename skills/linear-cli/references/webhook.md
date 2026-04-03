@@ -13,9 +13,9 @@ Description:
 
 Options:
 
-  -h, --help                  - Show this help.                      
-  -w, --workspace  <slug>     - Target workspace (uses credentials)  
-  --profile        <profile>  - Execution profile (agent-safe)       
+  -h, --help                  - Show this help.                                                      
+  -w, --workspace  <slug>     - Target workspace (uses credentials)                                  
+  --profile        <profile>  - Execution profile override (agent-safe default, human-debug opt-in)  
 
 Commands:
 
@@ -41,14 +41,14 @@ Description:
 
 Options:
 
-  -h, --help                     - Show this help.                                        
-  -w, --workspace     <slug>     - Target workspace (uses credentials)                    
-  --profile           <profile>  - Execution profile (agent-safe)                         
-  -n, --limit         <limit>    - Maximum number of webhooks                (Default: 20)
-  --team              <teamKey>  - Filter by team key                                     
-  --include-archived             - Include archived webhooks                              
-  -j, --json                     - Output as JSON                                         
-  --no-pager                     - Disable automatic paging for long output               
+  -h, --help                     - Show this help.                                                                   
+  -w, --workspace     <slug>     - Target workspace (uses credentials)                                               
+  --profile           <profile>  - Execution profile override (agent-safe default, human-debug opt-in)               
+  -n, --limit         <limit>    - Maximum number of webhooks                                           (Default: 20)
+  --team              <teamKey>  - Filter by team key                                                                
+  --include-archived             - Include archived webhooks                                                         
+  -j, --json                     - Output as JSON                                                                    
+  --no-pager                     - Disable automatic paging for long output                                          
 
 Examples:
 
@@ -69,11 +69,11 @@ Description:
 
 Options:
 
-  -h, --help                  - Show this help.                      
-  -w, --workspace  <slug>     - Target workspace (uses credentials)  
-  --profile        <profile>  - Execution profile (agent-safe)       
-  -j, --json                  - Force machine-readable JSON output   
-  --text                      - Output human-readable text           
+  -h, --help                  - Show this help.                                                      
+  -w, --workspace  <slug>     - Target workspace (uses credentials)                                  
+  --profile        <profile>  - Execution profile override (agent-safe default, human-debug opt-in)  
+  -j, --json                  - Force machine-readable JSON output                                   
+  --text                      - Output human-readable text                                           
 
 Examples:
 
@@ -94,18 +94,18 @@ Description:
 
 Options:
 
-  -h, --help                             - Show this help.                                                     
-  -w, --workspace       <slug>           - Target workspace (uses credentials)                                 
-  --profile             <profile>        - Execution profile (agent-safe)                                      
-  -u, --url             <url>            - Webhook URL (required)                                              
-  -r, --resource-types  <resourceTypes>  - Comma-separated resource types (e.g. Issue,Comment)                 
-  -l, --label           <label>          - Webhook label                                                       
-  -t, --team            <teamKey>        - Team key (defaults to current team)                                 
-  --all-public-teams                     - Enable the webhook for all public teams instead of a specific team  
-  --secret              <secret>         - Secret used to sign webhook payloads                                
-  --disabled                             - Create the webhook disabled                                         
-  -j, --json                             - Output as JSON                                                      
-  --dry-run                              - Preview the webhook without creating it                             
+  -h, --help                             - Show this help.                                                      
+  -w, --workspace       <slug>           - Target workspace (uses credentials)                                  
+  --profile             <profile>        - Execution profile override (agent-safe default, human-debug opt-in)  
+  -u, --url             <url>            - Webhook URL (required)                                               
+  -r, --resource-types  <resourceTypes>  - Comma-separated resource types (e.g. Issue,Comment)                  
+  -l, --label           <label>          - Webhook label                                                        
+  -t, --team            <teamKey>        - Team key (defaults to current team)                                  
+  --all-public-teams                     - Enable the webhook for all public teams instead of a specific team   
+  --secret              <secret>         - Secret used to sign webhook payloads                                 
+  --disabled                             - Create the webhook disabled                                          
+  -j, --json                             - Output as JSON                                                       
+  --dry-run                              - Preview the webhook without creating it                              
 
 Examples:
 
@@ -126,17 +126,17 @@ Description:
 
 Options:
 
-  -h, --help                             - Show this help.                                  
-  -w, --workspace       <slug>           - Target workspace (uses credentials)              
-  --profile             <profile>        - Execution profile (agent-safe)                   
-  -u, --url             <url>            - New webhook URL                                  
-  -r, --resource-types  <resourceTypes>  - New comma-separated resource types               
-  -l, --label           <label>          - New webhook label                                
-  --secret              <secret>         - New secret used to sign payloads                 
-  --enabled                              - Enable the webhook                               
-  --disabled                             - Disable the webhook                              
-  -j, --json                             - Output as JSON                                   
-  --dry-run                              - Preview the update without mutating the webhook  
+  -h, --help                             - Show this help.                                                      
+  -w, --workspace       <slug>           - Target workspace (uses credentials)                                  
+  --profile             <profile>        - Execution profile override (agent-safe default, human-debug opt-in)  
+  -u, --url             <url>            - New webhook URL                                                      
+  -r, --resource-types  <resourceTypes>  - New comma-separated resource types                                   
+  -l, --label           <label>          - New webhook label                                                    
+  --secret              <secret>         - New secret used to sign payloads                                     
+  --enabled                              - Enable the webhook                                                   
+  --disabled                             - Disable the webhook                                                  
+  -j, --json                             - Output as JSON                                                       
+  --dry-run                              - Preview the update without mutating the webhook                      
 
 Examples:
 
@@ -157,13 +157,13 @@ Description:
 
 Options:
 
-  -h, --help                    - Show this help.                                    
-  -w, --workspace    <slug>     - Target workspace (uses credentials)                
-  --profile          <profile>  - Execution profile (agent-safe)                     
-  -i, --interactive             - Enable interactive confirmation                    
-  -y, --yes                     - Skip confirmation prompt                           
-  -j, --json                    - Output as JSON                                     
-  --dry-run                     - Preview the deletion without mutating the webhook  
+  -h, --help                    - Show this help.                                                      
+  -w, --workspace    <slug>     - Target workspace (uses credentials)                                  
+  --profile          <profile>  - Execution profile override (agent-safe default, human-debug opt-in)  
+  -i, --interactive             - Enable interactive confirmation                                      
+  -y, --yes                     - Skip confirmation prompt                                             
+  -j, --json                    - Output as JSON                                                       
+  --dry-run                     - Preview the deletion without mutating the webhook                    
 
 Examples:
 

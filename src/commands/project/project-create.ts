@@ -293,7 +293,7 @@ export const createCommand = new Command()
       if (!name) {
         throw new ValidationError("Project name is required", {
           suggestion:
-            "Use --name or -n flag to specify a project name, or pass --interactive.",
+            "Use --name or -n flag to specify a project name, or pass --profile human-debug --interactive.",
         })
       }
 
@@ -305,7 +305,7 @@ export const createCommand = new Command()
         } else {
           throw new ValidationError("At least one team is required", {
             suggestion:
-              "Use --team or -t flag to specify a team, or pass --interactive.",
+              "Use --team or -t flag to specify a team, or pass --profile human-debug --interactive.",
           })
         }
       }

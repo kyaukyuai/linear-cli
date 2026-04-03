@@ -18,7 +18,9 @@ When using this CLI from an agent, prefer this order:
 4. Apply writes with `--json`
 5. Inspect exit codes and `error.details` instead of parsing styled terminal text
 
-Prompt-driven human/debug flows are explicit. When a command supports prompts or editor entry, pass `--interactive`; otherwise missing required inputs fail fast.
+Prompt-driven human/debug flows are explicit. When a command supports prompts or editor entry, pass `--profile human-debug --interactive`; otherwise missing required inputs fail fast.
+
+Agent-safe execution semantics are now the default runtime behavior. `--profile human-debug` is the explicit pager/prompt escape hatch for maintainers, and `--profile agent-safe` remains accepted for compatibility with older automation.
 
 Recommended supporting docs:
 

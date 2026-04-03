@@ -4,8 +4,8 @@ import {
   USE_YES_SUGGESTION,
 } from "../../src/utils/confirmation.ts"
 import {
-  AGENT_SAFE_PROFILE,
   getCliExecutionProfile,
+  HUMAN_DEBUG_PROFILE,
   setCliExecutionProfile,
 } from "../../src/utils/execution_profile.ts"
 import { ValidationError } from "../../src/utils/errors.ts"
@@ -33,23 +33,20 @@ Deno.test("ensureInteractiveConfirmationAvailable rejects non-interactive confir
   }
 })
 
-Deno.test("ensureInteractiveConfirmationAvailable rejects agent-safe confirmation prompts", () => {
-  const originalIsTerminal = Deno.stdin.isTerminal
+Deno.test("ensureInteractiveConfirmationAvailable allows explicit interactive confirmation", () => {
+  const originalStdinIsTerminal = Deno.stdin.isTerminal
+  const originalStdoutIsTerminal = Deno.stdout.isTerminal
   const originalProfile = getCliExecutionProfile()
 
   Deno.stdin.isTerminal = () => true
-  setCliExecutionProfile(AGENT_SAFE_PROFILE)
+  Deno.stdout.isTerminal = () => true
+  setCliExecutionProfile(HUMAN_DEBUG_PROFILE)
 
   try {
-    const error = assertThrows(
-      () => ensureInteractiveConfirmationAvailable({}),
-      ValidationError,
-      "Interactive confirmation required",
-    )
-
-    assertEquals(error.suggestion, USE_YES_SUGGESTION)
+    ensureInteractiveConfirmationAvailable({ interactive: true })
   } finally {
-    Deno.stdin.isTerminal = originalIsTerminal
+    Deno.stdin.isTerminal = originalStdinIsTerminal
+    Deno.stdout.isTerminal = originalStdoutIsTerminal
     setCliExecutionProfile(originalProfile)
   }
 })

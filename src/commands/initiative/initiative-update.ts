@@ -202,7 +202,7 @@ export const updateCommand = new Command()
       if (Object.keys(input).length === 0) {
         throw new ValidationError("No changes specified", {
           suggestion:
-            "Pass one or more update flags, or use --interactive to edit the initiative in a terminal.",
+            "Pass one or more update flags, or use --profile human-debug --interactive to edit the initiative in a terminal.",
         })
       }
 

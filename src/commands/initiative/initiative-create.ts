@@ -183,7 +183,8 @@ export const createCommand = new Command()
     // Validate required fields
     if (!name) {
       throw new ValidationError("Initiative name is required", {
-        suggestion: "Use --name or -n flag, or pass --interactive.",
+        suggestion:
+          "Use --name or -n flag, or pass --profile human-debug --interactive.",
       })
     }
 

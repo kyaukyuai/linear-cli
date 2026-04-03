@@ -13,9 +13,9 @@ Description:
 
 Options:
 
-  -h, --help                  - Show this help.                      
-  -w, --workspace  <slug>     - Target workspace (uses credentials)  
-  --profile        <profile>  - Execution profile (agent-safe)       
+  -h, --help                  - Show this help.                                                      
+  -w, --workspace  <slug>     - Target workspace (uses credentials)                                  
+  --profile        <profile>  - Execution profile override (agent-safe default, human-debug opt-in)  
 
 Commands:
 
@@ -41,15 +41,15 @@ Description:
 
 Options:
 
-  -h, --help                  - Show this help.                                        
-  -w, --workspace  <slug>     - Target workspace (uses credentials)                    
-  --profile        <profile>  - Execution profile (agent-safe)                         
-  --project        <project>  - Filter by project (slug or name)                       
-  --issue          <issue>    - Filter by issue (identifier like TC-123)               
-  --json                      - Force machine-readable JSON output                     
-  --text                      - Output human-readable text                             
-  --limit          <limit>    - Limit results                             (Default: 50)
-  --no-pager                  - Disable automatic paging for long output               
+  -h, --help                  - Show this help.                                                                   
+  -w, --workspace  <slug>     - Target workspace (uses credentials)                                               
+  --profile        <profile>  - Execution profile override (agent-safe default, human-debug opt-in)               
+  --project        <project>  - Filter by project (slug or name)                                                  
+  --issue          <issue>    - Filter by issue (identifier like TC-123)                                          
+  --json                      - Force machine-readable JSON output                                                
+  --text                      - Output human-readable text                                                        
+  --limit          <limit>    - Limit results                                                        (Default: 50)
+  --no-pager                  - Disable automatic paging for long output                                          
 
 Examples:
 
@@ -70,12 +70,12 @@ Description:
 
 Options:
 
-  -h, --help                  - Show this help.                        
-  -w, --workspace  <slug>     - Target workspace (uses credentials)    
-  --profile        <profile>  - Execution profile (agent-safe)         
-  --raw                       - Output raw markdown without rendering  
-  -w, --web                   - Open document in browser               
-  --json                      - Output full document as JSON           
+  -h, --help                  - Show this help.                                                      
+  -w, --workspace  <slug>     - Target workspace (uses credentials)                                  
+  --profile        <profile>  - Execution profile override (agent-safe default, human-debug opt-in)  
+  --raw                       - Output raw markdown without rendering                                
+  -w, --web                   - Open document in browser                                             
+  --json                      - Output full document as JSON                                         
 
 Examples:
 
@@ -95,16 +95,16 @@ Description:
 
 Options:
 
-  -h, --help                     - Show this help.                           
-  -w, --workspace     <slug>     - Target workspace (uses credentials)       
-  --profile           <profile>  - Execution profile (agent-safe)            
-  -t, --title         <title>    - Document title (required)                 
-  -c, --content       <content>  - Markdown content (inline)                 
-  -f, --content-file  <path>     - Read content from file                    
-  --project           <project>  - Attach to project (slug or ID)            
-  --issue             <issue>    - Attach to issue (identifier like TC-123)  
-  --icon              <icon>     - Document icon (emoji)                     
-  -i, --interactive              - Interactive mode with prompts             
+  -h, --help                     - Show this help.                                                      
+  -w, --workspace     <slug>     - Target workspace (uses credentials)                                  
+  --profile           <profile>  - Execution profile override (agent-safe default, human-debug opt-in)  
+  -t, --title         <title>    - Document title (required)                                            
+  -c, --content       <content>  - Markdown content (inline)                                            
+  -f, --content-file  <path>     - Read content from file                                               
+  --project           <project>  - Attach to project (slug or ID)                                       
+  --issue             <issue>    - Attach to issue (identifier like TC-123)                             
+  --icon              <icon>     - Document icon (emoji)                                                
+  -i, --interactive              - Interactive mode with prompts                                        
   --dry-run                      - Preview the document without creating it
 ```
 
@@ -121,14 +121,14 @@ Description:
 
 Options:
 
-  -h, --help                     - Show this help.                                   
-  -w, --workspace     <slug>     - Target workspace (uses credentials)               
-  --profile           <profile>  - Execution profile (agent-safe)                    
-  -t, --title         <title>    - New title for the document                        
-  -c, --content       <content>  - New markdown content (inline)                     
-  -f, --content-file  <path>     - Read new content from file                        
-  --icon              <icon>     - New icon (emoji)                                  
-  -e, --edit                     - Open current content in $EDITOR for editing       
+  -h, --help                     - Show this help.                                                      
+  -w, --workspace     <slug>     - Target workspace (uses credentials)                                  
+  --profile           <profile>  - Execution profile override (agent-safe default, human-debug opt-in)  
+  -t, --title         <title>    - New title for the document                                           
+  -c, --content       <content>  - New markdown content (inline)                                        
+  -f, --content-file  <path>     - Read new content from file                                           
+  --icon              <icon>     - New icon (emoji)                                                     
+  -e, --edit                     - Open current content in $EDITOR for editing                          
   --dry-run                      - Preview the update without mutating the document
 ```
 
@@ -145,13 +145,13 @@ Description:
 
 Options:
 
-  -h, --help                    - Show this help.                                     
-  -w, --workspace    <slug>     - Target workspace (uses credentials)                 
-  --profile          <profile>  - Execution profile (agent-safe)                      
-  -i, --interactive             - Enable interactive confirmation                     
-  -y, --yes                     - Skip confirmation prompt                            
-  --bulk             <ids...>   - Delete multiple documents by slug or ID             
-  --bulk-file        <file>     - Read document slugs/IDs from a file (one per line)  
-  --bulk-stdin                  - Read document slugs/IDs from stdin                  
+  -h, --help                    - Show this help.                                                      
+  -w, --workspace    <slug>     - Target workspace (uses credentials)                                  
+  --profile          <profile>  - Execution profile override (agent-safe default, human-debug opt-in)  
+  -i, --interactive             - Enable interactive confirmation                                      
+  -y, --yes                     - Skip confirmation prompt                                             
+  --bulk             <ids...>   - Delete multiple documents by slug or ID                              
+  --bulk-file        <file>     - Read document slugs/IDs from a file (one per line)                   
+  --bulk-stdin                  - Read document slugs/IDs from stdin                                   
   --dry-run                     - Preview the deletion without mutating documents
 ```

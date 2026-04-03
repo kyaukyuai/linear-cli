@@ -118,7 +118,7 @@ async function resolveLabelId(
     ensureInteractiveInputAvailable(
       { interactive },
       `Multiple labels named "${nameOrId}" found`,
-      "Use --team to disambiguate, or pass --interactive to choose in a terminal.",
+      "Use --team to disambiguate, or pass --profile human-debug --interactive to choose in a terminal.",
     )
     const options = labels.map((l) => ({
       name: `${l.name} (${l.team?.key || "Workspace"}) - ${l.color}`,
