@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## [2.15.0] - 2026-04-03
+
+### Added
+
+- added a global `--profile agent-safe` execution profile that disables pager by default, extends write timeouts, and requires explicit `--yes` for destructive confirmation flows in automation contexts
+
+### Changed
+
+- added downstream consumer certification to the release gate so startup discovery, resolve, preview/apply, and timeout-recovery paths used by real agent workflows cannot drift silently
+
 ## [2.14.0] - 2026-04-03
 
 ### Added

@@ -42,7 +42,7 @@ Default top-level shape:
   "cli": {
     "name": "linear-cli",
     "binary": "linear",
-    "version": "2.14.0"
+    "version": "2.15.0"
   },
   "contractVersions": {
     "automation": {
