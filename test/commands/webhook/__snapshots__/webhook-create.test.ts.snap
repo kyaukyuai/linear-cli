@@ -63,6 +63,29 @@ stdout:
     "id": "user-1",
     "name": "jdoe",
     "displayName": "John Doe"
+  },
+  "operation": {
+    "family": "write_operation",
+    "version": "v1",
+    "phase": "apply",
+    "command": "webhook.create",
+    "resource": "webhook",
+    "action": "create",
+    "summary": "Created webhook webhook-2",
+    "refs": {
+      "webhookId": "webhook-2",
+      "webhookUrl": "https://example.com/hooks/public",
+      "teamKey": null
+    },
+    "changes": [
+      "url",
+      "enabled",
+      "resourceTypes",
+      "scope"
+    ],
+    "noOp": false,
+    "partialSuccess": false,
+    "nextSafeAction": "read_before_retry"
   }
 }
 '
@@ -98,6 +121,24 @@ stdout:
         "secretProvided": false
       }
     }
+  },
+  "operation": {
+    "family": "write_operation",
+    "version": "v1",
+    "phase": "preview",
+    "command": "webhook.create",
+    "resource": "webhook",
+    "action": "create",
+    "summary": "Would create webhook for https://example.com/hooks/dry-run",
+    "refs": {
+      "url": "https://example.com/hooks/dry-run"
+    },
+    "changes": [
+      "input"
+    ],
+    "noOp": false,
+    "partialSuccess": false,
+    "nextSafeAction": "apply"
   }
 }
 '

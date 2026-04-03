@@ -25,6 +25,11 @@ import {
   buildOperationReceipt,
   withOperationReceipt,
 } from "../../utils/operation_receipt.ts"
+import {
+  buildWriteApplyOperationFromReceipt,
+  buildWritePreviewOperation,
+  withWriteOperationContract,
+} from "../../utils/write_operation.ts"
 import { createIssueComment } from "./issue-comment-utils.ts"
 import { buildIssueCommentPayload } from "./issue-comment-payload.ts"
 import { buildIssueCommentDryRunPayload } from "./issue-dry-run-payload.ts"
@@ -222,10 +227,25 @@ export const commentAddCommand = new Command()
             filename: basename(filepath),
           })),
         })
+        const summary = `Would add comment to ${resolvedIdentifier}`
         emitDryRunOutput({
           json,
-          summary: `Would add comment to ${resolvedIdentifier}`,
+          summary,
           data: previewPayload,
+          operation: buildWritePreviewOperation({
+            command: "issue.comment.add",
+            resource: "comment",
+            action: "add",
+            summary,
+            refs: {
+              issueIdentifier: resolvedIdentifier,
+              parentCommentId: parent ?? null,
+            },
+            changes: [
+              "comment",
+              ...(attachments.length > 0 ? ["attachments"] : []),
+            ],
+          }),
           lines: [
             `Issue: ${resolvedIdentifier}`,
             ...(parent != null ? [`Reply to: ${parent}`] : []),
@@ -321,7 +341,13 @@ export const commentAddCommand = new Command()
           nextSafeAction: "read_before_retry",
         })
         console.log(JSON.stringify(
-          withOperationReceipt(commentPayload, receipt),
+          withWriteOperationContract(
+            withOperationReceipt(commentPayload, receipt),
+            buildWriteApplyOperationFromReceipt(
+              `Added comment to ${resolvedIdentifier}`,
+              receipt,
+            ),
+          ),
           null,
           2,
         ))

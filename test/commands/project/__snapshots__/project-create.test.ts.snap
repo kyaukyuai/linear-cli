@@ -40,7 +40,27 @@ stdout:
   "id": "550e8400-e29b-41d4-a716-446655440000",
   "slugId": "json-test-project",
   "name": "JSON Test Project",
-  "url": "https://linear.app/test/project/json-test-project"
+  "url": "https://linear.app/test/project/json-test-project",
+  "operation": {
+    "family": "write_operation",
+    "version": "v1",
+    "phase": "apply",
+    "command": "project.create",
+    "resource": "project",
+    "action": "create",
+    "summary": "Created project JSON Test Project",
+    "refs": {
+      "projectId": "550e8400-e29b-41d4-a716-446655440000",
+      "projectSlugId": "json-test-project"
+    },
+    "changes": [
+      "name",
+      "teams"
+    ],
+    "noOp": false,
+    "partialSuccess": false,
+    "nextSafeAction": "read_before_retry"
+  }
 }
 '
 stderr:
@@ -80,6 +100,24 @@ stdout:
         "initiative": null
       }
     }
+  },
+  "operation": {
+    "family": "write_operation",
+    "version": "v1",
+    "phase": "preview",
+    "command": "project.create",
+    "resource": "project",
+    "action": "create",
+    "summary": "Would create project Dry Run Project",
+    "refs": {
+      "name": "Dry Run Project"
+    },
+    "changes": [
+      "input"
+    ],
+    "noOp": false,
+    "partialSuccess": false,
+    "nextSafeAction": "apply"
   }
 }
 '

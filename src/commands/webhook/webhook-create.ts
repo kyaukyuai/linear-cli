@@ -13,6 +13,11 @@ import {
 import { withSpinner } from "../../utils/spinner.ts"
 import { buildWriteCommandPreview } from "../../utils/write_preview.ts"
 import {
+  buildWriteApplyOperation,
+  buildWritePreviewOperationFromPayload,
+  withWriteOperationContract,
+} from "../../utils/write_operation.ts"
+import {
   getWebhookDisplayLabel,
   getWebhookScope,
   parseWebhookResourceTypes,
@@ -142,29 +147,35 @@ export const createCommand = new Command()
         }
 
         if (dryRun) {
+          const previewPayload = buildWriteCommandPreview({
+            command: "webhook.create",
+            operation: "create",
+            target: {
+              resource: "webhook",
+              url: validatedUrl,
+            },
+            changes: {
+              input: {
+                url: validatedUrl,
+                label: label ?? null,
+                enabled: !disabled,
+                allPublicTeams: allPublicTeams || false,
+                resourceTypes: parsedResourceTypes,
+                teamKey: allPublicTeams ? null : requireTeamKey(team),
+                teamId: input.teamId ?? null,
+                secretProvided: secret != null,
+              },
+            },
+          })
+          const summary = `Would create webhook for ${validatedUrl}`
           emitDryRunOutput({
             json,
-            summary: `Would create webhook for ${validatedUrl}`,
-            data: buildWriteCommandPreview({
-              command: "webhook.create",
-              operation: "create",
-              target: {
-                resource: "webhook",
-                url: validatedUrl,
-              },
-              changes: {
-                input: {
-                  url: validatedUrl,
-                  label: label ?? null,
-                  enabled: !disabled,
-                  allPublicTeams: allPublicTeams || false,
-                  resourceTypes: parsedResourceTypes,
-                  teamKey: allPublicTeams ? null : requireTeamKey(team),
-                  teamId: input.teamId ?? null,
-                  secretProvided: secret != null,
-                },
-              },
-            }),
+            summary,
+            data: previewPayload,
+            operation: buildWritePreviewOperationFromPayload(
+              summary,
+              previewPayload,
+            ),
             lines: [
               `URL: ${validatedUrl}`,
               `Resources: ${parsedResourceTypes.join(", ")}`,
@@ -190,32 +201,57 @@ export const createCommand = new Command()
         const webhook = result.webhookCreate.webhook
 
         if (json) {
+          const payload = {
+            id: webhook.id,
+            label: webhook.label,
+            url: webhook.url,
+            enabled: webhook.enabled,
+            archivedAt: webhook.archivedAt,
+            allPublicTeams: webhook.allPublicTeams,
+            resourceTypes: webhook.resourceTypes,
+            createdAt: webhook.createdAt,
+            updatedAt: webhook.updatedAt,
+            team: webhook.team
+              ? {
+                id: webhook.team.id,
+                key: webhook.team.key,
+                name: webhook.team.name,
+              }
+              : null,
+            creator: webhook.creator
+              ? {
+                id: webhook.creator.id,
+                name: webhook.creator.name,
+                displayName: webhook.creator.displayName,
+              }
+              : null,
+          }
           console.log(JSON.stringify(
-            {
-              id: webhook.id,
-              label: webhook.label,
-              url: webhook.url,
-              enabled: webhook.enabled,
-              archivedAt: webhook.archivedAt,
-              allPublicTeams: webhook.allPublicTeams,
-              resourceTypes: webhook.resourceTypes,
-              createdAt: webhook.createdAt,
-              updatedAt: webhook.updatedAt,
-              team: webhook.team
-                ? {
-                  id: webhook.team.id,
-                  key: webhook.team.key,
-                  name: webhook.team.name,
-                }
-                : null,
-              creator: webhook.creator
-                ? {
-                  id: webhook.creator.id,
-                  name: webhook.creator.name,
-                  displayName: webhook.creator.displayName,
-                }
-                : null,
-            },
+            withWriteOperationContract(
+              payload,
+              buildWriteApplyOperation({
+                command: "webhook.create",
+                resource: "webhook",
+                action: "create",
+                summary: `Created webhook ${webhook.id}`,
+                refs: {
+                  webhookId: webhook.id,
+                  webhookUrl: webhook.url,
+                  teamKey: webhook.team?.key ?? null,
+                },
+                changes: [
+                  "url",
+                  ...(webhook.label != null ? ["label"] : []),
+                  "enabled",
+                  "resourceTypes",
+                  ...(webhook.team != null || webhook.allPublicTeams
+                    ? ["scope"]
+                    : []),
+                  ...(secret != null ? ["secret"] : []),
+                ],
+                nextSafeAction: "read_before_retry",
+              }),
+            ),
             null,
             2,
           ))

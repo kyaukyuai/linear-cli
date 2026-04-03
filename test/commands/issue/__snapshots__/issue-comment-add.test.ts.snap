@@ -75,6 +75,25 @@ stdout:
     "noOp": false,
     "partialSuccess": false,
     "nextSafeAction": "read_before_retry"
+  },
+  "operation": {
+    "family": "write_operation",
+    "version": "v1",
+    "phase": "apply",
+    "command": "issue.comment.add",
+    "resource": "comment",
+    "action": "add",
+    "summary": "Added comment to TEST-123",
+    "refs": {
+      "issueIdentifier": "TEST-123",
+      "parentCommentId": null
+    },
+    "changes": [
+      "comment"
+    ],
+    "noOp": false,
+    "partialSuccess": false,
+    "nextSafeAction": "read_before_retry"
   }
 }
 '
@@ -97,6 +116,25 @@ stdout:
     "body": "Tracking follow-up",
     "parentId": null,
     "attachments": []
+  },
+  "operation": {
+    "family": "write_operation",
+    "version": "v1",
+    "phase": "preview",
+    "command": "issue.comment.add",
+    "resource": "comment",
+    "action": "add",
+    "summary": "Would add comment to TEST-123",
+    "refs": {
+      "issueIdentifier": "TEST-123",
+      "parentCommentId": null
+    },
+    "changes": [
+      "comment"
+    ],
+    "noOp": false,
+    "partialSuccess": false,
+    "nextSafeAction": "apply"
   }
 }
 '

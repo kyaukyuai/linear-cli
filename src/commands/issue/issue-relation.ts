@@ -29,6 +29,11 @@ import {
   buildOperationReceipt,
   withOperationReceipt,
 } from "../../utils/operation_receipt.ts"
+import {
+  buildWriteApplyOperationFromReceipt,
+  buildWritePreviewOperation,
+  withWriteOperationContract,
+} from "../../utils/write_operation.ts"
 import { buildIssueRelationDryRunPayload } from "./issue-dry-run-payload.ts"
 
 const RELATION_TYPES = ["blocks", "blocked-by", "related", "duplicate"] as const
@@ -285,11 +290,24 @@ const addRelationCommand = new Command()
           relatedIssue,
         })
         if (dryRun) {
+          const summary =
+            `Would create relation: ${issue.identifier} ${relationType} ${relatedIssue.identifier}`
           emitDryRunOutput({
             json,
-            summary:
-              `Would create relation: ${issue.identifier} ${relationType} ${relatedIssue.identifier}`,
+            summary,
             data: previewPayload,
+            operation: buildWritePreviewOperation({
+              command: "issue.relation.add",
+              resource: "relation",
+              action: "add",
+              summary,
+              refs: {
+                issueIdentifier: issue.identifier,
+                relatedIssueIdentifier: relatedIssue.identifier,
+                relationType,
+              },
+              changes: ["relation"],
+            }),
             lines: [
               `Issue: ${issue.identifier}`,
               `Related issue: ${relatedIssue.identifier}`,
@@ -396,7 +414,18 @@ const addRelationCommand = new Command()
 
         if (json) {
           console.log(JSON.stringify(
-            withOperationReceipt(payload, buildRelationReceipt(payload, "add")),
+            withWriteOperationContract(
+              withOperationReceipt(
+                payload,
+                buildRelationReceipt(payload, "add"),
+              ),
+              buildWriteApplyOperationFromReceipt(
+                payload.noOp
+                  ? `Relation already exists: ${payload.issue.identifier} ${payload.relationType} ${payload.relatedIssue.identifier}`
+                  : `Created relation: ${payload.issue.identifier} ${payload.relationType} ${payload.relatedIssue.identifier}`,
+                buildRelationReceipt(payload, "add"),
+              ),
+            ),
             null,
             2,
           ))
@@ -464,11 +493,24 @@ const deleteRelationCommand = new Command()
           relatedIssue,
         })
         if (dryRun) {
+          const summary =
+            `Would delete relation: ${issue.identifier} ${relationType} ${relatedIssue.identifier}`
           emitDryRunOutput({
             json,
-            summary:
-              `Would delete relation: ${issue.identifier} ${relationType} ${relatedIssue.identifier}`,
+            summary,
             data: previewPayload,
+            operation: buildWritePreviewOperation({
+              command: "issue.relation.delete",
+              resource: "relation",
+              action: "delete",
+              summary,
+              refs: {
+                issueIdentifier: issue.identifier,
+                relatedIssueIdentifier: relatedIssue.identifier,
+                relationType,
+              },
+              changes: ["relationRemoval"],
+            }),
             lines: [
               `Issue: ${issue.identifier}`,
               `Related issue: ${relatedIssue.identifier}`,
@@ -562,9 +604,17 @@ const deleteRelationCommand = new Command()
 
         if (json) {
           console.log(JSON.stringify(
-            withOperationReceipt(
-              payload,
-              buildRelationReceipt(payload, "delete"),
+            withWriteOperationContract(
+              withOperationReceipt(
+                payload,
+                buildRelationReceipt(payload, "delete"),
+              ),
+              buildWriteApplyOperationFromReceipt(
+                payload.noOp
+                  ? `Relation already absent: ${payload.issue.identifier} ${payload.relationType} ${payload.relatedIssue.identifier}`
+                  : `Deleted relation: ${payload.issue.identifier} ${payload.relationType} ${payload.relatedIssue.identifier}`,
+                buildRelationReceipt(payload, "delete"),
+              ),
             ),
             null,
             2,

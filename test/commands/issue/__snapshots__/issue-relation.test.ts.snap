@@ -75,6 +75,26 @@ stdout:
     "noOp": false,
     "partialSuccess": false,
     "nextSafeAction": "continue"
+  },
+  "operation": {
+    "family": "write_operation",
+    "version": "v1",
+    "phase": "apply",
+    "command": "issue.relation.add",
+    "resource": "issue_relation",
+    "action": "add",
+    "summary": "Created relation: ENG-123 blocked-by ENG-456",
+    "refs": {
+      "issueIdentifier": "ENG-123",
+      "relatedIssueIdentifier": "ENG-456",
+      "relationType": "blocked-by"
+    },
+    "changes": [
+      "relation"
+    ],
+    "noOp": false,
+    "partialSuccess": false,
+    "nextSafeAction": "continue"
   }
 }
 '
@@ -111,6 +131,24 @@ stdout:
     "noOp": true,
     "partialSuccess": false,
     "nextSafeAction": "continue"
+  },
+  "operation": {
+    "family": "write_operation",
+    "version": "v1",
+    "phase": "apply",
+    "command": "issue.relation.add",
+    "resource": "issue_relation",
+    "action": "add",
+    "summary": "Relation already exists: ENG-123 blocks ENG-456",
+    "refs": {
+      "issueIdentifier": "ENG-123",
+      "relatedIssueIdentifier": "ENG-456",
+      "relationType": "blocks"
+    },
+    "changes": [],
+    "noOp": true,
+    "partialSuccess": false,
+    "nextSafeAction": "continue"
   }
 }
 '
@@ -136,6 +174,26 @@ stdout:
       "id": "issue-id-456",
       "identifier": "ENG-456"
     }
+  },
+  "operation": {
+    "family": "write_operation",
+    "version": "v1",
+    "phase": "preview",
+    "command": "issue.relation.add",
+    "resource": "relation",
+    "action": "add",
+    "summary": "Would create relation: ENG-123 blocked-by ENG-456",
+    "refs": {
+      "issueIdentifier": "ENG-123",
+      "relatedIssueIdentifier": "ENG-456",
+      "relationType": "blocked-by"
+    },
+    "changes": [
+      "relation"
+    ],
+    "noOp": false,
+    "partialSuccess": false,
+    "nextSafeAction": "apply"
   }
 }
 '
@@ -190,6 +248,26 @@ stdout:
     "noOp": false,
     "partialSuccess": false,
     "nextSafeAction": "continue"
+  },
+  "operation": {
+    "family": "write_operation",
+    "version": "v1",
+    "phase": "apply",
+    "command": "issue.relation.delete",
+    "resource": "issue_relation",
+    "action": "delete",
+    "summary": "Deleted relation: ENG-123 blocks ENG-456",
+    "refs": {
+      "issueIdentifier": "ENG-123",
+      "relatedIssueIdentifier": "ENG-456",
+      "relationType": "blocks"
+    },
+    "changes": [
+      "relationRemoval"
+    ],
+    "noOp": false,
+    "partialSuccess": false,
+    "nextSafeAction": "continue"
   }
 }
 '
@@ -226,6 +304,24 @@ stdout:
     "noOp": true,
     "partialSuccess": false,
     "nextSafeAction": "continue"
+  },
+  "operation": {
+    "family": "write_operation",
+    "version": "v1",
+    "phase": "apply",
+    "command": "issue.relation.delete",
+    "resource": "issue_relation",
+    "action": "delete",
+    "summary": "Relation already absent: ENG-123 blocks ENG-456",
+    "refs": {
+      "issueIdentifier": "ENG-123",
+      "relatedIssueIdentifier": "ENG-456",
+      "relationType": "blocks"
+    },
+    "changes": [],
+    "noOp": true,
+    "partialSuccess": false,
+    "nextSafeAction": "continue"
   }
 }
 '
@@ -251,6 +347,26 @@ stdout:
       "id": "issue-id-456",
       "identifier": "ENG-456"
     }
+  },
+  "operation": {
+    "family": "write_operation",
+    "version": "v1",
+    "phase": "preview",
+    "command": "issue.relation.delete",
+    "resource": "relation",
+    "action": "delete",
+    "summary": "Would delete relation: ENG-123 blocks ENG-456",
+    "refs": {
+      "issueIdentifier": "ENG-123",
+      "relatedIssueIdentifier": "ENG-456",
+      "relationType": "blocks"
+    },
+    "changes": [
+      "relationRemoval"
+    ],
+    "noOp": false,
+    "partialSuccess": false,
+    "nextSafeAction": "apply"
   }
 }
 '

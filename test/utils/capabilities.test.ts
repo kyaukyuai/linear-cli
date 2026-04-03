@@ -215,6 +215,7 @@ Deno.test("buildCapabilitiesPayload v2 includes issue update capability traits",
       "state",
       "comment",
       "receipt",
+      "operation",
     ],
   })
   assertEquals(command.output.preview, {
@@ -226,7 +227,7 @@ Deno.test("buildCapabilitiesPayload v2 includes issue update capability traits",
     },
     shape: "object",
     exitCode: 0,
-    topLevelFields: ["success", "dryRun", "summary", "data"],
+    topLevelFields: ["success", "dryRun", "summary", "data", "operation"],
   })
   assertEquals(command.output.failure.jsonWhenRequested, true)
   assertEquals(command.output.failure.parseErrorsJsonWhenRequested, true)

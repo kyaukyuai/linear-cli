@@ -128,6 +128,7 @@ compared to upstream, this fork adds and maintains capabilities aimed at automat
 - a self-describing `linear capabilities --json` surface with a backward-compatible default and an explicit `--compat v2` mode for richer schema and output metadata
 - `--dry-run` previews for high-value write commands, including `issue start`, issue writes, and non-issue writes
 - additive operation receipts on high-value JSON write success paths
+- a shared top-level `operation` contract on representative preview/apply JSON write paths
 - stdin and pipeline support for high-value write paths
 - retry-safe semantics for relation add/delete, project label add/remove, notification read/archive, and structured partial-failure details
 - canonical `--yes` confirmation bypass handling for destructive commands
@@ -174,7 +175,7 @@ high-value write commands honor `LINEAR_WRITE_TIMEOUT_MS` and accept `--timeout-
 
 the same document also defines the shared preview contract for future `--dry-run` write commands. those commands are not all implemented yet, but the contract now fixes the expected `stdout`, `exit code`, and `--json --dry-run` envelope shape ahead of rollout.
 
-successful high-value JSON writes may also add a top-level `receipt` field. this gives agents a shared place to inspect `operationId`, `resolvedRefs`, `appliedChanges`, `noOp`, and `nextSafeAction` without inferring those traits from command-specific payload fields.
+representative preview/apply JSON write paths may add a top-level `operation` field so agents can diff preview intent against apply results with one parser path. successful high-value JSON writes may also add a top-level `receipt` field. this gives agents a shared place to inspect `operationId`, `resolvedRefs`, `appliedChanges`, `noOp`, and `nextSafeAction` without inferring those traits from command-specific payload fields.
 
 destructive commands use `--yes` as the canonical confirmation-bypass flag. legacy `--force` and `--confirm` flags are still accepted where older workflows already depended on them.
 

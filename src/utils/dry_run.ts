@@ -1,8 +1,11 @@
+import type { WriteOperationContract } from "./write_operation.ts"
+
 export type DryRunJsonEnvelope<T> = {
   success: true
   dryRun: true
   summary: string
   data: T
+  operation?: WriteOperationContract
 }
 
 export type DryRunExecutionResult<TPreview, TResult> =
@@ -19,6 +22,7 @@ type EmitDryRunOutputOptions<T> = {
   json?: boolean
   summary: string
   data: T
+  operation?: WriteOperationContract
   lines?: string[]
 }
 
@@ -31,12 +35,14 @@ type RunWithDryRunOptions<TPreview, TResult> = {
 export function buildDryRunJsonEnvelope<T>(
   data: T,
   summary: string,
+  operation?: WriteOperationContract,
 ): DryRunJsonEnvelope<T> {
   return {
     success: true,
     dryRun: true,
     summary,
     data,
+    ...(operation != null ? { operation } : {}),
   }
 }
 
@@ -46,7 +52,11 @@ export function emitDryRunOutput<T>(
   if (options.json) {
     console.log(
       JSON.stringify(
-        buildDryRunJsonEnvelope(options.data, options.summary),
+        buildDryRunJsonEnvelope(
+          options.data,
+          options.summary,
+          options.operation,
+        ),
         null,
         2,
       ),

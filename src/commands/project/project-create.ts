@@ -12,6 +12,11 @@ import {
 import { shouldShowSpinner } from "../../utils/hyperlink.ts"
 import { buildWriteCommandPreview } from "../../utils/write_preview.ts"
 import {
+  buildWriteApplyOperation,
+  buildWritePreviewOperationFromPayload,
+  withWriteOperationContract,
+} from "../../utils/write_operation.ts"
+import {
   CliError,
   handleError,
   NotFoundError,
@@ -392,10 +397,15 @@ export const createCommand = new Command()
             },
           },
         })
+        const summary = `Would create project ${name}`
         emitDryRunOutput({
           json: jsonOutput,
-          summary: `Would create project ${name}`,
+          summary,
           data: previewPayload,
+          operation: buildWritePreviewOperationFromPayload(
+            summary,
+            previewPayload,
+          ),
           lines: [
             `Name: ${name}`,
             `Teams: ${teams.map((team) => team.toUpperCase()).join(", ")}`,
@@ -459,14 +469,38 @@ export const createCommand = new Command()
         }
 
         if (jsonOutput) {
+          const payload = {
+            id: project.id,
+            slugId: project.slugId,
+            name: project.name,
+            url: project.url,
+          }
           console.log(
             JSON.stringify(
-              {
-                id: project.id,
-                slugId: project.slugId,
-                name: project.name,
-                url: project.url,
-              },
+              withWriteOperationContract(
+                payload,
+                buildWriteApplyOperation({
+                  command: "project.create",
+                  resource: "project",
+                  action: "create",
+                  summary: `Created project ${project.name}`,
+                  refs: {
+                    projectId: project.id,
+                    projectSlugId: project.slugId,
+                  },
+                  changes: [
+                    "name",
+                    ...(description != null ? ["description"] : []),
+                    "teams",
+                    ...(leadId != null ? ["lead"] : []),
+                    ...(statusId != null ? ["status"] : []),
+                    ...(startDate != null ? ["startDate"] : []),
+                    ...(targetDate != null ? ["targetDate"] : []),
+                    ...(initiative != null ? ["initiative"] : []),
+                  ],
+                  nextSafeAction: "read_before_retry",
+                }),
+              ),
               null,
               2,
             ),

@@ -75,6 +75,25 @@ stdout:
     "id": "user-1",
     "name": "jdoe",
     "displayName": "John Doe"
+  },
+  "operation": {
+    "family": "write_operation",
+    "version": "v1",
+    "phase": "apply",
+    "command": "webhook.update",
+    "resource": "webhook",
+    "action": "update",
+    "summary": "Updated webhook webhook-1",
+    "refs": {
+      "webhookId": "webhook-1",
+      "webhookUrl": "https://example.com/hooks/issues"
+    },
+    "changes": [
+      "resourceTypes"
+    ],
+    "noOp": false,
+    "partialSuccess": false,
+    "nextSafeAction": "read_before_retry"
   }
 }
 '
@@ -103,6 +122,28 @@ stdout:
       "enabled": null,
       "secretProvided": false
     }
+  },
+  "operation": {
+    "family": "write_operation",
+    "version": "v1",
+    "phase": "preview",
+    "command": "webhook.update",
+    "resource": "webhook",
+    "action": "update",
+    "summary": "Would update webhook webhook-1",
+    "refs": {
+      "id": "webhook-1"
+    },
+    "changes": [
+      "url",
+      "label",
+      "resourceTypes",
+      "enabled",
+      "secretProvided"
+    ],
+    "noOp": false,
+    "partialSuccess": false,
+    "nextSafeAction": "apply"
   }
 }
 '

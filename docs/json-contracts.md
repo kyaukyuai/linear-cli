@@ -319,6 +319,22 @@ Top-level shape:
   "success": true,
   "dryRun": true,
   "summary": "Would update issue ENG-123",
+  "operation": {
+    "family": "write_operation",
+    "version": "v1",
+    "phase": "preview",
+    "command": "issue.update",
+    "resource": "issue",
+    "action": "update",
+    "summary": "Would update issue ENG-123",
+    "refs": {
+      "issueIdentifier": "ENG-123"
+    },
+    "changes": ["state", "comment"],
+    "noOp": false,
+    "partialSuccess": false,
+    "nextSafeAction": "apply"
+  },
   "data": {
     "id": "issue-123",
     "identifier": "ENG-123",
@@ -327,7 +343,7 @@ Top-level shape:
 }
 ```
 
-`data` is command-specific preview payload. When possible, it should reuse the same sub-shapes as the corresponding success payload.
+`data` is command-specific preview payload. When possible, it should reuse the same sub-shapes as the corresponding success payload. Representative issue and non-issue write commands also add a top-level `operation` object so callers can parse preview/apply with the same contract family.
 
 ## Automation Tier
 
@@ -418,7 +434,7 @@ Write confirmation timeouts use `error.type = "timeout_error"` and should includ
 
 High-value write commands honor `LINEAR_WRITE_TIMEOUT_MS` and accept `--timeout-ms` for per-command overrides. Today that includes issue create/update/comment/relation/create-batch flows and notification read/archive.
 
-High-value write commands that return object-shaped success payloads may also add a top-level `receipt` field. This field is additive and is intended for agents that want a shared way to interpret successful writes without special-casing each command.
+Representative write commands may add a top-level `operation` field to both `--dry-run` previews and successful JSON apply results. High-value write commands that expose machine-readable apply receipts may also add a top-level `receipt` field. Both fields are additive.
 
 ## Common Sub-Shapes
 
@@ -509,6 +525,29 @@ Used by successful high-value write commands that expose machine-readable receip
     "state": "In Progress"
   },
   "appliedChanges": ["state", "comment"],
+  "noOp": false,
+  "partialSuccess": false,
+  "nextSafeAction": "read_before_retry"
+}
+```
+
+### `writeOperation`
+
+Used by representative write previews and apply results.
+
+```json
+{
+  "family": "write_operation",
+  "version": "v1",
+  "phase": "apply",
+  "command": "issue.update",
+  "resource": "issue",
+  "action": "update",
+  "summary": "Updated issue ENG-123",
+  "refs": {
+    "issueIdentifier": "ENG-123"
+  },
+  "changes": ["state", "comment"],
   "noOp": false,
   "partialSuccess": false,
   "nextSafeAction": "read_before_retry"
@@ -614,7 +653,8 @@ Top-level shape:
   "assignee": null,
   "parent": null,
   "state": null,
-  "receipt": { "...": "operationReceipt" }
+  "receipt": { "...": "operationReceipt" },
+  "operation": { "...": "writeOperation" }
 }
 ```
 
@@ -671,7 +711,8 @@ Top-level shape:
     "identifier": "ENG-456"
   },
   "relationId": "relation-789",
-  "receipt": { "...": "operationReceipt" }
+  "receipt": { "...": "operationReceipt" },
+  "operation": { "...": "writeOperation" }
 }
 ```
 
@@ -729,7 +770,8 @@ Top-level shape:
     "name": "alice.bot",
     "displayName": "Alice Bot"
   },
-  "receipt": { "...": "operationReceipt" }
+  "receipt": { "...": "operationReceipt" },
+  "operation": { "...": "writeOperation" }
 }
 ```
 
