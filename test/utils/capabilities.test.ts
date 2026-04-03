@@ -58,6 +58,7 @@ Deno.test("buildCapabilitiesPayload defaults to the v1 compatibility shape", () 
     entry.path === "linear issue update"
   )
   assert(issueUpdate != null)
+  assertEquals("executionProfiles" in payload, false)
   assertEquals("schema" in issueUpdate, false)
   assertEquals("output" in issueUpdate, false)
 })
@@ -68,6 +69,28 @@ Deno.test("buildCapabilitiesPayload v2 includes issue update capability traits",
     defaultSchemaVersion: "v1",
     latestSchemaVersion: "v2",
     supportedSchemaVersions: ["v1", "v2"],
+  })
+  assertEquals(payload.executionProfiles, {
+    defaultProfile: null,
+    availableProfiles: [
+      {
+        name: "agent-safe",
+        description:
+          "Opt-in profile for agent and automation runs that prefer predictable non-interactive defaults.",
+        semantics: {
+          disablePagerByDefault: true,
+          preferJsonWhenSupported: true,
+          requireExplicitConfirmationBypass: true,
+          defaultWriteTimeoutMs: 45000,
+          allowInteractivePrompts: false,
+        },
+        nonGoals: [
+          "Does not force --json when the caller omits it.",
+          "Does not auto-confirm destructive actions; use --yes explicitly.",
+          "Does not replace missing required inputs or every interactive data-entry fallback.",
+        ],
+      },
+    ],
   })
   const command = payload.commands.find((entry) =>
     entry.path === "linear issue update"

@@ -2,8 +2,8 @@ import { Command } from "@cliffy/command"
 import { Confirm } from "@cliffy/prompt"
 import { gql } from "../../__codegen__/gql.ts"
 import {
+  ensureInteractiveConfirmationAvailable,
   shouldSkipConfirmation,
-  USE_YES_SUGGESTION,
 } from "../../utils/confirmation.ts"
 import { getGraphQLClient } from "../../utils/graphql.ts"
 import {
@@ -117,12 +117,10 @@ async function handleSingleArchive(
 
   // Confirm archival
   if (!shouldSkipConfirmation({ yes, force })) {
-    if (!Deno.stdin.isTerminal()) {
-      throw new ValidationError(
-        "Interactive confirmation required.",
-        { suggestion: USE_YES_SUGGESTION },
-      )
-    }
+    ensureInteractiveConfirmationAvailable({
+      yes,
+      force,
+    }, "Interactive confirmation required.")
     const confirmed = await Confirm.prompt({
       message: `Archive initiative "${initiative.name}"?`,
       default: true,
@@ -192,12 +190,10 @@ async function handleBulkArchive(
 
   // Confirm bulk operation
   if (!shouldSkipConfirmation({ yes, force })) {
-    if (!Deno.stdin.isTerminal()) {
-      throw new ValidationError(
-        "Interactive confirmation required.",
-        { suggestion: USE_YES_SUGGESTION },
-      )
-    }
+    ensureInteractiveConfirmationAvailable({
+      yes,
+      force,
+    }, "Interactive confirmation required.")
     const confirmed = await Confirm.prompt({
       message: `Archive ${ids.length} initiative(s)?`,
       default: false,

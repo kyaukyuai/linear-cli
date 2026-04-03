@@ -1,3 +1,8 @@
+import {
+  AGENT_SAFE_PROFILE,
+  AGENT_SAFE_WRITE_TIMEOUT_MS,
+} from "./execution_profile.ts"
+
 export type AutomationContractVersion =
   | "v1"
   | "v2"
@@ -184,6 +189,26 @@ export type CapabilityWriteSemantics = {
   mayReturnPartialSuccess: boolean
 }
 
+export type CapabilityExecutionProfileName = "agent-safe"
+
+export type CapabilityExecutionProfile = {
+  name: CapabilityExecutionProfileName
+  description: string
+  semantics: {
+    disablePagerByDefault: boolean
+    preferJsonWhenSupported: boolean
+    requireExplicitConfirmationBypass: boolean
+    defaultWriteTimeoutMs: number
+    allowInteractivePrompts: boolean
+  }
+  nonGoals: string[]
+}
+
+export type CapabilityExecutionProfiles = {
+  defaultProfile: CapabilityExecutionProfileName | null
+  availableProfiles: CapabilityExecutionProfile[]
+}
+
 export type CapabilityCommand = {
   path: string
   summary: string
@@ -254,6 +279,7 @@ export type CapabilitiesPayloadV2 = CapabilitiesPayloadBase & {
     latestSchemaVersion: "v2"
     supportedSchemaVersions: CapabilitiesCompatibilityVersion[]
   }
+  executionProfiles: CapabilityExecutionProfiles
   commands: CapabilityCommand[]
 }
 
@@ -2635,6 +2661,31 @@ function buildAutomationTier() {
   }
 }
 
+function buildExecutionProfiles(): CapabilityExecutionProfiles {
+  return {
+    defaultProfile: null,
+    availableProfiles: [
+      {
+        name: AGENT_SAFE_PROFILE,
+        description:
+          "Opt-in profile for agent and automation runs that prefer predictable non-interactive defaults.",
+        semantics: {
+          disablePagerByDefault: true,
+          preferJsonWhenSupported: true,
+          requireExplicitConfirmationBypass: true,
+          defaultWriteTimeoutMs: AGENT_SAFE_WRITE_TIMEOUT_MS,
+          allowInteractivePrompts: false,
+        },
+        nonGoals: [
+          "Does not force --json when the caller omits it.",
+          "Does not auto-confirm destructive actions; use --yes explicitly.",
+          "Does not replace missing required inputs or every interactive data-entry fallback.",
+        ],
+      },
+    ],
+  }
+}
+
 function buildCapabilitiesPayloadBase(
   version: string,
 ): CapabilitiesPayloadBase {
@@ -2685,6 +2736,7 @@ function buildCapabilitiesPayloadV2(version: string): CapabilitiesPayloadV2 {
       latestSchemaVersion: "v2",
       supportedSchemaVersions: [...CAPABILITIES_COMPATIBILITY_VERSIONS],
     },
+    executionProfiles: buildExecutionProfiles(),
     commands: CAPABILITY_COMMANDS.map((command) => ({
       ...command,
       json: { ...command.json },

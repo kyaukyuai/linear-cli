@@ -1,4 +1,9 @@
 import { assertEquals } from "@std/assert"
+import {
+  AGENT_SAFE_PROFILE,
+  getCliExecutionProfile,
+  setCliExecutionProfile,
+} from "../../src/utils/execution_profile.ts"
 import { getPagerCommand, shouldUsePager } from "../../src/utils/pager.ts"
 
 Deno.test({
@@ -69,6 +74,29 @@ Deno.test({
     } finally {
       Deno.stdout.isTerminal = originalIsTerminal
       Deno.consoleSize = originalConsoleSize
+    }
+  },
+})
+
+Deno.test({
+  name:
+    "shouldUsePager - returns false when agent-safe disables pager by default",
+  fn() {
+    const originalIsTerminal = Deno.stdout.isTerminal
+    const originalConsoleSize = Deno.consoleSize
+    const originalProfile = getCliExecutionProfile()
+
+    Deno.stdout.isTerminal = () => true
+    Deno.consoleSize = () => ({ columns: 80, rows: 10 })
+    setCliExecutionProfile(AGENT_SAFE_PROFILE)
+
+    try {
+      const outputLines = Array.from({ length: 20 }, (_, i) => `Line ${i + 1}`)
+      assertEquals(shouldUsePager(outputLines, true), false)
+    } finally {
+      Deno.stdout.isTerminal = originalIsTerminal
+      Deno.consoleSize = originalConsoleSize
+      setCliExecutionProfile(originalProfile)
     }
   },
 })

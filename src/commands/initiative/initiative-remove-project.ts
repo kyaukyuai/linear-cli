@@ -2,17 +2,12 @@ import { Command } from "@cliffy/command"
 import { Confirm } from "@cliffy/prompt"
 import { gql } from "../../__codegen__/gql.ts"
 import {
+  ensureInteractiveConfirmationAvailable,
   shouldSkipConfirmation,
-  USE_YES_SUGGESTION,
 } from "../../utils/confirmation.ts"
 import { getGraphQLClient } from "../../utils/graphql.ts"
 import { shouldShowSpinner } from "../../utils/hyperlink.ts"
-import {
-  CliError,
-  handleError,
-  NotFoundError,
-  ValidationError,
-} from "../../utils/errors.ts"
+import { CliError, handleError, NotFoundError } from "../../utils/errors.ts"
 
 const GetInitiativeToProjects = gql(`
   query GetInitiativeToProjects($first: Int) {
@@ -252,12 +247,10 @@ export const removeProjectCommand = new Command()
 
       // Confirm removal
       if (!shouldSkipConfirmation({ yes, force })) {
-        if (!Deno.stdin.isTerminal()) {
-          throw new ValidationError(
-            "Interactive confirmation required.",
-            { suggestion: USE_YES_SUGGESTION },
-          )
-        }
+        ensureInteractiveConfirmationAvailable({
+          yes,
+          force,
+        }, "Interactive confirmation required.")
         const confirmed = await Confirm.prompt({
           message:
             `Remove "${project.name}" from initiative "${initiative.name}"?`,

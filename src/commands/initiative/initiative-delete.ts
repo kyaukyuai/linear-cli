@@ -2,8 +2,8 @@ import { Command } from "@cliffy/command"
 import { Confirm, Input } from "@cliffy/prompt"
 import { gql } from "../../__codegen__/gql.ts"
 import {
+  ensureInteractiveConfirmationAvailable,
   shouldSkipConfirmation,
-  USE_YES_SUGGESTION,
 } from "../../utils/confirmation.ts"
 import { getGraphQLClient } from "../../utils/graphql.ts"
 import {
@@ -124,12 +124,10 @@ async function handleSingleDelete(
 
   // Confirm deletion with typed confirmation for safety
   if (!shouldSkipConfirmation({ yes, force })) {
-    if (!Deno.stdin.isTerminal()) {
-      throw new ValidationError(
-        "Interactive confirmation required.",
-        { suggestion: USE_YES_SUGGESTION },
-      )
-    }
+    ensureInteractiveConfirmationAvailable({
+      yes,
+      force,
+    }, "Interactive confirmation required.")
     console.log(`\n⚠️  This action is PERMANENT and cannot be undone.\n`)
 
     const confirmed = await Confirm.prompt({
@@ -213,12 +211,10 @@ async function handleBulkDelete(
 
   // Confirm bulk operation
   if (!shouldSkipConfirmation({ yes, force })) {
-    if (!Deno.stdin.isTerminal()) {
-      throw new ValidationError(
-        "Interactive confirmation required.",
-        { suggestion: USE_YES_SUGGESTION },
-      )
-    }
+    ensureInteractiveConfirmationAvailable({
+      yes,
+      force,
+    }, "Interactive confirmation required.")
     const confirmed = await Confirm.prompt({
       message: `Permanently delete ${ids.length} initiative(s)?`,
       default: false,

@@ -1,5 +1,12 @@
 import { assertEquals, assertRejects } from "@std/assert"
 import {
+  AGENT_SAFE_PROFILE,
+  AGENT_SAFE_WRITE_TIMEOUT_MS,
+  getCliExecutionProfile,
+  setCliExecutionProfile,
+} from "../../src/utils/execution_profile.ts"
+import {
+  buildWriteTimeoutSuggestion,
   DEFAULT_WRITE_TIMEOUT_MS,
   resolveWriteTimeoutMs,
   withWriteTimeout,
@@ -10,6 +17,18 @@ import { ValidationError, WriteTimeoutError } from "../../src/utils/errors.ts"
 Deno.test("resolveWriteTimeoutMs uses the default when no flag or env is set", () => {
   Deno.env.delete(WRITE_TIMEOUT_ENV_VAR)
   assertEquals(resolveWriteTimeoutMs(), DEFAULT_WRITE_TIMEOUT_MS)
+})
+
+Deno.test("resolveWriteTimeoutMs uses the agent-safe default when the profile is active", () => {
+  const originalProfile = getCliExecutionProfile()
+  Deno.env.delete(WRITE_TIMEOUT_ENV_VAR)
+  setCliExecutionProfile(AGENT_SAFE_PROFILE)
+
+  try {
+    assertEquals(resolveWriteTimeoutMs(), AGENT_SAFE_WRITE_TIMEOUT_MS)
+  } finally {
+    setCliExecutionProfile(originalProfile)
+  }
 })
 
 Deno.test("resolveWriteTimeoutMs prefers the explicit flag value", () => {
@@ -78,4 +97,32 @@ Deno.test("withWriteTimeout throws WriteTimeoutError with stable details", async
       readBeforeRetry: true,
     },
   })
+})
+
+Deno.test("buildWriteTimeoutSuggestion mentions agent-safe when the default profile is active", () => {
+  const originalProfile = getCliExecutionProfile()
+  setCliExecutionProfile(undefined)
+
+  try {
+    assertEquals(
+      buildWriteTimeoutSuggestion(),
+      "Check Linear before retrying. Use --profile agent-safe for a longer automation timeout, or increase the timeout with --timeout-ms or LINEAR_WRITE_TIMEOUT_MS if this write path is consistently slow.",
+    )
+  } finally {
+    setCliExecutionProfile(originalProfile)
+  }
+})
+
+Deno.test("buildWriteTimeoutSuggestion omits the profile hint under agent-safe", () => {
+  const originalProfile = getCliExecutionProfile()
+  setCliExecutionProfile(AGENT_SAFE_PROFILE)
+
+  try {
+    assertEquals(
+      buildWriteTimeoutSuggestion(),
+      "Check Linear before retrying. Increase the timeout with --timeout-ms or LINEAR_WRITE_TIMEOUT_MS if this write path is consistently slow.",
+    )
+  } finally {
+    setCliExecutionProfile(originalProfile)
+  }
 })

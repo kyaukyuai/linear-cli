@@ -2,8 +2,8 @@ import { Command } from "@cliffy/command"
 import { Confirm, Select } from "@cliffy/prompt"
 import { gql } from "../../__codegen__/gql.ts"
 import {
+  ensureInteractiveConfirmationAvailable,
   shouldSkipConfirmation,
-  USE_YES_SUGGESTION,
 } from "../../utils/confirmation.ts"
 import { getGraphQLClient } from "../../utils/graphql.ts"
 import { getTeamKey } from "../../utils/linear.ts"
@@ -172,11 +172,7 @@ export const deleteCommand = new Command()
 
       // Confirmation prompt unless a bypass flag is used
       if (!shouldSkipConfirmation({ yes, force })) {
-        if (!Deno.stdin.isTerminal()) {
-          throw new ValidationError("Interactive confirmation required", {
-            suggestion: USE_YES_SUGGESTION,
-          })
-        }
+        ensureInteractiveConfirmationAvailable({ yes, force })
         const confirmed = await Confirm.prompt({
           message: `Are you sure you want to delete label "${labelDisplay}"?`,
           default: false,

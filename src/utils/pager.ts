@@ -1,3 +1,5 @@
+import { shouldDisablePagerByDefault } from "./execution_profile.ts"
+
 // Helper function to get the appropriate pager command
 export function getPagerCommand(): { command: string; args: string[] } | null {
   // Respect user's PAGER environment variable
@@ -119,7 +121,9 @@ export function shouldUsePager(
   outputLines: string[],
   usePager: boolean,
 ): boolean {
-  if (!usePager || !Deno.stdout.isTerminal()) {
+  if (
+    !usePager || shouldDisablePagerByDefault() || !Deno.stdout.isTerminal()
+  ) {
     return false
   }
 

@@ -8,6 +8,7 @@ if you want an agent to read Linear state, preview a write, apply it, and return
 linear capabilities --json
 linear capabilities --json --compat v2
 linear resolve issue ENG-123 --json
+linear --profile agent-safe issue update ENG-123 --state done --dry-run --json
 linear issue list --json
 linear issue view ENG-123 --json
 linear issue create -t "Backfill webhook contract docs" --team ENG --dry-run --json
@@ -23,6 +24,7 @@ interactive commands still exist for humans, but the primary design goal is that
 If an agent only reads one page, it should be this README plus the two contract docs below.
 
 - start with `linear capabilities --json` for the stable startup-safe shape; use `linear capabilities --json --compat v2` when you also need required/optional input refs, constrained values, defaults, context resolution hints, input constraints, canonical argv examples, stdin/file targets, and structured output semantics
+- use `linear --profile agent-safe ...` when you want predictable non-interactive defaults for an automation run
 - resolve ambiguous issue/team/state/user/label refs with `linear resolve ... --json` before previewing or applying writes
 - prefer stable read surfaces such as `issue`, `project`, `cycle`, `milestone`, `document`, `webhook`, `notification`, `team`, `user`, `workflow-state`, `label`, `initiative`, and update feeds with `--json`
 - preview writes with `--dry-run --json` before mutating Linear
@@ -161,6 +163,14 @@ Use the docs in this order if you are building an agent integration:
 for bot and org-wide automation use cases, `linear-cli` defines a stable JSON contract for a focused automation tier.
 
 to discover the curated agent-facing command surface programmatically, use `linear capabilities --json`. the default shape preserves the v1-compatible startup contract for existing bots. when you need richer metadata such as required vs optional primary inputs, constrained values, defaults, context resolution hints, input constraints, canonical argv examples, stdin/file targets, structured output semantics, and timeout/no-op traits, opt into `linear capabilities --json --compat v2`.
+
+`linear --profile agent-safe ...` is the opt-in execution profile for agent-controlled runs. it currently disables pager-by-default behavior, extends the built-in write timeout to `45000ms` unless `--timeout-ms` or `LINEAR_WRITE_TIMEOUT_MS` is set, and rejects destructive confirmation prompts unless the caller passes `--yes`.
+
+non-goals:
+
+- it does not force `--json`
+- it does not auto-confirm destructive actions
+- it does not replace every interactive data-entry fallback; callers should still pass explicit flags, stdin, or file inputs
 
 - v1 in scope: `issue list/view/create/update --json`, `issue relation add/delete/list --json`, `issue comment add --json`, `team members --json`, `issue parent/children/create-batch --json`
 - v2 additions: `project list/view --json`, `cycle list/view/current/next --json`, `milestone list/view --json`
