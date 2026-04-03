@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## [2.14.0] - 2026-04-03
+
+### Added
+
+- added operation receipts to high-value write JSON results so agents can inspect resolved refs, applied changes, no-op state, partial success, and next safe actions from a shared receipt surface
+- unified representative `--dry-run` previews and apply results under the same top-level `operation` contract family for safer plan/apply loops
+- added Automation Contract v6 for `linear resolve issue/team/workflow-state/user/label --json`, giving agents a machine-readable reference resolution surface before previewing or applying writes
+
 ## [2.13.0] - 2026-04-02
 
 ### Added

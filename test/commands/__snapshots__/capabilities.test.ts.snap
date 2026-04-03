@@ -29,7 +29,7 @@ stderr:
 
 snapshot[`Capabilities Command - Human Summary 1`] = `
 stdout:
-"linear-cli 2.13.0
+"linear-cli 2.14.0
 capabilities schema latest: v2
 json compatibility default: v1
 automation contract latest: v6
@@ -134,7 +134,7 @@ stdout:
   "cli": {
     "name": "linear-cli",
     "binary": "linear",
-    "version": "2.13.0"
+    "version": "2.14.0"
   },
   "contractVersions": {
     "automation": {
@@ -1604,7 +1604,7 @@ stdout:
   "cli": {
     "name": "linear-cli",
     "binary": "linear",
-    "version": "2.13.0"
+    "version": "2.14.0"
   },
   "contractVersions": {
     "automation": {
