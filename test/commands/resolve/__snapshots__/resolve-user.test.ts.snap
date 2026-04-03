@@ -1,0 +1,71 @@
+export const snapshot = {};
+
+snapshot[`Resolve User Command - JSON Self 1`] = `
+stdout:
+'{
+  "kind": "reference_resolution",
+  "version": "v1",
+  "refType": "user",
+  "input": "self",
+  "source": "argument",
+  "status": "resolved",
+  "matchedBy": "viewer",
+  "ambiguous": false,
+  "resolved": {
+    "id": "user-1",
+    "name": "alice.bot",
+    "displayName": "Alice Bot",
+    "email": "alice@example.com"
+  },
+  "candidates": [
+    {
+      "id": "user-1",
+      "name": "alice.bot",
+      "displayName": "Alice Bot",
+      "email": "alice@example.com"
+    }
+  ],
+  "unresolvedReason": null
+}
+'
+stderr:
+""
+`;
+
+snapshot[`Resolve User Command - JSON Ambiguous 1`] = `
+stdout:
+'{
+  "kind": "reference_resolution",
+  "version": "v1",
+  "refType": "user",
+  "input": "alice",
+  "source": "argument",
+  "status": "resolved",
+  "matchedBy": "name_contains_first",
+  "ambiguous": true,
+  "resolved": {
+    "id": "user-1",
+    "email": "alice.bot@example.com",
+    "displayName": "Alice Bot",
+    "name": "alice.bot"
+  },
+  "candidates": [
+    {
+      "id": "user-1",
+      "email": "alice.bot@example.com",
+      "displayName": "Alice Bot",
+      "name": "alice.bot"
+    },
+    {
+      "id": "user-2",
+      "email": "alice.builder@example.com",
+      "displayName": "Alice Builder",
+      "name": "alice.builder"
+    }
+  ],
+  "unresolvedReason": null
+}
+'
+stderr:
+""
+`;

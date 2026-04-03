@@ -7,6 +7,7 @@ if you want an agent to read Linear state, preview a write, apply it, and return
 ```bash
 linear capabilities --json
 linear capabilities --json --compat v2
+linear resolve issue ENG-123 --json
 linear issue list --json
 linear issue view ENG-123 --json
 linear issue create -t "Backfill webhook contract docs" --team ENG --dry-run --json
@@ -22,6 +23,7 @@ interactive commands still exist for humans, but the primary design goal is that
 If an agent only reads one page, it should be this README plus the two contract docs below.
 
 - start with `linear capabilities --json` for the stable startup-safe shape; use `linear capabilities --json --compat v2` when you also need required/optional input refs, constrained values, defaults, context resolution hints, input constraints, canonical argv examples, stdin/file targets, and structured output semantics
+- resolve ambiguous issue/team/state/user/label refs with `linear resolve ... --json` before previewing or applying writes
 - prefer stable read surfaces such as `issue`, `project`, `cycle`, `milestone`, `document`, `webhook`, `notification`, `team`, `user`, `workflow-state`, `label`, `initiative`, and update feeds with `--json`
 - preview writes with `--dry-run --json` before mutating Linear
 - apply writes with `--json`, then inspect exit codes and `error.details` instead of parsing terminal text
@@ -165,6 +167,7 @@ to discover the curated agent-facing command surface programmatically, use `line
 - v3 additions: `document list/view --json`, `webhook list/view --json`, `notification list/count --json`
 - v4 additions: `team list/view --json`, `user list/view --json`, `workflow-state list/view --json`, `label list --json`, `project-label list --json`
 - v5 additions: `initiative list/view --json`, `project-update list --json`, `initiative-update list --json`
+- v6 additions: `resolve issue/team/workflow-state/user/label --json`
 - out of scope: non-JSON terminal output, `linear api`, and other `--json` commands that are not listed above
 
 the contract fixes top-level success payload shapes and requires machine-readable failure payloads for the automation tier. see [docs/json-contracts.md](docs/json-contracts.md) for the full contract, compatibility rules, and example payloads. that guarantee also covers parser and argument validation failures when `--json` is present.

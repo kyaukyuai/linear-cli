@@ -1,0 +1,27 @@
+export const snapshot = {};
+
+snapshot[`Resolve Command - Help Text 1`] = `
+stdout:
+"
+Usage: COMMAND
+
+Description:
+
+  Resolve references without mutating Linear
+
+Options:
+
+  -h, --help  - Show this help.  
+
+Commands:
+
+  issue           [issue]  - Resolve an issue reference without mutating Linear        
+  team            [team]   - Resolve a team reference without mutating Linear          
+  workflow-state  <state>  - Resolve a workflow state reference without mutating Linear
+  user            <user>   - Resolve a user reference without mutating Linear          
+  label           <label>  - Resolve an issue label reference without mutating Linear  
+
+"
+stderr:
+""
+`;

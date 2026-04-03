@@ -1,0 +1,66 @@
+export const snapshot = {};
+
+snapshot[`Resolve Issue Command - JSON Resolved 1`] = `
+stdout:
+'{
+  "kind": "reference_resolution",
+  "version": "v1",
+  "refType": "issue",
+  "input": "ENG-123",
+  "source": "argument",
+  "status": "resolved",
+  "matchedBy": "identifier",
+  "ambiguous": false,
+  "resolved": {
+    "id": "issue-123",
+    "identifier": "ENG-123",
+    "title": "Stabilize auth expiry handling",
+    "url": "https://linear.app/test/issue/ENG-123/auth-expiry",
+    "team": {
+      "id": "team-1",
+      "key": "ENG",
+      "name": "Engineering"
+    }
+  },
+  "candidates": [
+    {
+      "id": "issue-123",
+      "identifier": "ENG-123",
+      "title": "Stabilize auth expiry handling",
+      "url": "https://linear.app/test/issue/ENG-123/auth-expiry",
+      "team": {
+        "id": "team-1",
+        "key": "ENG",
+        "name": "Engineering"
+      }
+    }
+  ],
+  "unresolvedReason": null
+}
+'
+stderr:
+""
+`;
+
+snapshot[`Resolve Issue Command - JSON Missing Team Context 1`] = `
+stdout:
+'{
+  "kind": "reference_resolution",
+  "version": "v1",
+  "refType": "issue",
+  "input": "123",
+  "source": "argument",
+  "status": "unresolved",
+  "matchedBy": null,
+  "ambiguous": false,
+  "resolved": null,
+  "candidates": [],
+  "unresolvedReason": {
+    "code": "missing_context",
+    "message": "A numeric issue reference needs a configured team key. Set LINEAR_TEAM_ID or pass a full issue identifier like ENG-123."
+  }
+}
+'
+stderr:
+""
+`;

@@ -154,6 +154,249 @@ Deno.test("startup-critical capabilities v2 shape keeps schema metadata opt-in",
   assertEquals("output" in issueUpdate, true)
 })
 
+Deno.test("startup-critical reference resolution entrypoints preserve top-level JSON shape", async (ctx) => {
+  await ctx.step("resolve issue", async () => {
+    const payload = await withMockServer(
+      [{
+        queryName: "ResolveIssueReference",
+        variables: { id: "ENG-123" },
+        response: {
+          data: {
+            issue: {
+              id: "issue-123",
+              identifier: "ENG-123",
+              title: "Fix authentication expiry handling",
+              url: "https://linear.app/test/issue/ENG-123/fix-auth",
+              team: {
+                id: "team-1",
+                key: "ENG",
+                name: "Engineering",
+              },
+            },
+          },
+        },
+      }],
+      (env) =>
+        runLinearJsonCommand(["resolve", "issue", "ENG-123", "--json"], env),
+    )
+
+    assertStartupObjectShape(payload, [
+      "kind",
+      "version",
+      "refType",
+      "status",
+      "resolved",
+      "candidates",
+      "unresolvedReason",
+    ])
+  })
+
+  await ctx.step("resolve team", async () => {
+    const payload = await withMockServer(
+      [{
+        queryName: "ResolveTeamReference",
+        variables: { id: "ENG" },
+        response: {
+          data: {
+            team: {
+              id: "team-1",
+              key: "ENG",
+              name: "Engineering",
+            },
+          },
+        },
+      }],
+      (env) => runLinearJsonCommand(["resolve", "team", "ENG", "--json"], env),
+    )
+
+    assertStartupObjectShape(payload, [
+      "kind",
+      "version",
+      "refType",
+      "status",
+      "resolved",
+      "candidates",
+      "unresolvedReason",
+    ])
+  })
+
+  await ctx.step("resolve workflow state", async () => {
+    const payload = await withMockServer(
+      [
+        {
+          queryName: "ResolveTeamReference",
+          variables: { id: "ENG" },
+          response: {
+            data: {
+              team: {
+                id: "team-1",
+                key: "ENG",
+                name: "Engineering",
+              },
+            },
+          },
+        },
+        {
+          queryName: "GetWorkflowStates",
+          variables: { teamKey: "ENG" },
+          response: {
+            data: {
+              team: {
+                id: "team-1",
+                key: "ENG",
+                name: "Engineering",
+                states: {
+                  nodes: [
+                    {
+                      id: "state-1",
+                      name: "Todo",
+                      type: "unstarted",
+                      position: 1,
+                      color: "#94a3b8",
+                      description: null,
+                      createdAt: "2026-04-02T10:00:00Z",
+                      updatedAt: "2026-04-02T10:00:00Z",
+                      archivedAt: null,
+                      team: {
+                        id: "team-1",
+                        key: "ENG",
+                        name: "Engineering",
+                      },
+                      inheritedFrom: null,
+                    },
+                    {
+                      id: "state-2",
+                      name: "Done",
+                      type: "completed",
+                      position: 2,
+                      color: "#22c55e",
+                      description: null,
+                      createdAt: "2026-04-02T10:00:00Z",
+                      updatedAt: "2026-04-02T10:00:00Z",
+                      archivedAt: null,
+                      team: {
+                        id: "team-1",
+                        key: "ENG",
+                        name: "Engineering",
+                      },
+                      inheritedFrom: null,
+                    },
+                  ],
+                },
+              },
+            },
+          },
+        },
+      ],
+      (env) =>
+        runLinearJsonCommand(
+          ["resolve", "workflow-state", "Done", "--team", "ENG", "--json"],
+          env,
+        ),
+    )
+
+    assertStartupObjectShape(payload, [
+      "kind",
+      "version",
+      "refType",
+      "status",
+      "resolved",
+      "candidates",
+      "unresolvedReason",
+    ])
+  })
+
+  await ctx.step("resolve user", async () => {
+    const payload = await withMockServer(
+      [{
+        queryName: "ResolveViewerReference",
+        response: {
+          data: {
+            viewer: {
+              id: "user-1",
+              name: "alice.bot",
+              displayName: "Alice Bot",
+              email: "alice@example.com",
+            },
+          },
+        },
+      }],
+      (env) => runLinearJsonCommand(["resolve", "user", "self", "--json"], env),
+    )
+
+    assertStartupObjectShape(payload, [
+      "kind",
+      "version",
+      "refType",
+      "status",
+      "resolved",
+      "candidates",
+      "unresolvedReason",
+    ])
+  })
+
+  await ctx.step("resolve label", async () => {
+    const payload = await withMockServer(
+      [
+        {
+          queryName: "ResolveTeamReference",
+          variables: { id: "ENG" },
+          response: {
+            data: {
+              team: {
+                id: "team-1",
+                key: "ENG",
+                name: "Engineering",
+              },
+            },
+          },
+        },
+        {
+          queryName: "ResolveIssueLabelReference",
+          variables: { name: "Bug", teamKey: "ENG" },
+          response: {
+            data: {
+              issueLabels: {
+                nodes: [
+                  {
+                    id: "label-1",
+                    name: "Bug",
+                    color: "#ef4444",
+                    team: {
+                      id: "team-1",
+                      key: "ENG",
+                      name: "Engineering",
+                    },
+                  },
+                ],
+              },
+            },
+          },
+        },
+      ],
+      (env) =>
+        runLinearJsonCommand([
+          "resolve",
+          "label",
+          "Bug",
+          "--team",
+          "ENG",
+          "--json",
+        ], env),
+    )
+
+    assertStartupObjectShape(payload, [
+      "kind",
+      "version",
+      "refType",
+      "status",
+      "resolved",
+      "candidates",
+      "unresolvedReason",
+    ])
+  })
+})
+
 Deno.test("startup-critical agent read entrypoints preserve top-level JSON shape", async (ctx) => {
   await ctx.step("issue view", async () => {
     const payload = await withMockServer(

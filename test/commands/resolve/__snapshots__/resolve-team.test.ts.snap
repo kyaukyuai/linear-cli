@@ -1,0 +1,61 @@
+export const snapshot = {};
+
+snapshot[`Resolve Team Command - JSON Resolved 1`] = `
+stdout:
+'{
+  "kind": "reference_resolution",
+  "version": "v1",
+  "refType": "team",
+  "input": "ENG",
+  "source": "argument",
+  "status": "resolved",
+  "matchedBy": "team_key",
+  "ambiguous": false,
+  "resolved": {
+    "id": "team-1",
+    "key": "ENG",
+    "name": "Engineering"
+  },
+  "candidates": [
+    {
+      "id": "team-1",
+      "key": "ENG",
+      "name": "Engineering"
+    }
+  ],
+  "unresolvedReason": null
+}
+'
+stderr:
+""
+`;
+
+snapshot[`Resolve Team Command - JSON Configured Team Fallback 1`] = `
+stdout:
+'{
+  "kind": "reference_resolution",
+  "version": "v1",
+  "refType": "team",
+  "input": null,
+  "source": "configured_team_context",
+  "status": "resolved",
+  "matchedBy": "team_key",
+  "ambiguous": false,
+  "resolved": {
+    "id": "team-1",
+    "key": "ENG",
+    "name": "Engineering"
+  },
+  "candidates": [
+    {
+      "id": "team-1",
+      "key": "ENG",
+      "name": "Engineering"
+    }
+  ],
+  "unresolvedReason": null
+}
+'
+stderr:
+""
+`;
