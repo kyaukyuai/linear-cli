@@ -26,6 +26,16 @@ Use the default `linear capabilities --json` shape for runtime startup compatibi
 
 The default capabilities shape and the read entrypoints below are treated as startup-critical contracts and are release-gated in CI.
 
+Release-gated downstream certification currently covers these real consumer flows:
+
+- startup discovery with `linear capabilities --json` and `linear capabilities --json --compat v2`
+- reference resolution with `linear resolve issue/team/workflow-state/user/label --json`
+- startup-safe reads with `issue view/list`, `project view`, `cycle current`, `document list`, `webhook view`, and `notification list`
+- the `resolve -> preview -> apply` loop for `linear issue update --json`
+- the `issue update --comment --json` timeout recovery path
+
+Commands outside those certified flows remain best-effort until they are promoted into the certification suite.
+
 ## 2. Resolve References Before Mutating
 
 When a caller needs canonical IDs, current-team fallback, or ambiguity data, resolve references explicitly before preview/apply:

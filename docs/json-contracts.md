@@ -258,6 +258,17 @@ Rules:
 - `idempotency.category` is one of `read_only`, `retry_safe_update`, `retry_safe_no_op`, `non_idempotent`, `resumable_batch`, `conditional`, or `destructive`
 - `compatibility` describes the default, latest, and supported machine-readable capabilities schema versions
 - `schema.coverage` is currently `curated_primary_inputs`, meaning the metadata is intentionally focused on the primary agent-facing execution path and is not a full parser dump of every flag
+
+Release-gated downstream certification currently covers:
+
+- startup discovery with `linear capabilities --json` and `--compat v2`
+- reference resolution with `linear resolve issue/team/workflow-state/user/label --json`
+- startup-safe reads with `issue view/list`, `project view`, `cycle current`, `document list`, `webhook view`, and `notification list`
+- the `resolve -> preview -> apply` flow for `linear issue update --json`
+- the `issue update --comment --json` timeout recovery contract
+
+Automation-tier commands outside those certified flows still follow the compatibility rules above, but they remain best-effort until a downstream certification test is added.
+
 - `schema.arguments` and `schema.flags` are additive, machine-readable hints for the main positional arguments and high-value flags agents should care about first
 - `schema.requiredInputs` and `schema.optionalInputs` summarize the curated primary execution path without forcing callers to re-derive requiredness from each entry
 - `schema.defaults` lists curated defaults and fallbacks that matter for agents, such as `--compat = v1`, current-issue resolution, and timeout fallback behavior
