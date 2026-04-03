@@ -35,6 +35,7 @@ Recommended docs:
 
 - [Agent workflow guide](docs/agent-first.md)
 - [Automation contracts](docs/json-contracts.md)
+- [Agent-only v3 transition plan](docs/agent-only-v3.md)
 - [stdin and pipeline policy](docs/stdin-policy.md)
 
 ## screencast demos
@@ -155,8 +156,9 @@ Use the docs in this order if you are building an agent integration:
 
 1. [docs/agent-first.md](docs/agent-first.md) for the recommended discover/read/preview/apply/recover loop
 2. [docs/json-contracts.md](docs/json-contracts.md) for stable JSON payloads, exit codes, timeout semantics, and dry-run envelopes
-3. [docs/stdin-policy.md](docs/stdin-policy.md) for pipeline and file-input conventions
-4. [`linear capabilities --json`](#automation-contract) for machine-readable command metadata at runtime
+3. [docs/agent-only-v3.md](docs/agent-only-v3.md) for the planned v3 transition to agent-native defaults
+4. [docs/stdin-policy.md](docs/stdin-policy.md) for pipeline and file-input conventions
+5. [`linear capabilities --json`](#automation-contract) for machine-readable command metadata at runtime
 
 ## automation contract
 

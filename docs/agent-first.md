@@ -4,6 +4,8 @@
 
 Use this document as the default operating loop.
 
+If you are planning for the breaking default flips in `v3.0.0`, read [agent-only-v3.md](./agent-only-v3.md) alongside this guide.
+
 ## 1. Discover The Surface
 
 Start with the self-describing registry:
