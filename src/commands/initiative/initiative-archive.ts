@@ -29,6 +29,7 @@ export const archiveCommand = new Command()
   .name("archive")
   .description("Archive a Linear initiative")
   .arguments("[initiativeId:string]")
+  .option("-i, --interactive", "Enable interactive confirmation")
   .option("-y, --yes", "Skip confirmation prompt")
   .option("--force", "Deprecated alias for --yes")
   .option(
@@ -42,7 +43,7 @@ export const archiveCommand = new Command()
   .option("--bulk-stdin", "Read initiative IDs from stdin")
   .action(
     async (
-      { yes, force, bulk, bulkFile, bulkStdin },
+      { interactive, yes, force, bulk, bulkFile, bulkStdin },
       initiativeId,
     ) => {
       const client = getGraphQLClient()
@@ -53,6 +54,7 @@ export const archiveCommand = new Command()
           bulk,
           bulkFile,
           bulkStdin,
+          interactive,
           yes,
           force,
         })
@@ -66,7 +68,11 @@ export const archiveCommand = new Command()
         )
       }
 
-      await handleSingleArchive(client, initiativeId, { yes, force })
+      await handleSingleArchive(client, initiativeId, {
+        interactive,
+        yes,
+        force,
+      })
     },
   )
 
@@ -74,9 +80,9 @@ async function handleSingleArchive(
   // deno-lint-ignore no-explicit-any
   client: any,
   initiativeId: string,
-  options: { yes?: boolean; force?: boolean },
+  options: { interactive?: boolean; yes?: boolean; force?: boolean },
 ): Promise<void> {
-  const { yes, force } = options
+  const { interactive, yes, force } = options
 
   // Resolve initiative ID
   const resolvedId = await resolveInitiativeId(client, initiativeId)
@@ -118,6 +124,7 @@ async function handleSingleArchive(
   // Confirm archival
   if (!shouldSkipConfirmation({ yes, force })) {
     ensureInteractiveConfirmationAvailable({
+      interactive,
       yes,
       force,
     }, "Interactive confirmation required.")
@@ -166,6 +173,7 @@ async function handleBulkArchive(
   // deno-lint-ignore no-explicit-any
   client: any,
   options: {
+    interactive?: boolean
     bulk?: string[]
     bulkFile?: string
     bulkStdin?: boolean
@@ -173,7 +181,7 @@ async function handleBulkArchive(
     force?: boolean
   },
 ): Promise<void> {
-  const { yes, force } = options
+  const { interactive, yes, force } = options
 
   // Collect all IDs
   const ids = await collectBulkIds({
@@ -191,6 +199,7 @@ async function handleBulkArchive(
   // Confirm bulk operation
   if (!shouldSkipConfirmation({ yes, force })) {
     ensureInteractiveConfirmationAvailable({
+      interactive,
       yes,
       force,
     }, "Interactive confirmation required.")

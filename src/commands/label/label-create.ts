@@ -2,6 +2,7 @@ import { Command } from "@cliffy/command"
 import { Input, Select } from "@cliffy/prompt"
 import { gql } from "../../__codegen__/gql.ts"
 import { getGraphQLClient } from "../../utils/graphql.ts"
+import { ensureInteractiveInputAvailable } from "../../utils/interactive.ts"
 import { getAllTeams, getTeamIdByKey, getTeamKey } from "../../utils/linear.ts"
 import { shouldShowSpinner } from "../../utils/hyperlink.ts"
 import {
@@ -58,7 +59,7 @@ export const createCommand = new Command()
   )
   .option(
     "-i, --interactive",
-    "Interactive mode (default if no flags provided)",
+    "Enable interactive prompts",
   )
   .action(async (options) => {
     try {
@@ -77,10 +78,14 @@ export const createCommand = new Command()
       let description = providedDescription
       let teamKey = providedTeam
 
-      // Determine if we should run in interactive mode
-      const noFlagsProvided = !name
-      const isInteractive = (noFlagsProvided || interactiveFlag) &&
-        Deno.stdout.isTerminal()
+      const isInteractive = interactiveFlag === true
+
+      if (isInteractive) {
+        ensureInteractiveInputAvailable(
+          { interactive: interactiveFlag },
+          "Interactive label creation requested",
+        )
+      }
 
       if (isInteractive) {
         console.log("\nCreate a new label\n")
@@ -164,7 +169,8 @@ export const createCommand = new Command()
       // Validate required fields
       if (!name) {
         throw new ValidationError("Label name is required", {
-          suggestion: "Use --name or -n flag to specify a label name.",
+          suggestion:
+            "Use --name or -n flag to specify a label name, or pass --interactive.",
         })
       }
 

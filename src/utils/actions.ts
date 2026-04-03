@@ -107,6 +107,7 @@ export async function startWorkOnIssue(
   teamId: string,
   gitSourceRef?: string,
   customBranchName?: string,
+  interactive = false,
 ) {
   const plan = await buildStartWorkPlan(
     issueId,
@@ -116,7 +117,7 @@ export async function startWorkOnIssue(
   )
 
   // Start VCS work (git or jj)
-  await startVcsWork(issueId, plan.branchName, gitSourceRef)
+  await startVcsWork(issueId, plan.branchName, gitSourceRef, interactive)
 
   // Update issue state
   try {

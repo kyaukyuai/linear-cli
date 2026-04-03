@@ -3,6 +3,7 @@ import { Input, Select } from "@cliffy/prompt"
 import { gql } from "../../__codegen__/gql.ts"
 import type { InitiativeStatus } from "../../__codegen__/graphql.ts"
 import { getGraphQLClient } from "../../utils/graphql.ts"
+import { ensureInteractiveInputAvailable } from "../../utils/interactive.ts"
 import { lookupUserId } from "../../utils/linear.ts"
 import { shouldShowSpinner } from "../../utils/hyperlink.ts"
 import {
@@ -68,7 +69,7 @@ export const createCommand = new Command()
   .option("--icon <icon:string>", "Icon name")
   .option(
     "-i, --interactive",
-    "Interactive mode (default if no flags provided)",
+    "Enable interactive prompts",
   )
   .action(async (options) => {
     const {
@@ -92,10 +93,14 @@ export const createCommand = new Command()
     let targetDate = providedTargetDate
     let color = providedColor
 
-    // Determine if we should run in interactive mode
-    const noFlagsProvided = !name
-    const isInteractive = (noFlagsProvided || interactiveFlag) &&
-      Deno.stdout.isTerminal()
+    const isInteractive = interactiveFlag === true
+
+    if (isInteractive) {
+      ensureInteractiveInputAvailable(
+        { interactive: interactiveFlag },
+        "Interactive initiative creation requested",
+      )
+    }
 
     if (isInteractive) {
       console.log("\nCreate a new initiative\n")
@@ -177,9 +182,9 @@ export const createCommand = new Command()
 
     // Validate required fields
     if (!name) {
-      throw new ValidationError(
-        "Initiative name is required. Use --name or -n flag.",
-      )
+      throw new ValidationError("Initiative name is required", {
+        suggestion: "Use --name or -n flag, or pass --interactive.",
+      })
     }
 
     // Validate status if provided (user can input lowercase, we convert to API format)

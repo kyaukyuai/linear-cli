@@ -2,6 +2,7 @@ import { Command } from "@cliffy/command"
 import { Select } from "@cliffy/prompt"
 import { getPriorityDisplay } from "../../utils/display.ts"
 import { emitDryRunOutput } from "../../utils/dry_run.ts"
+import { ensureInteractiveInputAvailable } from "../../utils/interactive.ts"
 import {
   fetchIssuesForState,
   getIssueIdentifier,
@@ -37,6 +38,7 @@ export const startCommand = new Command()
     "-b, --branch <branch:string>",
     "Custom branch name to use instead of the issue identifier",
   )
+  .option("-i, --interactive", "Enable interactive issue selection")
   .option(
     "--dry-run",
     "Preview the branch and state transition without making changes",
@@ -50,7 +52,7 @@ export const startCommand = new Command()
     "linear issue start --all-assignees",
   )
   .action(async (
-    { allAssignees, unassigned, fromRef, branch, dryRun },
+    { allAssignees, unassigned, fromRef, branch, dryRun, interactive },
     issueId,
   ) => {
     try {
@@ -67,6 +69,11 @@ export const startCommand = new Command()
       // (start should pick from a list, not continue on current issue)
       let resolvedId = issueId ? await getIssueIdentifier(issueId) : undefined
       if (!resolvedId) {
+        ensureInteractiveInputAvailable(
+          { interactive },
+          "Issue ID is required unless --interactive is used",
+          "Pass an issue ID like `linear issue start ENG-123`, or use --interactive to pick from a list.",
+        )
         const result = await fetchIssuesForState({
           teamKey: teamId,
           state: ["unstarted"],
@@ -123,7 +130,13 @@ export const startCommand = new Command()
         return
       }
 
-      await startIssue(resolvedId, teamId, fromRef, branch)
+      await startIssue(
+        resolvedId,
+        teamId,
+        fromRef,
+        branch,
+        interactive === true,
+      )
     } catch (error) {
       handleError(error, "Failed to start issue")
     }

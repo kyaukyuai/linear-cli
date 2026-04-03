@@ -102,6 +102,7 @@ Recommended preparation work for consumers before `v3.0.0`:
 - add tests for startup discovery and representative write flows
 - treat `--profile agent-safe` as the compatibility rehearsal for v3 defaults
 - adopt `linear resolve ... --json` before preview/apply loops
+- use explicit `--interactive` only for human/debug prompt flows; do not rely on fallback prompts
 
 ## Release Criteria For v3.0.0
 

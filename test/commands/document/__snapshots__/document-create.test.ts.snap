@@ -67,7 +67,7 @@ stdout:
 ""
 stderr:
 "✗ Failed to create document: Title is required
-  Use --title or run with -i for interactive mode.
+  Use --title or pass --interactive.
 "
 `;
 

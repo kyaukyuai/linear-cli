@@ -157,12 +157,13 @@ Description:
 
 Options:
 
-  -h, --help                  - Show this help.                                    
-  -w, --workspace  <slug>     - Target workspace (uses credentials)                
-  --profile        <profile>  - Execution profile (agent-safe)                     
-  -y, --yes                   - Skip confirmation prompt                           
-  -j, --json                  - Output as JSON                                     
-  --dry-run                   - Preview the deletion without mutating the webhook  
+  -h, --help                    - Show this help.                                    
+  -w, --workspace    <slug>     - Target workspace (uses credentials)                
+  --profile          <profile>  - Execution profile (agent-safe)                     
+  -i, --interactive             - Enable interactive confirmation                    
+  -y, --yes                     - Skip confirmation prompt                           
+  -j, --json                    - Output as JSON                                     
+  --dry-run                     - Preview the deletion without mutating the webhook  
 
 Examples:
 

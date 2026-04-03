@@ -10,6 +10,7 @@ import {
   lookupUserId,
 } from "../../utils/linear.ts"
 import { shouldShowSpinner } from "../../utils/hyperlink.ts"
+import { ensureInteractiveInputAvailable } from "../../utils/interactive.ts"
 import { buildWriteCommandPreview } from "../../utils/write_preview.ts"
 import {
   buildWriteApplyOperation,
@@ -145,7 +146,7 @@ export const createCommand = new Command()
   )
   .option(
     "-i, --interactive",
-    "Interactive mode (default if no flags provided)",
+    "Enable interactive prompts",
   )
   .option("-j, --json", "Output created project as JSON")
   .option("--dry-run", "Preview the project without creating it")
@@ -184,10 +185,14 @@ export const createCommand = new Command()
       let startDate = providedStartDate
       let targetDate = providedTargetDate
 
-      // Determine if we should run in interactive mode
-      const noFlagsProvided = !name && teams.length === 0
-      const isInteractive = (noFlagsProvided || interactiveFlag) &&
-        Deno.stdout.isTerminal()
+      const isInteractive = interactiveFlag === true
+
+      if (isInteractive) {
+        ensureInteractiveInputAvailable(
+          { interactive: interactiveFlag },
+          "Interactive project creation requested",
+        )
+      }
 
       if (isInteractive) {
         console.log("\nCreate a new project\n")
@@ -287,7 +292,8 @@ export const createCommand = new Command()
       // Validate required fields
       if (!name) {
         throw new ValidationError("Project name is required", {
-          suggestion: "Use --name or -n flag to specify a project name.",
+          suggestion:
+            "Use --name or -n flag to specify a project name, or pass --interactive.",
         })
       }
 
@@ -298,7 +304,8 @@ export const createCommand = new Command()
           teams = [defaultTeam]
         } else {
           throw new ValidationError("At least one team is required", {
-            suggestion: "Use --team or -t flag to specify a team.",
+            suggestion:
+              "Use --team or -t flag to specify a team, or pass --interactive.",
           })
         }
       }

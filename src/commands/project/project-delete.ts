@@ -28,6 +28,7 @@ export const deleteCommand = new Command()
   .name("delete")
   .description("Delete (trash) a Linear project")
   .arguments("<projectId:string>")
+  .option("-i, --interactive", "Enable interactive confirmation")
   .option("-y, --yes", "Skip confirmation prompt")
   .option("-f, --force", "Deprecated alias for --yes")
   .option("--dry-run", "Preview the deletion without mutating the project")
@@ -39,23 +40,23 @@ export const deleteCommand = new Command()
     "Delete a project without prompting",
     "linear project delete auth-refresh --yes",
   )
-  .action(async ({ yes, force, dryRun }, projectId) => {
-    if (!shouldSkipConfirmation({ yes, force }) && !dryRun) {
-      ensureInteractiveConfirmationAvailable({ yes, force })
-      const confirmed = await Confirm.prompt({
-        message: `Are you sure you want to delete project ${projectId}?`,
-        default: false,
-      })
-
-      if (!confirmed) {
-        console.log("Deletion canceled")
-        return
-      }
-    }
-
+  .action(async ({ interactive, yes, force, dryRun }, projectId) => {
     let spinner: { start: () => void; stop: () => void } | null = null
 
     try {
+      if (!shouldSkipConfirmation({ yes, force }) && !dryRun) {
+        ensureInteractiveConfirmationAvailable({ interactive, yes, force })
+        const confirmed = await Confirm.prompt({
+          message: `Are you sure you want to delete project ${projectId}?`,
+          default: false,
+        })
+
+        if (!confirmed) {
+          console.log("Deletion canceled")
+          return
+        }
+      }
+
       const resolvedId = await resolveProjectId(projectId)
 
       if (dryRun) {

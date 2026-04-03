@@ -145,12 +145,13 @@ Description:
 
 Options:
 
-  -h, --help                  - Show this help.                                     
-  -w, --workspace  <slug>     - Target workspace (uses credentials)                 
-  --profile        <profile>  - Execution profile (agent-safe)                      
-  -y, --yes                   - Skip confirmation prompt                            
-  --bulk           <ids...>   - Delete multiple documents by slug or ID             
-  --bulk-file      <file>     - Read document slugs/IDs from a file (one per line)  
-  --bulk-stdin                - Read document slugs/IDs from stdin                  
-  --dry-run                   - Preview the deletion without mutating documents
+  -h, --help                    - Show this help.                                     
+  -w, --workspace    <slug>     - Target workspace (uses credentials)                 
+  --profile          <profile>  - Execution profile (agent-safe)                      
+  -i, --interactive             - Enable interactive confirmation                     
+  -y, --yes                     - Skip confirmation prompt                            
+  --bulk             <ids...>   - Delete multiple documents by slug or ID             
+  --bulk-file        <file>     - Read document slugs/IDs from a file (one per line)  
+  --bulk-stdin                  - Read document slugs/IDs from stdin                  
+  --dry-run                     - Preview the deletion without mutating documents
 ```

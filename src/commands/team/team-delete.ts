@@ -5,6 +5,7 @@ import {
   ensureInteractiveConfirmationAvailable,
   shouldSkipConfirmation,
 } from "../../utils/confirmation.ts"
+import { ensureInteractiveInputAvailable } from "../../utils/interactive.ts"
 import { getGraphQLClient } from "../../utils/graphql.ts"
 import { getAllTeams, getTeamIdByKey } from "../../utils/linear.ts"
 import {
@@ -35,13 +36,14 @@ export const deleteCommand = new Command()
   .name("delete")
   .description("Delete a Linear team")
   .arguments("<teamKey:string>")
+  .option("-i, --interactive", "Enable interactive selection and confirmation")
   .option(
     "--move-issues <targetTeam:string>",
     "Move all issues to another team before deletion",
   )
   .option("-y, --yes", "Skip confirmation prompt")
   .option("--force", "Deprecated alias for --yes")
-  .action(async ({ moveIssues, yes, force }, teamKey) => {
+  .action(async ({ interactive, moveIssues, yes, force }, teamKey) => {
     try {
       const client = getGraphQLClient()
 
@@ -86,13 +88,15 @@ export const deleteCommand = new Command()
         )
 
         if (!Deno.stdin.isTerminal()) {
-          throw new ValidationError(
-            "Interactive selection required",
-            {
-              suggestion: "Use --move-issues <teamKey> to specify target team.",
-            },
-          )
+          throw new ValidationError("Interactive selection required", {
+            suggestion: "Use --move-issues <teamKey> to specify target team.",
+          })
         }
+        ensureInteractiveInputAvailable(
+          { interactive },
+          "Interactive team selection required",
+          "Use --move-issues <teamKey> to specify the destination team, or pass --interactive to choose in a terminal.",
+        )
 
         const allTeams = await getAllTeams()
         const otherTeams = allTeams.filter((t) => t.id !== teamId)
@@ -128,7 +132,7 @@ export const deleteCommand = new Command()
 
       // Confirm deletion
       if (!shouldSkipConfirmation({ yes, force })) {
-        ensureInteractiveConfirmationAvailable({ yes, force })
+        ensureInteractiveConfirmationAvailable({ interactive, yes, force })
         const confirmed = await Confirm.prompt({
           message:
             `Are you sure you want to delete team "${team.key}: ${team.name}"?`,

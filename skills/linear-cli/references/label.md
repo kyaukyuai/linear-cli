@@ -72,7 +72,7 @@ Options:
   -c, --color        <color>        - Color hex code (e.g., #EB5757)                               
   -d, --description  <description>  - Label description                                            
   -t, --team         <teamKey>      - Team key for team-specific label (omit for workspace label)  
-  -i, --interactive                 - Interactive mode (default if no flags provided)
+  -i, --interactive                 - Enable interactive prompts
 ```
 
 ### delete
@@ -88,10 +88,11 @@ Description:
 
 Options:
 
-  -h, --help                  - Show this help.                                 
-  -w, --workspace  <slug>     - Target workspace (uses credentials)             
-  --profile        <profile>  - Execution profile (agent-safe)                  
-  -t, --team       <teamKey>  - Team key to disambiguate labels with same name  
-  -y, --yes                   - Skip confirmation prompt                        
-  -f, --force                 - Deprecated alias for --yes
+  -h, --help                    - Show this help.                                 
+  -w, --workspace    <slug>     - Target workspace (uses credentials)             
+  --profile          <profile>  - Execution profile (agent-safe)                  
+  -i, --interactive             - Enable interactive selection and confirmation   
+  -t, --team         <teamKey>  - Team key to disambiguate labels with same name  
+  -y, --yes                     - Skip confirmation prompt                        
+  -f, --force                   - Deprecated alias for --yes
 ```

@@ -32,6 +32,7 @@ import {
   handleAutomationContractParseError,
 } from "../../utils/json_output.ts"
 import { resolveJsonOutputMode } from "../../utils/output_mode.ts"
+import { ensureInteractiveInputAvailable } from "../../utils/interactive.ts"
 import { emitDryRunOutput } from "../../utils/dry_run.ts"
 import { withSpinner } from "../../utils/spinner.ts"
 import { CliError, NotFoundError, ValidationError } from "../../utils/errors.ts"
@@ -540,7 +541,11 @@ export const createCommand = new Command()
     "--no-use-default-template",
     "Do not use default template for the issue",
   )
-  .option("--no-interactive", "Disable interactive prompts")
+  .option("-i, --interactive", "Enable interactive prompts and editor flow")
+  .option(
+    "--no-interactive",
+    "Accepted for compatibility; issue create is non-interactive by default",
+  )
   .option("-t, --title <title:string>", "Title of the issue")
   .example(
     "Create an issue as JSON",
@@ -602,8 +607,13 @@ export const createCommand = new Command()
       })
       try {
         const writeTimeoutMs = resolveWriteTimeoutMs(timeoutMs)
-        interactive = interactive && Deno.stdout.isTerminal() && !json &&
-          !dryRun
+        const useInteractive = interactive === true && !json && !dryRun
+        if (useInteractive) {
+          ensureInteractiveInputAvailable(
+            { interactive },
+            "Interactive issue creation requested",
+          )
+        }
 
         // Validate that description and descriptionFile are not both provided
         if (description && descriptionFile) {
@@ -643,14 +653,15 @@ export const createCommand = new Command()
           }
         }
 
-        // If no flags are provided (or only parent is provided), use interactive mode
+        // If no flags are provided (or only parent is provided), interactive mode
+        // must be explicitly requested.
         const noFlagsProvided = !title && !assignee && !dueDate &&
           priority === undefined && estimate === undefined &&
           !finalDescription &&
           (!labels || labels.length === 0) &&
           !team && !project && !state && !milestone && !cycle && !start
 
-        if (noFlagsProvided && interactive) {
+        if (noFlagsProvided && useInteractive) {
           // Convert parent identifier if provided and fetch parent data
           let parentId: string | undefined
           let parentData: {
@@ -783,11 +794,11 @@ export const createCommand = new Command()
         // Fallback to flag-based mode
         if (!title) {
           throw new ValidationError(
-            "Title is required when not using interactive mode",
+            "Title is required unless --interactive is used",
             {
               suggestion: json
                 ? "Use --title when requesting --json output."
-                : "Use --title or run without any flags (or only --parent) for interactive mode.",
+                : "Use --title, or pass --interactive to create the issue with prompts.",
             },
           )
         }
@@ -799,7 +810,7 @@ export const createCommand = new Command()
 
         // For functions that need actual team IDs (like createIssue), get the ID
         let teamId = await getTeamIdByKey(team)
-        if (interactive && !teamId) {
+        if (useInteractive && !teamId) {
           const teamIds = await searchTeamsByKeySubstring(team)
           teamId = await selectOption("Team", team, teamIds)
         }
@@ -843,7 +854,7 @@ export const createCommand = new Command()
           // sequential in case of questions
           for (const label of labels) {
             let labelId = await getIssueLabelIdByNameForTeam(label, team)
-            if (!labelId && interactive) {
+            if (!labelId && useInteractive) {
               const labelIds = await getIssueLabelOptionsByNameForTeam(
                 label,
                 team,
@@ -861,7 +872,7 @@ export const createCommand = new Command()
         const effectiveProject = project ?? getOption("default_project")
         if (effectiveProject !== undefined) {
           projectId = await getProjectIdByName(effectiveProject)
-          if (projectId === undefined && interactive) {
+          if (projectId === undefined && useInteractive) {
             const projectIds = await getProjectOptionsByName(effectiveProject)
             projectId = await selectOption(
               "Project",

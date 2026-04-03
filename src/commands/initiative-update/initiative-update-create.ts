@@ -2,6 +2,7 @@ import { Command } from "@cliffy/command"
 import { Input, Select } from "@cliffy/prompt"
 import { gql } from "../../__codegen__/gql.ts"
 import { getEditor, openEditor } from "../../utils/editor.ts"
+import { ensureInteractiveInputAvailable } from "../../utils/interactive.ts"
 import {
   CliError,
   handleError,
@@ -118,13 +119,12 @@ export const createCommand = new Command()
         // Use provided ID as fallback
       }
 
-      // Determine if we should use interactive mode
-      let useInteractive = interactive && Deno.stdout.isTerminal()
-
-      // If no flags provided and we have a TTY, enter interactive mode
-      const noFlagsProvided = !body && !bodyFile && !health
-      if (noFlagsProvided && Deno.stdout.isTerminal()) {
-        useInteractive = true
+      const useInteractive = interactive === true
+      if (useInteractive) {
+        ensureInteractiveInputAvailable(
+          { interactive },
+          "Interactive initiative update creation requested",
+        )
       }
 
       // Interactive mode
@@ -165,13 +165,6 @@ export const createCommand = new Command()
         const stdinContent = await readTextFromStdin()
         if (stdinContent) {
           finalBody = stdinContent
-        }
-      } else if (Deno.stdout.isTerminal()) {
-        // No content provided, open editor
-        console.log("Opening editor for status update content...")
-        finalBody = await openEditor()
-        if (!finalBody) {
-          console.log("No content entered.")
         }
       }
 

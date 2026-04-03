@@ -43,14 +43,15 @@ Description:
 
 Options:
 
-  -h, --help                        - Show this help.                                          
-  -w, --workspace    <slug>         - Target workspace (uses credentials)                      
-  --profile          <profile>      - Execution profile (agent-safe)                           
-  -n, --name         <name>         - Name of the team                                         
-  -d, --description  <description>  - Description of the team                                  
-  -k, --key          <key>          - Team key (if not provided, will be generated from name)  
-  --private                         - Make the team private                                    
-  --no-interactive                  - Disable interactive prompts
+  -h, --help                        - Show this help.                                                        
+  -w, --workspace    <slug>         - Target workspace (uses credentials)                                    
+  --profile          <profile>      - Execution profile (agent-safe)                                         
+  -n, --name         <name>         - Name of the team                                                       
+  -d, --description  <description>  - Description of the team                                                
+  -i, --interactive                 - Enable interactive prompts                                             
+  -k, --key          <key>          - Team key (if not provided, will be generated from name)                
+  --private                         - Make the team private                                                  
+  --no-interactive                  - Accepted for compatibility; team create is non-interactive by default
 ```
 
 ### delete
@@ -66,12 +67,13 @@ Description:
 
 Options:
 
-  -h, --help                     - Show this help.                                  
-  -w, --workspace  <slug>        - Target workspace (uses credentials)              
-  --profile        <profile>     - Execution profile (agent-safe)                   
-  --move-issues    <targetTeam>  - Move all issues to another team before deletion  
-  -y, --yes                      - Skip confirmation prompt                         
-  --force                        - Deprecated alias for --yes
+  -h, --help                       - Show this help.                                  
+  -w, --workspace    <slug>        - Target workspace (uses credentials)              
+  --profile          <profile>     - Execution profile (agent-safe)                   
+  -i, --interactive                - Enable interactive selection and confirmation    
+  --move-issues      <targetTeam>  - Move all issues to another team before deletion  
+  -y, --yes                        - Skip confirmation prompt                         
+  --force                          - Deprecated alias for --yes
 ```
 
 ### list

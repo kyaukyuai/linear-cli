@@ -11,12 +11,13 @@ Description:
 
 Options:
 
-  -h, --help              - Show this help.                                     
-  -y, --yes               - Skip confirmation prompt                            
-  --bulk        <ids...>  - Delete multiple documents by slug or ID             
-  --bulk-file   <file>    - Read document slugs/IDs from a file (one per line)  
-  --bulk-stdin            - Read document slugs/IDs from stdin                  
-  --dry-run               - Preview the deletion without mutating documents     
+  -h, --help                   - Show this help.                                     
+  -i, --interactive            - Enable interactive confirmation                     
+  -y, --yes                    - Skip confirmation prompt                            
+  --bulk             <ids...>  - Delete multiple documents by slug or ID             
+  --bulk-file        <file>    - Read document slugs/IDs from a file (one per line)  
+  --bulk-stdin                 - Read document slugs/IDs from stdin                  
+  --dry-run                    - Preview the deletion without mutating documents     
 
 "
 stderr:

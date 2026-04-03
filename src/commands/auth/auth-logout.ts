@@ -10,12 +10,14 @@ import {
   ensureInteractiveConfirmationAvailable,
   shouldSkipConfirmation,
 } from "../../utils/confirmation.ts"
+import { ensureInteractiveInputAvailable } from "../../utils/interactive.ts"
 import { AuthError, handleError, NotFoundError } from "../../utils/errors.ts"
 
 export const logoutCommand = new Command()
   .name("logout")
   .description("Remove a workspace credential")
   .arguments("[workspace:string]")
+  .option("-i, --interactive", "Enable interactive selection and confirmation")
   .option("-y, --yes", "Skip confirmation prompt")
   .option("-f, --force", "Deprecated alias for --yes")
   .action(async (options, workspace?: string) => {
@@ -31,6 +33,13 @@ export const logoutCommand = new Command()
         if (workspaces.length === 1) {
           workspace = workspaces[0]
         } else {
+          ensureInteractiveInputAvailable(
+            { interactive: options.interactive },
+            "Workspace is required unless --interactive is used",
+            `Pass a workspace name directly, or use --interactive to choose from: ${
+              workspaces.join(", ")
+            }`,
+          )
           const defaultWorkspace = getDefaultWorkspace()
           workspace = await Select.prompt({
             message: "Select workspace to remove",

@@ -11,12 +11,13 @@ Description:
 
 Options:
 
-  -h, --help              - Show this help.                                             
-  -y, --yes               - Skip confirmation prompt                                    
-  --confirm               - Deprecated alias for --yes                                  
-  --bulk        <ids...>  - Delete multiple issues by identifier (e.g., TC-123 TC-124)  
-  --bulk-file   <file>    - Read issue identifiers from a file (one per line)           
-  --bulk-stdin            - Read issue identifiers from stdin                           
+  -h, --help                   - Show this help.                                             
+  -i, --interactive            - Enable interactive confirmation                             
+  -y, --yes                    - Skip confirmation prompt                                    
+  --confirm                    - Deprecated alias for --yes                                  
+  --bulk             <ids...>  - Delete multiple issues by identifier (e.g., TC-123 TC-124)  
+  --bulk-file        <file>    - Read issue identifiers from a file (one per line)           
+  --bulk-stdin                 - Read issue identifiers from stdin                           
 
 "
 stderr:

@@ -29,6 +29,7 @@ If an agent only reads one page, it should be this README plus the two contract 
 - prefer stable read surfaces such as `issue`, `project`, `cycle`, `milestone`, `document`, `webhook`, `notification`, `team`, `user`, `workflow-state`, `label`, `initiative`, and update feeds; those agent-first entrypoints now default to machine-readable JSON
 - preview writes with `--dry-run --json` before mutating Linear
 - apply writes on default-JSON surfaces without `--text`, then inspect exit codes and `error.details` instead of parsing terminal text
+- use `--interactive` explicitly for human/debug prompt flows; missing required inputs now fail fast by default
 - use stdin or file flags for Markdown-heavy descriptions and comments instead of long inline shell strings
 
 Recommended docs:
@@ -172,7 +173,7 @@ non-goals:
 
 - it does not force `--json` on commands outside the agent-native default-JSON surface
 - it does not auto-confirm destructive actions
-- it does not replace every interactive data-entry fallback; callers should still pass explicit flags, stdin, or file inputs
+- it does not replace explicit human/debug prompt flows; callers should pass flags, stdin, file inputs, or opt into `--interactive`
 
 - v1 in scope: `issue list/view/create/update --json`, `issue relation add/delete/list --json`, `issue comment add --json`, `team members --json`, `issue parent/children/create-batch --json`
 - v2 additions: `project list/view --json`, `cycle list/view/current/next --json`, `milestone list/view --json`
@@ -271,9 +272,10 @@ linear issue list --all-states --query auth --priority high --updated-before 202
 linear issue list --parent ENG-100 --json  # filter sub-issues of a parent issue
 linear issue list -w   # open issue list in web browser
 linear issue list -a   # open issue list in Linear.app
-linear issue start     # create/switch to issue branch and mark as started
+linear issue start ENG-123  # create/switch to issue branch and mark as started
+linear issue start --interactive  # choose an issue interactively in a terminal
 linear issue start ENG-123 --dry-run  # preview the branch and target state
-linear issue create    # create a new issue (interactive prompts)
+linear issue create --interactive  # create a new issue with interactive prompts
 linear issue create -t "title" -d "description"  # create with flags
 cat description.md | linear issue create -t "title" --team ENG  # read description from stdin
 linear issue create -t "title" --team ENG --json  # emit machine-readable created issue data
@@ -281,7 +283,7 @@ linear issue create -t "title" --team ENG --dry-run --json  # preview the create
 linear issue create-batch --file ./issue-batch.json --json  # create a parent issue and child issues from JSON
 linear issue create-batch --file ./issue-batch.json --dry-run --json  # preview a batch without creating issues
 linear issue create --project "My Project" --milestone "Phase 1"  # create with milestone
-linear issue update    # update an issue (interactive prompts)
+linear issue update ENG-123 --interactive  # update an issue with interactive prompts
 cat description.md | linear issue update ENG-123 --state started  # read description from stdin
 linear issue update ENG-123 --due-date 2026-03-31  # set an issue due date
 linear issue update ENG-123 --clear-due-date       # clear an issue due date

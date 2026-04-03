@@ -110,7 +110,7 @@ Options:
   --target-date      <targetDate>   - Target completion date (YYYY-MM-DD)                    
   -c, --color        <color>        - Color hex code (e.g., #5E6AD2)                         
   --icon             <icon>         - Icon name                                              
-  -i, --interactive                 - Interactive mode (default if no flags provided)
+  -i, --interactive                 - Enable interactive prompts
 ```
 
 ### archive
@@ -126,14 +126,15 @@ Description:
 
 Options:
 
-  -h, --help                  - Show this help.                                    
-  -w, --workspace  <slug>     - Target workspace (uses credentials)                
-  --profile        <profile>  - Execution profile (agent-safe)                     
-  -y, --yes                   - Skip confirmation prompt                           
-  --force                     - Deprecated alias for --yes                         
-  --bulk           <ids...>   - Archive multiple initiatives by ID, slug, or name  
-  --bulk-file      <file>     - Read initiative IDs from a file (one per line)     
-  --bulk-stdin                - Read initiative IDs from stdin
+  -h, --help                    - Show this help.                                    
+  -w, --workspace    <slug>     - Target workspace (uses credentials)                
+  --profile          <profile>  - Execution profile (agent-safe)                     
+  -i, --interactive             - Enable interactive confirmation                    
+  -y, --yes                     - Skip confirmation prompt                           
+  --force                       - Deprecated alias for --yes                         
+  --bulk             <ids...>   - Archive multiple initiatives by ID, slug, or name  
+  --bulk-file        <file>     - Read initiative IDs from a file (one per line)     
+  --bulk-stdin                  - Read initiative IDs from stdin
 ```
 
 ### update
@@ -175,11 +176,12 @@ Description:
 
 Options:
 
-  -h, --help                  - Show this help.                      
-  -w, --workspace  <slug>     - Target workspace (uses credentials)  
-  --profile        <profile>  - Execution profile (agent-safe)       
-  -y, --yes                   - Skip confirmation prompt             
-  --force                     - Deprecated alias for --yes
+  -h, --help                    - Show this help.                      
+  -w, --workspace    <slug>     - Target workspace (uses credentials)  
+  --profile          <profile>  - Execution profile (agent-safe)       
+  -i, --interactive             - Enable interactive confirmation      
+  -y, --yes                     - Skip confirmation prompt             
+  --force                       - Deprecated alias for --yes
 ```
 
 ### delete
@@ -195,14 +197,15 @@ Description:
 
 Options:
 
-  -h, --help                  - Show this help.                                   
-  -w, --workspace  <slug>     - Target workspace (uses credentials)               
-  --profile        <profile>  - Execution profile (agent-safe)                    
-  -y, --yes                   - Skip confirmation prompt                          
-  --force                     - Deprecated alias for --yes                        
-  --bulk           <ids...>   - Delete multiple initiatives by ID, slug, or name  
-  --bulk-file      <file>     - Read initiative IDs from a file (one per line)    
-  --bulk-stdin                - Read initiative IDs from stdin
+  -h, --help                    - Show this help.                                   
+  -w, --workspace    <slug>     - Target workspace (uses credentials)               
+  --profile          <profile>  - Execution profile (agent-safe)                    
+  -i, --interactive             - Enable interactive confirmation                   
+  -y, --yes                     - Skip confirmation prompt                          
+  --force                       - Deprecated alias for --yes                        
+  --bulk             <ids...>   - Delete multiple initiatives by ID, slug, or name  
+  --bulk-file        <file>     - Read initiative IDs from a file (one per line)    
+  --bulk-stdin                  - Read initiative IDs from stdin
 ```
 
 ### add-project
@@ -237,9 +240,10 @@ Description:
 
 Options:
 
-  -h, --help                  - Show this help.                      
-  -w, --workspace  <slug>     - Target workspace (uses credentials)  
-  --profile        <profile>  - Execution profile (agent-safe)       
-  -y, --yes                   - Skip confirmation prompt             
-  --force                     - Deprecated alias for --yes
+  -h, --help                    - Show this help.                      
+  -w, --workspace    <slug>     - Target workspace (uses credentials)  
+  --profile          <profile>  - Execution profile (agent-safe)       
+  -i, --interactive             - Enable interactive confirmation      
+  -y, --yes                     - Skip confirmation prompt             
+  --force                       - Deprecated alias for --yes
 ```

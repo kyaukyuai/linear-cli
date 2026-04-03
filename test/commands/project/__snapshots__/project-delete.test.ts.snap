@@ -11,10 +11,11 @@ Description:
 
 Options:
 
-  -h, --help   - Show this help.                                    
-  -y, --yes    - Skip confirmation prompt                           
-  -f, --force  - Deprecated alias for --yes                         
-  --dry-run    - Preview the deletion without mutating the project  
+  -h, --help         - Show this help.                                    
+  -i, --interactive  - Enable interactive confirmation                    
+  -y, --yes          - Skip confirmation prompt                           
+  -f, --force        - Deprecated alias for --yes                         
+  --dry-run          - Preview the deletion without mutating the project  
 
 Examples:
 
@@ -50,4 +51,13 @@ Resolved ID: 550e8400-e29b-41d4-a716-446655440099
 "
 stderr:
 ""
+`;
+
+snapshot[`Project Delete Command - Requires Explicit Confirmation Mode 1`] = `
+stdout:
+""
+stderr:
+"✗ Failed to delete project: Interactive confirmation required
+  Use --yes to skip confirmation, or pass --interactive to confirm in a terminal.
+"
 `;

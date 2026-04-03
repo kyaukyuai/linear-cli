@@ -11,10 +11,11 @@ Description:
 
 Options:
 
-  -h, --help  - Show this help.                                    
-  -y, --yes   - Skip confirmation prompt                           
-  -j, --json  - Output as JSON                                     
-  --dry-run   - Preview the deletion without mutating the webhook  
+  -h, --help         - Show this help.                                    
+  -i, --interactive  - Enable interactive confirmation                    
+  -y, --yes          - Skip confirmation prompt                           
+  -j, --json         - Output as JSON                                     
+  --dry-run          - Preview the deletion without mutating the webhook  
 
 Examples:
 

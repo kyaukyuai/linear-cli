@@ -34,6 +34,8 @@ linear --profile agent-safe capabilities --compat v2
 
 `agent-safe` currently disables pager-by-default behavior, extends the built-in write timeout to `45000ms` unless the caller overrides it, and requires explicit `--yes` for destructive confirmation bypass. It does not force `--json`, auto-confirm destructive actions, or replace missing required inputs.
 
+Human/debug prompt flows are now explicit. When a command supports prompts or editor entry, pass `--interactive`; otherwise missing required inputs fail fast with actionable guidance.
+
 The default capabilities shape and the read entrypoints below are treated as startup-critical contracts and are release-gated in CI.
 
 Release-gated downstream certification currently covers these real consumer flows:
@@ -81,6 +83,8 @@ linear notification list
 
 Use `--text` only when a human needs terminal-oriented output for inspection or debugging.
 
+For human-guided prompt entry on command surfaces that support it, pass `--interactive` explicitly.
+
 For the full contract surface, see [json-contracts.md](./json-contracts.md).
 
 ## 4. Preview Writes Before Mutating
@@ -93,6 +97,7 @@ linear issue create -t "Backfill docs" --team ENG --dry-run --json
 linear issue update ENG-123 --state started --dry-run --json
 linear issue relation add ENG-123 blocked-by ENG-100 --dry-run --json
 linear issue start ENG-123 --dry-run
+linear issue create --interactive
 ```
 
 Preview output is stable and designed for plan/confirm/apply loops.

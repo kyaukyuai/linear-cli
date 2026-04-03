@@ -13,7 +13,8 @@ Description:
 
 Options:
 
-  -h, --help                  - Show this help.                      
-  -w, --workspace  <slug>     - Target workspace (uses credentials)  
-  --profile        <profile>  - Execution profile (agent-safe)
+  -h, --help                    - Show this help.                           
+  -w, --workspace    <slug>     - Target workspace (uses credentials)       
+  --profile          <profile>  - Execution profile (agent-safe)            
+  -i, --interactive             - Enable interactive configuration prompts
 ```
