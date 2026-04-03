@@ -20,6 +20,7 @@ This tells an agent:
 - which commands accept stdin or file input
 - which confirmation-bypass flag is canonical
 - which contract version or retry semantics apply
+- which success fields and write semantics are exposed for machine-readable execution
 
 Use the default `linear capabilities --json` shape for runtime startup compatibility. Reach for `--compat v2` only when the caller is ready to consume richer command schema metadata such as required inputs, constrained values, defaults, context resolution hints, input constraints, canonical argv examples, stdin/file targets, structured output contracts, and write semantics.
 
@@ -62,6 +63,14 @@ When applying a write, prefer `--json` and inspect the process exit code.
 linear issue update ENG-123 --state done --comment "Shipped" --json
 linear notification read notif_123 --json
 ```
+
+When the write succeeds, prefer reading the top-level `receipt` field before inferring behavior from command-specific payload details. The receipt is the shared place for:
+
+- `operationId`
+- `resolvedRefs`
+- `appliedChanges`
+- `noOp`
+- `nextSafeAction`
 
 Important non-zero exit codes:
 

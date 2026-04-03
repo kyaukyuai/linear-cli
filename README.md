@@ -127,6 +127,7 @@ compared to upstream, this fork adds and maintains capabilities aimed at automat
 - stable JSON contracts for the automation tier, with machine-readable failures for parser, validation, and runtime errors
 - a self-describing `linear capabilities --json` surface with a backward-compatible default and an explicit `--compat v2` mode for richer schema and output metadata
 - `--dry-run` previews for high-value write commands, including `issue start`, issue writes, and non-issue writes
+- additive operation receipts on high-value JSON write success paths
 - stdin and pipeline support for high-value write paths
 - retry-safe semantics for relation add/delete, project label add/remove, notification read/archive, and structured partial-failure details
 - canonical `--yes` confirmation bypass handling for destructive commands
@@ -172,6 +173,8 @@ for automation consumers, auth and authorization failures now use exit code `4`,
 high-value write commands honor `LINEAR_WRITE_TIMEOUT_MS` and accept `--timeout-ms` for per-command overrides. timeout failures return a distinct machine-readable failure mode, `timeout_error`, with `error.details.failureMode = "timeout_waiting_for_confirmation"`. when reconciliation runs after the timeout, `error.details.outcome` still captures the high-level result, while `error.details.appliedState` and `error.details.callerGuidance` tell callers whether the write looks applied, partially applied, not applied, or still uncertain and whether they should retry, resume, or read first. notification `read` and `archive` now use the same timeout contract as issue write commands.
 
 the same document also defines the shared preview contract for future `--dry-run` write commands. those commands are not all implemented yet, but the contract now fixes the expected `stdout`, `exit code`, and `--json --dry-run` envelope shape ahead of rollout.
+
+successful high-value JSON writes may also add a top-level `receipt` field. this gives agents a shared place to inspect `operationId`, `resolvedRefs`, `appliedChanges`, `noOp`, and `nextSafeAction` without inferring those traits from command-specific payload fields.
 
 destructive commands use `--yes` as the canonical confirmation-bypass flag. legacy `--force` and `--confirm` flags are still accepted where older workflows already depended on them.
 

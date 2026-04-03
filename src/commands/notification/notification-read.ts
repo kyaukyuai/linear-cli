@@ -14,6 +14,10 @@ import {
 } from "../../utils/write_timeout.ts"
 import { isWriteTimeoutError } from "../../utils/errors.ts"
 import { reconcileWriteTimeoutError } from "../../utils/write_reconciliation.ts"
+import {
+  buildOperationReceipt,
+  withOperationReceipt,
+} from "../../utils/operation_receipt.ts"
 
 const GetNotificationForRead = gql(`
   query GetNotificationForRead($id: String!) {
@@ -154,14 +158,26 @@ export const readCommand = new Command()
       const notification = result.notification
 
       if (json) {
-        console.log(JSON.stringify(
-          {
-            id: notification.id,
-            title: notification.title,
-            readAt: notification.readAt,
-            archivedAt: notification.archivedAt,
-            noOp: result.noOp,
+        const notificationPayload = {
+          id: notification.id,
+          title: notification.title,
+          readAt: notification.readAt,
+          archivedAt: notification.archivedAt,
+          noOp: result.noOp,
+        }
+        const receipt = buildOperationReceipt({
+          operationId: "notification.read",
+          resource: "notification",
+          action: "read",
+          resolvedRefs: {
+            notificationId: notification.id,
           },
+          appliedChanges: result.noOp ? [] : ["readAt"],
+          noOp: result.noOp,
+          nextSafeAction: "continue",
+        })
+        console.log(JSON.stringify(
+          withOperationReceipt(notificationPayload, receipt),
           null,
           2,
         ))

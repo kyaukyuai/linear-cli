@@ -59,7 +59,23 @@ stdout:
     "id": "issue-id-456",
     "identifier": "ENG-456"
   },
-  "relationId": "relation-id-2"
+  "relationId": "relation-id-2",
+  "receipt": {
+    "operationId": "issue.relation.add",
+    "resource": "issue_relation",
+    "action": "add",
+    "resolvedRefs": {
+      "issueIdentifier": "ENG-123",
+      "relatedIssueIdentifier": "ENG-456",
+      "relationType": "blocked-by"
+    },
+    "appliedChanges": [
+      "relation"
+    ],
+    "noOp": false,
+    "partialSuccess": false,
+    "nextSafeAction": "continue"
+  }
 }
 '
 stderr:
@@ -81,7 +97,21 @@ stdout:
     "id": "issue-id-456",
     "identifier": "ENG-456"
   },
-  "relationId": "relation-id-existing"
+  "relationId": "relation-id-existing",
+  "receipt": {
+    "operationId": "issue.relation.add",
+    "resource": "issue_relation",
+    "action": "add",
+    "resolvedRefs": {
+      "issueIdentifier": "ENG-123",
+      "relatedIssueIdentifier": "ENG-456",
+      "relationType": "blocks"
+    },
+    "appliedChanges": [],
+    "noOp": true,
+    "partialSuccess": false,
+    "nextSafeAction": "continue"
+  }
 }
 '
 stderr:
@@ -144,7 +174,23 @@ stdout:
     "id": "issue-id-456",
     "identifier": "ENG-456"
   },
-  "relationId": "relation-id-3"
+  "relationId": "relation-id-3",
+  "receipt": {
+    "operationId": "issue.relation.delete",
+    "resource": "issue_relation",
+    "action": "delete",
+    "resolvedRefs": {
+      "issueIdentifier": "ENG-123",
+      "relatedIssueIdentifier": "ENG-456",
+      "relationType": "blocks"
+    },
+    "appliedChanges": [
+      "relationRemoval"
+    ],
+    "noOp": false,
+    "partialSuccess": false,
+    "nextSafeAction": "continue"
+  }
 }
 '
 stderr:
@@ -166,7 +212,21 @@ stdout:
     "id": "issue-id-456",
     "identifier": "ENG-456"
   },
-  "relationId": null
+  "relationId": null,
+  "receipt": {
+    "operationId": "issue.relation.delete",
+    "resource": "issue_relation",
+    "action": "delete",
+    "resolvedRefs": {
+      "issueIdentifier": "ENG-123",
+      "relatedIssueIdentifier": "ENG-456",
+      "relationType": "blocks"
+    },
+    "appliedChanges": [],
+    "noOp": true,
+    "partialSuccess": false,
+    "nextSafeAction": "continue"
+  }
 }
 '
 stderr:

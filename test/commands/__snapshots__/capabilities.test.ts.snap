@@ -3895,8 +3895,14 @@ stdout:
           "shape": "object",
           "exitCode": 0,
           "topLevelFields": [
-            "success",
-            "data"
+            "id",
+            "body",
+            "createdAt",
+            "url",
+            "parentId",
+            "issue",
+            "user",
+            "receipt"
           ]
         },
         "preview": {
@@ -4338,8 +4344,15 @@ stdout:
           "shape": "object",
           "exitCode": 0,
           "topLevelFields": [
-            "success",
-            "data"
+            "id",
+            "identifier",
+            "title",
+            "url",
+            "dueDate",
+            "assignee",
+            "parent",
+            "state",
+            "receipt"
           ]
         },
         "preview": {
@@ -5086,7 +5099,13 @@ stdout:
           "exitCode": 0,
           "topLevelFields": [
             "success",
-            "data"
+            "noOp",
+            "direction",
+            "relationType",
+            "issue",
+            "relatedIssue",
+            "relationId",
+            "receipt"
           ]
         },
         "preview": {
@@ -5286,7 +5305,13 @@ stdout:
           "exitCode": 0,
           "topLevelFields": [
             "success",
-            "data"
+            "noOp",
+            "direction",
+            "relationType",
+            "issue",
+            "relatedIssue",
+            "relationId",
+            "receipt"
           ]
         },
         "preview": {
@@ -5835,8 +5860,16 @@ stdout:
           "shape": "object",
           "exitCode": 0,
           "topLevelFields": [
-            "success",
-            "data"
+            "id",
+            "identifier",
+            "title",
+            "url",
+            "dueDate",
+            "assignee",
+            "parent",
+            "state",
+            "comment",
+            "receipt"
           ]
         },
         "preview": {
@@ -6792,8 +6825,12 @@ stdout:
           "shape": "object",
           "exitCode": 0,
           "topLevelFields": [
-            "success",
-            "data"
+            "id",
+            "title",
+            "archivedAt",
+            "readAt",
+            "noOp",
+            "receipt"
           ]
         },
         "preview": {
@@ -7155,8 +7192,12 @@ stdout:
           "shape": "object",
           "exitCode": 0,
           "topLevelFields": [
-            "success",
-            "data"
+            "id",
+            "title",
+            "readAt",
+            "archivedAt",
+            "noOp",
+            "receipt"
           ]
         },
         "preview": {

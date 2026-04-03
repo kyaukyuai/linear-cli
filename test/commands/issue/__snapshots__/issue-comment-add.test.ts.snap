@@ -60,6 +60,21 @@ stdout:
   "user": {
     "name": "testuser",
     "displayName": "Test User"
+  },
+  "receipt": {
+    "operationId": "issue.comment.add",
+    "resource": "comment",
+    "action": "add",
+    "resolvedRefs": {
+      "issueIdentifier": "TEST-123",
+      "parentCommentId": null
+    },
+    "appliedChanges": [
+      "comment"
+    ],
+    "noOp": false,
+    "partialSuccess": false,
+    "nextSafeAction": "read_before_retry"
   }
 }
 '

@@ -35,7 +35,21 @@ stdout:
   "title": "ENG-123 was assigned to you",
   "readAt": "2026-03-13T07:00:00Z",
   "archivedAt": null,
-  "noOp": false
+  "noOp": false,
+  "receipt": {
+    "operationId": "notification.read",
+    "resource": "notification",
+    "action": "read",
+    "resolvedRefs": {
+      "notificationId": "notif-1"
+    },
+    "appliedChanges": [
+      "readAt"
+    ],
+    "noOp": false,
+    "partialSuccess": false,
+    "nextSafeAction": "continue"
+  }
 }
 '
 stderr:
@@ -49,7 +63,19 @@ stdout:
   "title": "ENG-123 was assigned to you",
   "readAt": "2026-03-13T07:00:00Z",
   "archivedAt": null,
-  "noOp": true
+  "noOp": true,
+  "receipt": {
+    "operationId": "notification.read",
+    "resource": "notification",
+    "action": "read",
+    "resolvedRefs": {
+      "notificationId": "notif-1"
+    },
+    "appliedChanges": [],
+    "noOp": true,
+    "partialSuccess": false,
+    "nextSafeAction": "continue"
+  }
 }
 '
 stderr:

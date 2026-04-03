@@ -112,6 +112,28 @@ stdout:
       "name": "alice.bot",
       "displayName": "Alice Bot"
     }
+  },
+  "receipt": {
+    "operationId": "issue.update",
+    "resource": "issue",
+    "action": "update",
+    "resolvedRefs": {
+      "issueIdentifier": "ENG-123",
+      "teamKey": "ENG",
+      "assignee": "alice.bot",
+      "parentIssueIdentifier": "ENG-100",
+      "state": "Todo"
+    },
+    "appliedChanges": [
+      "title",
+      "assignee",
+      "dueDate",
+      "team",
+      "comment"
+    ],
+    "noOp": false,
+    "partialSuccess": false,
+    "nextSafeAction": "read_before_retry"
   }
 }
 '

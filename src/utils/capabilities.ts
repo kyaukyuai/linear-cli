@@ -1995,6 +1995,83 @@ function buildCommandSchema(
 function buildSuccessTopLevelFields(
   command: CapabilityRegistryEntry,
 ): string[] {
+  const explicitFields: Record<string, string[]> = {
+    "linear issue comment add": [
+      "id",
+      "body",
+      "createdAt",
+      "url",
+      "parentId",
+      "issue",
+      "user",
+      "receipt",
+    ],
+    "linear issue create": [
+      "id",
+      "identifier",
+      "title",
+      "url",
+      "dueDate",
+      "assignee",
+      "parent",
+      "state",
+      "receipt",
+    ],
+    "linear issue relation add": [
+      "success",
+      "noOp",
+      "direction",
+      "relationType",
+      "issue",
+      "relatedIssue",
+      "relationId",
+      "receipt",
+    ],
+    "linear issue relation delete": [
+      "success",
+      "noOp",
+      "direction",
+      "relationType",
+      "issue",
+      "relatedIssue",
+      "relationId",
+      "receipt",
+    ],
+    "linear issue update": [
+      "id",
+      "identifier",
+      "title",
+      "url",
+      "dueDate",
+      "assignee",
+      "parent",
+      "state",
+      "comment",
+      "receipt",
+    ],
+    "linear notification archive": [
+      "id",
+      "title",
+      "archivedAt",
+      "readAt",
+      "noOp",
+      "receipt",
+    ],
+    "linear notification read": [
+      "id",
+      "title",
+      "readAt",
+      "archivedAt",
+      "noOp",
+      "receipt",
+    ],
+  }
+
+  const explicit = explicitFields[command.path]
+  if (explicit != null) {
+    return explicit
+  }
+
   if (command.path === "linear capabilities") {
     return [
       "schemaVersion",
