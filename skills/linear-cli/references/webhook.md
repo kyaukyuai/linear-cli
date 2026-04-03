@@ -72,12 +72,13 @@ Options:
   -h, --help                  - Show this help.                      
   -w, --workspace  <slug>     - Target workspace (uses credentials)  
   --profile        <profile>  - Execution profile (agent-safe)       
-  -j, --json                  - Output as JSON                       
+  -j, --json                  - Force machine-readable JSON output   
+  --text                      - Output human-readable text           
 
 Examples:
 
-  View a webhook as JSON         linear webhook view webhook_123 --json
-  View a webhook in the terminal linear webhook view webhook_123
+  View a webhook as JSON         linear webhook view webhook_123       
+  View a webhook in the terminal linear webhook view webhook_123 --text
 ```
 
 ### create

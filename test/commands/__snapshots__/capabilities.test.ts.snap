@@ -11,16 +11,17 @@ Description:
 
 Options:
 
-  -h, --help             - Show this help.                                                             
-  -j, --json             - Output the capabilities registry as JSON                                    
-  --compat    <version>  - Select the machine-readable capabilities schema version (v1, v2). Requires  
-                           --json.                                                                     
+  -h, --help             - Show this help.                                                    
+  -j, --json             - Force machine-readable JSON output                                 
+  --text                 - Output a human-readable summary                                    
+  --compat    <version>  - Select the machine-readable capabilities schema version (v1, v2).  
 
 Examples:
 
-  Describe agent-facing capabilities as JSON linear capabilities --json                                               
-  Request the richer v2 metadata shape       linear capabilities --json --compat v2                                   
-  Find commands that support dry-run         linear capabilities --json | jq '.commands[] | select(.dryRun.supported)'
+  Describe agent-facing capabilities as JSON linear capabilities                                               
+  Request the richer v2 metadata shape       linear capabilities --compat v2                                   
+  Show the human-readable summary            linear capabilities --text                                        
+  Find commands that support dry-run         linear capabilities | jq '.commands[] | select(.dryRun.supported)'
 
 "
 stderr:
@@ -10689,11 +10690,11 @@ stderr:
 ""
 `;
 
-snapshot[`Capabilities Command - Compat Requires JSON 1`] = `
+snapshot[`Capabilities Command - Compat Rejects Text Mode 1`] = `
 stdout:
 ""
 stderr:
-"✗ Failed to describe capabilities: --compat requires --json.
-  Use \`linear capabilities --json --compat v2\` or omit --compat for the human summary.
+"✗ Failed to describe capabilities: --compat requires machine-readable output.
+  Use \`linear capabilities --compat v2\` or omit --compat when requesting --text.
 "
 `;

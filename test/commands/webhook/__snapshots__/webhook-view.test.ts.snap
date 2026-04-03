@@ -11,13 +11,14 @@ Description:
 
 Options:
 
-  -h, --help  - Show this help.  
-  -j, --json  - Output as JSON   
+  -h, --help  - Show this help.                     
+  -j, --json  - Force machine-readable JSON output  
+  --text      - Output human-readable text          
 
 Examples:
 
-  View a webhook as JSON         linear webhook view webhook_123 --json
-  View a webhook in the terminal linear webhook view webhook_123       
+  View a webhook as JSON         linear webhook view webhook_123       
+  View a webhook in the terminal linear webhook view webhook_123 --text
 
 "
 stderr:

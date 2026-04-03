@@ -31,6 +31,7 @@ import {
   handleAutomationCommandError,
   handleAutomationContractParseError,
 } from "../../utils/json_output.ts"
+import { resolveJsonOutputMode } from "../../utils/output_mode.ts"
 import { emitDryRunOutput } from "../../utils/dry_run.ts"
 import { withSpinner } from "../../utils/spinner.ts"
 import { CliError, NotFoundError, ValidationError } from "../../utils/errors.ts"
@@ -524,7 +525,8 @@ export const createCommand = new Command()
     "--cycle <cycle:string>",
     "Cycle name, number, or 'active'",
   )
-  .option("-j, --json", "Output as JSON")
+  .option("-j, --json", "Force machine-readable JSON output")
+  .option("--text", "Output human-readable text")
   .option("--dry-run", "Preview the created issue without creating it")
   .option(
     "--timeout-ms <timeoutMs:number>",
@@ -542,11 +544,15 @@ export const createCommand = new Command()
   .option("-t, --title <title:string>", "Title of the issue")
   .example(
     "Create an issue as JSON",
-    'linear issue create --title "Fix auth expiry bug" --team ENG --json',
+    'linear issue create --title "Fix auth expiry bug" --team ENG',
   )
   .example(
     "Create an issue with a piped description",
     'cat description.md | linear issue create --title "Fix auth expiry bug" --team ENG',
+  )
+  .example(
+    "Create an issue with human-readable output",
+    'linear issue create --title "Fix auth expiry bug" --team ENG --text',
   )
   .example(
     "Preview issue creation",
@@ -584,11 +590,16 @@ export const createCommand = new Command()
         cycle,
         interactive,
         title,
-        json,
+        json: jsonFlag,
+        text,
         dryRun,
         timeoutMs,
       },
     ) => {
+      const json = resolveJsonOutputMode("linear issue create", {
+        json: jsonFlag,
+        text,
+      })
       try {
         const writeTimeoutMs = resolveWriteTimeoutMs(timeoutMs)
         interactive = interactive && Deno.stdout.isTerminal() && !json &&
@@ -602,10 +613,10 @@ export const createCommand = new Command()
         }
         if (json && start && !dryRun) {
           throw new ValidationError(
-            "Cannot use --json with --start",
+            "Cannot use machine-readable output with --start",
             {
               suggestion:
-                "Use --json for machine-readable output, or omit it when you want to start work immediately.",
+                "Use --dry-run for machine-readable previews, or pass --text --start when you want to start work immediately.",
             },
           )
         }

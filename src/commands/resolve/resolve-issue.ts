@@ -7,14 +7,15 @@ export const issueCommand = new Command()
   .name("issue")
   .description("Resolve an issue reference without mutating Linear")
   .arguments("[issue:string]")
-  .option("-j, --json", "Output as JSON")
+  .option("-j, --json", "Force machine-readable JSON output")
+  .option("--text", "Output human-readable text")
   .example(
     "Resolve an explicit issue identifier",
-    "linear resolve issue ENG-123 --json",
+    "linear resolve issue ENG-123",
   )
   .example(
     "Resolve the current issue from VCS context",
-    "linear resolve issue --json",
+    "linear resolve issue",
   )
   .error((error, cmd) =>
     handleAutomationContractParseError(
@@ -23,9 +24,10 @@ export const issueCommand = new Command()
       "Failed to resolve issue reference",
     )
   )
-  .action(async ({ json }, issue?: string) => {
+  .action(async ({ json, text }, issue?: string) => {
     await runResolveCommand(
-      json,
+      "linear resolve issue",
+      { json, text },
       "Failed to resolve issue reference",
       () => resolveIssueReference(issue),
     )

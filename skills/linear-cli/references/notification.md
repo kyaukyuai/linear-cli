@@ -46,8 +46,14 @@ Options:
   -n, --limit         <limit>    - Maximum number of notifications           (Default: 20)
   --include-archived             - Include archived notifications                         
   --unread                       - Show only unread notifications                         
-  -j, --json                     - Output as JSON                                         
-  --no-pager                     - Disable automatic paging for long output
+  -j, --json                     - Force machine-readable JSON output                     
+  --text                         - Output human-readable text                             
+  --no-pager                     - Disable automatic paging for long output               
+
+Examples:
+
+  List notifications as JSON         linear notification list       
+  List notifications in the terminal linear notification list --text
 ```
 
 ### count

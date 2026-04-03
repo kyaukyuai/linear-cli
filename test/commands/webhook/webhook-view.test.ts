@@ -30,7 +30,7 @@ await snapshotTest({
   name: "Webhook View Command - Shows Webhook",
   meta: import.meta,
   colors: false,
-  args: ["webhook-1"],
+  args: ["webhook-1", "--text"],
   denoArgs: commonDenoArgs,
   async fn() {
     const server = new MockLinearServer([

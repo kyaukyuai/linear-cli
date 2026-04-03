@@ -46,7 +46,7 @@ await snapshotTest({
   name: "Project View Command - With Project Details",
   meta: import.meta,
   colors: false,
-  args: ["project-123"],
+  args: ["project-123", "--text"],
   denoArgs,
   fakeTime,
   async fn() {
@@ -178,7 +178,7 @@ await snapshotTest({
   name: "Project View Command - Minimal Project",
   meta: import.meta,
   colors: false,
-  args: ["minimal-project"],
+  args: ["minimal-project", "--text"],
   denoArgs,
   fakeTime,
   async fn() {

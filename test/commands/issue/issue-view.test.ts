@@ -33,7 +33,7 @@ await snapshotTest({
   name: "Issue View Command - With Mock Server Terminal No Comments",
   meta: import.meta,
   colors: false,
-  args: ["TEST-123"],
+  args: ["TEST-123", "--text"],
   denoArgs,
   async fn() {
     const server = new MockLinearServer([
@@ -94,7 +94,7 @@ await snapshotTest({
   name: "Issue View Command - With No Comments Flag",
   meta: import.meta,
   colors: false,
-  args: ["TEST-123", "--no-comments"],
+  args: ["TEST-123", "--no-comments", "--text"],
   denoArgs,
   async fn() {
     const server = new MockLinearServer([
@@ -150,7 +150,7 @@ await snapshotTest({
   name: "Issue View Command - With Comments Default",
   meta: import.meta,
   colors: false,
-  args: ["TEST-123"],
+  args: ["TEST-123", "--text"],
   denoArgs,
   fakeTime,
   async fn() {
@@ -266,7 +266,7 @@ await snapshotTest({
   meta: import.meta,
   colors: false,
   canFail: true,
-  args: ["TEST-999"],
+  args: ["TEST-999", "--text"],
   denoArgs,
   async fn() {
     const server = new MockLinearServer([
@@ -677,7 +677,7 @@ await snapshotTest({
   name: "Issue View Command - With Parent And Sub-issues",
   meta: import.meta,
   colors: false,
-  args: ["TEST-456", "--no-comments"],
+  args: ["TEST-456", "--no-comments", "--text"],
   denoArgs,
   async fn() {
     const server = new MockLinearServer([
@@ -763,7 +763,7 @@ await snapshotTest({
   name: "Issue View Command - With Project And Milestone",
   meta: import.meta,
   colors: false,
-  args: ["TEST-789", "--no-comments"],
+  args: ["TEST-789", "--no-comments", "--text"],
   denoArgs,
   async fn() {
     const server = new MockLinearServer([
@@ -822,7 +822,7 @@ await snapshotTest({
   name: "Issue View Command - With Cycle",
   meta: import.meta,
   colors: false,
-  args: ["TEST-890", "--no-comments"],
+  args: ["TEST-890", "--no-comments", "--text"],
   denoArgs,
   async fn() {
     const server = new MockLinearServer([

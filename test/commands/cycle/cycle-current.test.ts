@@ -20,7 +20,7 @@ await snapshotTest({
   name: "Cycle Current Command - Shows Active Cycle",
   meta: import.meta,
   colors: false,
-  args: ["--team", "ENG"],
+  args: ["--team", "ENG", "--text"],
   denoArgs: commonDenoArgs,
   async fn() {
     const server = new MockLinearServer([
@@ -191,7 +191,7 @@ await snapshotTest({
   name: "Cycle Current Command - No Active Cycle",
   meta: import.meta,
   colors: false,
-  args: ["--team", "ENG"],
+  args: ["--team", "ENG", "--text"],
   denoArgs: commonDenoArgs,
   async fn() {
     const server = new MockLinearServer([

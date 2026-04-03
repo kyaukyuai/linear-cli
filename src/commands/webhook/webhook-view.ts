@@ -7,6 +7,7 @@ import {
   handleAutomationCommandError,
   handleAutomationContractParseError,
 } from "../../utils/json_output.ts"
+import { resolveJsonOutputMode } from "../../utils/output_mode.ts"
 import { withSpinner } from "../../utils/spinner.ts"
 import {
   getWebhookDisplayLabel,
@@ -45,19 +46,24 @@ export const viewCommand = new Command()
   .name("view")
   .description("View a webhook")
   .arguments("<webhookId:string>")
-  .option("-j, --json", "Output as JSON")
+  .option("-j, --json", "Force machine-readable JSON output")
+  .option("--text", "Output human-readable text")
   .example(
     "View a webhook as JSON",
-    "linear webhook view webhook_123 --json",
+    "linear webhook view webhook_123",
   )
   .example(
     "View a webhook in the terminal",
-    "linear webhook view webhook_123",
+    "linear webhook view webhook_123 --text",
   )
   .error((error, cmd) =>
     handleAutomationContractParseError(error, cmd, "Failed to view webhook")
   )
-  .action(async ({ json }, webhookId) => {
+  .action(async ({ json: jsonFlag, text }, webhookId) => {
+    const json = resolveJsonOutputMode("linear webhook view", {
+      json: jsonFlag,
+      text,
+    })
     try {
       const client = getGraphQLClient()
       const result = await withSpinner(

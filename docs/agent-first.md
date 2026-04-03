@@ -11,8 +11,8 @@ If you are planning for the breaking default flips in `v3.0.0`, read [agent-only
 Start with the self-describing registry:
 
 ```bash
-linear capabilities --json
-linear capabilities --json --compat v2
+linear capabilities
+linear capabilities --compat v2
 ```
 
 This tells an agent:
@@ -24,12 +24,12 @@ This tells an agent:
 - which contract version or retry semantics apply
 - which success fields and write semantics are exposed for machine-readable execution
 
-Use the default `linear capabilities --json` shape for runtime startup compatibility. Reach for `--compat v2` only when the caller is ready to consume richer command schema metadata such as required inputs, constrained values, defaults, context resolution hints, input constraints, canonical argv examples, stdin/file targets, structured output contracts, and write semantics.
+Use the default `linear capabilities` shape for runtime startup compatibility. Reach for `--compat v2` only when the caller is ready to consume richer command schema metadata such as required inputs, constrained values, defaults, context resolution hints, input constraints, canonical argv examples, stdin/file targets, structured output contracts, and write semantics.
 
 When a run is fully agent-controlled, prefer the opt-in execution profile:
 
 ```bash
-linear --profile agent-safe capabilities --json --compat v2
+linear --profile agent-safe capabilities --compat v2
 ```
 
 `agent-safe` currently disables pager-by-default behavior, extends the built-in write timeout to `45000ms` unless the caller overrides it, and requires explicit `--yes` for destructive confirmation bypass. It does not force `--json`, auto-confirm destructive actions, or replace missing required inputs.
@@ -38,7 +38,8 @@ The default capabilities shape and the read entrypoints below are treated as sta
 
 Release-gated downstream certification currently covers these real consumer flows:
 
-- startup discovery with `linear capabilities --json` and `linear capabilities --json --compat v2`
+- startup discovery with `linear capabilities` and `linear capabilities --compat v2`
+- explicit startup discovery with `linear capabilities --json` and `linear capabilities --json --compat v2`
 - reference resolution with `linear resolve issue/team/workflow-state/user/label --json`
 - startup-safe reads with `issue view/list`, `project view`, `cycle current`, `document list`, `webhook view`, and `notification list`
 - the `resolve -> preview -> apply` loop for `linear issue update --json`
@@ -51,11 +52,11 @@ Commands outside those certified flows remain best-effort until they are promote
 When a caller needs canonical IDs, current-team fallback, or ambiguity data, resolve references explicitly before preview/apply:
 
 ```bash
-linear resolve issue ENG-123 --json
-linear resolve team ENG --json
-linear resolve workflow-state started --team ENG --json
-linear resolve user self --json
-linear resolve label Bug --team ENG --json
+linear resolve issue ENG-123
+linear resolve team ENG
+linear resolve workflow-state started --team ENG
+linear resolve user self
+linear resolve label Bug --team ENG
 ```
 
 This lets an agent:
@@ -69,14 +70,16 @@ This lets an agent:
 Prefer commands that are part of the automation contract:
 
 ```bash
-linear issue view ENG-123 --json
-linear issue list --json
-linear project view "Automation Contract v3" --json
-linear cycle current ENG --json
-linear document list --json
-linear webhook view webhook_123 --json
-linear notification list --json
+linear issue view ENG-123
+linear issue list
+linear project view "Automation Contract v3"
+linear cycle current --team ENG
+linear document list
+linear webhook view webhook_123
+linear notification list
 ```
+
+Use `--text` only when a human needs terminal-oriented output for inspection or debugging.
 
 For the full contract surface, see [json-contracts.md](./json-contracts.md).
 
@@ -100,7 +103,7 @@ When applying a write, prefer `--json` and inspect the process exit code.
 
 ```bash
 linear --profile agent-safe issue update ENG-123 --state done --comment "Shipped" --json
-linear issue update ENG-123 --state done --comment "Shipped" --json
+linear issue update ENG-123 --state done --comment "Shipped"
 linear notification read notif_123 --json
 ```
 

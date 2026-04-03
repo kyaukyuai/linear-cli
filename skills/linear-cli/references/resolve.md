@@ -44,12 +44,13 @@ Options:
   -h, --help                  - Show this help.                      
   -w, --workspace  <slug>     - Target workspace (uses credentials)  
   --profile        <profile>  - Execution profile (agent-safe)       
-  -j, --json                  - Output as JSON                       
+  -j, --json                  - Force machine-readable JSON output   
+  --text                      - Output human-readable text           
 
 Examples:
 
-  Resolve an explicit issue identifier       linear resolve issue ENG-123 --json
-  Resolve the current issue from VCS context linear resolve issue --json
+  Resolve an explicit issue identifier       linear resolve issue ENG-123
+  Resolve the current issue from VCS context linear resolve issue
 ```
 
 ### team
@@ -68,12 +69,13 @@ Options:
   -h, --help                  - Show this help.                      
   -w, --workspace  <slug>     - Target workspace (uses credentials)  
   --profile        <profile>  - Execution profile (agent-safe)       
-  -j, --json                  - Output as JSON                       
+  -j, --json                  - Force machine-readable JSON output   
+  --text                      - Output human-readable text           
 
 Examples:
 
-  Resolve an explicit team key        linear resolve team ENG --json
-  Resolve the configured current team linear resolve team --json
+  Resolve an explicit team key        linear resolve team ENG
+  Resolve the configured current team linear resolve team
 ```
 
 ### workflow-state
@@ -93,12 +95,13 @@ Options:
   -w, --workspace  <slug>     - Target workspace (uses credentials)  
   --profile        <profile>  - Execution profile (agent-safe)       
   --team           <team>     - Team key for team-scoped resolution  
-  -j, --json                  - Output as JSON                       
+  -j, --json                  - Force machine-readable JSON output   
+  --text                      - Output human-readable text           
 
 Examples:
 
-  Resolve a workflow state by exact name linear resolve workflow-state Done --team ENG --json   
-  Resolve a workflow state by type       linear resolve workflow-state started --team ENG --json
+  Resolve a workflow state by exact name linear resolve workflow-state Done --team ENG   
+  Resolve a workflow state by type       linear resolve workflow-state started --team ENG
 ```
 
 ### user
@@ -117,12 +120,13 @@ Options:
   -h, --help                  - Show this help.                      
   -w, --workspace  <slug>     - Target workspace (uses credentials)  
   --profile        <profile>  - Execution profile (agent-safe)       
-  -j, --json                  - Output as JSON                       
+  -j, --json                  - Force machine-readable JSON output   
+  --text                      - Output human-readable text           
 
 Examples:
 
-  Resolve the current authenticated user      linear resolve user self --json             
-  Resolve a teammate by email or display name linear resolve user alice@example.com --json
+  Resolve the current authenticated user      linear resolve user self             
+  Resolve a teammate by email or display name linear resolve user alice@example.com
 ```
 
 ### label
@@ -142,9 +146,10 @@ Options:
   -w, --workspace  <slug>     - Target workspace (uses credentials)  
   --profile        <profile>  - Execution profile (agent-safe)       
   --team           <team>     - Team key for team-scoped resolution  
-  -j, --json                  - Output as JSON                       
+  -j, --json                  - Force machine-readable JSON output   
+  --text                      - Output human-readable text           
 
 Examples:
 
-  Resolve a label within a team context linear resolve label Bug --team ENG --json
+  Resolve a label within a team context linear resolve label Bug --team ENG
 ```

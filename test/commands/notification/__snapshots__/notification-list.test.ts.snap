@@ -15,8 +15,14 @@ Options:
   -n, --limit         <limit>  - Maximum number of notifications           (Default: \\x1b[33m20\\x1b[39m)
   --include-archived           - Include archived notifications                         
   --unread                     - Show only unread notifications                         
-  -j, --json                   - Output as JSON                                         
+  -j, --json                   - Force machine-readable JSON output                     
+  --text                       - Output human-readable text                             
   --no-pager                   - Disable automatic paging for long output               
+
+Examples:
+
+  List notifications as JSON         linear notification list       
+  List notifications in the terminal linear notification list --text
 
 "
 stderr:

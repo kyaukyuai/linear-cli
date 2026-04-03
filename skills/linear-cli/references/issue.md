@@ -100,14 +100,16 @@ Options:
   --updated-before     <updatedBefore>  - Filter issues updated before an ISO date or datetime                                                           
   --due-before         <dueBefore>      - Filter issues due before a date (YYYY-MM-DD)                                                                   
   --limit              <limit>          - Maximum number of issues to fetch (default: 50, use 0 for unlimited)             (Default: 50)                 
-  -j, --json                            - Output as JSON                                                                                                 
+  -j, --json                            - Force machine-readable JSON output                                                                             
+  --text                                - Output human-readable text                                                                                     
   -w, --web                             - Open in web browser                                                                                            
   -a, --app                             - Open in Linear.app                                                                                             
   --no-pager                            - Disable automatic paging for long output                                                                       
 
 Examples:
 
-  List all issues as JSON                             linear issue list --all --json                                       
+  List all issues as JSON                             linear issue list --all                                              
+  List issues in the terminal                         linear issue list --all --text                                       
   List todo issues for a project across all assignees linear issue list --state todo --project auth-refresh --all-assignees
 ```
 
@@ -198,12 +200,14 @@ Options:
   -a, --app                   - Open in Linear.app                             
   --no-comments               - Exclude comments from the output               
   --no-pager                  - Disable automatic paging for long output       
-  -j, --json                  - Output issue data as JSON                      
+  -j, --json                  - Force machine-readable JSON output             
+  --text                      - Output human-readable text                     
   --no-download               - Keep remote URLs instead of downloading files  
 
 Examples:
 
   View issue as JSON          linear issue view ENG-123 --json                  
+  View issue in the terminal  linear issue view ENG-123 --text                  
   View issue without comments linear issue view ENG-123 --no-comments --no-pager
 ```
 
@@ -338,7 +342,8 @@ Options:
   -s, --state                <state>        - Workflow state for the issue (by name or type)                     
   --milestone                <milestone>    - Name of the project milestone                                      
   --cycle                    <cycle>        - Cycle name, number, or 'active'                                    
-  -j, --json                                - Output as JSON                                                     
+  -j, --json                                - Force machine-readable JSON output                                 
+  --text                                    - Output human-readable text                                         
   --dry-run                                 - Preview the created issue without creating it                      
   --timeout-ms               <timeoutMs>    - Timeout for write confirmation in milliseconds                     
   --no-pager                                - Accepted for compatibility; issue create does not use a pager      
@@ -348,9 +353,10 @@ Options:
 
 Examples:
 
-  Create an issue as JSON                  linear issue create --title "Fix auth expiry bug" --team ENG --json                   
-  Create an issue with a piped description cat description.md | linear issue create --title "Fix auth expiry bug" --team ENG     
-  Preview issue creation                   linear issue create --title "Fix auth expiry bug" --team ENG --state started --dry-run
+  Create an issue as JSON                    linear issue create --title "Fix auth expiry bug" --team ENG                          
+  Create an issue with a piped description   cat description.md | linear issue create --title "Fix auth expiry bug" --team ENG     
+  Create an issue with human-readable output linear issue create --title "Fix auth expiry bug" --team ENG --text                   
+  Preview issue creation                     linear issue create --title "Fix auth expiry bug" --team ENG --state started --dry-run
 ```
 
 ### create-batch
@@ -414,17 +420,19 @@ Options:
   --milestone         <milestone>    - Name of the project milestone                                       
   --cycle             <cycle>        - Cycle name, number, or 'active'                                     
   --no-interactive                   - Accepted for compatibility; issue update is always non-interactive  
-  -j, --json                         - Output as JSON                                                      
+  -j, --json                         - Force machine-readable JSON output                                  
+  --text                             - Output human-readable text                                          
   --dry-run                          - Preview the update without mutating the issue                       
   --timeout-ms        <timeoutMs>    - Timeout for write confirmation in milliseconds                      
   -t, --title         <title>        - Title of the issue                                                  
 
 Examples:
 
-  Update state and assignee         linear issue update ENG-123 --state started --assignee self                         
-  Preview an update with a comment  linear issue update ENG-123 --state completed --comment "Ready for review" --dry-run
-  Pipe a description into an update cat description.md | linear issue update ENG-123 --state started --dry-run --json   
-  Return the updated issue as JSON  linear issue update ENG-123 --title "Fix auth timeout edge case" --json
+  Update state and assignee             linear issue update ENG-123 --state started --assignee self                         
+  Preview an update with a comment      linear issue update ENG-123 --state completed --comment "Ready for review" --dry-run
+  Pipe a description into an update     cat description.md | linear issue update ENG-123 --state started --dry-run --json   
+  Return the updated issue as JSON      linear issue update ENG-123 --title "Fix auth timeout edge case"                    
+  Return human-readable terminal output linear issue update ENG-123 --title "Fix auth timeout edge case" --text
 ```
 
 ### move

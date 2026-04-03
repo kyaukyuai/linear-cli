@@ -18,7 +18,7 @@ await cliffySnapshotTest({
   name: "Capabilities Command - Human Summary",
   meta: import.meta,
   colors: false,
-  args: [],
+  args: ["--text"],
   denoArgs,
   async fn() {
     await capabilitiesCommand.parse()
@@ -29,7 +29,7 @@ await cliffySnapshotTest({
   name: "Capabilities Command - JSON Output",
   meta: import.meta,
   colors: false,
-  args: ["--json"],
+  args: [],
   denoArgs,
   async fn() {
     await capabilitiesCommand.parse()
@@ -40,7 +40,7 @@ await cliffySnapshotTest({
   name: "Capabilities Command - JSON Output v2 Compatibility",
   meta: import.meta,
   colors: false,
-  args: ["--json", "--compat", "v2"],
+  args: ["--compat", "v2"],
   denoArgs,
   async fn() {
     await capabilitiesCommand.parse()
@@ -60,10 +60,10 @@ await cliffySnapshotTest({
 })
 
 await cliffySnapshotTest({
-  name: "Capabilities Command - Compat Requires JSON",
+  name: "Capabilities Command - Compat Rejects Text Mode",
   meta: import.meta,
   colors: false,
-  args: ["--compat", "v2"],
+  args: ["--compat", "v2", "--text"],
   denoArgs,
   canFail: true,
   async fn() {

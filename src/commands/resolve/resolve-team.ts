@@ -7,14 +7,15 @@ export const teamCommand = new Command()
   .name("team")
   .description("Resolve a team reference without mutating Linear")
   .arguments("[team:string]")
-  .option("-j, --json", "Output as JSON")
+  .option("-j, --json", "Force machine-readable JSON output")
+  .option("--text", "Output human-readable text")
   .example(
     "Resolve an explicit team key",
-    "linear resolve team ENG --json",
+    "linear resolve team ENG",
   )
   .example(
     "Resolve the configured current team",
-    "linear resolve team --json",
+    "linear resolve team",
   )
   .error((error, cmd) =>
     handleAutomationContractParseError(
@@ -23,9 +24,10 @@ export const teamCommand = new Command()
       "Failed to resolve team reference",
     )
   )
-  .action(async ({ json }, team?: string) => {
+  .action(async ({ json, text }, team?: string) => {
     await runResolveCommand(
-      json,
+      "linear resolve team",
+      { json, text },
       "Failed to resolve team reference",
       () => resolveTeamReference(team),
     )

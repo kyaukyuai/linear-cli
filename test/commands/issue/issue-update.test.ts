@@ -42,6 +42,7 @@ await snapshotTest({
     "1",
     "--estimate",
     "5",
+    "--text",
   ],
   denoArgs: commonDenoArgs,
   async fn() {
@@ -107,6 +108,7 @@ await snapshotTest({
     "--no-interactive",
     "--title",
     "Updated without prompts",
+    "--text",
   ],
   denoArgs: commonDenoArgs,
   async fn() {
@@ -881,6 +883,7 @@ await snapshotTest({
     "started",
     "--comment",
     "Work has started",
+    "--text",
   ],
   denoArgs: commonDenoArgs,
   async fn() {
@@ -1018,6 +1021,7 @@ await snapshotTest({
     "My Project",
     "--milestone",
     "Phase 1",
+    "--text",
   ],
   denoArgs: commonDenoArgs,
   async fn() {
@@ -1099,6 +1103,7 @@ await snapshotTest({
     "ENG-123",
     "--label",
     "FRONTEND", // uppercase label that should match "frontend" label
+    "--text",
   ],
   denoArgs: commonDenoArgs,
   async fn() {
@@ -1168,6 +1173,7 @@ await snapshotTest({
     "2",
     "--parent",
     "ENG-220",
+    "--text",
   ],
   denoArgs: commonDenoArgs,
   async fn() {
@@ -1232,6 +1238,7 @@ await snapshotTest({
     "ENG-123",
     "--cycle",
     "Sprint 7",
+    "--text",
   ],
   denoArgs: commonDenoArgs,
   async fn() {
@@ -1300,6 +1307,7 @@ await snapshotTest({
   args: [
     "ENG-123",
     "--clear-due-date",
+    "--text",
   ],
   denoArgs: commonDenoArgs,
   async fn() {
@@ -1351,6 +1359,7 @@ await snapshotTest({
     "--due-date",
     "2026-03-31",
     "--clear-due-date",
+    "--text",
   ],
   denoArgs: commonDenoArgs,
   async fn() {

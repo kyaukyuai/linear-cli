@@ -10,6 +10,7 @@ import {
   handleAutomationCommandError,
   handleAutomationContractParseError,
 } from "../utils/json_output.ts"
+import { resolveJsonOutputMode } from "../utils/output_mode.ts"
 
 function formatCapabilitySupport(
   supported: boolean,
@@ -97,22 +98,27 @@ function parseCompatibilityVersion(
 export const capabilitiesCommand = new Command()
   .name("capabilities")
   .description("Describe the agent-facing command surface")
-  .option("-j, --json", "Output the capabilities registry as JSON")
+  .option("-j, --json", "Force machine-readable JSON output")
+  .option("--text", "Output a human-readable summary")
   .option(
     "--compat <version:string>",
-    "Select the machine-readable capabilities schema version (v1, v2). Requires --json.",
+    "Select the machine-readable capabilities schema version (v1, v2).",
   )
   .example(
     "Describe agent-facing capabilities as JSON",
-    "linear capabilities --json",
+    "linear capabilities",
   )
   .example(
     "Request the richer v2 metadata shape",
-    "linear capabilities --json --compat v2",
+    "linear capabilities --compat v2",
+  )
+  .example(
+    "Show the human-readable summary",
+    "linear capabilities --text",
   )
   .example(
     "Find commands that support dry-run",
-    `linear capabilities --json | jq '.commands[] | select(.dryRun.supported)'`,
+    `linear capabilities | jq '.commands[] | select(.dryRun.supported)'`,
   )
   .error((error, cmd) =>
     handleAutomationContractParseError(
@@ -121,13 +127,20 @@ export const capabilitiesCommand = new Command()
       "Failed to describe capabilities",
     )
   )
-  .action(({ compat, json }) => {
+  .action(({ compat, json: jsonFlag, text }) => {
+    const json = resolveJsonOutputMode("linear capabilities", {
+      json: jsonFlag,
+      text,
+    })
     try {
       if (!json && compat != null) {
-        throw new ValidationError("--compat requires --json.", {
-          suggestion:
-            "Use `linear capabilities --json --compat v2` or omit --compat for the human summary.",
-        })
+        throw new ValidationError(
+          "--compat requires machine-readable output.",
+          {
+            suggestion:
+              "Use `linear capabilities --compat v2` or omit --compat when requesting --text.",
+          },
+        )
       }
 
       if (json) {

@@ -1,6 +1,6 @@
 # Automation Contract
 
-`linear-cli` exposes many `--json` modes, but only a subset is treated as a stable automation contract.
+`linear-cli` exposes many machine-readable modes, but only a subset is treated as a stable automation contract.
 
 If you are integrating this CLI into an agent loop, read [agent-first.md](./agent-first.md) first, then use this document for the exact JSON and compatibility rules.
 
@@ -20,21 +20,21 @@ It does not apply to:
 
 ## Capabilities Discovery
 
-`linear capabilities --json` is a stable self-description surface for agents. It is versioned independently from the automation tier so callers can discover command traits without scraping `--help`, README content, or generated docs.
+`linear capabilities` is a stable self-description surface for agents. It is versioned independently from the automation tier so callers can discover command traits without scraping `--help`, README content, or generated docs.
 
 The example payloads below are validated in CI against the current CLI version and compatibility semantics.
 
 Compatibility rules:
 
-- `linear capabilities --json` defaults to the `v1` compatibility shape for runtime startup safety
-- richer schema and output metadata are opt-in via `linear capabilities --json --compat v2`
+- `linear capabilities` defaults to the `v1` compatibility shape for runtime startup safety
+- richer schema and output metadata are opt-in via `linear capabilities --compat v2`
 - execution profile metadata is only exposed in `--compat v2`
 - top-level `v1` fields stay backward compatible across minor releases
 - additive `v2` fields are allowed within `schemaVersion: "v2"`, but callers must opt in explicitly
 - machine-readable schema changes should be called out explicitly in release notes
 - the top-level JSON shape of the agent-first read entrypoints in [agent-first.md](./agent-first.md) is also guarded in CI as a startup contract
 
-Default top-level shape:
+Default top-level shape from `linear capabilities`:
 
 ```json
 {
@@ -103,7 +103,7 @@ Default top-level shape:
 }
 ```
 
-`--compat v2` adds curated command schema metadata and output semantics:
+`linear capabilities --compat v2` adds curated command schema metadata and output semantics:
 
 ```json
 {
@@ -284,7 +284,7 @@ Rules:
 
 Release-gated downstream certification currently covers:
 
-- startup discovery with `linear capabilities --json` and `--compat v2`
+- startup discovery with `linear capabilities` and `--compat v2`
 - reference resolution with `linear resolve issue/team/workflow-state/user/label --json`
 - startup-safe reads with `issue view/list`, `project view`, `cycle current`, `document list`, `webhook view`, and `notification list`
 - the `resolve -> preview -> apply` flow for `linear issue update --json`

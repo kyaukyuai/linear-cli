@@ -28,17 +28,19 @@ Options:
   --milestone         <milestone>    - Name of the project milestone                                       
   --cycle             <cycle>        - Cycle name, number, or 'active'                                     
   --no-interactive                   - Accepted for compatibility; issue update is always non-interactive  
-  -j, --json                         - Output as JSON                                                      
+  -j, --json                         - Force machine-readable JSON output                                  
+  --text                             - Output human-readable text                                          
   --dry-run                          - Preview the update without mutating the issue                       
   --timeout-ms        <timeoutMs>    - Timeout for write confirmation in milliseconds                      
   -t, --title         <title>        - Title of the issue                                                  
 
 Examples:
 
-  Update state and assignee         linear issue update ENG-123 --state started --assignee self                         
-  Preview an update with a comment  linear issue update ENG-123 --state completed --comment "Ready for review" --dry-run
-  Pipe a description into an update cat description.md | linear issue update ENG-123 --state started --dry-run --json   
-  Return the updated issue as JSON  linear issue update ENG-123 --title "Fix auth timeout edge case" --json             
+  Update state and assignee             linear issue update ENG-123 --state started --assignee self                         
+  Preview an update with a comment      linear issue update ENG-123 --state completed --comment "Ready for review" --dry-run
+  Pipe a description into an update     cat description.md | linear issue update ENG-123 --state started --dry-run --json   
+  Return the updated issue as JSON      linear issue update ENG-123 --title "Fix auth timeout edge case"                    
+  Return human-readable terminal output linear issue update ENG-123 --title "Fix auth timeout edge case" --text             
 
 \`
 stderr:
