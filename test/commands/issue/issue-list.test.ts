@@ -22,7 +22,7 @@ await snapshotTest({
   name: "Issue List Command - Shows Due Date Column",
   meta: import.meta,
   colors: false,
-  args: ["--all-assignees", "--no-pager"],
+  args: ["--all-assignees", "--no-pager", "--text"],
   denoArgs: commonDenoArgs,
   fakeTime: "2025-08-17T15:30:00Z",
   async fn() {
@@ -575,7 +575,7 @@ await snapshotTest({
   name: "Issue List Command - All States Shows Assignee Tip",
   meta: import.meta,
   colors: false,
-  args: ["--all-states", "--no-pager"],
+  args: ["--all-states", "--no-pager", "--text"],
   denoArgs: commonDenoArgs,
   async fn() {
     const { cleanup } = await setupMockLinearServer([

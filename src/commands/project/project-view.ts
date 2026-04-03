@@ -10,6 +10,7 @@ import {
   handleAutomationCommandError,
   handleAutomationContractParseError,
 } from "../../utils/json_output.ts"
+import { resolveJsonOutputMode } from "../../utils/output_mode.ts"
 import { resolveProjectId } from "../../utils/linear.ts"
 import { withSpinner } from "../../utils/spinner.ts"
 
@@ -189,10 +190,15 @@ export const viewCommand = new Command()
   .arguments("<projectIdOrSlug:string>")
   .option("-w, --web", "Open in web browser")
   .option("-a, --app", "Open in Linear.app")
-  .option("-j, --json", "Output as JSON")
+  .option("-j, --json", "Force machine-readable JSON output")
+  .option("--text", "Output human-readable text")
   .example(
     "View a project as JSON",
-    "linear project view auth-refresh --json",
+    "linear project view auth-refresh",
+  )
+  .example(
+    "View a project in the terminal",
+    "linear project view auth-refresh --text",
   )
   .example(
     "Open a project in the browser",
@@ -202,7 +208,11 @@ export const viewCommand = new Command()
     handleAutomationContractParseError(error, cmd, "Failed to view project")
   )
   .action(async (options, projectIdOrSlug) => {
-    const { web, app, json } = options
+    const { web, app, json: jsonFlag, text } = options
+    const json = resolveJsonOutputMode("linear project view", {
+      json: jsonFlag,
+      text,
+    })
 
     if (web || app) {
       await openProjectPage(projectIdOrSlug, { app, web: !app })

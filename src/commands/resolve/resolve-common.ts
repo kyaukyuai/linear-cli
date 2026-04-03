@@ -1,4 +1,5 @@
 import { handleAutomationCommandError } from "../../utils/json_output.ts"
+import { resolveJsonOutputMode } from "../../utils/output_mode.ts"
 import {
   type AnyReferenceResolutionPayload,
   printReferenceResolution,
@@ -6,10 +7,13 @@ import {
 import { withSpinner } from "../../utils/spinner.ts"
 
 export async function runResolveCommand(
-  json: boolean | undefined,
+  commandPath: string,
+  options: { json?: boolean; text?: boolean },
   context: string,
   resolver: () => Promise<AnyReferenceResolutionPayload>,
 ): Promise<void> {
+  const json = resolveJsonOutputMode(commandPath, options)
+
   try {
     const payload = await withSpinner(resolver, { enabled: !json })
 

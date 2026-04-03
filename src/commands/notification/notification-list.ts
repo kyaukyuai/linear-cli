@@ -8,6 +8,7 @@ import {
   handleAutomationCommandError,
   handleAutomationContractParseError,
 } from "../../utils/json_output.ts"
+import { resolveJsonOutputMode } from "../../utils/output_mode.ts"
 import { withSpinner } from "../../utils/spinner.ts"
 import {
   buildNotificationJsonPayload,
@@ -46,8 +47,17 @@ export const listCommand = new Command()
   })
   .option("--include-archived", "Include archived notifications")
   .option("--unread", "Show only unread notifications")
-  .option("-j, --json", "Output as JSON")
+  .option("-j, --json", "Force machine-readable JSON output")
+  .option("--text", "Output human-readable text")
   .option("--no-pager", "Disable automatic paging for long output")
+  .example(
+    "List notifications as JSON",
+    "linear notification list",
+  )
+  .example(
+    "List notifications in the terminal",
+    "linear notification list --text",
+  )
   .error((error, cmd) =>
     handleAutomationContractParseError(
       error,
@@ -55,7 +65,11 @@ export const listCommand = new Command()
       "Failed to list notifications",
     )
   )
-  .action(async ({ limit, includeArchived, unread, json }) => {
+  .action(async ({ limit, includeArchived, unread, json: jsonFlag, text }) => {
+    const json = resolveJsonOutputMode("linear notification list", {
+      json: jsonFlag,
+      text,
+    })
     try {
       if (limit < 1 || limit > 100) {
         throw new ValidationError("Limit must be between 1 and 100")

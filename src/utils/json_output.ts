@@ -17,6 +17,7 @@ import {
   ValidationError,
   WriteTimeoutError,
 } from "./errors.ts"
+import { rawArgsRequestJson } from "./output_mode.ts"
 
 export type JsonErrorType =
   | "validation_error"
@@ -135,7 +136,7 @@ export function maybeHandleAutomationContractParseError(
   cmd: AutomationContractCommand,
 ): void {
   const context = AUTOMATION_CONTRACT_CONTEXT_BY_PATH.get(cmd.getPath())
-  if (context == null || !hasJsonFlag(getRawArgs(cmd))) {
+  if (context == null || !rawArgsRequestJson(cmd.getPath(), getRawArgs(cmd))) {
     return
   }
 
@@ -147,7 +148,7 @@ export function handleAutomationContractParseError(
   cmd: AutomationContractCommand,
   context: string,
 ): void {
-  if (!hasJsonFlag(getRawArgs(cmd))) {
+  if (!rawArgsRequestJson(cmd.getPath(), getRawArgs(cmd))) {
     return
   }
 
@@ -275,10 +276,6 @@ function printJsonDebugInfo(error: unknown): void {
       console.error(gray(JSON.stringify(vars, null, 2)))
     }
   }
-}
-
-function hasJsonFlag(args?: string[]): boolean {
-  return args?.some((arg) => arg === "--json" || arg === "-j") ?? false
 }
 
 function getRawArgs(cmd: AutomationContractCommand): string[] | undefined {

@@ -86,7 +86,7 @@ await snapshotTest({
   name: "Document List Command - Empty Results",
   meta: import.meta,
   colors: false,
-  args: [],
+  args: ["--text"],
   denoArgs: commonDenoArgs,
   async fn() {
     const server = new MockLinearServer([

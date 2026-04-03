@@ -8,14 +8,15 @@ export const workflowStateCommand = new Command()
   .description("Resolve a workflow state reference without mutating Linear")
   .arguments("<state:string>")
   .option("--team <team:string>", "Team key for team-scoped resolution")
-  .option("-j, --json", "Output as JSON")
+  .option("-j, --json", "Force machine-readable JSON output")
+  .option("--text", "Output human-readable text")
   .example(
     "Resolve a workflow state by exact name",
-    "linear resolve workflow-state Done --team ENG --json",
+    "linear resolve workflow-state Done --team ENG",
   )
   .example(
     "Resolve a workflow state by type",
-    "linear resolve workflow-state started --team ENG --json",
+    "linear resolve workflow-state started --team ENG",
   )
   .error((error, cmd) =>
     handleAutomationContractParseError(
@@ -24,9 +25,10 @@ export const workflowStateCommand = new Command()
       "Failed to resolve workflow state reference",
     )
   )
-  .action(async ({ json, team }, state: string) => {
+  .action(async ({ json, text, team }, state: string) => {
     await runResolveCommand(
-      json,
+      "linear resolve workflow-state",
+      { json, text },
       "Failed to resolve workflow state reference",
       () => resolveWorkflowStateReference(state, team),
     )

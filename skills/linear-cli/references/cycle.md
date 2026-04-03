@@ -98,12 +98,13 @@ Options:
   -w, --workspace  <slug>     - Target workspace (uses credentials)  
   --profile        <profile>  - Execution profile (agent-safe)       
   --team           <team>     - Team key (defaults to current team)  
-  -j, --json                  - Output as JSON                       
+  -j, --json                  - Force machine-readable JSON output   
+  --text                      - Output human-readable text           
 
 Examples:
 
-  Show the current cycle as JSON              linear cycle current --team ENG --json
-  Show the current cycle for the default team linear cycle current
+  Show the current cycle as JSON         linear cycle current --team ENG       
+  Show the current cycle in the terminal linear cycle current --team ENG --text
 ```
 
 ### next

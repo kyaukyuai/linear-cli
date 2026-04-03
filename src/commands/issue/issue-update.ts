@@ -17,6 +17,7 @@ import {
   handleAutomationCommandError,
   handleAutomationContractParseError,
 } from "../../utils/json_output.ts"
+import { resolveJsonOutputMode } from "../../utils/output_mode.ts"
 import { emitDryRunOutput } from "../../utils/dry_run.ts"
 import { withSpinner } from "../../utils/spinner.ts"
 import {
@@ -146,7 +147,8 @@ export const updateCommand = new Command()
     "--no-interactive",
     "Accepted for compatibility; issue update is always non-interactive",
   )
-  .option("-j, --json", "Output as JSON")
+  .option("-j, --json", "Force machine-readable JSON output")
+  .option("--text", "Output human-readable text")
   .option("--dry-run", "Preview the update without mutating the issue")
   .option(
     "--timeout-ms <timeoutMs:number>",
@@ -167,7 +169,11 @@ export const updateCommand = new Command()
   )
   .example(
     "Return the updated issue as JSON",
-    'linear issue update ENG-123 --title "Fix auth timeout edge case" --json',
+    'linear issue update ENG-123 --title "Fix auth timeout edge case"',
+  )
+  .example(
+    "Return human-readable terminal output",
+    'linear issue update ENG-123 --title "Fix auth timeout edge case" --text',
   )
   .error((error, cmd) => {
     if (
@@ -200,12 +206,17 @@ export const updateCommand = new Command()
         milestone,
         cycle,
         title,
-        json,
+        json: jsonFlag,
+        text,
         dryRun,
         timeoutMs,
       },
       issueIdArg,
     ) => {
+      const json = resolveJsonOutputMode("linear issue update", {
+        json: jsonFlag,
+        text,
+      })
       try {
         // Validate that description and descriptionFile are not both provided
         if (description && descriptionFile) {

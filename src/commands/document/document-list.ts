@@ -8,6 +8,7 @@ import {
   handleAutomationCommandError,
   handleAutomationContractParseError,
 } from "../../utils/json_output.ts"
+import { resolveJsonOutputMode } from "../../utils/output_mode.ts"
 import { withSpinner } from "../../utils/spinner.ts"
 import { buildDocumentListJsonPayload } from "./document-json.ts"
 
@@ -53,17 +54,26 @@ export const listCommand = new Command()
   .alias("l")
   .option("--project <project:string>", "Filter by project (slug or name)")
   .option("--issue <issue:string>", "Filter by issue (identifier like TC-123)")
-  .option("--json", "Output as JSON")
+  .option("--json", "Force machine-readable JSON output")
+  .option("--text", "Output human-readable text")
   .option("--limit <limit:number>", "Limit results", { default: 50 })
   .option("--no-pager", "Disable automatic paging for long output")
   .example(
     "List documents as JSON",
-    "linear document list --project platform-refresh --json",
+    "linear document list --project platform-refresh",
+  )
+  .example(
+    "List documents in the terminal",
+    "linear document list --project platform-refresh --text",
   )
   .error((error, cmd) =>
     handleAutomationContractParseError(error, cmd, "Failed to list documents")
   )
-  .action(async ({ project, issue, json, limit }) => {
+  .action(async ({ project, issue, json: jsonFlag, text, limit }) => {
+    const json = resolveJsonOutputMode("linear document list", {
+      json: jsonFlag,
+      text,
+    })
     try {
       let filter: ListDocumentsQueryVariables["filter"] | undefined
 

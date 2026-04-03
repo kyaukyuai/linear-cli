@@ -5,30 +5,30 @@
 if you want an agent to read Linear state, preview a write, apply it, and return structured output without leaving the shell, this repo is designed for that path first.
 
 ```bash
-linear capabilities --json
-linear capabilities --json --compat v2
-linear resolve issue ENG-123 --json
+linear capabilities
+linear capabilities --compat v2
+linear resolve issue ENG-123
 linear --profile agent-safe issue update ENG-123 --state done --dry-run --json
-linear issue list --json
-linear issue view ENG-123 --json
+linear issue list
+linear issue view ENG-123
 linear issue create -t "Backfill webhook contract docs" --team ENG --dry-run --json
-linear issue update ENG-123 --state done --comment "Shipped in v2.10.0" --json
-linear project view "Automation Contract v3" --json
-linear notification list --json
+linear issue update ENG-123 --state done --comment "Shipped in v2.10.0"
+linear project view "Automation Contract v3"
+linear notification list
 ```
 
-interactive commands still exist for humans, but the primary design goal is that an agent can discover commands incrementally, pass all important input as flags or stdin, and get machine-readable success or failure back.
+the core agent surfaces now default to machine-readable JSON. use `--text` when a human wants terminal-oriented output for ad-hoc inspection or debugging.
 
 ## for agents
 
 If an agent only reads one page, it should be this README plus the two contract docs below.
 
-- start with `linear capabilities --json` for the stable startup-safe shape; use `linear capabilities --json --compat v2` when you also need required/optional input refs, constrained values, defaults, context resolution hints, input constraints, canonical argv examples, stdin/file targets, and structured output semantics
+- start with `linear capabilities` for the stable startup-safe shape; use `linear capabilities --compat v2` when you also need required/optional input refs, constrained values, defaults, context resolution hints, input constraints, canonical argv examples, stdin/file targets, and structured output semantics
 - use `linear --profile agent-safe ...` when you want predictable non-interactive defaults for an automation run
-- resolve ambiguous issue/team/state/user/label refs with `linear resolve ... --json` before previewing or applying writes
-- prefer stable read surfaces such as `issue`, `project`, `cycle`, `milestone`, `document`, `webhook`, `notification`, `team`, `user`, `workflow-state`, `label`, `initiative`, and update feeds with `--json`
+- resolve ambiguous issue/team/state/user/label refs with `linear resolve ...` before previewing or applying writes
+- prefer stable read surfaces such as `issue`, `project`, `cycle`, `milestone`, `document`, `webhook`, `notification`, `team`, `user`, `workflow-state`, `label`, `initiative`, and update feeds; those agent-first entrypoints now default to machine-readable JSON
 - preview writes with `--dry-run --json` before mutating Linear
-- apply writes with `--json`, then inspect exit codes and `error.details` instead of parsing terminal text
+- apply writes on default-JSON surfaces without `--text`, then inspect exit codes and `error.details` instead of parsing terminal text
 - use stdin or file flags for Markdown-heavy descriptions and comments instead of long inline shell strings
 
 Recommended docs:
@@ -130,7 +130,7 @@ deno task install
 compared to upstream, this fork adds and maintains capabilities aimed at automation-heavy workflows:
 
 - stable JSON contracts for the automation tier, with machine-readable failures for parser, validation, and runtime errors
-- a self-describing `linear capabilities --json` surface with a backward-compatible default and an explicit `--compat v2` mode for richer schema and output metadata
+- a self-describing `linear capabilities` surface with a backward-compatible default and an explicit `--compat v2` mode for richer schema and output metadata
 - `--dry-run` previews for high-value write commands, including `issue start`, issue writes, and non-issue writes
 - additive operation receipts on high-value JSON write success paths
 - a shared top-level `operation` contract on representative preview/apply JSON write paths
@@ -158,19 +158,19 @@ Use the docs in this order if you are building an agent integration:
 2. [docs/json-contracts.md](docs/json-contracts.md) for stable JSON payloads, exit codes, timeout semantics, and dry-run envelopes
 3. [docs/agent-only-v3.md](docs/agent-only-v3.md) for the planned v3 transition to agent-native defaults
 4. [docs/stdin-policy.md](docs/stdin-policy.md) for pipeline and file-input conventions
-5. [`linear capabilities --json`](#automation-contract) for machine-readable command metadata at runtime
+5. [`linear capabilities`](#automation-contract) for machine-readable command metadata at runtime
 
 ## automation contract
 
 for bot and org-wide automation use cases, `linear-cli` defines a stable JSON contract for a focused automation tier.
 
-to discover the curated agent-facing command surface programmatically, use `linear capabilities --json`. the default shape preserves the v1-compatible startup contract for existing bots. when you need richer metadata such as required vs optional primary inputs, constrained values, defaults, context resolution hints, input constraints, canonical argv examples, stdin/file targets, structured output semantics, and timeout/no-op traits, opt into `linear capabilities --json --compat v2`.
+to discover the curated agent-facing command surface programmatically, use `linear capabilities`. the default shape preserves the v1-compatible startup contract for existing bots. when you need richer metadata such as required vs optional primary inputs, constrained values, defaults, context resolution hints, input constraints, canonical argv examples, stdin/file targets, structured output semantics, and timeout/no-op traits, opt into `linear capabilities --compat v2`.
 
 `linear --profile agent-safe ...` is the opt-in execution profile for agent-controlled runs. it currently disables pager-by-default behavior, extends the built-in write timeout to `45000ms` unless `--timeout-ms` or `LINEAR_WRITE_TIMEOUT_MS` is set, and rejects destructive confirmation prompts unless the caller passes `--yes`.
 
 non-goals:
 
-- it does not force `--json`
+- it does not force `--json` on commands outside the agent-native default-JSON surface
 - it does not auto-confirm destructive actions
 - it does not replace every interactive data-entry fallback; callers should still pass explicit flags, stdin, or file inputs
 
@@ -182,7 +182,7 @@ non-goals:
 - v6 additions: `resolve issue/team/workflow-state/user/label --json`
 - out of scope: non-JSON terminal output, `linear api`, and other `--json` commands that are not listed above
 
-the contract fixes top-level success payload shapes and requires machine-readable failure payloads for the automation tier. see [docs/json-contracts.md](docs/json-contracts.md) for the full contract, compatibility rules, and example payloads. that guarantee also covers parser and argument validation failures when `--json` is present.
+the contract fixes top-level success payload shapes and requires machine-readable failure payloads for the automation tier. see [docs/json-contracts.md](docs/json-contracts.md) for the full contract, compatibility rules, and example payloads. that guarantee also covers parser and argument validation failures when the command is in machine-readable mode, whether that is the default or was requested explicitly with `--json`.
 
 for automation consumers, auth and authorization failures now use exit code `4`, free-plan or workspace-plan limit failures use exit code `5`, and client-side write confirmation timeouts use exit code `6`. other contract failures remain non-zero and currently use `1`. rate-limited responses remain on exit code `1`, but now include retry guidance and, when available, `error.details.rateLimit` metadata.
 

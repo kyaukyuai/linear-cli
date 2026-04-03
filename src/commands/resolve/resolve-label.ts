@@ -8,10 +8,11 @@ export const labelCommand = new Command()
   .description("Resolve an issue label reference without mutating Linear")
   .arguments("<label:string>")
   .option("--team <team:string>", "Team key for team-scoped resolution")
-  .option("-j, --json", "Output as JSON")
+  .option("-j, --json", "Force machine-readable JSON output")
+  .option("--text", "Output human-readable text")
   .example(
     "Resolve a label within a team context",
-    "linear resolve label Bug --team ENG --json",
+    "linear resolve label Bug --team ENG",
   )
   .error((error, cmd) =>
     handleAutomationContractParseError(
@@ -20,9 +21,10 @@ export const labelCommand = new Command()
       "Failed to resolve label reference",
     )
   )
-  .action(async ({ json, team }, label: string) => {
+  .action(async ({ json, text, team }, label: string) => {
     await runResolveCommand(
-      json,
+      "linear resolve label",
+      { json, text },
       "Failed to resolve label reference",
       () => resolveIssueLabelReference(label, team),
     )

@@ -10,6 +10,7 @@ import {
   handleAutomationCommandError,
   handleAutomationContractParseError,
 } from "../../utils/json_output.ts"
+import { resolveJsonOutputMode } from "../../utils/output_mode.ts"
 
 const GetActiveCycle = gql(`
   query GetActiveCycle($teamId: String!) {
@@ -52,14 +53,15 @@ export const currentCommand = new Command()
   .name("current")
   .description("Show the current active cycle for a team")
   .option("--team <team:string>", "Team key (defaults to current team)")
-  .option("-j, --json", "Output as JSON")
+  .option("-j, --json", "Force machine-readable JSON output")
+  .option("--text", "Output human-readable text")
   .example(
     "Show the current cycle as JSON",
-    "linear cycle current --team ENG --json",
+    "linear cycle current --team ENG",
   )
   .example(
-    "Show the current cycle for the default team",
-    "linear cycle current",
+    "Show the current cycle in the terminal",
+    "linear cycle current --team ENG --text",
   )
   .error((error, cmd) =>
     handleAutomationContractParseError(
@@ -68,7 +70,11 @@ export const currentCommand = new Command()
       "Failed to get current cycle",
     )
   )
-  .action(async ({ team, json }) => {
+  .action(async ({ team, json: jsonFlag, text }) => {
+    const json = resolveJsonOutputMode("linear cycle current", {
+      json: jsonFlag,
+      text,
+    })
     try {
       const teamKey = requireTeamKey(team)
       const teamId = await getTeamIdByKey(teamKey)

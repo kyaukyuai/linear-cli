@@ -26,6 +26,7 @@ import {
   handleAutomationCommandError,
   handleAutomationContractParseError,
 } from "../../utils/json_output.ts"
+import { resolveJsonOutputMode } from "../../utils/output_mode.ts"
 import { ValidationError } from "../../utils/errors.ts"
 import {
   LINEAR_PRIVATE_UPLOAD_HOST,
@@ -65,9 +66,11 @@ export const viewCommand = new Command()
   .option("-a, --app", "Open in Linear.app")
   .option("--no-comments", "Exclude comments from the output")
   .option("--no-pager", "Disable automatic paging for long output")
-  .option("-j, --json", "Output issue data as JSON")
+  .option("-j, --json", "Force machine-readable JSON output")
+  .option("--text", "Output human-readable text")
   .option("--no-download", "Keep remote URLs instead of downloading files")
   .example("View issue as JSON", "linear issue view ENG-123 --json")
+  .example("View issue in the terminal", "linear issue view ENG-123 --text")
   .example(
     "View issue without comments",
     "linear issue view ENG-123 --no-comments --no-pager",
@@ -76,7 +79,12 @@ export const viewCommand = new Command()
     handleAutomationContractParseError(error, cmd, "Failed to view issue")
   })
   .action(async (options, issueId) => {
-    const { web, app, comments, pager, json, download } = options
+    const { web, app, comments, pager, json: jsonFlag, text, download } =
+      options
+    const json = resolveJsonOutputMode("linear issue view", {
+      json: jsonFlag,
+      text,
+    })
     const showComments = comments !== false
     const usePager = pager !== false
 

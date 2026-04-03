@@ -32,7 +32,7 @@ await snapshotTest({
   name: "Notification List Command - Shows Notifications",
   meta: import.meta,
   colors: false,
-  args: [],
+  args: ["--text"],
   denoArgs: commonDenoArgs,
   async fn() {
     const { cleanup } = await setupMockLinearServer([
@@ -138,7 +138,7 @@ await snapshotTest({
   name: "Notification List Command - No Notifications",
   meta: import.meta,
   colors: false,
-  args: [],
+  args: ["--text"],
   denoArgs: commonDenoArgs,
   async fn() {
     const { cleanup } = await setupMockLinearServer([
@@ -166,7 +166,7 @@ await snapshotTest({
   name: "Notification List Command - Unread Only",
   meta: import.meta,
   colors: false,
-  args: ["--unread"],
+  args: ["--unread", "--text"],
   denoArgs: commonDenoArgs,
   async fn() {
     const { cleanup } = await setupMockLinearServer([

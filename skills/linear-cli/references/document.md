@@ -46,13 +46,15 @@ Options:
   --profile        <profile>  - Execution profile (agent-safe)                         
   --project        <project>  - Filter by project (slug or name)                       
   --issue          <issue>    - Filter by issue (identifier like TC-123)               
-  --json                      - Output as JSON                                         
+  --json                      - Force machine-readable JSON output                     
+  --text                      - Output human-readable text                             
   --limit          <limit>    - Limit results                             (Default: 50)
   --no-pager                  - Disable automatic paging for long output               
 
 Examples:
 
-  List documents as JSON linear document list --project platform-refresh --json
+  List documents as JSON         linear document list --project platform-refresh       
+  List documents in the terminal linear document list --project platform-refresh --text
 ```
 
 ### view

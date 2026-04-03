@@ -125,7 +125,10 @@ Deno.test("contract docs pin current CLI version in capabilities examples", asyn
   const currentVersion = await getCurrentCliVersion()
   const docs = await Deno.readTextFile(jsonContractsPath)
 
-  const defaultExample = extractJsonExample(docs, "Default top-level shape:")
+  const defaultExample = extractJsonExample(
+    docs,
+    "Default top-level shape from `linear capabilities`:",
+  )
 
   assert(
     isRecord(defaultExample.cli),
@@ -143,27 +146,29 @@ Deno.test("contract docs pin current CLI version in capabilities examples", asyn
 
 Deno.test("contract docs describe capabilities compat modes that match runtime output", async () => {
   const docs = await Deno.readTextFile(jsonContractsPath)
-  const defaultExample = extractJsonExample(docs, "Default top-level shape:")
+  const defaultExample = extractJsonExample(
+    docs,
+    "Default top-level shape from `linear capabilities`:",
+  )
   const compatV2Example = extractJsonExample(
     docs,
-    "`--compat v2` adds curated command schema metadata and output semantics:",
+    "`linear capabilities --compat v2` adds curated command schema metadata and output semantics:",
   )
 
   assertStringIncludes(
     docs,
-    "`linear capabilities --json` defaults to the `v1` compatibility shape for runtime startup safety",
+    "`linear capabilities` defaults to the `v1` compatibility shape for runtime startup safety",
     "docs/json-contracts.md must document the startup-safe default capabilities shape",
   )
   assertStringIncludes(
     docs,
-    "`linear capabilities --json --compat v2`",
+    "`linear capabilities --compat v2`",
     "docs/json-contracts.md must document the opt-in v2 capabilities shape",
   )
 
-  const runtimeDefault = await runLinearJsonCommand(["capabilities", "--json"])
+  const runtimeDefault = await runLinearJsonCommand(["capabilities"])
   const runtimeCompatV2 = await runLinearJsonCommand([
     "capabilities",
-    "--json",
     "--compat",
     "v2",
   ])
@@ -271,12 +276,12 @@ Deno.test("agent-facing source docs keep startup-safe capabilities examples", as
 
     assertStringIncludes(
       text,
-      "linear capabilities --json",
+      "linear capabilities",
       `${sourceDoc.label} must keep the startup-safe capabilities example`,
     )
     assertStringIncludes(
       text,
-      "linear capabilities --json --compat v2",
+      "linear capabilities --compat v2",
       `${sourceDoc.label} must keep the opt-in v2 capabilities example`,
     )
   }

@@ -77,12 +77,14 @@ Options:
   --profile        <profile>  - Execution profile (agent-safe)       
   -w, --web                   - Open in web browser                  
   -a, --app                   - Open in Linear.app                   
-  -j, --json                  - Output as JSON                       
+  -j, --json                  - Force machine-readable JSON output   
+  --text                      - Output human-readable text           
 
 Examples:
 
-  View a project as JSON        linear project view auth-refresh --json
-  Open a project in the browser linear project view auth-refresh --web
+  View a project as JSON         linear project view auth-refresh       
+  View a project in the terminal linear project view auth-refresh --text
+  Open a project in the browser  linear project view auth-refresh --web
 ```
 
 ### create

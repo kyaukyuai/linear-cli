@@ -26,6 +26,7 @@ import {
   handleAutomationCommandError,
   handleAutomationContractParseError,
 } from "../../utils/json_output.ts"
+import { resolveJsonOutputMode } from "../../utils/output_mode.ts"
 import { withSpinner } from "../../utils/spinner.ts"
 import { header, muted } from "../../utils/styling.ts"
 import { NotFoundError, ValidationError } from "../../utils/errors.ts"
@@ -124,11 +125,13 @@ export const listCommand = new Command()
       default: 50,
     },
   )
-  .option("-j, --json", "Output as JSON")
+  .option("-j, --json", "Force machine-readable JSON output")
+  .option("--text", "Output human-readable text")
   .option("-w, --web", "Open in web browser")
   .option("-a, --app", "Open in Linear.app")
   .option("--no-pager", "Disable automatic paging for long output")
-  .example("List all issues as JSON", "linear issue list --all --json")
+  .example("List all issues as JSON", "linear issue list --all")
+  .example("List issues in the terminal", "linear issue list --all --text")
   .example(
     "List todo issues for a project across all assignees",
     "linear issue list --state todo --project auth-refresh --all-assignees",
@@ -158,10 +161,15 @@ export const listCommand = new Command()
         updatedBefore,
         dueBefore,
         limit,
-        json,
+        json: jsonFlag,
+        text,
         pager,
       },
     ) => {
+      const json = resolveJsonOutputMode("linear issue list", {
+        json: jsonFlag,
+        text,
+      })
       const usePager = pager !== false
       if (web || app) {
         await openTeamAssigneeView({ app: app })

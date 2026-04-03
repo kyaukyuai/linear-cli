@@ -42,7 +42,7 @@ Deno.test("SKILL template remains the source of truth for agent guidance", async
 
   assertStringIncludes(
     rendered,
-    "Discover command traits with `linear capabilities --json` and opt into `--compat v2` only when richer schema metadata is needed",
+    "Discover command traits with `linear capabilities` and opt into `--compat v2` only when richer schema metadata is needed",
   )
   assertStringIncludes(
     rendered,
@@ -70,7 +70,7 @@ Deno.test("commands template renders quick reference and workflow from source te
   )
   assertStringIncludes(
     rendered,
-    "linear capabilities --json --compat v2",
+    "linear capabilities --compat v2",
   )
   assertStringIncludes(
     rendered,
