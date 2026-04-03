@@ -13,8 +13,9 @@ Description:
 
 Options:
 
-  -h, --help               - Show this help.                      
-  -w, --workspace  <slug>  - Target workspace (uses credentials)  
+  -h, --help                  - Show this help.                      
+  -w, --workspace  <slug>     - Target workspace (uses credentials)  
+  --profile        <profile>  - Execution profile (agent-safe)       
 
 Commands:
 
@@ -42,6 +43,7 @@ Options:
 
   -h, --help                     - Show this help.                                        
   -w, --workspace     <slug>     - Target workspace (uses credentials)                    
+  --profile           <profile>  - Execution profile (agent-safe)                         
   -n, --limit         <limit>    - Maximum number of webhooks                (Default: 20)
   --team              <teamKey>  - Filter by team key                                     
   --include-archived             - Include archived webhooks                              
@@ -67,9 +69,10 @@ Description:
 
 Options:
 
-  -h, --help               - Show this help.                      
-  -w, --workspace  <slug>  - Target workspace (uses credentials)  
-  -j, --json               - Output as JSON                       
+  -h, --help                  - Show this help.                      
+  -w, --workspace  <slug>     - Target workspace (uses credentials)  
+  --profile        <profile>  - Execution profile (agent-safe)       
+  -j, --json                  - Output as JSON                       
 
 Examples:
 
@@ -92,6 +95,7 @@ Options:
 
   -h, --help                             - Show this help.                                                     
   -w, --workspace       <slug>           - Target workspace (uses credentials)                                 
+  --profile             <profile>        - Execution profile (agent-safe)                                      
   -u, --url             <url>            - Webhook URL (required)                                              
   -r, --resource-types  <resourceTypes>  - Comma-separated resource types (e.g. Issue,Comment)                 
   -l, --label           <label>          - Webhook label                                                       
@@ -123,6 +127,7 @@ Options:
 
   -h, --help                             - Show this help.                                  
   -w, --workspace       <slug>           - Target workspace (uses credentials)              
+  --profile             <profile>        - Execution profile (agent-safe)                   
   -u, --url             <url>            - New webhook URL                                  
   -r, --resource-types  <resourceTypes>  - New comma-separated resource types               
   -l, --label           <label>          - New webhook label                                
@@ -151,11 +156,12 @@ Description:
 
 Options:
 
-  -h, --help               - Show this help.                                    
-  -w, --workspace  <slug>  - Target workspace (uses credentials)                
-  -y, --yes                - Skip confirmation prompt                           
-  -j, --json               - Output as JSON                                     
-  --dry-run                - Preview the deletion without mutating the webhook  
+  -h, --help                  - Show this help.                                    
+  -w, --workspace  <slug>     - Target workspace (uses credentials)                
+  --profile        <profile>  - Execution profile (agent-safe)                     
+  -y, --yes                   - Skip confirmation prompt                           
+  -j, --json                  - Output as JSON                                     
+  --dry-run                   - Preview the deletion without mutating the webhook  
 
 Examples:
 

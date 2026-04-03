@@ -15,6 +15,7 @@ Options:
 
   -h, --help                  - Show this help.                                                             
   -w, --workspace  <slug>     - Target workspace (uses credentials)                                         
+  --profile        <profile>  - Execution profile (agent-safe)                                              
   -j, --json                  - Output the capabilities registry as JSON                                    
   --compat         <version>  - Select the machine-readable capabilities schema version (v1, v2). Requires  
                                 --json.                                                                     

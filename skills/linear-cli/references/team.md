@@ -13,8 +13,9 @@ Description:
 
 Options:
 
-  -h, --help               - Show this help.                      
-  -w, --workspace  <slug>  - Target workspace (uses credentials)  
+  -h, --help                  - Show this help.                      
+  -w, --workspace  <slug>     - Target workspace (uses credentials)  
+  --profile        <profile>  - Execution profile (agent-safe)       
 
 Commands:
 
@@ -44,6 +45,7 @@ Options:
 
   -h, --help                        - Show this help.                                          
   -w, --workspace    <slug>         - Target workspace (uses credentials)                      
+  --profile          <profile>      - Execution profile (agent-safe)                           
   -n, --name         <name>         - Name of the team                                         
   -d, --description  <description>  - Description of the team                                  
   -k, --key          <key>          - Team key (if not provided, will be generated from name)  
@@ -66,6 +68,7 @@ Options:
 
   -h, --help                     - Show this help.                                  
   -w, --workspace  <slug>        - Target workspace (uses credentials)              
+  --profile        <profile>     - Execution profile (agent-safe)                   
   --move-issues    <targetTeam>  - Move all issues to another team before deletion  
   -y, --yes                      - Skip confirmation prompt                         
   --force                        - Deprecated alias for --yes
@@ -84,12 +87,13 @@ Description:
 
 Options:
 
-  -h, --help               - Show this help.                           
-  -w, --workspace  <slug>  - Target workspace (uses credentials)       
-  -j, --json               - Output as JSON                            
-  -w, --web                - Open in web browser                       
-  -a, --app                - Open in Linear.app                        
-  --no-pager               - Disable automatic paging for long output  
+  -h, --help                  - Show this help.                           
+  -w, --workspace  <slug>     - Target workspace (uses credentials)       
+  --profile        <profile>  - Execution profile (agent-safe)            
+  -j, --json                  - Output as JSON                            
+  -w, --web                   - Open in web browser                       
+  -a, --app                   - Open in Linear.app                        
+  --no-pager                  - Disable automatic paging for long output  
 
 Examples:
 
@@ -109,9 +113,10 @@ Description:
 
 Options:
 
-  -h, --help               - Show this help.                      
-  -w, --workspace  <slug>  - Target workspace (uses credentials)  
-  -j, --json               - Output as JSON                       
+  -h, --help                  - Show this help.                      
+  -w, --workspace  <slug>     - Target workspace (uses credentials)  
+  --profile        <profile>  - Execution profile (agent-safe)       
+  -j, --json                  - Output as JSON                       
 
 Examples:
 
@@ -131,8 +136,9 @@ Description:
 
 Options:
 
-  -h, --help               - Show this help.                      
-  -w, --workspace  <slug>  - Target workspace (uses credentials)
+  -h, --help                  - Show this help.                      
+  -w, --workspace  <slug>     - Target workspace (uses credentials)  
+  --profile        <profile>  - Execution profile (agent-safe)
 ```
 
 ### autolinks
@@ -148,8 +154,9 @@ Description:
 
 Options:
 
-  -h, --help               - Show this help.                      
-  -w, --workspace  <slug>  - Target workspace (uses credentials)
+  -h, --help                  - Show this help.                      
+  -w, --workspace  <slug>     - Target workspace (uses credentials)  
+  --profile        <profile>  - Execution profile (agent-safe)
 ```
 
 ### members
@@ -165,8 +172,9 @@ Description:
 
 Options:
 
-  -h, --help               - Show this help.                      
-  -w, --workspace  <slug>  - Target workspace (uses credentials)  
-  -a, --all                - Include inactive members             
-  -j, --json               - Output as JSON
+  -h, --help                  - Show this help.                      
+  -w, --workspace  <slug>     - Target workspace (uses credentials)  
+  --profile        <profile>  - Execution profile (agent-safe)       
+  -a, --all                   - Include inactive members             
+  -j, --json                  - Output as JSON
 ```

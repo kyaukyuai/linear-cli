@@ -13,8 +13,9 @@ Description:
 
 Options:
 
-  -h, --help               - Show this help.                      
-  -w, --workspace  <slug>  - Target workspace (uses credentials)  
+  -h, --help                  - Show this help.                      
+  -w, --workspace  <slug>     - Target workspace (uses credentials)  
+  --profile        <profile>  - Execution profile (agent-safe)       
 
 Commands:
 
@@ -42,6 +43,7 @@ Options:
 
   -h, --help                    - Show this help.                                     
   -w, --workspace  <slug>       - Target workspace (uses credentials)                 
+  --profile        <profile>    - Execution profile (agent-safe)                      
   --project        <projectId>  - Project ID                                (required)
   -j, --json                    - Output as JSON                                      
   --no-pager                    - Disable automatic paging for long output            
@@ -65,9 +67,10 @@ Description:
 
 Options:
 
-  -h, --help               - Show this help.                      
-  -w, --workspace  <slug>  - Target workspace (uses credentials)  
-  -j, --json               - Output as JSON                       
+  -h, --help                  - Show this help.                      
+  -w, --workspace  <slug>     - Target workspace (uses credentials)  
+  --profile        <profile>  - Execution profile (agent-safe)       
+  -j, --json                  - Output as JSON                       
 
 Examples:
 
@@ -90,6 +93,7 @@ Options:
 
   -h, --help                      - Show this help.                                      
   -w, --workspace  <slug>         - Target workspace (uses credentials)                  
+  --profile        <profile>      - Execution profile (agent-safe)                       
   --project        <projectId>    - Project ID                                 (required)
   --name           <name>         - Milestone name                             (required)
   --description    <description>  - Milestone description                                
@@ -117,6 +121,7 @@ Options:
 
   -h, --help                      - Show this help.                                    
   -w, --workspace  <slug>         - Target workspace (uses credentials)                
+  --profile        <profile>      - Execution profile (agent-safe)                     
   --name           <name>         - Milestone name                                     
   --description    <description>  - Milestone description                              
   --target-date    <date>         - Target date (YYYY-MM-DD)                           
@@ -143,11 +148,12 @@ Description:
 
 Options:
 
-  -h, --help               - Show this help.                                      
-  -w, --workspace  <slug>  - Target workspace (uses credentials)                  
-  -y, --yes                - Skip confirmation prompt                             
-  -f, --force              - Deprecated alias for --yes                           
-  --dry-run                - Preview the deletion without mutating the milestone  
+  -h, --help                  - Show this help.                                      
+  -w, --workspace  <slug>     - Target workspace (uses credentials)                  
+  --profile        <profile>  - Execution profile (agent-safe)                       
+  -y, --yes                   - Skip confirmation prompt                             
+  -f, --force                 - Deprecated alias for --yes                           
+  --dry-run                   - Preview the deletion without mutating the milestone  
 
 Examples:
 

@@ -13,8 +13,9 @@ Description:
 
 Options:
 
-  -h, --help               - Show this help.                      
-  -w, --workspace  <slug>  - Target workspace (uses credentials)  
+  -h, --help                  - Show this help.                      
+  -w, --workspace  <slug>     - Target workspace (uses credentials)  
+  --profile        <profile>  - Execution profile (agent-safe)       
 
 Commands:
 
@@ -42,11 +43,12 @@ Description:
 
 Options:
 
-  -h, --help               - Show this help.                           
-  -w, --workspace  <slug>  - Target workspace (uses credentials)       
-  --team           <team>  - Team key (defaults to current team)       
-  -j, --json               - Output as JSON                            
-  --no-pager               - Disable automatic paging for long output  
+  -h, --help                  - Show this help.                           
+  -w, --workspace  <slug>     - Target workspace (uses credentials)       
+  --profile        <profile>  - Execution profile (agent-safe)            
+  --team           <team>     - Team key (defaults to current team)       
+  -j, --json                  - Output as JSON                            
+  --no-pager                  - Disable automatic paging for long output  
 
 Examples:
 
@@ -67,10 +69,11 @@ Description:
 
 Options:
 
-  -h, --help               - Show this help.                      
-  -w, --workspace  <slug>  - Target workspace (uses credentials)  
-  --team           <team>  - Team key (defaults to current team)  
-  -j, --json               - Output as JSON                       
+  -h, --help                  - Show this help.                      
+  -w, --workspace  <slug>     - Target workspace (uses credentials)  
+  --profile        <profile>  - Execution profile (agent-safe)       
+  --team           <team>     - Team key (defaults to current team)  
+  -j, --json                  - Output as JSON                       
 
 Examples:
 
@@ -91,10 +94,11 @@ Description:
 
 Options:
 
-  -h, --help               - Show this help.                      
-  -w, --workspace  <slug>  - Target workspace (uses credentials)  
-  --team           <team>  - Team key (defaults to current team)  
-  -j, --json               - Output as JSON                       
+  -h, --help                  - Show this help.                      
+  -w, --workspace  <slug>     - Target workspace (uses credentials)  
+  --profile        <profile>  - Execution profile (agent-safe)       
+  --team           <team>     - Team key (defaults to current team)  
+  -j, --json                  - Output as JSON                       
 
 Examples:
 
@@ -115,10 +119,11 @@ Description:
 
 Options:
 
-  -h, --help               - Show this help.                      
-  -w, --workspace  <slug>  - Target workspace (uses credentials)  
-  --team           <team>  - Team key (defaults to current team)  
-  -j, --json               - Output as JSON                       
+  -h, --help                  - Show this help.                      
+  -w, --workspace  <slug>     - Target workspace (uses credentials)  
+  --profile        <profile>  - Execution profile (agent-safe)       
+  --team           <team>     - Team key (defaults to current team)  
+  -j, --json                  - Output as JSON                       
 
 Examples:
 
@@ -141,6 +146,7 @@ Options:
 
   -h, --help                      - Show this help.                                
   -w, --workspace  <slug>         - Target workspace (uses credentials)            
+  --profile        <profile>      - Execution profile (agent-safe)                 
   --team           <team>         - Team key (defaults to current team)            
   --name           <name>         - Custom name for the cycle                      
   --description    <description>  - Description of the cycle                       
@@ -166,10 +172,11 @@ Description:
 
 Options:
 
-  -h, --help                - Show this help.                                                     
-  -w, --workspace  <slug>   - Target workspace (uses credentials)                                 
-  --team           <team>   - Team key (defaults to current team)                                 
-  --cycle          <cycle>  - Cycle name or number (defaults to active cycle)  (Default: "active")
+  -h, --help                  - Show this help.                                                     
+  -w, --workspace  <slug>     - Target workspace (uses credentials)                                 
+  --profile        <profile>  - Execution profile (agent-safe)                                      
+  --team           <team>     - Team key (defaults to current team)                                 
+  --cycle          <cycle>    - Cycle name or number (defaults to active cycle)  (Default: "active")
 ```
 
 ### remove
@@ -185,6 +192,7 @@ Description:
 
 Options:
 
-  -h, --help               - Show this help.                      
-  -w, --workspace  <slug>  - Target workspace (uses credentials)
+  -h, --help                  - Show this help.                      
+  -w, --workspace  <slug>     - Target workspace (uses credentials)  
+  --profile        <profile>  - Execution profile (agent-safe)
 ```

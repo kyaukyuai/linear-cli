@@ -13,8 +13,9 @@ Description:
 
 Options:
 
-  -h, --help               - Show this help.                      
-  -w, --workspace  <slug>  - Target workspace (uses credentials)  
+  -h, --help                  - Show this help.                      
+  -w, --workspace  <slug>     - Target workspace (uses credentials)  
+  --profile        <profile>  - Execution profile (agent-safe)       
 
 Commands:
 
@@ -44,16 +45,17 @@ Description:
 
 Options:
 
-  -h, --help                 - Show this help.                                
-  -w, --workspace  <slug>    - Target workspace (uses credentials)            
-  -s, --status     <status>  - Filter by status (active, planned, completed)  
-  --all-statuses             - Show all statuses (default: active only)       
-  -o, --owner      <owner>   - Filter by owner (username or email)            
-  -w, --web                  - Open initiatives page in web browser           
-  -a, --app                  - Open initiatives page in Linear.app            
-  -j, --json                 - Output as JSON                                 
-  --archived                 - Include archived initiatives                   
-  --no-pager                 - Disable automatic paging for long output       
+  -h, --help                  - Show this help.                                
+  -w, --workspace  <slug>     - Target workspace (uses credentials)            
+  --profile        <profile>  - Execution profile (agent-safe)                 
+  -s, --status     <status>   - Filter by status (active, planned, completed)  
+  --all-statuses              - Show all statuses (default: active only)       
+  -o, --owner      <owner>    - Filter by owner (username or email)            
+  -w, --web                   - Open initiatives page in web browser           
+  -a, --app                   - Open initiatives page in Linear.app            
+  -j, --json                  - Output as JSON                                 
+  --archived                  - Include archived initiatives                   
+  --no-pager                  - Disable automatic paging for long output       
 
 Examples:
 
@@ -73,11 +75,12 @@ Description:
 
 Options:
 
-  -h, --help               - Show this help.                      
-  -w, --workspace  <slug>  - Target workspace (uses credentials)  
-  -w, --web                - Open in web browser                  
-  -a, --app                - Open in Linear.app                   
-  -j, --json               - Output as JSON                       
+  -h, --help                  - Show this help.                      
+  -w, --workspace  <slug>     - Target workspace (uses credentials)  
+  --profile        <profile>  - Execution profile (agent-safe)       
+  -w, --web                   - Open in web browser                  
+  -a, --app                   - Open in Linear.app                   
+  -j, --json                  - Output as JSON                       
 
 Examples:
 
@@ -99,6 +102,7 @@ Options:
 
   -h, --help                        - Show this help.                                        
   -w, --workspace    <slug>         - Target workspace (uses credentials)                    
+  --profile          <profile>      - Execution profile (agent-safe)                         
   -n, --name         <name>         - Initiative name (required)                             
   -d, --description  <description>  - Initiative description                                 
   -s, --status       <status>       - Status: planned, active, completed (default: planned)  
@@ -122,13 +126,14 @@ Description:
 
 Options:
 
-  -h, --help                 - Show this help.                                    
-  -w, --workspace  <slug>    - Target workspace (uses credentials)                
-  -y, --yes                  - Skip confirmation prompt                           
-  --force                    - Deprecated alias for --yes                         
-  --bulk           <ids...>  - Archive multiple initiatives by ID, slug, or name  
-  --bulk-file      <file>    - Read initiative IDs from a file (one per line)     
-  --bulk-stdin               - Read initiative IDs from stdin
+  -h, --help                  - Show this help.                                    
+  -w, --workspace  <slug>     - Target workspace (uses credentials)                
+  --profile        <profile>  - Execution profile (agent-safe)                     
+  -y, --yes                   - Skip confirmation prompt                           
+  --force                     - Deprecated alias for --yes                         
+  --bulk           <ids...>   - Archive multiple initiatives by ID, slug, or name  
+  --bulk-file      <file>     - Read initiative IDs from a file (one per line)     
+  --bulk-stdin                - Read initiative IDs from stdin
 ```
 
 ### update
@@ -146,6 +151,7 @@ Options:
 
   -h, --help                        - Show this help.                                  
   -w, --workspace    <slug>         - Target workspace (uses credentials)              
+  --profile          <profile>      - Execution profile (agent-safe)                   
   -n, --name         <name>         - New name for the initiative                      
   -d, --description  <description>  - New description                                  
   --status           <status>       - New status (planned, active, completed, paused)  
@@ -169,10 +175,11 @@ Description:
 
 Options:
 
-  -h, --help               - Show this help.                      
-  -w, --workspace  <slug>  - Target workspace (uses credentials)  
-  -y, --yes                - Skip confirmation prompt             
-  --force                  - Deprecated alias for --yes
+  -h, --help                  - Show this help.                      
+  -w, --workspace  <slug>     - Target workspace (uses credentials)  
+  --profile        <profile>  - Execution profile (agent-safe)       
+  -y, --yes                   - Skip confirmation prompt             
+  --force                     - Deprecated alias for --yes
 ```
 
 ### delete
@@ -188,13 +195,14 @@ Description:
 
 Options:
 
-  -h, --help                 - Show this help.                                   
-  -w, --workspace  <slug>    - Target workspace (uses credentials)               
-  -y, --yes                  - Skip confirmation prompt                          
-  --force                    - Deprecated alias for --yes                        
-  --bulk           <ids...>  - Delete multiple initiatives by ID, slug, or name  
-  --bulk-file      <file>    - Read initiative IDs from a file (one per line)    
-  --bulk-stdin               - Read initiative IDs from stdin
+  -h, --help                  - Show this help.                                   
+  -w, --workspace  <slug>     - Target workspace (uses credentials)               
+  --profile        <profile>  - Execution profile (agent-safe)                    
+  -y, --yes                   - Skip confirmation prompt                          
+  --force                     - Deprecated alias for --yes                        
+  --bulk           <ids...>   - Delete multiple initiatives by ID, slug, or name  
+  --bulk-file      <file>     - Read initiative IDs from a file (one per line)    
+  --bulk-stdin                - Read initiative IDs from stdin
 ```
 
 ### add-project
@@ -212,6 +220,7 @@ Options:
 
   -h, --help                    - Show this help.                      
   -w, --workspace  <slug>       - Target workspace (uses credentials)  
+  --profile        <profile>    - Execution profile (agent-safe)       
   --sort-order     <sortOrder>  - Sort order within initiative
 ```
 
@@ -228,8 +237,9 @@ Description:
 
 Options:
 
-  -h, --help               - Show this help.                      
-  -w, --workspace  <slug>  - Target workspace (uses credentials)  
-  -y, --yes                - Skip confirmation prompt             
-  --force                  - Deprecated alias for --yes
+  -h, --help                  - Show this help.                      
+  -w, --workspace  <slug>     - Target workspace (uses credentials)  
+  --profile        <profile>  - Execution profile (agent-safe)       
+  -y, --yes                   - Skip confirmation prompt             
+  --force                     - Deprecated alias for --yes
 ```

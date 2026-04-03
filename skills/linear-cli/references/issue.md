@@ -13,8 +13,9 @@ Description:
 
 Options:
 
-  -h, --help               - Show this help.                      
-  -w, --workspace  <slug>  - Target workspace (uses credentials)  
+  -h, --help                  - Show this help.                      
+  -w, --workspace  <slug>     - Target workspace (uses credentials)  
+  --profile        <profile>  - Execution profile (agent-safe)       
 
 Commands:
 
@@ -59,8 +60,9 @@ Description:
 
 Options:
 
-  -h, --help               - Show this help.                      
-  -w, --workspace  <slug>  - Target workspace (uses credentials)
+  -h, --help                  - Show this help.                      
+  -w, --workspace  <slug>     - Target workspace (uses credentials)  
+  --profile        <profile>  - Execution profile (agent-safe)
 ```
 
 ### list
@@ -78,6 +80,7 @@ Options:
 
   -h, --help                            - Show this help.                                                                                                
   -w, --workspace      <slug>           - Target workspace (uses credentials)                                                                            
+  --profile            <profile>        - Execution profile (agent-safe)                                                                                 
   -s, --state          <state>          - Filter by issue state (triage, backlog, unstarted|todo, started, completed,      (Default: [ "unstarted" ])    
                                           canceled). May be repeated.                                                                                    
   --all-states                          - Show issues from all states                                                                                    
@@ -121,11 +124,12 @@ Description:
 
 Options:
 
-  -h, --help                       - Show this help.                                   
-  -w, --workspace         <slug>   - Target workspace (uses credentials)               
-  -j, --json                       - Output as JSON                                    
-  -n, --limit             <limit>  - Maximum number of results            (Default: 20)
-  -a, --include-archived           - Include archived issues in results
+  -h, --help                         - Show this help.                                   
+  -w, --workspace         <slug>     - Target workspace (uses credentials)               
+  --profile               <profile>  - Execution profile (agent-safe)                    
+  -j, --json                         - Output as JSON                                    
+  -n, --limit             <limit>    - Maximum number of results            (Default: 20)
+  -a, --include-archived             - Include archived issues in results
 ```
 
 ### title
@@ -141,8 +145,9 @@ Description:
 
 Options:
 
-  -h, --help               - Show this help.                      
-  -w, --workspace  <slug>  - Target workspace (uses credentials)
+  -h, --help                  - Show this help.                      
+  -w, --workspace  <slug>     - Target workspace (uses credentials)  
+  --profile        <profile>  - Execution profile (agent-safe)
 ```
 
 ### start
@@ -160,6 +165,7 @@ Options:
 
   -h, --help                      - Show this help.                                                 
   -w, --workspace      <slug>     - Target workspace (uses credentials)                             
+  --profile            <profile>  - Execution profile (agent-safe)                                  
   -A, --all-assignees             - Show issues for all assignees                                   
   -U, --unassigned                - Show only unassigned issues                                     
   -f, --from-ref       <fromRef>  - Git ref to create new branch from                               
@@ -185,14 +191,15 @@ Description:
 
 Options:
 
-  -h, --help               - Show this help.                                
-  -w, --workspace  <slug>  - Target workspace (uses credentials)            
-  -w, --web                - Open in web browser                            
-  -a, --app                - Open in Linear.app                             
-  --no-comments            - Exclude comments from the output               
-  --no-pager               - Disable automatic paging for long output       
-  -j, --json               - Output issue data as JSON                      
-  --no-download            - Keep remote URLs instead of downloading files  
+  -h, --help                  - Show this help.                                
+  -w, --workspace  <slug>     - Target workspace (uses credentials)            
+  --profile        <profile>  - Execution profile (agent-safe)                 
+  -w, --web                   - Open in web browser                            
+  -a, --app                   - Open in Linear.app                             
+  --no-comments               - Exclude comments from the output               
+  --no-pager                  - Disable automatic paging for long output       
+  -j, --json                  - Output issue data as JSON                      
+  --no-download               - Keep remote URLs instead of downloading files  
 
 Examples:
 
@@ -213,8 +220,9 @@ Description:
 
 Options:
 
-  -h, --help               - Show this help.                      
-  -w, --workspace  <slug>  - Target workspace (uses credentials)
+  -h, --help                  - Show this help.                      
+  -w, --workspace  <slug>     - Target workspace (uses credentials)  
+  --profile        <profile>  - Execution profile (agent-safe)
 ```
 
 ### describe
@@ -230,9 +238,10 @@ Description:
 
 Options:
 
-  -h, --help                       - Show this help.                                                
-  -w, --workspace          <slug>  - Target workspace (uses credentials)                            
-  -r, --references, --ref          - Use 'References' instead of 'Fixes' for the Linear issue link
+  -h, --help                          - Show this help.                                                
+  -w, --workspace          <slug>     - Target workspace (uses credentials)                            
+  --profile                <profile>  - Execution profile (agent-safe)                                 
+  -r, --references, --ref             - Use 'References' instead of 'Fixes' for the Linear issue link
 ```
 
 ### commits
@@ -248,8 +257,9 @@ Description:
 
 Options:
 
-  -h, --help               - Show this help.                      
-  -w, --workspace  <slug>  - Target workspace (uses credentials)
+  -h, --help                  - Show this help.                      
+  -w, --workspace  <slug>     - Target workspace (uses credentials)  
+  --profile        <profile>  - Execution profile (agent-safe)
 ```
 
 ### pull-request
@@ -265,13 +275,14 @@ Description:
 
 Options:
 
-  -h, --help                 - Show this help.                                                         
-  -w, --workspace  <slug>    - Target workspace (uses credentials)                                     
-  --base           <branch>  - The branch into which you want your code merged                         
-  --draft                    - Create the pull request as a draft                                      
-  -t, --title      <title>   - Optional title for the pull request (Linear issue ID will be prefixed)  
-  --web                      - Open the pull request in the browser after creating it                  
-  --head           <branch>  - The branch that contains commits for your pull request
+  -h, --help                  - Show this help.                                                         
+  -w, --workspace  <slug>     - Target workspace (uses credentials)                                     
+  --profile        <profile>  - Execution profile (agent-safe)                                          
+  --base           <branch>   - The branch into which you want your code merged                         
+  --draft                     - Create the pull request as a draft                                      
+  -t, --title      <title>    - Optional title for the pull request (Linear issue ID will be prefixed)  
+  --web                       - Open the pull request in the browser after creating it                  
+  --head           <branch>   - The branch that contains commits for your pull request
 ```
 
 ### delete
@@ -287,13 +298,14 @@ Description:
 
 Options:
 
-  -h, --help                 - Show this help.                                             
-  -w, --workspace  <slug>    - Target workspace (uses credentials)                         
-  -y, --yes                  - Skip confirmation prompt                                    
-  --confirm                  - Deprecated alias for --yes                                  
-  --bulk           <ids...>  - Delete multiple issues by identifier (e.g., TC-123 TC-124)  
-  --bulk-file      <file>    - Read issue identifiers from a file (one per line)           
-  --bulk-stdin               - Read issue identifiers from stdin
+  -h, --help                  - Show this help.                                             
+  -w, --workspace  <slug>     - Target workspace (uses credentials)                         
+  --profile        <profile>  - Execution profile (agent-safe)                              
+  -y, --yes                   - Skip confirmation prompt                                    
+  --confirm                   - Deprecated alias for --yes                                  
+  --bulk           <ids...>   - Delete multiple issues by identifier (e.g., TC-123 TC-124)  
+  --bulk-file      <file>     - Read issue identifiers from a file (one per line)           
+  --bulk-stdin                - Read issue identifiers from stdin
 ```
 
 ### create
@@ -311,6 +323,7 @@ Options:
 
   -h, --help                                - Show this help.                                                    
   -w, --workspace            <slug>         - Target workspace (uses credentials)                                
+  --profile                  <profile>      - Execution profile (agent-safe)                                     
   --start                                   - Start the issue after creation                                     
   -a, --assignee             <assignee>     - Assign the issue to 'self' or someone (by username or name)        
   --due-date                 <dueDate>      - Due date of the issue                                              
@@ -355,6 +368,7 @@ Options:
 
   -h, --help                    - Show this help.                                 
   -w, --workspace  <slug>       - Target workspace (uses credentials)             
+  --profile        <profile>    - Execution profile (agent-safe)                  
   --file           <path>       - Path to a JSON file describing the issue batch  
   --team           <team>       - Team key override for the batch file            
   --project        <project>    - Project name override for the batch file        
@@ -383,6 +397,7 @@ Options:
 
   -h, --help                         - Show this help.                                                     
   -w, --workspace     <slug>         - Target workspace (uses credentials)                                 
+  --profile           <profile>      - Execution profile (agent-safe)                                      
   -a, --assignee      <assignee>     - Assign the issue to 'self' or someone (by username or name)         
   --due-date          <dueDate>      - Due date of the issue                                               
   --clear-due-date                   - Clear the due date on the issue                                     
@@ -425,9 +440,10 @@ Description:
 
 Options:
 
-  -h, --help               - Show this help.                      
-  -w, --workspace  <slug>  - Target workspace (uses credentials)  
-  -j, --json               - Output as JSON                       
+  -h, --help                  - Show this help.                      
+  -w, --workspace  <slug>     - Target workspace (uses credentials)  
+  --profile        <profile>  - Execution profile (agent-safe)       
+  -j, --json                  - Output as JSON                       
 
 Examples:
 
@@ -449,10 +465,11 @@ Description:
 
 Options:
 
-  -h, --help               - Show this help.                      
-  -w, --workspace  <slug>  - Target workspace (uses credentials)  
-  -j, --json               - Output as JSON                       
-  --unassign               - Remove the current assignee          
+  -h, --help                  - Show this help.                      
+  -w, --workspace  <slug>     - Target workspace (uses credentials)  
+  --profile        <profile>  - Execution profile (agent-safe)       
+  -j, --json                  - Output as JSON                       
+  --unassign                  - Remove the current assignee          
 
 Examples:
 
@@ -474,9 +491,10 @@ Description:
 
 Options:
 
-  -h, --help               - Show this help.                      
-  -w, --workspace  <slug>  - Target workspace (uses credentials)  
-  -j, --json               - Output as JSON                       
+  -h, --help                  - Show this help.                      
+  -w, --workspace  <slug>     - Target workspace (uses credentials)  
+  --profile        <profile>  - Execution profile (agent-safe)       
+  -j, --json                  - Output as JSON                       
 
 Examples:
 
@@ -500,10 +518,11 @@ Description:
 
 Options:
 
-  -h, --help               - Show this help.                      
-  -w, --workspace  <slug>  - Target workspace (uses credentials)  
-  -j, --json               - Output as JSON                       
-  --clear                  - Clear the estimate                   
+  -h, --help                  - Show this help.                      
+  -w, --workspace  <slug>     - Target workspace (uses credentials)  
+  --profile        <profile>  - Execution profile (agent-safe)       
+  -j, --json                  - Output as JSON                       
+  --clear                     - Clear the estimate                   
 
 Examples:
 
@@ -525,9 +544,10 @@ Description:
 
 Options:
 
-  -h, --help               - Show this help.                      
-  -w, --workspace  <slug>  - Target workspace (uses credentials)  
-  -j, --json               - Output as JSON
+  -h, --help                  - Show this help.                      
+  -w, --workspace  <slug>     - Target workspace (uses credentials)  
+  --profile        <profile>  - Execution profile (agent-safe)       
+  -j, --json                  - Output as JSON
 ```
 
 ### children
@@ -543,9 +563,10 @@ Description:
 
 Options:
 
-  -h, --help               - Show this help.                      
-  -w, --workspace  <slug>  - Target workspace (uses credentials)  
-  -j, --json               - Output as JSON
+  -h, --help                  - Show this help.                      
+  -w, --workspace  <slug>     - Target workspace (uses credentials)  
+  --profile        <profile>  - Execution profile (agent-safe)       
+  -j, --json                  - Output as JSON
 ```
 
 ### label
@@ -561,8 +582,9 @@ Description:
 
 Options:
 
-  -h, --help               - Show this help.                      
-  -w, --workspace  <slug>  - Target workspace (uses credentials)  
+  -h, --help                  - Show this help.                      
+  -w, --workspace  <slug>     - Target workspace (uses credentials)  
+  --profile        <profile>  - Execution profile (agent-safe)       
 
 Commands:
 
@@ -583,8 +605,9 @@ Description:
 
 Options:
 
-  -h, --help               - Show this help.                      
-  -w, --workspace  <slug>  - Target workspace (uses credentials)  
+  -h, --help                  - Show this help.                      
+  -w, --workspace  <slug>     - Target workspace (uses credentials)  
+  --profile        <profile>  - Execution profile (agent-safe)       
 
 Examples:
 
@@ -602,8 +625,9 @@ Description:
 
 Options:
 
-  -h, --help               - Show this help.                      
-  -w, --workspace  <slug>  - Target workspace (uses credentials)  
+  -h, --help                  - Show this help.                      
+  -w, --workspace  <slug>     - Target workspace (uses credentials)  
+  --profile        <profile>  - Execution profile (agent-safe)       
 
 Examples:
 
@@ -623,8 +647,9 @@ Description:
 
 Options:
 
-  -h, --help               - Show this help.                      
-  -w, --workspace  <slug>  - Target workspace (uses credentials)  
+  -h, --help                  - Show this help.                      
+  -w, --workspace  <slug>     - Target workspace (uses credentials)  
+  --profile        <profile>  - Execution profile (agent-safe)       
 
 Commands:
 
@@ -649,6 +674,7 @@ Options:
 
   -h, --help                    - Show this help.                                                 
   -w, --workspace  <slug>       - Target workspace (uses credentials)                             
+  --profile        <profile>    - Execution profile (agent-safe)                                  
   -b, --body       <text>       - Comment body text                                               
   --body-file      <path>       - Read comment body from a file (preferred for markdown content)  
   -p, --parent     <id>         - Parent comment ID for replies                                   
@@ -676,8 +702,9 @@ Description:
 
 Options:
 
-  -h, --help               - Show this help.                      
-  -w, --workspace  <slug>  - Target workspace (uses credentials)
+  -h, --help                  - Show this help.                      
+  -w, --workspace  <slug>     - Target workspace (uses credentials)  
+  --profile        <profile>  - Execution profile (agent-safe)
 ```
 
 ##### update
@@ -693,6 +720,7 @@ Options:
 
   -h, --help                    - Show this help.                                                 
   -w, --workspace  <slug>       - Target workspace (uses credentials)                             
+  --profile        <profile>    - Execution profile (agent-safe)                                  
   -b, --body       <text>       - New comment body text                                           
   --body-file      <path>       - Read comment body from a file (preferred for markdown content)  
   --timeout-ms     <timeoutMs>  - Timeout for write confirmation in milliseconds                  
@@ -713,10 +741,11 @@ Description:
 
 Options:
 
-  -h, --help               - Show this help.                           
-  -w, --workspace  <slug>  - Target workspace (uses credentials)       
-  -j, --json               - Output as JSON                            
-  --no-pager               - Disable automatic paging for long output
+  -h, --help                  - Show this help.                           
+  -w, --workspace  <slug>     - Target workspace (uses credentials)       
+  --profile        <profile>  - Execution profile (agent-safe)            
+  -j, --json                  - Output as JSON                            
+  --no-pager                  - Disable automatic paging for long output
 ```
 
 ### attach
@@ -732,10 +761,11 @@ Description:
 
 Options:
 
-  -h, --help                - Show this help.                              
-  -w, --workspace  <slug>   - Target workspace (uses credentials)          
-  -t, --title      <title>  - Custom title for the attachment              
-  -c, --comment    <body>   - Add a comment body linked to the attachment
+  -h, --help                  - Show this help.                              
+  -w, --workspace  <slug>     - Target workspace (uses credentials)          
+  --profile        <profile>  - Execution profile (agent-safe)               
+  -t, --title      <title>    - Custom title for the attachment              
+  -c, --comment    <body>     - Add a comment body linked to the attachment
 ```
 
 ### relation
@@ -751,8 +781,9 @@ Description:
 
 Options:
 
-  -h, --help               - Show this help.                      
-  -w, --workspace  <slug>  - Target workspace (uses credentials)  
+  -h, --help                  - Show this help.                      
+  -w, --workspace  <slug>     - Target workspace (uses credentials)  
+  --profile        <profile>  - Execution profile (agent-safe)       
 
 Commands:
 
@@ -776,6 +807,7 @@ Options:
 
   -h, --help                    - Show this help.                                    
   -w, --workspace  <slug>       - Target workspace (uses credentials)                
+  --profile        <profile>    - Execution profile (agent-safe)                     
   -j, --json                    - Output as JSON                                     
   --dry-run                     - Preview relation creation without mutating Linear  
   --timeout-ms     <timeoutMs>  - Timeout for write confirmation in milliseconds     
@@ -801,6 +833,7 @@ Options:
 
   -h, --help                    - Show this help.                                    
   -w, --workspace  <slug>       - Target workspace (uses credentials)                
+  --profile        <profile>    - Execution profile (agent-safe)                     
   -j, --json                    - Output as JSON                                     
   --dry-run                     - Preview relation deletion without mutating Linear  
   --timeout-ms     <timeoutMs>  - Timeout for write confirmation in milliseconds
@@ -817,7 +850,8 @@ Description:
 
 Options:
 
-  -h, --help               - Show this help.                      
-  -w, --workspace  <slug>  - Target workspace (uses credentials)  
-  -j, --json               - Output as JSON
+  -h, --help                  - Show this help.                      
+  -w, --workspace  <slug>     - Target workspace (uses credentials)  
+  --profile        <profile>  - Execution profile (agent-safe)       
+  -j, --json                  - Output as JSON
 ```

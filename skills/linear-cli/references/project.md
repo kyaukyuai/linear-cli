@@ -13,8 +13,9 @@ Description:
 
 Options:
 
-  -h, --help               - Show this help.                      
-  -w, --workspace  <slug>  - Target workspace (uses credentials)  
+  -h, --help                  - Show this help.                      
+  -w, --workspace  <slug>     - Target workspace (uses credentials)  
+  --profile        <profile>  - Execution profile (agent-safe)       
 
 Commands:
 
@@ -41,15 +42,16 @@ Description:
 
 Options:
 
-  -h, --help                 - Show this help.                           
-  -w, --workspace  <slug>    - Target workspace (uses credentials)       
-  --team           <team>    - Filter by team key                        
-  --all-teams                - Show projects from all teams              
-  --status         <status>  - Filter by status name                     
-  -w, --web                  - Open in web browser                       
-  -a, --app                  - Open in Linear.app                        
-  -j, --json                 - Output as JSON                            
-  --no-pager                 - Disable automatic paging for long output  
+  -h, --help                  - Show this help.                           
+  -w, --workspace  <slug>     - Target workspace (uses credentials)       
+  --profile        <profile>  - Execution profile (agent-safe)            
+  --team           <team>     - Filter by team key                        
+  --all-teams                 - Show projects from all teams              
+  --status         <status>   - Filter by status name                     
+  -w, --web                   - Open in web browser                       
+  -a, --app                   - Open in Linear.app                        
+  -j, --json                  - Output as JSON                            
+  --no-pager                  - Disable automatic paging for long output  
 
 Examples:
 
@@ -70,11 +72,12 @@ Description:
 
 Options:
 
-  -h, --help               - Show this help.                      
-  -w, --workspace  <slug>  - Target workspace (uses credentials)  
-  -w, --web                - Open in web browser                  
-  -a, --app                - Open in Linear.app                   
-  -j, --json               - Output as JSON                       
+  -h, --help                  - Show this help.                      
+  -w, --workspace  <slug>     - Target workspace (uses credentials)  
+  --profile        <profile>  - Execution profile (agent-safe)       
+  -w, --web                   - Open in web browser                  
+  -a, --app                   - Open in Linear.app                   
+  -j, --json                  - Output as JSON                       
 
 Examples:
 
@@ -97,6 +100,7 @@ Options:
 
   -h, --help                        - Show this help.                                                          
   -w, --workspace    <slug>         - Target workspace (uses credentials)                                      
+  --profile          <profile>      - Execution profile (agent-safe)                                           
   -n, --name         <name>         - Project name (required)                                                  
   -d, --description  <description>  - Project description                                                      
   -t, --team         <team>         - Team key (required, can be repeated for multiple teams)                  
@@ -130,6 +134,7 @@ Options:
 
   -h, --help                        - Show this help.                                                  
   -w, --workspace    <slug>         - Target workspace (uses credentials)                              
+  --profile          <profile>      - Execution profile (agent-safe)                                   
   -n, --name         <name>         - Project name                                                     
   -d, --description  <description>  - Project description                                              
   -s, --status       <status>       - Status (planned, started, paused, completed, canceled, backlog)  
@@ -158,11 +163,12 @@ Description:
 
 Options:
 
-  -h, --help               - Show this help.                                    
-  -w, --workspace  <slug>  - Target workspace (uses credentials)                
-  -y, --yes                - Skip confirmation prompt                           
-  -f, --force              - Deprecated alias for --yes                         
-  --dry-run                - Preview the deletion without mutating the project  
+  -h, --help                  - Show this help.                                    
+  -w, --workspace  <slug>     - Target workspace (uses credentials)                
+  --profile        <profile>  - Execution profile (agent-safe)                     
+  -y, --yes                   - Skip confirmation prompt                           
+  -f, --force                 - Deprecated alias for --yes                         
+  --dry-run                   - Preview the deletion without mutating the project  
 
 Examples:
 
@@ -183,8 +189,9 @@ Description:
 
 Options:
 
-  -h, --help               - Show this help.                      
-  -w, --workspace  <slug>  - Target workspace (uses credentials)  
+  -h, --help                  - Show this help.                      
+  -w, --workspace  <slug>     - Target workspace (uses credentials)  
+  --profile        <profile>  - Execution profile (agent-safe)       
 
 Commands:
 
@@ -205,9 +212,10 @@ Description:
 
 Options:
 
-  -h, --help               - Show this help.                      
-  -w, --workspace  <slug>  - Target workspace (uses credentials)  
-  -j, --json               - Output as JSON                       
+  -h, --help                  - Show this help.                      
+  -w, --workspace  <slug>     - Target workspace (uses credentials)  
+  --profile        <profile>  - Execution profile (agent-safe)       
+  -j, --json                  - Output as JSON                       
 
 Examples:
 
@@ -225,9 +233,10 @@ Description:
 
 Options:
 
-  -h, --help               - Show this help.                      
-  -w, --workspace  <slug>  - Target workspace (uses credentials)  
-  -j, --json               - Output as JSON                       
+  -h, --help                  - Show this help.                      
+  -w, --workspace  <slug>     - Target workspace (uses credentials)  
+  --profile        <profile>  - Execution profile (agent-safe)       
+  -j, --json                  - Output as JSON                       
 
 Examples:
 

@@ -13,8 +13,9 @@ Description:
 
 Options:
 
-  -h, --help               - Show this help.                      
-  -w, --workspace  <slug>  - Target workspace (uses credentials)  
+  -h, --help                  - Show this help.                      
+  -w, --workspace  <slug>     - Target workspace (uses credentials)  
+  --profile        <profile>  - Execution profile (agent-safe)       
 
 Commands:
 
@@ -42,6 +43,7 @@ Options:
 
   -h, --help                  - Show this help.                                        
   -w, --workspace  <slug>     - Target workspace (uses credentials)                    
+  --profile        <profile>  - Execution profile (agent-safe)                         
   --project        <project>  - Filter by project (slug or name)                       
   --issue          <issue>    - Filter by issue (identifier like TC-123)               
   --json                      - Output as JSON                                         
@@ -66,11 +68,12 @@ Description:
 
 Options:
 
-  -h, --help               - Show this help.                        
-  -w, --workspace  <slug>  - Target workspace (uses credentials)    
-  --raw                    - Output raw markdown without rendering  
-  -w, --web                - Open document in browser               
-  --json                   - Output full document as JSON           
+  -h, --help                  - Show this help.                        
+  -w, --workspace  <slug>     - Target workspace (uses credentials)    
+  --profile        <profile>  - Execution profile (agent-safe)         
+  --raw                       - Output raw markdown without rendering  
+  -w, --web                   - Open document in browser               
+  --json                      - Output full document as JSON           
 
 Examples:
 
@@ -92,6 +95,7 @@ Options:
 
   -h, --help                     - Show this help.                           
   -w, --workspace     <slug>     - Target workspace (uses credentials)       
+  --profile           <profile>  - Execution profile (agent-safe)            
   -t, --title         <title>    - Document title (required)                 
   -c, --content       <content>  - Markdown content (inline)                 
   -f, --content-file  <path>     - Read content from file                    
@@ -117,6 +121,7 @@ Options:
 
   -h, --help                     - Show this help.                                   
   -w, --workspace     <slug>     - Target workspace (uses credentials)               
+  --profile           <profile>  - Execution profile (agent-safe)                    
   -t, --title         <title>    - New title for the document                        
   -c, --content       <content>  - New markdown content (inline)                     
   -f, --content-file  <path>     - Read new content from file                        
@@ -138,11 +143,12 @@ Description:
 
 Options:
 
-  -h, --help                 - Show this help.                                     
-  -w, --workspace  <slug>    - Target workspace (uses credentials)                 
-  -y, --yes                  - Skip confirmation prompt                            
-  --bulk           <ids...>  - Delete multiple documents by slug or ID             
-  --bulk-file      <file>    - Read document slugs/IDs from a file (one per line)  
-  --bulk-stdin               - Read document slugs/IDs from stdin                  
-  --dry-run                  - Preview the deletion without mutating documents
+  -h, --help                  - Show this help.                                     
+  -w, --workspace  <slug>     - Target workspace (uses credentials)                 
+  --profile        <profile>  - Execution profile (agent-safe)                      
+  -y, --yes                   - Skip confirmation prompt                            
+  --bulk           <ids...>   - Delete multiple documents by slug or ID             
+  --bulk-file      <file>     - Read document slugs/IDs from a file (one per line)  
+  --bulk-stdin                - Read document slugs/IDs from stdin                  
+  --dry-run                   - Preview the deletion without mutating documents
 ```
