@@ -21,6 +21,10 @@ import { readTextFromStdin } from "../../utils/stdin.ts"
 import { resolveWriteTimeoutMs } from "../../utils/write_timeout.ts"
 import { getGraphQLClient } from "../../utils/graphql.ts"
 import { reconcileWriteTimeoutError } from "../../utils/write_reconciliation.ts"
+import {
+  buildOperationReceipt,
+  withOperationReceipt,
+} from "../../utils/operation_receipt.ts"
 import { createIssueComment } from "./issue-comment-utils.ts"
 import { buildIssueCommentPayload } from "./issue-comment-payload.ts"
 import { buildIssueCommentDryRunPayload } from "./issue-dry-run-payload.ts"
@@ -299,13 +303,25 @@ export const commentAddCommand = new Command()
       }
 
       if (json) {
+        const commentPayload = buildIssueCommentPayload(comment, {
+          id: resolvedIssueId,
+          identifier: resolvedIdentifier,
+          title: null,
+          url: null,
+        })
+        const receipt = buildOperationReceipt({
+          operationId: "issue.comment.add",
+          resource: "comment",
+          action: "add",
+          resolvedRefs: {
+            issueIdentifier: resolvedIdentifier,
+            parentCommentId: parent ?? null,
+          },
+          appliedChanges: ["comment"],
+          nextSafeAction: "read_before_retry",
+        })
         console.log(JSON.stringify(
-          buildIssueCommentPayload(comment, {
-            id: resolvedIssueId,
-            identifier: resolvedIdentifier,
-            title: null,
-            url: null,
-          }),
+          withOperationReceipt(commentPayload, receipt),
           null,
           2,
         ))

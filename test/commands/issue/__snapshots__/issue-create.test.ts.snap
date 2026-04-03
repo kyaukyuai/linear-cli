@@ -83,6 +83,29 @@ stdout:
   "state": {
     "name": "In Progress",
     "color": "#f87462"
+  },
+  "receipt": {
+    "operationId": "issue.create",
+    "resource": "issue",
+    "action": "create",
+    "resolvedRefs": {
+      "issueIdentifier": "ENG-321",
+      "teamKey": "ENG",
+      "assignee": "alice.bot",
+      "parentIssueIdentifier": "ENG-220",
+      "state": "In Progress"
+    },
+    "appliedChanges": [
+      "title",
+      "description",
+      "assignee",
+      "dueDate",
+      "parent",
+      "state"
+    ],
+    "noOp": false,
+    "partialSuccess": false,
+    "nextSafeAction": "read_before_retry"
   }
 }
 '

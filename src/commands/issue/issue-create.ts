@@ -40,6 +40,10 @@ import {
   resolveWriteTimeoutMs,
   withWriteTimeout,
 } from "../../utils/write_timeout.ts"
+import {
+  buildOperationReceipt,
+  withOperationReceipt,
+} from "../../utils/operation_receipt.ts"
 import { buildIssueCreateDryRunPayload } from "./issue-dry-run-payload.ts"
 import { buildIssueWritePayload } from "./issue-write-payload.ts"
 import { maybeHandleIssueDescriptionParseError } from "./issue-description-parse.ts"
@@ -1017,7 +1021,41 @@ export const createCommand = new Command()
         }
         const issueId = issue.id
         if (json) {
-          console.log(JSON.stringify(buildIssueWritePayload(issue), null, 2))
+          const issuePayload = buildIssueWritePayload(issue)
+          const receipt = buildOperationReceipt({
+            operationId: "issue.create",
+            resource: "issue",
+            action: "create",
+            resolvedRefs: {
+              issueIdentifier: issue.identifier,
+              teamKey: issue.team.key,
+              assignee: issuePayload.assignee?.name ?? null,
+              parentIssueIdentifier: issuePayload.parent?.identifier ?? null,
+              state: issuePayload.state?.name ?? null,
+            },
+            appliedChanges: [
+              "title",
+              ...(finalDescription != null ? ["description"] : []),
+              ...(issuePayload.assignee != null ? ["assignee"] : []),
+              ...(issuePayload.dueDate != null ? ["dueDate"] : []),
+              ...(issuePayload.parent != null ? ["parent"] : []),
+              ...(priority != null ? ["priority"] : []),
+              ...(estimate != null ? ["estimate"] : []),
+              ...(labelIds.length > 0 ? ["labels"] : []),
+              ...((projectId || parentData?.projectId) != null
+                ? ["project"]
+                : []),
+              ...(projectMilestoneId != null ? ["milestone"] : []),
+              ...(cycleId != null ? ["cycle"] : []),
+              ...(issuePayload.state != null ? ["state"] : []),
+            ],
+            nextSafeAction: "read_before_retry",
+          })
+          console.log(JSON.stringify(
+            withOperationReceipt(issuePayload, receipt),
+            null,
+            2,
+          ))
           return
         }
 

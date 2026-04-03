@@ -43,6 +43,34 @@ import {
   type IssueUpdateReconciliationInput,
   reconcileIssueUpdateTimeout,
 } from "./issue-reconciliation.ts"
+import {
+  buildOperationReceipt,
+  withOperationReceipt,
+} from "../../utils/operation_receipt.ts"
+
+function getIssueUpdateAppliedChanges(
+  input: IssueUpdateReconciliationInput,
+  comment: string | undefined,
+): string[] {
+  const changes: string[] = []
+
+  if (input.title != null) changes.push("title")
+  if (input.assigneeId != null) changes.push("assignee")
+  if ("dueDate" in input) changes.push("dueDate")
+  if (input.parentId != null) changes.push("parent")
+  if (input.priority != null) changes.push("priority")
+  if (input.estimate != null) changes.push("estimate")
+  if (input.description != null) changes.push("description")
+  if (input.labelIds != null) changes.push("labels")
+  if (input.teamId != null) changes.push("team")
+  if (input.projectId != null) changes.push("project")
+  if (input.projectMilestoneId != null) changes.push("milestone")
+  if (input.cycleId != null) changes.push("cycle")
+  if (input.stateId != null) changes.push("state")
+  if (comment != null) changes.push("comment")
+
+  return changes
+}
 
 export const updateCommand = new Command()
   .name("update")
@@ -480,6 +508,20 @@ export const updateCommand = new Command()
           throw new CliError("Issue update failed - no issue returned")
         }
         const issuePayload = buildIssueWritePayload(issue)
+        const receipt = buildOperationReceipt({
+          operationId: "issue.update",
+          resource: "issue",
+          action: "update",
+          resolvedRefs: {
+            issueIdentifier: issue.identifier,
+            teamKey,
+            assignee: issuePayload.assignee?.name ?? null,
+            parentIssueIdentifier: issuePayload.parent?.identifier ?? null,
+            state: issuePayload.state?.name ?? null,
+          },
+          appliedChanges: getIssueUpdateAppliedChanges(input, comment),
+          nextSafeAction: comment != null ? "read_before_retry" : "continue",
+        })
 
         let createdComment = null
         if (comment != null) {
@@ -571,15 +613,18 @@ export const updateCommand = new Command()
 
         if (json) {
           console.log(JSON.stringify(
-            createdComment == null ? issuePayload : {
-              ...issuePayload,
-              comment: buildIssueCommentPayload(createdComment, {
-                id: issue.id,
-                identifier: issue.identifier,
-                title: issue.title,
-                url: issue.url,
-              }),
-            },
+            withOperationReceipt(
+              createdComment == null ? issuePayload : {
+                ...issuePayload,
+                comment: buildIssueCommentPayload(createdComment, {
+                  id: issue.id,
+                  identifier: issue.identifier,
+                  title: issue.title,
+                  url: issue.url,
+                }),
+              },
+              receipt,
+            ),
             null,
             2,
           ))

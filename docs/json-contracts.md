@@ -418,6 +418,8 @@ Write confirmation timeouts use `error.type = "timeout_error"` and should includ
 
 High-value write commands honor `LINEAR_WRITE_TIMEOUT_MS` and accept `--timeout-ms` for per-command overrides. Today that includes issue create/update/comment/relation/create-batch flows and notification read/archive.
 
+High-value write commands that return object-shaped success payloads may also add a top-level `receipt` field. This field is additive and is intended for agents that want a shared way to interpret successful writes without special-casing each command.
+
 ## Common Sub-Shapes
 
 ### `stateRef`
@@ -489,6 +491,27 @@ Used by `issue relation list --json`.
       "color": "#bec2c8"
     }
   }
+}
+```
+
+### `operationReceipt`
+
+Used by successful high-value write commands that expose machine-readable receipts.
+
+```json
+{
+  "operationId": "issue.update",
+  "resource": "issue",
+  "action": "update",
+  "resolvedRefs": {
+    "issueIdentifier": "ENG-123",
+    "teamKey": "ENG",
+    "state": "In Progress"
+  },
+  "appliedChanges": ["state", "comment"],
+  "noOp": false,
+  "partialSuccess": false,
+  "nextSafeAction": "read_before_retry"
 }
 ```
 
@@ -590,7 +613,8 @@ Top-level shape:
   "dueDate": "2026-04-01",
   "assignee": null,
   "parent": null,
-  "state": null
+  "state": null,
+  "receipt": { "...": "operationReceipt" }
 }
 ```
 
@@ -646,7 +670,8 @@ Top-level shape:
     "id": "issue-456",
     "identifier": "ENG-456"
   },
-  "relationId": "relation-789"
+  "relationId": "relation-789",
+  "receipt": { "...": "operationReceipt" }
 }
 ```
 
@@ -703,7 +728,8 @@ Top-level shape:
   "user": {
     "name": "alice.bot",
     "displayName": "Alice Bot"
-  }
+  },
+  "receipt": { "...": "operationReceipt" }
 }
 ```
 

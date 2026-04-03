@@ -25,6 +25,10 @@ import {
   withWriteTimeout,
 } from "../../utils/write_timeout.ts"
 import { reconcileWriteTimeoutError } from "../../utils/write_reconciliation.ts"
+import {
+  buildOperationReceipt,
+  withOperationReceipt,
+} from "../../utils/operation_receipt.ts"
 import { buildIssueRelationDryRunPayload } from "./issue-dry-run-payload.ts"
 
 const RELATION_TYPES = ["blocks", "blocked-by", "related", "duplicate"] as const
@@ -171,6 +175,27 @@ function buildRelationMutationPayload(
     relatedIssue,
     relationId,
   }
+}
+
+function buildRelationReceipt(
+  payload: RelationMutationPayload,
+  action: "add" | "delete",
+) {
+  return buildOperationReceipt({
+    operationId: `issue.relation.${action}`,
+    resource: "issue_relation",
+    action,
+    resolvedRefs: {
+      issueIdentifier: payload.issue.identifier,
+      relatedIssueIdentifier: payload.relatedIssue.identifier,
+      relationType: payload.relationType,
+    },
+    appliedChanges: payload.noOp
+      ? []
+      : [action === "add" ? "relation" : "relationRemoval"],
+    noOp: payload.noOp,
+    nextSafeAction: "continue",
+  })
 }
 
 async function findExistingRelation(
@@ -370,7 +395,11 @@ const addRelationCommand = new Command()
         }
 
         if (json) {
-          console.log(JSON.stringify(payload, null, 2))
+          console.log(JSON.stringify(
+            withOperationReceipt(payload, buildRelationReceipt(payload, "add")),
+            null,
+            2,
+          ))
           return
         }
 
@@ -532,7 +561,14 @@ const deleteRelationCommand = new Command()
         }
 
         if (json) {
-          console.log(JSON.stringify(payload, null, 2))
+          console.log(JSON.stringify(
+            withOperationReceipt(
+              payload,
+              buildRelationReceipt(payload, "delete"),
+            ),
+            null,
+            2,
+          ))
           return
         }
 
