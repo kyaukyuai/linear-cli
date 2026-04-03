@@ -29,7 +29,7 @@ function renderCapabilitiesSummary(
   const lines = [
     `linear-cli ${payload.cli.version}`,
     `capabilities schema latest: v2`,
-    `json compatibility default: v1`,
+    `json compatibility default: v2`,
     `automation contract latest: ${payload.contractVersions.automation.latest}`,
     `dry-run preview contract: ${payload.contractVersions.dryRunPreview.latest}`,
     `stdin policy: ${payload.contractVersions.stdinPolicy.latest}`,
@@ -91,7 +91,7 @@ function renderCapabilitiesSummary(
 function parseCompatibilityVersion(
   compat: string | undefined,
 ): CapabilitiesCompatibilityVersion {
-  const normalized = compat ?? "v1"
+  const normalized = compat ?? "v2"
 
   if (normalized === "v1" || normalized === "v2") {
     return normalized
@@ -119,7 +119,11 @@ export const capabilitiesCommand = new Command()
     "linear capabilities",
   )
   .example(
-    "Request the richer v2 metadata shape",
+    "Request the legacy v1 compatibility shape",
+    "linear capabilities --compat v1",
+  )
+  .example(
+    "Pin the richer v2 metadata shape explicitly",
     "linear capabilities --compat v2",
   )
   .example(
@@ -148,7 +152,7 @@ export const capabilitiesCommand = new Command()
           "--compat requires machine-readable output.",
           {
             suggestion:
-              "Use `linear capabilities --compat v2` or omit --compat when requesting --text.",
+              "Use `linear capabilities --compat v1`, `linear capabilities --compat v2`, or omit --compat when requesting --text.",
           },
         )
       }

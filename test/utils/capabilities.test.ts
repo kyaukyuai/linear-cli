@@ -1,10 +1,10 @@
 import { assert, assertEquals } from "@std/assert"
 import { buildCapabilitiesPayload } from "../../src/utils/capabilities.ts"
 
-Deno.test("buildCapabilitiesPayload defaults to the v1 compatibility shape", () => {
+Deno.test("buildCapabilitiesPayload defaults to the v2 compatibility shape", () => {
   const payload = buildCapabilitiesPayload("2.11.0")
 
-  assertEquals(payload.schemaVersion, "v1")
+  assertEquals(payload.schemaVersion, "v2")
   assertEquals(payload.cli, {
     name: "linear-cli",
     binary: "linear",
@@ -58,15 +58,8 @@ Deno.test("buildCapabilitiesPayload defaults to the v1 compatibility shape", () 
     entry.path === "linear issue update"
   )
   assert(issueUpdate != null)
-  assertEquals("executionProfiles" in payload, false)
-  assertEquals("schema" in issueUpdate, false)
-  assertEquals("output" in issueUpdate, false)
-})
-
-Deno.test("buildCapabilitiesPayload v2 includes issue update capability traits", () => {
-  const payload = buildCapabilitiesPayload("2.11.0", "v2")
   assertEquals(payload.compatibility, {
-    defaultSchemaVersion: "v1",
+    defaultSchemaVersion: "v2",
     latestSchemaVersion: "v2",
     supportedSchemaVersions: ["v1", "v2"],
   })
@@ -104,11 +97,28 @@ Deno.test("buildCapabilitiesPayload v2 includes issue update capability traits",
         nonGoals: [
           "Does not revert default-JSON command surfaces; use --text for human-readable output.",
           "Does not auto-confirm destructive actions when --interactive is omitted.",
-          "Does not change startup-safe capabilities compatibility defaults.",
+          "Does not change explicit legacy capabilities compatibility requests.",
         ],
       },
     ],
   })
+})
+
+Deno.test("buildCapabilitiesPayload v1 preserves the legacy trimmed shape", () => {
+  const payload = buildCapabilitiesPayload("2.11.0", "v1")
+  const issueUpdate = payload.commands.find((entry) =>
+    entry.path === "linear issue update"
+  )
+
+  assertEquals(payload.schemaVersion, "v1")
+  assert(issueUpdate != null)
+  assertEquals("executionProfiles" in payload, false)
+  assertEquals("schema" in issueUpdate, false)
+  assertEquals("output" in issueUpdate, false)
+})
+
+Deno.test("buildCapabilitiesPayload v2 includes issue update capability traits", () => {
+  const payload = buildCapabilitiesPayload("2.11.0", "v2")
   const command = payload.commands.find((entry) =>
     entry.path === "linear issue update"
   )
@@ -391,8 +401,8 @@ Deno.test("buildCapabilitiesPayload v2 exposes constrained values where practica
     {
       source: "flag",
       name: "--compat",
-      value: "v1",
-      description: "Defaults to the startup-safe capabilities schema shape.",
+      value: "v2",
+      description: "Defaults to the richer v2 capabilities schema shape.",
     },
   ])
   assertEquals(capabilitiesCommand.schema.constraints, [
@@ -405,11 +415,16 @@ Deno.test("buildCapabilitiesPayload v2 exposes constrained values where practica
   ])
   assertEquals(capabilitiesCommand.schema.examples, [
     {
-      description: "Read the startup-safe capabilities registry.",
+      description: "Read the default schema-like capabilities registry.",
       argv: ["linear", "capabilities", "--json"],
     },
     {
-      description: "Opt into richer schema metadata for advanced agents.",
+      description:
+        "Request the legacy v1 compatibility shape for older consumers.",
+      argv: ["linear", "capabilities", "--json", "--compat", "v1"],
+    },
+    {
+      description: "Pin the richer v2 schema metadata explicitly.",
       argv: ["linear", "capabilities", "--json", "--compat", "v2"],
     },
   ])

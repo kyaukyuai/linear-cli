@@ -9,7 +9,7 @@
 ```bash
 # Discover agent-facing capabilities
 linear capabilities
-linear capabilities --compat v2
+linear capabilities --compat v1
 
 # Get help for any command
 linear <command> --help
@@ -20,7 +20,7 @@ linear <command> <subcommand> --help
 
 Use the CLI in this order when possible:
 
-1. Discover command traits with `linear capabilities`, then opt into `--compat v2` when richer schema metadata is needed
+1. Discover command traits with `linear capabilities`, and only use `--compat v1` when an older consumer still needs the legacy trimmed shape
 2. Read state with default-JSON core surfaces or `--json`
 3. Preview writes with `--dry-run --json`
 4. Apply writes with `--json`

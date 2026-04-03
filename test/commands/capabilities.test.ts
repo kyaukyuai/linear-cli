@@ -37,10 +37,10 @@ await cliffySnapshotTest({
 })
 
 await cliffySnapshotTest({
-  name: "Capabilities Command - JSON Output v2 Compatibility",
+  name: "Capabilities Command - JSON Output v1 Compatibility",
   meta: import.meta,
   colors: false,
-  args: ["--compat", "v2"],
+  args: ["--compat", "v1"],
   denoArgs,
   async fn() {
     await capabilitiesCommand.parse()
