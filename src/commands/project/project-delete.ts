@@ -41,22 +41,22 @@ export const deleteCommand = new Command()
     "linear project delete auth-refresh --yes",
   )
   .action(async ({ interactive, yes, force, dryRun }, projectId) => {
-    if (!shouldSkipConfirmation({ yes, force }) && !dryRun) {
-      ensureInteractiveConfirmationAvailable({ interactive, yes, force })
-      const confirmed = await Confirm.prompt({
-        message: `Are you sure you want to delete project ${projectId}?`,
-        default: false,
-      })
-
-      if (!confirmed) {
-        console.log("Deletion canceled")
-        return
-      }
-    }
-
     let spinner: { start: () => void; stop: () => void } | null = null
 
     try {
+      if (!shouldSkipConfirmation({ yes, force }) && !dryRun) {
+        ensureInteractiveConfirmationAvailable({ interactive, yes, force })
+        const confirmed = await Confirm.prompt({
+          message: `Are you sure you want to delete project ${projectId}?`,
+          default: false,
+        })
+
+        if (!confirmed) {
+          console.log("Deletion canceled")
+          return
+        }
+      }
+
       const resolvedId = await resolveProjectId(projectId)
 
       if (dryRun) {
