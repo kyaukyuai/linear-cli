@@ -41,6 +41,7 @@ export const deleteCommand = new Command()
   .name("delete")
   .description("Delete a webhook")
   .arguments("<webhookId:string>")
+  .option("-i, --interactive", "Enable interactive confirmation")
   .option("-y, --yes", "Skip confirmation prompt")
   .option("-j, --json", "Output as JSON")
   .option("--dry-run", "Preview the deletion without mutating the webhook")
@@ -52,7 +53,7 @@ export const deleteCommand = new Command()
     "Delete a webhook without prompting",
     "linear webhook delete webhook_123 --yes --json",
   )
-  .action(async ({ yes, json, dryRun }, webhookId) => {
+  .action(async ({ interactive, yes, json, dryRun }, webhookId) => {
     try {
       const client = getGraphQLClient()
       const webhook = await withSpinner(
@@ -92,7 +93,7 @@ export const deleteCommand = new Command()
       }
 
       if (!shouldSkipConfirmation({ yes })) {
-        ensureInteractiveConfirmationAvailable({ yes })
+        ensureInteractiveConfirmationAvailable({ interactive, yes })
 
         const confirmed = await Confirm.prompt({
           message: `Are you sure you want to delete webhook "${

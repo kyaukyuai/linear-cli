@@ -7,12 +7,14 @@ import {
   setDefaultWorkspace,
 } from "../../credentials.ts"
 import { AuthError, handleError, NotFoundError } from "../../utils/errors.ts"
+import { ensureInteractiveInputAvailable } from "../../utils/interactive.ts"
 
 export const defaultCommand = new Command()
   .name("default")
   .description("Set the default workspace")
   .arguments("[workspace:string]")
-  .action(async (_options, workspace?: string) => {
+  .option("-i, --interactive", "Enable interactive workspace selection")
+  .action(async ({ interactive }, workspace?: string) => {
     try {
       const workspaces = getWorkspaces()
 
@@ -31,6 +33,11 @@ export const defaultCommand = new Command()
 
       // If no workspace specified, prompt to select one
       if (!workspace) {
+        ensureInteractiveInputAvailable(
+          { interactive },
+          "Workspace is required unless --interactive is used",
+          `Pass a workspace name directly, or use --interactive to choose from: ${workspaces.join(", ")}`,
+        )
         workspace = await Select.prompt({
           message: "Select default workspace",
           options: workspaces.map((ws) => ({

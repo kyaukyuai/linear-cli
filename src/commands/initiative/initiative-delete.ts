@@ -29,6 +29,7 @@ export const deleteCommand = new Command()
   .name("delete")
   .description("Permanently delete a Linear initiative")
   .arguments("[initiativeId:string]")
+  .option("-i, --interactive", "Enable interactive confirmation")
   .option("-y, --yes", "Skip confirmation prompt")
   .option("--force", "Deprecated alias for --yes")
   .option(
@@ -42,7 +43,7 @@ export const deleteCommand = new Command()
   .option("--bulk-stdin", "Read initiative IDs from stdin")
   .action(
     async (
-      { yes, force, bulk, bulkFile, bulkStdin },
+      { interactive, yes, force, bulk, bulkFile, bulkStdin },
       initiativeId,
     ) => {
       const client = getGraphQLClient()
@@ -53,6 +54,7 @@ export const deleteCommand = new Command()
           bulk,
           bulkFile,
           bulkStdin,
+          interactive,
           yes,
           force,
         })
@@ -66,7 +68,11 @@ export const deleteCommand = new Command()
         )
       }
 
-      await handleSingleDelete(client, initiativeId, { yes, force })
+      await handleSingleDelete(client, initiativeId, {
+        interactive,
+        yes,
+        force,
+      })
     },
   )
 
@@ -74,9 +80,9 @@ async function handleSingleDelete(
   // deno-lint-ignore no-explicit-any
   client: any,
   initiativeId: string,
-  options: { yes?: boolean; force?: boolean },
+  options: { interactive?: boolean; yes?: boolean; force?: boolean },
 ): Promise<void> {
-  const { yes, force } = options
+  const { interactive, yes, force } = options
 
   // Resolve initiative ID
   const resolvedId = await resolveInitiativeId(client, initiativeId)
@@ -125,6 +131,7 @@ async function handleSingleDelete(
   // Confirm deletion with typed confirmation for safety
   if (!shouldSkipConfirmation({ yes, force })) {
     ensureInteractiveConfirmationAvailable({
+      interactive,
       yes,
       force,
     }, "Interactive confirmation required.")
@@ -186,6 +193,7 @@ async function handleBulkDelete(
   // deno-lint-ignore no-explicit-any
   client: any,
   options: {
+    interactive?: boolean
     bulk?: string[]
     bulkFile?: string
     bulkStdin?: boolean
@@ -193,7 +201,7 @@ async function handleBulkDelete(
     force?: boolean
   },
 ): Promise<void> {
-  const { yes, force } = options
+  const { interactive, yes, force } = options
 
   // Collect all IDs
   const ids = await collectBulkIds({
@@ -212,6 +220,7 @@ async function handleBulkDelete(
   // Confirm bulk operation
   if (!shouldSkipConfirmation({ yes, force })) {
     ensureInteractiveConfirmationAvailable({
+      interactive,
       yes,
       force,
     }, "Interactive confirmation required.")

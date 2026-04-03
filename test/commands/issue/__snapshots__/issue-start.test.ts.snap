@@ -16,6 +16,7 @@ Options:
   -U, --unassigned                - Show only unassigned issues                                     
   -f, --from-ref       <fromRef>  - Git ref to create new branch from                               
   -b, --branch         <branch>   - Custom branch name to use instead of the issue identifier       
+  -i, --interactive               - Enable interactive issue selection                              
   --dry-run                       - Preview the branch and state transition without making changes  
 
 Examples:
@@ -38,4 +39,13 @@ stdout:
 "
 stderr:
 ""
+`;
+
+snapshot[`Issue Start Command - Requires Explicit Interactive Selection 1`] = `
+stdout:
+""
+stderr:
+"✗ Failed to start issue: Issue ID is required unless --interactive is used
+  Pass an issue ID like \`linear issue start ENG-123\`, or use --interactive to pick from a list.
+"
 `;

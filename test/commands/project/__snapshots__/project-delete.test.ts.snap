@@ -11,10 +11,11 @@ Description:
 
 Options:
 
-  -h, --help   - Show this help.                                    
-  -y, --yes    - Skip confirmation prompt                           
-  -f, --force  - Deprecated alias for --yes                         
-  --dry-run    - Preview the deletion without mutating the project  
+  -h, --help         - Show this help.                                    
+  -i, --interactive  - Enable interactive confirmation                    
+  -y, --yes          - Skip confirmation prompt                           
+  -f, --force        - Deprecated alias for --yes                         
+  --dry-run          - Preview the deletion without mutating the project  
 
 Examples:
 
@@ -50,4 +51,22 @@ Resolved ID: 550e8400-e29b-41d4-a716-446655440099
 "
 stderr:
 ""
+`;
+
+snapshot[`Project Delete Command - Requires Explicit Confirmation Mode 1`] = `
+stdout:
+""
+stderr:
+"error: Uncaught (in promise) ValidationError: Interactive confirmation required
+    throw new ValidationError(message, {
+          ^
+    at ensureInteractiveConfirmationAvailable (file:///Users/kyaukyuai/src/github.com/kyaukyuai/linear-cli/src/utils/confirmation.ts:30:11)
+    at Command.actionHandler (file:///Users/kyaukyuai/src/github.com/kyaukyuai/linear-cli/src/commands/project/project-delete.ts:45:7)
+    at Command.execute (https://jsr.io/@cliffy/command/1.0.0-rc.8/command.ts:1940:18)
+    at async Command.parseCommand (https://jsr.io/@cliffy/command/1.0.0-rc.8/command.ts:1772:14)
+    at async Object.fn (file:///Users/kyaukyuai/src/github.com/kyaukyuai/linear-cli/test/commands/project/project-delete.test.ts:123:5)
+    at async runTest (https://jsr.io/@cliffy/testing/1.0.0-rc.8/snapshot.ts:263:5)
+    at async snapshotTest (https://jsr.io/@cliffy/testing/1.0.0-rc.8/snapshot.ts:112:5)
+    at async file:///Users/kyaukyuai/src/github.com/kyaukyuai/linear-cli/test/commands/project/project-delete.test.ts:115:1
+"
 `;

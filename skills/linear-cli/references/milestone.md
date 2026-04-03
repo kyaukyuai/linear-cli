@@ -148,12 +148,13 @@ Description:
 
 Options:
 
-  -h, --help                  - Show this help.                                      
-  -w, --workspace  <slug>     - Target workspace (uses credentials)                  
-  --profile        <profile>  - Execution profile (agent-safe)                       
-  -y, --yes                   - Skip confirmation prompt                             
-  -f, --force                 - Deprecated alias for --yes                           
-  --dry-run                   - Preview the deletion without mutating the milestone  
+  -h, --help                    - Show this help.                                      
+  -w, --workspace    <slug>     - Target workspace (uses credentials)                  
+  --profile          <profile>  - Execution profile (agent-safe)                       
+  -i, --interactive             - Enable interactive confirmation                      
+  -y, --yes                     - Skip confirmation prompt                             
+  -f, --force                   - Deprecated alias for --yes                           
+  --dry-run                     - Preview the deletion without mutating the milestone  
 
 Examples:
 

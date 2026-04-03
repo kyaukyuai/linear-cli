@@ -18,6 +18,8 @@ When using this CLI from an agent, prefer this order:
 4. Apply writes with `--json`
 5. Inspect exit codes and `error.details` instead of parsing styled terminal text
 
+Prompt-driven human/debug flows are explicit. When a command supports prompts or editor entry, pass `--interactive`; otherwise missing required inputs fail fast.
+
 Recommended supporting docs:
 
 - [../../docs/agent-first.md](../../docs/agent-first.md)

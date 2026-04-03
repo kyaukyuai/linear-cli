@@ -3,6 +3,7 @@ import { Input, Select } from "@cliffy/prompt"
 import { gql } from "../../__codegen__/gql.ts"
 import { getGraphQLClient } from "../../utils/graphql.ts"
 import { getEditor, openEditor } from "../../utils/editor.ts"
+import { ensureInteractiveInputAvailable } from "../../utils/interactive.ts"
 import { resolveProjectId } from "../../utils/linear.ts"
 import { shouldShowSpinner } from "../../utils/hyperlink.ts"
 import {
@@ -58,15 +59,12 @@ export const createCommand = new Command()
         // Resolve project ID
         const resolvedProjectId = await resolveProjectId(projectId)
 
-        // Determine if we should use interactive mode
-        let useInteractive = interactive && Deno.stdout.isTerminal()
-
-        // If no flags provided and is TTY, enter interactive mode
-        const noFlagsProvided = !body && !bodyFile && !health
-        if (
-          noFlagsProvided && Deno.stdout.isTerminal() && Deno.stdin.isTerminal()
-        ) {
-          useInteractive = true
+        const useInteractive = interactive === true
+        if (useInteractive) {
+          ensureInteractiveInputAvailable(
+            { interactive },
+            "Interactive project update creation requested",
+          )
         }
 
         // Interactive mode
@@ -119,13 +117,6 @@ export const createCommand = new Command()
           const stdinContent = await readTextFromStdin()
           if (stdinContent) {
             finalBody = stdinContent
-          }
-        } else if (Deno.stdout.isTerminal()) {
-          // No content provided, open editor
-          console.log("Opening editor for update content...")
-          finalBody = await openEditor()
-          if (!finalBody) {
-            console.log("No content entered.")
           }
         }
 

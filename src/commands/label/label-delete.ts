@@ -5,6 +5,7 @@ import {
   ensureInteractiveConfirmationAvailable,
   shouldSkipConfirmation,
 } from "../../utils/confirmation.ts"
+import { ensureInteractiveInputAvailable } from "../../utils/interactive.ts"
 import { getGraphQLClient } from "../../utils/graphql.ts"
 import { getTeamKey } from "../../utils/linear.ts"
 import { shouldShowSpinner } from "../../utils/hyperlink.ts"
@@ -12,7 +13,6 @@ import {
   CliError,
   handleError,
   NotFoundError,
-  ValidationError,
 } from "../../utils/errors.ts"
 
 const DeleteIssueLabel = gql(`
@@ -69,6 +69,7 @@ async function resolveLabelId(
   client: any,
   nameOrId: string,
   teamKey?: string,
+  interactive?: boolean,
 ): Promise<Label | undefined> {
   // Try as UUID first
   if (
@@ -118,12 +119,11 @@ async function resolveLabelId(
 
   // If multiple labels with same name exist, let user choose
   if (labels.length > 1) {
-    if (!Deno.stdin.isTerminal()) {
-      throw new ValidationError(
-        `Multiple labels named "${nameOrId}" found`,
-        { suggestion: "Use --team to disambiguate." },
-      )
-    }
+    ensureInteractiveInputAvailable(
+      { interactive },
+      `Multiple labels named "${nameOrId}" found`,
+      "Use --team to disambiguate, or pass --interactive to choose in a terminal.",
+    )
     const options = labels.map((l) => ({
       name: `${l.name} (${l.team?.key || "Workspace"}) - ${l.color}`,
       value: l.id,
@@ -145,13 +145,14 @@ export const deleteCommand = new Command()
   .name("delete")
   .description("Delete an issue label")
   .arguments("<nameOrId:string>")
+  .option("-i, --interactive", "Enable interactive selection and confirmation")
   .option(
     "-t, --team <teamKey:string>",
     "Team key to disambiguate labels with same name",
   )
   .option("-y, --yes", "Skip confirmation prompt")
   .option("-f, --force", "Deprecated alias for --yes")
-  .action(async ({ team: teamKey, yes, force }, nameOrId) => {
+  .action(async ({ interactive, team: teamKey, yes, force }, nameOrId) => {
     try {
       const client = getGraphQLClient()
 
@@ -159,7 +160,12 @@ export const deleteCommand = new Command()
       const effectiveTeamKey = teamKey || getTeamKey()
 
       // Resolve label
-      const label = await resolveLabelId(client, nameOrId, effectiveTeamKey)
+      const label = await resolveLabelId(
+        client,
+        nameOrId,
+        effectiveTeamKey,
+        interactive,
+      )
 
       if (!label) {
         const suggestion = effectiveTeamKey
@@ -172,7 +178,7 @@ export const deleteCommand = new Command()
 
       // Confirmation prompt unless a bypass flag is used
       if (!shouldSkipConfirmation({ yes, force })) {
-        ensureInteractiveConfirmationAvailable({ yes, force })
+        ensureInteractiveConfirmationAvailable({ interactive, yes, force })
         const confirmed = await Confirm.prompt({
           message: `Are you sure you want to delete label "${labelDisplay}"?`,
           default: false,

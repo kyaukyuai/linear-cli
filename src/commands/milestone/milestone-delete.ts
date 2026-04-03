@@ -23,6 +23,7 @@ export const deleteCommand = new Command()
   .name("delete")
   .description("Delete a project milestone")
   .arguments("<id:string>")
+  .option("-i, --interactive", "Enable interactive confirmation")
   .option("-y, --yes", "Skip confirmation prompt")
   .option("-f, --force", "Deprecated alias for --yes")
   .option("--dry-run", "Preview the deletion without mutating the milestone")
@@ -34,9 +35,9 @@ export const deleteCommand = new Command()
     "Delete a milestone without prompting",
     "linear milestone delete milestone-123 --yes",
   )
-  .action(async ({ yes, force, dryRun }, id) => {
+  .action(async ({ interactive, yes, force, dryRun }, id) => {
     if (!shouldSkipConfirmation({ yes, force }) && !dryRun) {
-      ensureInteractiveConfirmationAvailable({ yes, force })
+      ensureInteractiveConfirmationAvailable({ interactive, yes, force })
       const confirmed = await Confirm.prompt({
         message: `Are you sure you want to delete milestone ${id}?`,
         default: false,

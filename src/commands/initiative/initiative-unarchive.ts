@@ -13,9 +13,10 @@ export const unarchiveCommand = new Command()
   .name("unarchive")
   .description("Unarchive a Linear initiative")
   .arguments("<initiativeId:string>")
+  .option("-i, --interactive", "Enable interactive confirmation")
   .option("-y, --yes", "Skip confirmation prompt")
   .option("--force", "Deprecated alias for --yes")
-  .action(async ({ yes, force }, initiativeId) => {
+  .action(async ({ interactive, yes, force }, initiativeId) => {
     const client = getGraphQLClient()
 
     // Resolve initiative ID
@@ -62,6 +63,7 @@ export const unarchiveCommand = new Command()
     // Confirm unarchive
     if (!shouldSkipConfirmation({ yes, force })) {
       ensureInteractiveConfirmationAvailable({
+        interactive,
         yes,
         force,
       }, "Interactive confirmation required.")

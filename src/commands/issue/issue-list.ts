@@ -18,7 +18,6 @@ import {
   getTeamIdByKey,
   requireTeamKey,
   resolveIssueInternalId,
-  selectOption,
 } from "../../utils/linear.ts"
 import { openTeamAssigneeView } from "../../utils/actions.ts"
 import { pipeToUserPager, shouldUsePager } from "../../utils/pager.ts"
@@ -262,14 +261,14 @@ export const listCommand = new Command()
             if (Object.keys(projectOptions).length === 0) {
               throw new NotFoundError("Project", project)
             }
-            if (!Deno.stdin.isTerminal()) {
-              throw new ValidationError(
-                `Project "${project}" not found. Similar projects: ${
+            throw new ValidationError(
+              `Project "${project}" not found`,
+              {
+                suggestion: `Similar projects: ${
                   Object.values(projectOptions).join(", ")
                 }`,
-              )
-            }
-            projectId = await selectOption("Project", project, projectOptions)
+              },
+            )
           }
         }
 

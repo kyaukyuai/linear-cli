@@ -31,6 +31,7 @@ export const deleteCommand = new Command()
   .description("Delete a document (moves to trash)")
   .alias("d")
   .arguments("[documentId:string]")
+  .option("-i, --interactive", "Enable interactive confirmation")
   .option("-y, --yes", "Skip confirmation prompt")
   .option(
     "--bulk <ids...:string>",
@@ -44,7 +45,7 @@ export const deleteCommand = new Command()
   .option("--dry-run", "Preview the deletion without mutating documents")
   .action(
     async (
-      { yes, bulk, bulkFile, bulkStdin, dryRun },
+      { interactive, yes, bulk, bulkFile, bulkStdin, dryRun },
       documentId,
     ) => {
       try {
@@ -56,6 +57,7 @@ export const deleteCommand = new Command()
             bulk,
             bulkFile,
             bulkStdin,
+            interactive,
             yes,
             dryRun,
           })
@@ -69,7 +71,11 @@ export const deleteCommand = new Command()
           })
         }
 
-        await handleSingleDelete(client, documentId, { yes, dryRun })
+        await handleSingleDelete(client, documentId, {
+          interactive,
+          yes,
+          dryRun,
+        })
       } catch (error) {
         handleError(error, "Failed to delete document")
       }
@@ -80,9 +86,9 @@ async function handleSingleDelete(
   // deno-lint-ignore no-explicit-any
   client: any,
   documentId: string,
-  options: { yes?: boolean; dryRun?: boolean },
+  options: { interactive?: boolean; yes?: boolean; dryRun?: boolean },
 ): Promise<void> {
-  const { yes, dryRun } = options
+  const { interactive, yes, dryRun } = options
 
   // Get document details for confirmation message
   const detailsQuery = gql(`
@@ -126,7 +132,7 @@ async function handleSingleDelete(
 
   // Confirm deletion
   if (!shouldSkipConfirmation({ yes })) {
-    ensureInteractiveConfirmationAvailable({ yes })
+    ensureInteractiveConfirmationAvailable({ interactive, yes })
     const confirmed = await Confirm.prompt({
       message: `Are you sure you want to delete "${document.title}"?`,
       default: false,
@@ -160,6 +166,7 @@ async function handleBulkDelete(
   // deno-lint-ignore no-explicit-any
   client: any,
   options: {
+    interactive?: boolean
     bulk?: string[]
     bulkFile?: string
     bulkStdin?: boolean
@@ -167,7 +174,7 @@ async function handleBulkDelete(
     dryRun?: boolean
   },
 ): Promise<void> {
-  const { yes, dryRun } = options
+  const { interactive, yes, dryRun } = options
 
   // Collect all IDs
   const ids = await collectBulkIds({
@@ -204,7 +211,7 @@ async function handleBulkDelete(
 
   // Confirm bulk operation
   if (!shouldSkipConfirmation({ yes })) {
-    ensureInteractiveConfirmationAvailable({ yes })
+    ensureInteractiveConfirmationAvailable({ interactive, yes })
     const confirmed = await Confirm.prompt({
       message: `Delete ${ids.length} document(s)?`,
       default: false,

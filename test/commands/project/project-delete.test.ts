@@ -111,3 +111,15 @@ await cliffySnapshotTest({
     await deleteCommand.parse()
   },
 })
+
+await cliffySnapshotTest({
+  name: "Project Delete Command - Requires Explicit Confirmation Mode",
+  meta: import.meta,
+  colors: false,
+  canFail: true,
+  args: ["550e8400-e29b-41d4-a716-446655440099"],
+  denoArgs: commonDenoArgs,
+  async fn() {
+    await deleteCommand.parse()
+  },
+})

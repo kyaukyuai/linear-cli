@@ -172,6 +172,7 @@ Options:
   -U, --unassigned                - Show only unassigned issues                                     
   -f, --from-ref       <fromRef>  - Git ref to create new branch from                               
   -b, --branch         <branch>   - Custom branch name to use instead of the issue identifier       
+  -i, --interactive               - Enable interactive issue selection                              
   --dry-run                       - Preview the branch and state transition without making changes  
 
 Examples:
@@ -302,14 +303,15 @@ Description:
 
 Options:
 
-  -h, --help                  - Show this help.                                             
-  -w, --workspace  <slug>     - Target workspace (uses credentials)                         
-  --profile        <profile>  - Execution profile (agent-safe)                              
-  -y, --yes                   - Skip confirmation prompt                                    
-  --confirm                   - Deprecated alias for --yes                                  
-  --bulk           <ids...>   - Delete multiple issues by identifier (e.g., TC-123 TC-124)  
-  --bulk-file      <file>     - Read issue identifiers from a file (one per line)           
-  --bulk-stdin                - Read issue identifiers from stdin
+  -h, --help                    - Show this help.                                             
+  -w, --workspace    <slug>     - Target workspace (uses credentials)                         
+  --profile          <profile>  - Execution profile (agent-safe)                              
+  -i, --interactive             - Enable interactive confirmation                             
+  -y, --yes                     - Skip confirmation prompt                                    
+  --confirm                     - Deprecated alias for --yes                                  
+  --bulk             <ids...>   - Delete multiple issues by identifier (e.g., TC-123 TC-124)  
+  --bulk-file        <file>     - Read issue identifiers from a file (one per line)           
+  --bulk-stdin                  - Read issue identifiers from stdin
 ```
 
 ### create
@@ -325,31 +327,32 @@ Description:
 
 Options:
 
-  -h, --help                                - Show this help.                                                    
-  -w, --workspace            <slug>         - Target workspace (uses credentials)                                
-  --profile                  <profile>      - Execution profile (agent-safe)                                     
-  --start                                   - Start the issue after creation                                     
-  -a, --assignee             <assignee>     - Assign the issue to 'self' or someone (by username or name)        
-  --due-date                 <dueDate>      - Due date of the issue                                              
-  --parent                   <parent>       - Parent issue (if any) as a team_number code                        
-  -p, --priority             <priority>     - Priority of the issue (1-4, descending priority)                   
-  --estimate                 <estimate>     - Points estimate of the issue                                       
-  -d, --description          <description>  - Description of the issue (prefer --description-file for markdown)  
-  --description-file         <path>         - Read description from a file (preferred for markdown content)      
-  -l, --label                <label>        - Issue label associated with the issue. May be repeated.            
-  --team                     <team>         - Team associated with the issue (if not your default team)          
-  --project                  <project>      - Name or slug ID of the project with the issue                      
-  -s, --state                <state>        - Workflow state for the issue (by name or type)                     
-  --milestone                <milestone>    - Name of the project milestone                                      
-  --cycle                    <cycle>        - Cycle name, number, or 'active'                                    
-  -j, --json                                - Force machine-readable JSON output                                 
-  --text                                    - Output human-readable text                                         
-  --dry-run                                 - Preview the created issue without creating it                      
-  --timeout-ms               <timeoutMs>    - Timeout for write confirmation in milliseconds                     
-  --no-pager                                - Accepted for compatibility; issue create does not use a pager      
-  --no-use-default-template                 - Do not use default template for the issue                          
-  --no-interactive                          - Disable interactive prompts                                        
-  -t, --title                <title>        - Title of the issue                                                 
+  -h, --help                                - Show this help.                                                         
+  -w, --workspace            <slug>         - Target workspace (uses credentials)                                     
+  --profile                  <profile>      - Execution profile (agent-safe)                                          
+  --start                                   - Start the issue after creation                                          
+  -a, --assignee             <assignee>     - Assign the issue to 'self' or someone (by username or name)             
+  --due-date                 <dueDate>      - Due date of the issue                                                   
+  --parent                   <parent>       - Parent issue (if any) as a team_number code                             
+  -p, --priority             <priority>     - Priority of the issue (1-4, descending priority)                        
+  --estimate                 <estimate>     - Points estimate of the issue                                            
+  -d, --description          <description>  - Description of the issue (prefer --description-file for markdown)       
+  --description-file         <path>         - Read description from a file (preferred for markdown content)           
+  -l, --label                <label>        - Issue label associated with the issue. May be repeated.                 
+  --team                     <team>         - Team associated with the issue (if not your default team)               
+  --project                  <project>      - Name or slug ID of the project with the issue                           
+  -s, --state                <state>        - Workflow state for the issue (by name or type)                          
+  --milestone                <milestone>    - Name of the project milestone                                           
+  --cycle                    <cycle>        - Cycle name, number, or 'active'                                         
+  -j, --json                                - Force machine-readable JSON output                                      
+  --text                                    - Output human-readable text                                              
+  --dry-run                                 - Preview the created issue without creating it                           
+  --timeout-ms               <timeoutMs>    - Timeout for write confirmation in milliseconds                          
+  --no-pager                                - Accepted for compatibility; issue create does not use a pager           
+  --no-use-default-template                 - Do not use default template for the issue                               
+  -i, --interactive                         - Enable interactive prompts and editor flow                              
+  --no-interactive                          - Accepted for compatibility; issue create is non-interactive by default  
+  -t, --title                <title>        - Title of the issue                                                      
 
 Examples:
 
@@ -680,16 +683,17 @@ Description:
 
 Options:
 
-  -h, --help                    - Show this help.                                                 
-  -w, --workspace  <slug>       - Target workspace (uses credentials)                             
-  --profile        <profile>    - Execution profile (agent-safe)                                  
-  -b, --body       <text>       - Comment body text                                               
-  --body-file      <path>       - Read comment body from a file (preferred for markdown content)  
-  -p, --parent     <id>         - Parent comment ID for replies                                   
-  -a, --attach     <filepath>   - Attach a file to the comment (can be used multiple times)       
-  -j, --json                    - Output as JSON                                                  
-  --dry-run                     - Preview the comment without creating it                         
-  --timeout-ms     <timeoutMs>  - Timeout for write confirmation in milliseconds                  
+  -h, --help                      - Show this help.                                                 
+  -w, --workspace    <slug>       - Target workspace (uses credentials)                             
+  --profile          <profile>    - Execution profile (agent-safe)                                  
+  -b, --body         <text>       - Comment body text                                               
+  --body-file        <path>       - Read comment body from a file (preferred for markdown content)  
+  -p, --parent       <id>         - Parent comment ID for replies                                   
+  -a, --attach       <filepath>   - Attach a file to the comment (can be used multiple times)       
+  -i, --interactive               - Enable interactive body prompts                                 
+  -j, --json                      - Output as JSON                                                  
+  --dry-run                       - Preview the comment without creating it                         
+  --timeout-ms       <timeoutMs>  - Timeout for write confirmation in milliseconds                  
 
 Examples:
 
@@ -726,12 +730,13 @@ Description:
 
 Options:
 
-  -h, --help                    - Show this help.                                                 
-  -w, --workspace  <slug>       - Target workspace (uses credentials)                             
-  --profile        <profile>    - Execution profile (agent-safe)                                  
-  -b, --body       <text>       - New comment body text                                           
-  --body-file      <path>       - Read comment body from a file (preferred for markdown content)  
-  --timeout-ms     <timeoutMs>  - Timeout for write confirmation in milliseconds                  
+  -h, --help                      - Show this help.                                                 
+  -w, --workspace    <slug>       - Target workspace (uses credentials)                             
+  --profile          <profile>    - Execution profile (agent-safe)                                  
+  -b, --body         <text>       - New comment body text                                           
+  --body-file        <path>       - Read comment body from a file (preferred for markdown content)  
+  --timeout-ms       <timeoutMs>  - Timeout for write confirmation in milliseconds                  
+  -i, --interactive               - Enable interactive body prompts                                 
 
 Examples:
 

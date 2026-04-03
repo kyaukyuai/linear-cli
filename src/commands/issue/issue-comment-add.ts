@@ -16,6 +16,7 @@ import {
   handleAutomationContractParseError,
 } from "../../utils/json_output.ts"
 import { emitDryRunOutput } from "../../utils/dry_run.ts"
+import { ensureInteractiveInputAvailable } from "../../utils/interactive.ts"
 import { isWriteTimeoutError, ValidationError } from "../../utils/errors.ts"
 import { readTextFromStdin } from "../../utils/stdin.ts"
 import { resolveWriteTimeoutMs } from "../../utils/write_timeout.ts"
@@ -50,6 +51,7 @@ export const commentAddCommand = new Command()
     "Attach a file to the comment (can be used multiple times)",
     { collect: true },
   )
+  .option("-i, --interactive", "Enable interactive body prompts")
   .option("-j, --json", "Output as JSON")
   .option("--dry-run", "Preview the comment without creating it")
   .option(
@@ -76,7 +78,16 @@ export const commentAddCommand = new Command()
     handleAutomationContractParseError(error, cmd, "Failed to add comment")
   })
   .action(async (options, issueId, bodyArg) => {
-    const { body, bodyFile, parent, attach, json, dryRun, timeoutMs } = options
+    const {
+      body,
+      bodyFile,
+      parent,
+      attach,
+      interactive,
+      json,
+      dryRun,
+      timeoutMs,
+    } = options
 
     try {
       const writeTimeoutMs = resolveWriteTimeoutMs(timeoutMs)
@@ -161,15 +172,6 @@ export const commentAddCommand = new Command()
 
       // If no body provided and no attachments, prompt for it
       if (!commentBody && uploadedFiles.length === 0) {
-        if (!Deno.stdin.isTerminal()) {
-          throw new ValidationError(
-            "Comment body cannot be empty",
-            {
-              suggestion:
-                "Provide --body, --body-file, or pipe the comment body on stdin.",
-            },
-          )
-        }
         if (json || dryRun) {
           throw new ValidationError(
             "Comment body cannot be empty",
@@ -180,6 +182,11 @@ export const commentAddCommand = new Command()
             },
           )
         }
+        ensureInteractiveInputAvailable(
+          { interactive },
+          "Comment body cannot be empty",
+          "Provide --body, --body-file, or pipe the comment body on stdin. Use --interactive to enter it in a terminal.",
+        )
         commentBody = await Input.prompt({
           message: "Comment body",
           default: "",

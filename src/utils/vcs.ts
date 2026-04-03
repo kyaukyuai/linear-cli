@@ -9,6 +9,7 @@ import {
 import { getCurrentBranch } from "./git.ts"
 import { Select } from "@cliffy/prompt"
 import { CliError } from "./errors.ts"
+import { ensureInteractiveInputAvailable } from "./interactive.ts"
 
 export type VcsType = "git" | "jj"
 
@@ -88,6 +89,7 @@ export async function startVcsWork(
   issueId: string,
   branchName: string,
   gitSourceRef?: string,
+  interactive = false,
 ): Promise<void> {
   const vcs = getVcs()
 
@@ -95,6 +97,11 @@ export async function startVcsWork(
     case "git": {
       // Check if branch exists
       if (await gitBranchExists(branchName)) {
+        ensureInteractiveInputAvailable(
+          { interactive },
+          `Branch ${branchName} already exists`,
+          "Use --branch <name> to choose a different branch, switch manually, or pass --interactive to resolve it in a terminal.",
+        )
         const answer = await Select.prompt({
           message:
             `Branch ${branchName} already exists. What would you like to do?`,

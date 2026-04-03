@@ -132,3 +132,20 @@ await snapshotTest({
     }
   },
 })
+
+await snapshotTest({
+  name: "Issue Start Command - Requires Explicit Interactive Selection",
+  meta: import.meta,
+  colors: false,
+  canFail: true,
+  args: [],
+  denoArgs: commonDenoArgs,
+  async fn() {
+    Deno.env.set("LINEAR_TEAM_ID", "ENG")
+    try {
+      await startCommand.parse()
+    } finally {
+      Deno.env.delete("LINEAR_TEAM_ID")
+    }
+  },
+})

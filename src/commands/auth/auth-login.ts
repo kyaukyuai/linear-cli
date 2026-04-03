@@ -17,6 +17,7 @@ import {
   ValidationError,
 } from "../../utils/errors.ts"
 import { createGraphQLClient } from "../../utils/graphql.ts"
+import { ensureInteractiveInputAvailable } from "../../utils/interactive.ts"
 
 const viewerQuery = gql(`
   query AuthLoginViewer {
@@ -35,6 +36,7 @@ export const loginCommand = new Command()
   .name("login")
   .description("Add a workspace credential")
   .option("-k, --key <key:string>", "API key (prompted if not provided)")
+  .option("-i, --interactive", "Enable interactive prompts")
   .option(
     "--plaintext",
     "Store API key in credentials file instead of system keyring",
@@ -44,6 +46,11 @@ export const loginCommand = new Command()
       let apiKey = options.key?.trim()
 
       if (!apiKey) {
+        ensureInteractiveInputAvailable(
+          { interactive: options.interactive },
+          "API key is required unless --interactive is used",
+          "Pass --key <token>, or use --interactive to enter the API key in a terminal.",
+        )
         apiKey = (await Secret.prompt({
           message: "Enter your Linear API key",
           hint: "Create one at https://linear.app/settings/account/security",
@@ -110,12 +117,16 @@ export const loginCommand = new Command()
         // Prompt to migrate inline credentials to keyring
         if (isUsingInlineFormat()) {
           const keyringOk = await keyring.isAvailable()
-          if (keyringOk) {
+          if (keyringOk && options.interactive) {
             console.log()
             console.log(
               yellow(
                 "Your credentials are stored as plaintext in the credentials file.",
               ),
+            )
+            ensureInteractiveInputAvailable(
+              { interactive: options.interactive },
+              "Interactive credential migration prompt required",
             )
             const migrate = await Confirm.prompt({
               message:

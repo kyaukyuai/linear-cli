@@ -30,6 +30,7 @@ export const deleteCommand = new Command()
   .description("Delete an issue")
   .alias("d")
   .arguments("[issueId:string]")
+  .option("-i, --interactive", "Enable interactive confirmation")
   .option("-y, --yes", "Skip confirmation prompt")
   .option("--confirm", "Deprecated alias for --yes")
   .option(
@@ -43,7 +44,7 @@ export const deleteCommand = new Command()
   .option("--bulk-stdin", "Read issue identifiers from stdin")
   .action(
     async (
-      { yes, confirm, bulk, bulkFile, bulkStdin },
+      { interactive, yes, confirm, bulk, bulkFile, bulkStdin },
       issueId,
     ) => {
       try {
@@ -55,6 +56,7 @@ export const deleteCommand = new Command()
             bulk,
             bulkFile,
             bulkStdin,
+            interactive,
             yes,
             confirm,
           })
@@ -69,7 +71,11 @@ export const deleteCommand = new Command()
           )
         }
 
-        await handleSingleDelete(client, issueId, { yes, confirm })
+        await handleSingleDelete(client, issueId, {
+          interactive,
+          yes,
+          confirm,
+        })
       } catch (error) {
         handleError(error, "Failed to delete issue")
       }
@@ -80,9 +86,9 @@ async function handleSingleDelete(
   // deno-lint-ignore no-explicit-any
   client: any,
   issueId: string,
-  options: { yes?: boolean; confirm?: boolean },
+  options: { interactive?: boolean; yes?: boolean; confirm?: boolean },
 ): Promise<void> {
-  const { yes, confirm } = options
+  const { interactive, yes, confirm } = options
 
   // First resolve the issue ID to get the issue details
   const resolvedId = await getIssueIdentifier(issueId)
@@ -108,6 +114,7 @@ async function handleSingleDelete(
   // Show confirmation prompt unless a bypass flag is used
   if (!shouldSkipConfirmation({ yes, confirm })) {
     ensureInteractiveConfirmationAvailable({
+      interactive,
       yes,
       confirm,
     })
@@ -148,6 +155,7 @@ async function handleBulkDelete(
   // deno-lint-ignore no-explicit-any
   client: any,
   options: {
+    interactive?: boolean
     bulk?: string[]
     bulkFile?: string
     bulkStdin?: boolean
@@ -155,7 +163,7 @@ async function handleBulkDelete(
     confirm?: boolean
   },
 ): Promise<void> {
-  const { yes, confirm } = options
+  const { interactive, yes, confirm } = options
 
   // Collect all IDs
   const ids = await collectBulkIds({
@@ -173,6 +181,7 @@ async function handleBulkDelete(
   // Confirm bulk operation
   if (!shouldSkipConfirmation({ yes, confirm })) {
     ensureInteractiveConfirmationAvailable({
+      interactive,
       yes,
       confirm,
     })

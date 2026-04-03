@@ -45,3 +45,5 @@ Use the CLI in this order when possible:
 3. Preview writes with `--dry-run --json`
 4. Apply writes with `--json`
 5. Inspect exit codes and `error.details` for retries or reconciliation
+
+Use `--interactive` only for human/debug prompt flows. Agent-controlled runs should pass explicit flags, stdin, or file inputs.

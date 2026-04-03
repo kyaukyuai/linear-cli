@@ -6,6 +6,7 @@ import { getGraphQLClient } from "../utils/graphql.ts"
 import { getDefaultWorkspace, getWorkspaces } from "../credentials.ts"
 import { getCliWorkspace, getOption, setCliWorkspace } from "../config.ts"
 import { AuthError, handleError, NotFoundError } from "../utils/errors.ts"
+import { ensureInteractiveInputAvailable } from "../utils/interactive.ts"
 
 const configQuery = gql(`
   query Config {
@@ -27,8 +28,14 @@ const configQuery = gql(`
 export const configCommand = new Command()
   .name("config")
   .description("Interactively generate .linear.toml configuration")
-  .action(async () => {
+  .option("-i, --interactive", "Enable interactive configuration prompts")
+  .action(async ({ interactive }) => {
     try {
+      ensureInteractiveInputAvailable(
+        { interactive },
+        "Config generation is interactive only",
+        "Pass --interactive to generate configuration in a terminal.",
+      )
       console.log(`
 ██      ██ ███    ██ ███████  █████  ██████      ██████ ██      ██
 ██      ██ ████   ██ ██      ██   ██ ██   ██    ██      ██      ██

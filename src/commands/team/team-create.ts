@@ -3,6 +3,7 @@ import { Input, Select } from "@cliffy/prompt"
 import { gql } from "../../__codegen__/gql.ts"
 import { getGraphQLClient } from "../../utils/graphql.ts"
 import { shouldShowSpinner } from "../../utils/hyperlink.ts"
+import { ensureInteractiveInputAvailable } from "../../utils/interactive.ts"
 import { CliError, handleError, ValidationError } from "../../utils/errors.ts"
 
 export const createCommand = new Command()
@@ -10,32 +11,38 @@ export const createCommand = new Command()
   .description("Create a linear team")
   .option("-n, --name <name:string>", "Name of the team")
   .option("-d, --description <description:string>", "Description of the team")
+  .option("-i, --interactive", "Enable interactive prompts")
   .option(
     "-k, --key <key:string>",
     "Team key (if not provided, will be generated from name)",
   )
   .option("--private", "Make the team private")
-  .option("--no-interactive", "Disable interactive prompts")
+  .option(
+    "--no-interactive",
+    "Accepted for compatibility; team create is non-interactive by default",
+  )
   .action(
     async ({
       name,
       description,
+      interactive,
       key,
       private: isPrivate,
-      interactive,
     }) => {
-      interactive = interactive && Deno.stdout.isTerminal()
-
-      // If no flags are provided, use interactive mode
-      const noFlagsProvided = !name && !description && !key &&
-        isPrivate === undefined
+      const useInteractive = interactive === true
+      if (useInteractive) {
+        ensureInteractiveInputAvailable(
+          { interactive },
+          "Interactive team creation requested",
+        )
+      }
 
       const { Spinner } = await import("@std/cli/unstable-spinner")
-      const showSpinner = shouldShowSpinner() && interactive
+      const showSpinner = shouldShowSpinner() && useInteractive
       const spinner = showSpinner ? new Spinner() : null
 
       try {
-        if (noFlagsProvided && interactive) {
+        if (useInteractive) {
           console.log("Creating a new team...\n")
 
           // Prompt for name
@@ -108,10 +115,9 @@ export const createCommand = new Command()
         // Fallback to flag-based mode
         if (!name) {
           throw new ValidationError(
-            "Team name is required when not using interactive mode",
+            "Team name is required unless --interactive is used",
             {
-              suggestion:
-                "Use --name or run without any flags for interactive mode.",
+              suggestion: "Use --name, or pass --interactive.",
             },
           )
         }

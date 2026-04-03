@@ -4,6 +4,7 @@ import { gql } from "../../__codegen__/gql.ts"
 import { emitDryRunOutput } from "../../utils/dry_run.ts"
 import { getGraphQLClient } from "../../utils/graphql.ts"
 import { getEditor, openEditor } from "../../utils/editor.ts"
+import { ensureInteractiveInputAvailable } from "../../utils/interactive.ts"
 import {
   CliError,
   handleError,
@@ -37,15 +38,12 @@ export const createCommand = new Command()
       dryRun,
     }) => {
       try {
-        // Determine if we should use interactive mode
-        let useInteractive = interactive && Deno.stdout.isTerminal()
-
-        // If no title and not interactive, check if we should enter interactive mode
-        const noFlagsProvided = !title && !content && !contentFile &&
-          !project &&
-          !issue && !icon
-        if (noFlagsProvided && Deno.stdout.isTerminal()) {
-          useInteractive = true
+        const useInteractive = interactive === true
+        if (useInteractive) {
+          ensureInteractiveInputAvailable(
+            { interactive },
+            "Interactive document creation requested",
+          )
         }
 
         // Interactive mode
@@ -84,7 +82,7 @@ export const createCommand = new Command()
         // Non-interactive mode requires title
         if (!title) {
           throw new ValidationError("Title is required", {
-            suggestion: "Use --title or run with -i for interactive mode.",
+            suggestion: "Use --title or pass --interactive.",
           })
         }
 
@@ -114,15 +112,6 @@ export const createCommand = new Command()
           const stdinContent = await readTextFromStdin()
           if (stdinContent) {
             finalContent = stdinContent
-          }
-        } else if (Deno.stdout.isTerminal()) {
-          // No content provided, open editor
-          console.log("Opening editor for document content...")
-          finalContent = await openEditor()
-          if (!finalContent) {
-            console.log(
-              "No content entered. Creating document without content.",
-            )
           }
         }
 

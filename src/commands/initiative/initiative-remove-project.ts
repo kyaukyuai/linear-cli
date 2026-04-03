@@ -195,11 +195,12 @@ export const removeProjectCommand = new Command()
   .name("remove-project")
   .description("Unlink a project from an initiative")
   .arguments("<initiative:string> <project:string>")
+  .option("-i, --interactive", "Enable interactive confirmation")
   .option("-y, --yes", "Skip confirmation prompt")
   .option("--force", "Deprecated alias for --yes")
   .action(
     async (
-      { yes, force },
+      { interactive, yes, force },
       initiativeArg,
       projectArg,
     ) => {
@@ -248,6 +249,7 @@ export const removeProjectCommand = new Command()
       // Confirm removal
       if (!shouldSkipConfirmation({ yes, force })) {
         ensureInteractiveConfirmationAvailable({
+          interactive,
           yes,
           force,
         }, "Interactive confirmation required.")

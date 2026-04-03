@@ -2,6 +2,7 @@ import { Command } from "@cliffy/command"
 import { Input } from "@cliffy/prompt"
 import { gql } from "../../__codegen__/gql.ts"
 import { getGraphQLClient } from "../../utils/graphql.ts"
+import { ensureInteractiveInputAvailable } from "../../utils/interactive.ts"
 import { CliError, handleError, ValidationError } from "../../utils/errors.ts"
 import { readTextFromStdin } from "../../utils/stdin.ts"
 import {
@@ -23,12 +24,13 @@ export const commentUpdateCommand = new Command()
     "--timeout-ms <timeoutMs:number>",
     "Timeout for write confirmation in milliseconds",
   )
+  .option("-i, --interactive", "Enable interactive body prompts")
   .example(
     "Update a comment from stdin",
     'printf "Updated comment\\n" | linear issue comment update comment_123',
   )
   .action(async (options, commentId) => {
-    const { body, bodyFile, timeoutMs } = options
+    const { body, bodyFile, timeoutMs, interactive } = options
 
     try {
       const writeTimeoutMs = resolveWriteTimeoutMs(timeoutMs)
@@ -65,12 +67,11 @@ export const commentUpdateCommand = new Command()
 
       // If no body provided, fetch existing comment to show as default
       if (!newBody) {
-        if (!Deno.stdin.isTerminal()) {
-          throw new ValidationError("Comment body cannot be empty", {
-            suggestion:
-              "Provide --body, --body-file, or pipe the updated comment body on stdin.",
-          })
-        }
+        ensureInteractiveInputAvailable(
+          { interactive },
+          "Comment body cannot be empty",
+          "Provide --body, --body-file, or pipe the updated comment body on stdin. Use --interactive to edit it in a terminal.",
+        )
         const getCommentQuery = gql(`
           query GetComment($id: String!) {
             comment(id: $id) {

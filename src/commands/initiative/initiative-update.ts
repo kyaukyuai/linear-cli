@@ -2,9 +2,15 @@ import { Command } from "@cliffy/command"
 import { Input, Select } from "@cliffy/prompt"
 import { gql } from "../../__codegen__/gql.ts"
 import { getGraphQLClient } from "../../utils/graphql.ts"
+import { ensureInteractiveInputAvailable } from "../../utils/interactive.ts"
 import { lookupUserId } from "../../utils/linear.ts"
 import { shouldShowSpinner } from "../../utils/hyperlink.ts"
-import { CliError, handleError, NotFoundError } from "../../utils/errors.ts"
+import {
+  CliError,
+  handleError,
+  NotFoundError,
+  ValidationError,
+} from "../../utils/errors.ts"
 import { resolveInitiativeId } from "./initiative-resolve.ts"
 
 // Initiative status options from Linear API
@@ -104,7 +110,13 @@ export const updateCommand = new Command()
       const initiative = initiativeDetails.initiative
 
       // Interactive mode
-      const isInteractive = interactive && Deno.stdout.isTerminal()
+      const isInteractive = interactive === true
+      if (isInteractive) {
+        ensureInteractiveInputAvailable(
+          { interactive },
+          "Interactive initiative update requested",
+        )
+      }
       const noFlagsProvided = !name &&
         !description &&
         !status &&
@@ -188,8 +200,10 @@ export const updateCommand = new Command()
 
       // Check if any updates to make
       if (Object.keys(input).length === 0) {
-        console.log("No changes specified")
-        return
+        throw new ValidationError("No changes specified", {
+          suggestion:
+            "Pass one or more update flags, or use --interactive to edit the initiative in a terminal.",
+        })
       }
 
       const { Spinner } = await import("@std/cli/unstable-spinner")
