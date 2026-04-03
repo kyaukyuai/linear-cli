@@ -32,7 +32,7 @@ stdout:
 "linear-cli 2.13.0
 capabilities schema latest: v2
 json compatibility default: v1
-automation contract latest: v5
+automation contract latest: v6
 dry-run preview contract: v1
 stdin policy: v1
 
@@ -100,6 +100,16 @@ agent-facing commands
   linear project view :: json=v2 dry-run=no inputs=flags success=automation_contract confirm=none idempotency=read_only
   linear project-label list :: json=v4 dry-run=no inputs=flags success=automation_contract confirm=none idempotency=read_only
   linear project-update list :: json=v5 dry-run=no inputs=flags success=automation_contract confirm=none idempotency=read_only
+  linear resolve issue :: json=v6 dry-run=no inputs=flags success=automation_contract confirm=none idempotency=read_only
+    note: Returns canonical issue metadata and unresolved reasons without mutating Linear.
+  linear resolve label :: json=v6 dry-run=no inputs=flags success=automation_contract confirm=none idempotency=read_only
+    note: Team-scoped label resolution falls back to the configured current team when --team is omitted.
+  linear resolve team :: json=v6 dry-run=no inputs=flags success=automation_contract confirm=none idempotency=read_only
+    note: If omitted, the team reference resolves from the configured current team.
+  linear resolve user :: json=v6 dry-run=no inputs=flags success=automation_contract confirm=none idempotency=read_only
+    note: Returns the runtime-selected user match and any ambiguous candidates without mutating Linear.
+  linear resolve workflow-state :: json=v6 dry-run=no inputs=flags success=automation_contract confirm=none idempotency=read_only
+    note: Workflow state resolution requires team context and reports ambiguous matches as candidates.
   linear team list :: json=v4 dry-run=no inputs=flags success=automation_contract confirm=none idempotency=read_only
   linear team members :: json=v1 dry-run=no inputs=flags success=automation_contract confirm=none idempotency=read_only
   linear team view :: json=v4 dry-run=no inputs=flags success=automation_contract confirm=none idempotency=read_only
@@ -128,13 +138,14 @@ stdout:
   },
   "contractVersions": {
     "automation": {
-      "latest": "v5",
+      "latest": "v6",
       "supported": [
         "v1",
         "v2",
         "v3",
         "v4",
-        "v5"
+        "v5",
+        "v6"
       ]
     },
     "dryRunPreview": {
@@ -151,7 +162,7 @@ stdout:
     }
   },
   "automationTier": {
-    "latestVersion": "v5",
+    "latestVersion": "v6",
     "byVersion": {
       "v1": [
         "linear issue children",
@@ -200,6 +211,13 @@ stdout:
         "linear initiative view",
         "linear initiative-update list",
         "linear project-update list"
+      ],
+      "v6": [
+        "linear resolve issue",
+        "linear resolve label",
+        "linear resolve team",
+        "linear resolve user",
+        "linear resolve workflow-state"
       ]
     },
     "allCommands": [
@@ -240,7 +258,12 @@ stdout:
       "linear initiative list",
       "linear initiative view",
       "linear initiative-update list",
-      "linear project-update list"
+      "linear project-update list",
+      "linear resolve issue",
+      "linear resolve label",
+      "linear resolve team",
+      "linear resolve user",
+      "linear resolve workflow-state"
     ]
   },
   "commands": [
@@ -1211,6 +1234,111 @@ stdout:
       "notes": null
     },
     {
+      "path": "linear resolve issue",
+      "summary": "Resolve an issue reference",
+      "json": {
+        "supported": true,
+        "contractVersion": "v6"
+      },
+      "dryRun": {
+        "supported": false,
+        "contractVersion": null
+      },
+      "stdin": {
+        "mode": "none"
+      },
+      "confirmationBypass": null,
+      "idempotency": {
+        "category": "read_only",
+        "notes": null
+      },
+      "notes": "Returns canonical issue metadata and unresolved reasons without mutating Linear."
+    },
+    {
+      "path": "linear resolve label",
+      "summary": "Resolve an issue label reference",
+      "json": {
+        "supported": true,
+        "contractVersion": "v6"
+      },
+      "dryRun": {
+        "supported": false,
+        "contractVersion": null
+      },
+      "stdin": {
+        "mode": "none"
+      },
+      "confirmationBypass": null,
+      "idempotency": {
+        "category": "read_only",
+        "notes": null
+      },
+      "notes": "Team-scoped label resolution falls back to the configured current team when --team is omitted."
+    },
+    {
+      "path": "linear resolve team",
+      "summary": "Resolve a team reference",
+      "json": {
+        "supported": true,
+        "contractVersion": "v6"
+      },
+      "dryRun": {
+        "supported": false,
+        "contractVersion": null
+      },
+      "stdin": {
+        "mode": "none"
+      },
+      "confirmationBypass": null,
+      "idempotency": {
+        "category": "read_only",
+        "notes": null
+      },
+      "notes": "If omitted, the team reference resolves from the configured current team."
+    },
+    {
+      "path": "linear resolve user",
+      "summary": "Resolve a user reference",
+      "json": {
+        "supported": true,
+        "contractVersion": "v6"
+      },
+      "dryRun": {
+        "supported": false,
+        "contractVersion": null
+      },
+      "stdin": {
+        "mode": "none"
+      },
+      "confirmationBypass": null,
+      "idempotency": {
+        "category": "read_only",
+        "notes": null
+      },
+      "notes": "Returns the runtime-selected user match and any ambiguous candidates without mutating Linear."
+    },
+    {
+      "path": "linear resolve workflow-state",
+      "summary": "Resolve a workflow state reference",
+      "json": {
+        "supported": true,
+        "contractVersion": "v6"
+      },
+      "dryRun": {
+        "supported": false,
+        "contractVersion": null
+      },
+      "stdin": {
+        "mode": "none"
+      },
+      "confirmationBypass": null,
+      "idempotency": {
+        "category": "read_only",
+        "notes": null
+      },
+      "notes": "Workflow state resolution requires team context and reports ambiguous matches as candidates."
+    },
+    {
       "path": "linear team list",
       "summary": "List teams",
       "json": {
@@ -1480,13 +1608,14 @@ stdout:
   },
   "contractVersions": {
     "automation": {
-      "latest": "v5",
+      "latest": "v6",
       "supported": [
         "v1",
         "v2",
         "v3",
         "v4",
-        "v5"
+        "v5",
+        "v6"
       ]
     },
     "dryRunPreview": {
@@ -1503,7 +1632,7 @@ stdout:
     }
   },
   "automationTier": {
-    "latestVersion": "v5",
+    "latestVersion": "v6",
     "byVersion": {
       "v1": [
         "linear issue children",
@@ -1552,6 +1681,13 @@ stdout:
         "linear initiative view",
         "linear initiative-update list",
         "linear project-update list"
+      ],
+      "v6": [
+        "linear resolve issue",
+        "linear resolve label",
+        "linear resolve team",
+        "linear resolve user",
+        "linear resolve workflow-state"
       ]
     },
     "allCommands": [
@@ -1592,7 +1728,12 @@ stdout:
       "linear initiative list",
       "linear initiative view",
       "linear initiative-update list",
-      "linear project-update list"
+      "linear project-update list",
+      "linear resolve issue",
+      "linear resolve label",
+      "linear resolve team",
+      "linear resolve user",
+      "linear resolve workflow-state"
     ]
   },
   "compatibility": {
@@ -8219,6 +8360,796 @@ stdout:
           "topLevelFields": [
             "success",
             "data"
+          ]
+        },
+        "preview": {
+          "supported": false,
+          "contractTarget": null,
+          "contract": null,
+          "shape": null,
+          "exitCode": null,
+          "topLevelFields": null
+        },
+        "failure": {
+          "jsonWhenRequested": true,
+          "parseErrorsJsonWhenRequested": true,
+          "exitCodes": [
+            {
+              "code": 1,
+              "meaning": "generic_failure"
+            },
+            {
+              "code": 4,
+              "meaning": "auth_error"
+            }
+          ],
+          "topLevelFields": [
+            "success",
+            "error"
+          ],
+          "errorFields": [
+            "type",
+            "message",
+            "suggestion",
+            "context",
+            "details"
+          ],
+          "detailFields": []
+        }
+      }
+    },
+    {
+      "path": "linear resolve issue",
+      "summary": "Resolve an issue reference",
+      "json": {
+        "supported": true,
+        "contractVersion": "v6"
+      },
+      "dryRun": {
+        "supported": false,
+        "contractVersion": null
+      },
+      "stdin": {
+        "mode": "none"
+      },
+      "confirmationBypass": null,
+      "idempotency": {
+        "category": "read_only",
+        "notes": null
+      },
+      "notes": "Returns canonical issue metadata and unresolved reasons without mutating Linear.",
+      "writeSemantics": {
+        "timeoutAware": false,
+        "timeoutReconciliation": false,
+        "mayReturnNoOp": false,
+        "mayReturnPartialSuccess": false
+      },
+      "schema": {
+        "coverage": "curated_primary_inputs",
+        "arguments": [
+          {
+            "name": "issue",
+            "required": false,
+            "valueType": "issue_ref",
+            "description": "Issue identifier. Defaults to the current issue from VCS context.",
+            "allowedValues": null
+          }
+        ],
+        "flags": [
+          {
+            "name": "--json",
+            "short": "-j",
+            "required": false,
+            "valueType": "boolean",
+            "description": "Emit machine-readable JSON output.",
+            "allowedValues": null
+          }
+        ],
+        "inputModes": [
+          "flags"
+        ],
+        "requiredInputs": [],
+        "optionalInputs": [
+          {
+            "source": "argument",
+            "name": "issue"
+          },
+          {
+            "source": "flag",
+            "name": "--json"
+          }
+        ],
+        "defaults": [
+          {
+            "source": "argument",
+            "name": "issue",
+            "description": "Defaults to the current issue from the branch name or jj trailer.",
+            "value": null
+          }
+        ],
+        "resolutions": [
+          {
+            "source": "argument",
+            "name": "issue",
+            "strategy": "current_issue_context",
+            "description": "If omitted, the CLI resolves the current issue from the branch name or jj trailer."
+          }
+        ],
+        "constraints": [],
+        "stdinTargets": [],
+        "fileTargets": [],
+        "examples": [
+          {
+            "description": "Resolve an explicit issue identifier.",
+            "argv": [
+              "linear",
+              "resolve",
+              "issue",
+              "ENG-123",
+              "--json"
+            ]
+          },
+          {
+            "description": "Resolve the current issue from VCS context.",
+            "argv": [
+              "linear",
+              "resolve",
+              "issue",
+              "--json"
+            ]
+          }
+        ]
+      },
+      "output": {
+        "success": {
+          "category": "automation_contract",
+          "contractTarget": "automation_contract:v6",
+          "contract": {
+            "kind": "automation_contract",
+            "version": "v6"
+          },
+          "shape": "object",
+          "exitCode": 0,
+          "topLevelFields": [
+            "kind",
+            "version",
+            "refType",
+            "input",
+            "source",
+            "status",
+            "matchedBy",
+            "ambiguous",
+            "resolved",
+            "candidates",
+            "unresolvedReason"
+          ]
+        },
+        "preview": {
+          "supported": false,
+          "contractTarget": null,
+          "contract": null,
+          "shape": null,
+          "exitCode": null,
+          "topLevelFields": null
+        },
+        "failure": {
+          "jsonWhenRequested": true,
+          "parseErrorsJsonWhenRequested": true,
+          "exitCodes": [
+            {
+              "code": 1,
+              "meaning": "generic_failure"
+            },
+            {
+              "code": 4,
+              "meaning": "auth_error"
+            }
+          ],
+          "topLevelFields": [
+            "success",
+            "error"
+          ],
+          "errorFields": [
+            "type",
+            "message",
+            "suggestion",
+            "context",
+            "details"
+          ],
+          "detailFields": []
+        }
+      }
+    },
+    {
+      "path": "linear resolve label",
+      "summary": "Resolve an issue label reference",
+      "json": {
+        "supported": true,
+        "contractVersion": "v6"
+      },
+      "dryRun": {
+        "supported": false,
+        "contractVersion": null
+      },
+      "stdin": {
+        "mode": "none"
+      },
+      "confirmationBypass": null,
+      "idempotency": {
+        "category": "read_only",
+        "notes": null
+      },
+      "notes": "Team-scoped label resolution falls back to the configured current team when --team is omitted.",
+      "writeSemantics": {
+        "timeoutAware": false,
+        "timeoutReconciliation": false,
+        "mayReturnNoOp": false,
+        "mayReturnPartialSuccess": false
+      },
+      "schema": {
+        "coverage": "curated_primary_inputs",
+        "arguments": [
+          {
+            "name": "label",
+            "required": true,
+            "valueType": "label_ref",
+            "description": "Issue label name.",
+            "allowedValues": null
+          }
+        ],
+        "flags": [
+          {
+            "name": "--json",
+            "short": "-j",
+            "required": false,
+            "valueType": "boolean",
+            "description": "Emit machine-readable JSON output.",
+            "allowedValues": null
+          },
+          {
+            "name": "--team",
+            "short": null,
+            "required": false,
+            "valueType": "team_key",
+            "description": "Team key. Falls back to the configured current team.",
+            "allowedValues": null
+          }
+        ],
+        "inputModes": [
+          "flags"
+        ],
+        "requiredInputs": [
+          {
+            "source": "argument",
+            "name": "label"
+          }
+        ],
+        "optionalInputs": [
+          {
+            "source": "flag",
+            "name": "--json"
+          },
+          {
+            "source": "flag",
+            "name": "--team"
+          }
+        ],
+        "defaults": [
+          {
+            "source": "flag",
+            "name": "--team",
+            "description": "Falls back to the configured current team when omitted.",
+            "value": null
+          }
+        ],
+        "resolutions": [
+          {
+            "source": "flag",
+            "name": "--team",
+            "strategy": "configured_team_context",
+            "description": "If omitted, the CLI resolves the team from the configured current team."
+          }
+        ],
+        "constraints": [],
+        "stdinTargets": [],
+        "fileTargets": [],
+        "examples": [
+          {
+            "description": "Resolve a label inside a team context.",
+            "argv": [
+              "linear",
+              "resolve",
+              "label",
+              "Bug",
+              "--team",
+              "ENG",
+              "--json"
+            ]
+          }
+        ]
+      },
+      "output": {
+        "success": {
+          "category": "automation_contract",
+          "contractTarget": "automation_contract:v6",
+          "contract": {
+            "kind": "automation_contract",
+            "version": "v6"
+          },
+          "shape": "object",
+          "exitCode": 0,
+          "topLevelFields": [
+            "kind",
+            "version",
+            "refType",
+            "input",
+            "source",
+            "status",
+            "matchedBy",
+            "ambiguous",
+            "resolved",
+            "candidates",
+            "unresolvedReason"
+          ]
+        },
+        "preview": {
+          "supported": false,
+          "contractTarget": null,
+          "contract": null,
+          "shape": null,
+          "exitCode": null,
+          "topLevelFields": null
+        },
+        "failure": {
+          "jsonWhenRequested": true,
+          "parseErrorsJsonWhenRequested": true,
+          "exitCodes": [
+            {
+              "code": 1,
+              "meaning": "generic_failure"
+            },
+            {
+              "code": 4,
+              "meaning": "auth_error"
+            }
+          ],
+          "topLevelFields": [
+            "success",
+            "error"
+          ],
+          "errorFields": [
+            "type",
+            "message",
+            "suggestion",
+            "context",
+            "details"
+          ],
+          "detailFields": []
+        }
+      }
+    },
+    {
+      "path": "linear resolve team",
+      "summary": "Resolve a team reference",
+      "json": {
+        "supported": true,
+        "contractVersion": "v6"
+      },
+      "dryRun": {
+        "supported": false,
+        "contractVersion": null
+      },
+      "stdin": {
+        "mode": "none"
+      },
+      "confirmationBypass": null,
+      "idempotency": {
+        "category": "read_only",
+        "notes": null
+      },
+      "notes": "If omitted, the team reference resolves from the configured current team.",
+      "writeSemantics": {
+        "timeoutAware": false,
+        "timeoutReconciliation": false,
+        "mayReturnNoOp": false,
+        "mayReturnPartialSuccess": false
+      },
+      "schema": {
+        "coverage": "curated_primary_inputs",
+        "arguments": [
+          {
+            "name": "team",
+            "required": false,
+            "valueType": "team_key",
+            "description": "Team key. Defaults to the configured current team.",
+            "allowedValues": null
+          }
+        ],
+        "flags": [
+          {
+            "name": "--json",
+            "short": "-j",
+            "required": false,
+            "valueType": "boolean",
+            "description": "Emit machine-readable JSON output.",
+            "allowedValues": null
+          }
+        ],
+        "inputModes": [
+          "flags"
+        ],
+        "requiredInputs": [],
+        "optionalInputs": [
+          {
+            "source": "argument",
+            "name": "team"
+          },
+          {
+            "source": "flag",
+            "name": "--json"
+          }
+        ],
+        "defaults": [
+          {
+            "source": "argument",
+            "name": "team",
+            "description": "Falls back to the configured current team when omitted.",
+            "value": null
+          }
+        ],
+        "resolutions": [
+          {
+            "source": "argument",
+            "name": "team",
+            "strategy": "configured_team_context",
+            "description": "If omitted, the CLI resolves the team from the configured current team."
+          }
+        ],
+        "constraints": [],
+        "stdinTargets": [],
+        "fileTargets": [],
+        "examples": [
+          {
+            "description": "Resolve the configured current team.",
+            "argv": [
+              "linear",
+              "resolve",
+              "team",
+              "--json"
+            ]
+          }
+        ]
+      },
+      "output": {
+        "success": {
+          "category": "automation_contract",
+          "contractTarget": "automation_contract:v6",
+          "contract": {
+            "kind": "automation_contract",
+            "version": "v6"
+          },
+          "shape": "object",
+          "exitCode": 0,
+          "topLevelFields": [
+            "kind",
+            "version",
+            "refType",
+            "input",
+            "source",
+            "status",
+            "matchedBy",
+            "ambiguous",
+            "resolved",
+            "candidates",
+            "unresolvedReason"
+          ]
+        },
+        "preview": {
+          "supported": false,
+          "contractTarget": null,
+          "contract": null,
+          "shape": null,
+          "exitCode": null,
+          "topLevelFields": null
+        },
+        "failure": {
+          "jsonWhenRequested": true,
+          "parseErrorsJsonWhenRequested": true,
+          "exitCodes": [
+            {
+              "code": 1,
+              "meaning": "generic_failure"
+            },
+            {
+              "code": 4,
+              "meaning": "auth_error"
+            }
+          ],
+          "topLevelFields": [
+            "success",
+            "error"
+          ],
+          "errorFields": [
+            "type",
+            "message",
+            "suggestion",
+            "context",
+            "details"
+          ],
+          "detailFields": []
+        }
+      }
+    },
+    {
+      "path": "linear resolve user",
+      "summary": "Resolve a user reference",
+      "json": {
+        "supported": true,
+        "contractVersion": "v6"
+      },
+      "dryRun": {
+        "supported": false,
+        "contractVersion": null
+      },
+      "stdin": {
+        "mode": "none"
+      },
+      "confirmationBypass": null,
+      "idempotency": {
+        "category": "read_only",
+        "notes": null
+      },
+      "notes": "Returns the runtime-selected user match and any ambiguous candidates without mutating Linear.",
+      "writeSemantics": {
+        "timeoutAware": false,
+        "timeoutReconciliation": false,
+        "mayReturnNoOp": false,
+        "mayReturnPartialSuccess": false
+      },
+      "schema": {
+        "coverage": "curated_primary_inputs",
+        "arguments": [
+          {
+            "name": "user",
+            "required": true,
+            "valueType": "user_ref",
+            "description": "User email, display name, or self.",
+            "allowedValues": null
+          }
+        ],
+        "flags": [
+          {
+            "name": "--json",
+            "short": "-j",
+            "required": false,
+            "valueType": "boolean",
+            "description": "Emit machine-readable JSON output.",
+            "allowedValues": null
+          }
+        ],
+        "inputModes": [
+          "flags"
+        ],
+        "requiredInputs": [
+          {
+            "source": "argument",
+            "name": "user"
+          }
+        ],
+        "optionalInputs": [
+          {
+            "source": "flag",
+            "name": "--json"
+          }
+        ],
+        "defaults": [],
+        "resolutions": [],
+        "constraints": [],
+        "stdinTargets": [],
+        "fileTargets": [],
+        "examples": [
+          {
+            "description": "Resolve the current authenticated user.",
+            "argv": [
+              "linear",
+              "resolve",
+              "user",
+              "self",
+              "--json"
+            ]
+          }
+        ]
+      },
+      "output": {
+        "success": {
+          "category": "automation_contract",
+          "contractTarget": "automation_contract:v6",
+          "contract": {
+            "kind": "automation_contract",
+            "version": "v6"
+          },
+          "shape": "object",
+          "exitCode": 0,
+          "topLevelFields": [
+            "kind",
+            "version",
+            "refType",
+            "input",
+            "source",
+            "status",
+            "matchedBy",
+            "ambiguous",
+            "resolved",
+            "candidates",
+            "unresolvedReason"
+          ]
+        },
+        "preview": {
+          "supported": false,
+          "contractTarget": null,
+          "contract": null,
+          "shape": null,
+          "exitCode": null,
+          "topLevelFields": null
+        },
+        "failure": {
+          "jsonWhenRequested": true,
+          "parseErrorsJsonWhenRequested": true,
+          "exitCodes": [
+            {
+              "code": 1,
+              "meaning": "generic_failure"
+            },
+            {
+              "code": 4,
+              "meaning": "auth_error"
+            }
+          ],
+          "topLevelFields": [
+            "success",
+            "error"
+          ],
+          "errorFields": [
+            "type",
+            "message",
+            "suggestion",
+            "context",
+            "details"
+          ],
+          "detailFields": []
+        }
+      }
+    },
+    {
+      "path": "linear resolve workflow-state",
+      "summary": "Resolve a workflow state reference",
+      "json": {
+        "supported": true,
+        "contractVersion": "v6"
+      },
+      "dryRun": {
+        "supported": false,
+        "contractVersion": null
+      },
+      "stdin": {
+        "mode": "none"
+      },
+      "confirmationBypass": null,
+      "idempotency": {
+        "category": "read_only",
+        "notes": null
+      },
+      "notes": "Workflow state resolution requires team context and reports ambiguous matches as candidates.",
+      "writeSemantics": {
+        "timeoutAware": false,
+        "timeoutReconciliation": false,
+        "mayReturnNoOp": false,
+        "mayReturnPartialSuccess": false
+      },
+      "schema": {
+        "coverage": "curated_primary_inputs",
+        "arguments": [
+          {
+            "name": "workflowState",
+            "required": true,
+            "valueType": "state_ref",
+            "description": "Workflow state name, type, or ID within a team context.",
+            "allowedValues": null
+          }
+        ],
+        "flags": [
+          {
+            "name": "--json",
+            "short": "-j",
+            "required": false,
+            "valueType": "boolean",
+            "description": "Emit machine-readable JSON output.",
+            "allowedValues": null
+          },
+          {
+            "name": "--team",
+            "short": null,
+            "required": false,
+            "valueType": "team_key",
+            "description": "Team key. Falls back to the configured current team.",
+            "allowedValues": null
+          }
+        ],
+        "inputModes": [
+          "flags"
+        ],
+        "requiredInputs": [
+          {
+            "source": "argument",
+            "name": "workflowState"
+          }
+        ],
+        "optionalInputs": [
+          {
+            "source": "flag",
+            "name": "--json"
+          },
+          {
+            "source": "flag",
+            "name": "--team"
+          }
+        ],
+        "defaults": [
+          {
+            "source": "flag",
+            "name": "--team",
+            "description": "Falls back to the configured current team when omitted.",
+            "value": null
+          }
+        ],
+        "resolutions": [
+          {
+            "source": "flag",
+            "name": "--team",
+            "strategy": "configured_team_context",
+            "description": "If omitted, the CLI resolves the team from the configured current team."
+          }
+        ],
+        "constraints": [],
+        "stdinTargets": [],
+        "fileTargets": [],
+        "examples": [
+          {
+            "description": "Resolve a workflow state by name.",
+            "argv": [
+              "linear",
+              "resolve",
+              "workflow-state",
+              "Done",
+              "--team",
+              "ENG",
+              "--json"
+            ]
+          }
+        ]
+      },
+      "output": {
+        "success": {
+          "category": "automation_contract",
+          "contractTarget": "automation_contract:v6",
+          "contract": {
+            "kind": "automation_contract",
+            "version": "v6"
+          },
+          "shape": "object",
+          "exitCode": 0,
+          "topLevelFields": [
+            "kind",
+            "version",
+            "refType",
+            "input",
+            "source",
+            "status",
+            "matchedBy",
+            "ambiguous",
+            "resolved",
+            "candidates",
+            "unresolvedReason"
           ]
         },
         "preview": {

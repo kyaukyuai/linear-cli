@@ -1,0 +1,47 @@
+export const snapshot = {};
+
+snapshot[`Resolve Label Command - JSON Ambiguous 1`] = `
+stdout:
+'{
+  "kind": "reference_resolution",
+  "version": "v1",
+  "refType": "label",
+  "input": "Bug",
+  "source": "argument",
+  "status": "resolved",
+  "matchedBy": "label_name",
+  "ambiguous": true,
+  "resolved": {
+    "id": "label-1",
+    "name": "Bug",
+    "color": "#ef4444",
+    "team": {
+      "id": "team-1",
+      "key": "ENG",
+      "name": "Engineering"
+    }
+  },
+  "candidates": [
+    {
+      "id": "label-1",
+      "name": "Bug",
+      "color": "#ef4444",
+      "team": {
+        "id": "team-1",
+        "key": "ENG",
+        "name": "Engineering"
+      }
+    },
+    {
+      "id": "label-2",
+      "name": "Bug",
+      "color": "#f97316",
+      "team": null
+    }
+  ],
+  "unresolvedReason": null
+}
+'
+stderr:
+""
+`;

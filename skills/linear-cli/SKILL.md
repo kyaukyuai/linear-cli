@@ -100,6 +100,7 @@ linear config             # Interactively generate .linear.toml configuration
 linear schema             # Print the GraphQL schema to stdout
 linear api                # Make a raw GraphQL API request
 linear capabilities       # Describe the agent-facing command surface
+linear resolve            # Resolve references without mutating Linear
 ```
 
 ## Reference Documentation
@@ -124,6 +125,7 @@ linear capabilities       # Describe the agent-facing command surface
 - [schema](references/schema.md) - Print the GraphQL schema to stdout
 - [api](references/api.md) - Make a raw GraphQL API request
 - [capabilities](references/capabilities.md) - Describe the agent-facing command surface
+- [resolve](references/resolve.md) - Resolve references without mutating Linear
 
 For curated examples of organization features (initiatives, labels, projects, bulk operations), see [organization-features](references/organization-features.md).
 

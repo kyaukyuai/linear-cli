@@ -45,8 +45,8 @@ Default top-level shape:
   },
   "contractVersions": {
     "automation": {
-      "latest": "v5",
-      "supported": ["v1", "v2", "v3", "v4", "v5"]
+      "latest": "v6",
+      "supported": ["v1", "v2", "v3", "v4", "v5", "v6"]
     },
     "dryRunPreview": {
       "latest": "v1",
@@ -58,20 +58,22 @@ Default top-level shape:
     }
   },
   "automationTier": {
-    "latestVersion": "v5",
+    "latestVersion": "v6",
     "byVersion": {
       "v1": ["linear issue list"],
       "v2": ["linear project list"],
       "v3": ["linear document list"],
       "v4": ["linear team list"],
-      "v5": ["linear initiative list"]
+      "v5": ["linear initiative list"],
+      "v6": ["linear resolve issue"]
     },
     "allCommands": [
       "linear issue list",
       "linear project list",
       "linear document list",
       "linear team list",
-      "linear initiative list"
+      "linear initiative list",
+      "linear resolve issue"
     ]
   },
   "commands": [
@@ -2096,6 +2098,163 @@ Top-level shape:
       "author": "alice.bot"
     }
   ]
+}
+```
+
+## Automation Contract v6
+
+Automation Contract v6 adds a read-only reference-resolution surface for agent loops that want to resolve refs before previewing or applying writes.
+
+The v6 additions are:
+
+- `linear resolve issue --json`
+- `linear resolve team --json`
+- `linear resolve workflow-state --json`
+- `linear resolve user --json`
+- `linear resolve label --json`
+
+V6 reuses the same failure envelope and compatibility rules defined above. Successful resolution returns data, not a `success/data` wrapper.
+
+### `referenceResolution`
+
+Top-level shape:
+
+```json
+{
+  "kind": "reference_resolution",
+  "version": "v1",
+  "refType": "workflow_state",
+  "input": "started",
+  "source": "argument",
+  "status": "resolved",
+  "matchedBy": "state_type",
+  "ambiguous": false,
+  "resolved": {
+    "id": "state-123",
+    "name": "In Progress",
+    "type": "started",
+    "color": "#f97316",
+    "team": {
+      "id": "team-123",
+      "key": "ENG",
+      "name": "Engineering"
+    }
+  },
+  "candidates": [
+    {
+      "id": "state-123",
+      "name": "In Progress",
+      "type": "started",
+      "color": "#f97316",
+      "team": {
+        "id": "team-123",
+        "key": "ENG",
+        "name": "Engineering"
+      }
+    }
+  ],
+  "unresolvedReason": null
+}
+```
+
+When the CLI cannot resolve the ref without mutating Linear, the command still exits successfully and reports an unresolved payload:
+
+```json
+{
+  "kind": "reference_resolution",
+  "version": "v1",
+  "refType": "issue",
+  "input": "123",
+  "source": "argument",
+  "status": "unresolved",
+  "matchedBy": null,
+  "ambiguous": false,
+  "resolved": null,
+  "candidates": [],
+  "unresolvedReason": {
+    "code": "missing_context",
+    "message": "A numeric issue reference needs a configured team key. Set LINEAR_TEAM_ID or pass a full issue identifier like ENG-123."
+  }
+}
+```
+
+### `resolve issue --json`
+
+Top-level shape:
+
+```json
+{
+  "kind": "reference_resolution",
+  "version": "v1",
+  "refType": "issue",
+  "input": "ENG-123",
+  "source": "argument",
+  "status": "resolved",
+  "matchedBy": "identifier",
+  "ambiguous": false,
+  "resolved": {
+    "id": "issue-123",
+    "identifier": "ENG-123",
+    "title": "Stabilize auth expiry handling",
+    "url": "https://linear.app/acme/issue/ENG-123/stabilize-auth",
+    "team": {
+      "id": "team-123",
+      "key": "ENG",
+      "name": "Engineering"
+    }
+  },
+  "candidates": [
+    {
+      "id": "issue-123",
+      "identifier": "ENG-123",
+      "title": "Stabilize auth expiry handling",
+      "url": "https://linear.app/acme/issue/ENG-123/stabilize-auth",
+      "team": {
+        "id": "team-123",
+        "key": "ENG",
+        "name": "Engineering"
+      }
+    }
+  ],
+  "unresolvedReason": null
+}
+```
+
+### `resolve user --json`
+
+Top-level shape:
+
+```json
+{
+  "kind": "reference_resolution",
+  "version": "v1",
+  "refType": "user",
+  "input": "alice",
+  "source": "argument",
+  "status": "resolved",
+  "matchedBy": "name_contains_first",
+  "ambiguous": true,
+  "resolved": {
+    "id": "user-123",
+    "name": "alice.bot",
+    "displayName": "Alice Bot",
+    "email": "alice@example.com"
+  },
+  "candidates": [
+    {
+      "id": "user-123",
+      "name": "alice.bot",
+      "displayName": "Alice Bot",
+      "email": "alice@example.com"
+    },
+    {
+      "id": "user-456",
+      "name": "alice.builder",
+      "displayName": "Alice Builder",
+      "email": "alice.builder@example.com"
+    }
+  ],
+  "unresolvedReason": null
 }
 ```
 

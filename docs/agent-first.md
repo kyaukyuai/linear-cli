@@ -26,7 +26,25 @@ Use the default `linear capabilities --json` shape for runtime startup compatibi
 
 The default capabilities shape and the read entrypoints below are treated as startup-critical contracts and are release-gated in CI.
 
-## 2. Read State With Stable JSON
+## 2. Resolve References Before Mutating
+
+When a caller needs canonical IDs, current-team fallback, or ambiguity data, resolve references explicitly before preview/apply:
+
+```bash
+linear resolve issue ENG-123 --json
+linear resolve team ENG --json
+linear resolve workflow-state started --team ENG --json
+linear resolve user self --json
+linear resolve label Bug --team ENG --json
+```
+
+This lets an agent:
+
+- confirm how the CLI resolved issue, team, workflow state, user, and label refs
+- inspect `status`, `matchedBy`, `candidates`, and `unresolvedReason` without scraping terminal text
+- reuse canonical IDs and team context across preview/apply steps
+
+## 3. Read State With Stable JSON
 
 Prefer commands that are part of the automation contract:
 
@@ -42,7 +60,7 @@ linear notification list --json
 
 For the full contract surface, see [json-contracts.md](./json-contracts.md).
 
-## 3. Preview Writes Before Mutating
+## 4. Preview Writes Before Mutating
 
 When a command supports `--dry-run`, use it first:
 
@@ -55,7 +73,7 @@ linear issue start ENG-123 --dry-run
 
 Preview output is stable and designed for plan/confirm/apply loops.
 
-## 4. Apply Writes With Machine-Readable Output
+## 5. Apply Writes With Machine-Readable Output
 
 When applying a write, prefer `--json` and inspect the process exit code.
 
@@ -80,7 +98,7 @@ Important non-zero exit codes:
 - `5`: plan or workspace limit failure
 - `6`: write confirmation timeout
 
-## 5. Recover From Timeout Or Partial Success
+## 6. Recover From Timeout Or Partial Success
 
 Write commands now distinguish timeout failures from generic failures and may include reconciliation details in `error.details`.
 
@@ -100,7 +118,7 @@ This is the intended path for workflow-safe automation after uncertain writes. P
 - `treat_as_applied`: treat the write as successful
 - `resume_partial_write`: use `partialSuccess` and any retry hint to continue from the remaining step
 
-## 6. Prefer stdin And File Input For Markdown
+## 7. Prefer stdin And File Input For Markdown
 
 For multi-line descriptions or comments, avoid shell-escaped inline text.
 
@@ -112,7 +130,7 @@ linear issue comment add ENG-123 --body-file ./comment.md
 
 The full stdin rules are documented in [stdin-policy.md](./stdin-policy.md).
 
-## 7. Use `linear api` Only As Escape Hatch
+## 8. Use `linear api` Only As Escape Hatch
 
 If the CLI already has a stable command, prefer the CLI command over raw GraphQL.
 

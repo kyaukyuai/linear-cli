@@ -120,6 +120,14 @@ const AUTOMATION_CONTRACT_CONTEXT_BY_PATH = new Map<string, string>([
   ["linear workflow-state view", "Failed to view workflow state"],
   ["linear label list", "Failed to fetch labels"],
   ["linear project-label list", "Failed to list project labels"],
+  ["linear resolve issue", "Failed to resolve issue reference"],
+  ["linear resolve team", "Failed to resolve team reference"],
+  [
+    "linear resolve workflow-state",
+    "Failed to resolve workflow state reference",
+  ],
+  ["linear resolve user", "Failed to resolve user reference"],
+  ["linear resolve label", "Failed to resolve label reference"],
 ])
 
 export function maybeHandleAutomationContractParseError(

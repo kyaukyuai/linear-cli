@@ -21,6 +21,7 @@ import { configCommand } from "./commands/config.ts"
 import { schemaCommand } from "./commands/schema.ts"
 import { apiCommand } from "./commands/api.ts"
 import { capabilitiesCommand } from "./commands/capabilities.ts"
+import { resolveCommand } from "./commands/resolve/resolve.ts"
 import { setCliWorkspace } from "./config.ts"
 import { maybeHandleAutomationContractParseError } from "./utils/json_output.ts"
 
@@ -80,4 +81,5 @@ Environment Variables:
   .command("schema", schemaCommand)
   .command("api", apiCommand)
   .command("capabilities", capabilitiesCommand)
+  .command("resolve", resolveCommand)
   .parse(Deno.args)

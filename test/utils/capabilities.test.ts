@@ -10,13 +10,14 @@ Deno.test("buildCapabilitiesPayload defaults to the v1 compatibility shape", () 
     binary: "linear",
     version: "2.11.0",
   })
-  assertEquals(payload.contractVersions.automation.latest, "v5")
+  assertEquals(payload.contractVersions.automation.latest, "v6")
   assertEquals(payload.contractVersions.automation.supported, [
     "v1",
     "v2",
     "v3",
     "v4",
     "v5",
+    "v6",
   ])
   assertEquals(payload.contractVersions.dryRunPreview.latest, "v1")
   assertEquals(payload.contractVersions.stdinPolicy.latest, "v1")
@@ -48,6 +49,9 @@ Deno.test("buildCapabilitiesPayload defaults to the v1 compatibility shape", () 
   )
   assert(
     payload.automationTier.byVersion.v5.includes("linear project-update list"),
+  )
+  assert(
+    payload.automationTier.byVersion.v6.includes("linear resolve issue"),
   )
 
   const issueUpdate = payload.commands.find((entry) =>
