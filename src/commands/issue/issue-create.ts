@@ -794,11 +794,11 @@ export const createCommand = new Command()
         // Fallback to flag-based mode
         if (!title) {
           throw new ValidationError(
-            "Title is required unless --interactive is used",
+            "Title is required unless --profile human-debug --interactive is used",
             {
               suggestion: json
                 ? "Use --title when requesting --json output."
-                : "Use --title, or pass --interactive to create the issue with prompts.",
+                : "Use --title, or pass --profile human-debug --interactive to create the issue with prompts.",
             },
           )
         }

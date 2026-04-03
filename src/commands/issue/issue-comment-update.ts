@@ -70,7 +70,7 @@ export const commentUpdateCommand = new Command()
         ensureInteractiveInputAvailable(
           { interactive },
           "Comment body cannot be empty",
-          "Provide --body, --body-file, or pipe the updated comment body on stdin. Use --interactive to edit it in a terminal.",
+          "Provide --body, --body-file, or pipe the updated comment body on stdin. Use --profile human-debug --interactive to edit it in a terminal.",
         )
         const getCommentQuery = gql(`
           query GetComment($id: String!) {

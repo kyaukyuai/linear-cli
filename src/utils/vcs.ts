@@ -100,7 +100,7 @@ export async function startVcsWork(
         ensureInteractiveInputAvailable(
           { interactive },
           `Branch ${branchName} already exists`,
-          "Use --branch <name> to choose a different branch, switch manually, or pass --interactive to resolve it in a terminal.",
+          "Use --branch <name> to choose a different branch, switch manually, or pass --profile human-debug --interactive to resolve it in a terminal.",
         )
         const answer = await Select.prompt({
           message:

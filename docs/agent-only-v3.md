@@ -49,6 +49,7 @@ The intended steady-state is:
 
 - `--text` is the canonical flag for human-readable terminal output
 - `--json` remains accepted, but becomes redundant on command surfaces that already default to JSON
+- `--profile human-debug` is the canonical execution-profile escape hatch for prompt and pager oriented debugging
 - pager remains available only when the caller explicitly opts in
 - destructive confirmation bypass still uses `--yes`
 
@@ -100,9 +101,9 @@ Recommended preparation work for consumers before `v3.0.0`:
 
 - pin to a `2.x` version while migrating
 - add tests for startup discovery and representative write flows
-- treat `--profile agent-safe` as the compatibility rehearsal for v3 defaults
+- treat the default runtime semantics as the v3 rehearsal, and keep `--profile agent-safe` only as an explicit compatibility override while older scripts migrate
 - adopt `linear resolve ... --json` before preview/apply loops
-- use explicit `--interactive` only for human/debug prompt flows; do not rely on fallback prompts
+- use explicit `--profile human-debug --interactive` only for human/debug prompt flows; do not rely on fallback prompts
 
 ## Release Criteria For v3.0.0
 

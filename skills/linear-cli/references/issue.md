@@ -13,9 +13,9 @@ Description:
 
 Options:
 
-  -h, --help                  - Show this help.                      
-  -w, --workspace  <slug>     - Target workspace (uses credentials)  
-  --profile        <profile>  - Execution profile (agent-safe)       
+  -h, --help                  - Show this help.                                                      
+  -w, --workspace  <slug>     - Target workspace (uses credentials)                                  
+  --profile        <profile>  - Execution profile override (agent-safe default, human-debug opt-in)  
 
 Commands:
 
@@ -60,9 +60,9 @@ Description:
 
 Options:
 
-  -h, --help                  - Show this help.                      
-  -w, --workspace  <slug>     - Target workspace (uses credentials)  
-  --profile        <profile>  - Execution profile (agent-safe)
+  -h, --help                  - Show this help.                                                      
+  -w, --workspace  <slug>     - Target workspace (uses credentials)                                  
+  --profile        <profile>  - Execution profile override (agent-safe default, human-debug opt-in)
 ```
 
 ### list
@@ -80,7 +80,7 @@ Options:
 
   -h, --help                            - Show this help.                                                                                                
   -w, --workspace      <slug>           - Target workspace (uses credentials)                                                                            
-  --profile            <profile>        - Execution profile (agent-safe)                                                                                 
+  --profile            <profile>        - Execution profile override (agent-safe default, human-debug opt-in)                                            
   -s, --state          <state>          - Filter by issue state (triage, backlog, unstarted|todo, started, completed,      (Default: [ "unstarted" ])    
                                           canceled). May be repeated.                                                                                    
   --all-states                          - Show issues from all states                                                                                    
@@ -126,11 +126,11 @@ Description:
 
 Options:
 
-  -h, --help                         - Show this help.                                   
-  -w, --workspace         <slug>     - Target workspace (uses credentials)               
-  --profile               <profile>  - Execution profile (agent-safe)                    
-  -j, --json                         - Output as JSON                                    
-  -n, --limit             <limit>    - Maximum number of results            (Default: 20)
+  -h, --help                         - Show this help.                                                                   
+  -w, --workspace         <slug>     - Target workspace (uses credentials)                                               
+  --profile               <profile>  - Execution profile override (agent-safe default, human-debug opt-in)               
+  -j, --json                         - Output as JSON                                                                    
+  -n, --limit             <limit>    - Maximum number of results                                            (Default: 20)
   -a, --include-archived             - Include archived issues in results
 ```
 
@@ -147,9 +147,9 @@ Description:
 
 Options:
 
-  -h, --help                  - Show this help.                      
-  -w, --workspace  <slug>     - Target workspace (uses credentials)  
-  --profile        <profile>  - Execution profile (agent-safe)
+  -h, --help                  - Show this help.                                                      
+  -w, --workspace  <slug>     - Target workspace (uses credentials)                                  
+  --profile        <profile>  - Execution profile override (agent-safe default, human-debug opt-in)
 ```
 
 ### start
@@ -165,15 +165,15 @@ Description:
 
 Options:
 
-  -h, --help                      - Show this help.                                                 
-  -w, --workspace      <slug>     - Target workspace (uses credentials)                             
-  --profile            <profile>  - Execution profile (agent-safe)                                  
-  -A, --all-assignees             - Show issues for all assignees                                   
-  -U, --unassigned                - Show only unassigned issues                                     
-  -f, --from-ref       <fromRef>  - Git ref to create new branch from                               
-  -b, --branch         <branch>   - Custom branch name to use instead of the issue identifier       
-  -i, --interactive               - Enable interactive issue selection                              
-  --dry-run                       - Preview the branch and state transition without making changes  
+  -h, --help                      - Show this help.                                                      
+  -w, --workspace      <slug>     - Target workspace (uses credentials)                                  
+  --profile            <profile>  - Execution profile override (agent-safe default, human-debug opt-in)  
+  -A, --all-assignees             - Show issues for all assignees                                        
+  -U, --unassigned                - Show only unassigned issues                                          
+  -f, --from-ref       <fromRef>  - Git ref to create new branch from                                    
+  -b, --branch         <branch>   - Custom branch name to use instead of the issue identifier            
+  -i, --interactive               - Enable interactive issue selection                                   
+  --dry-run                       - Preview the branch and state transition without making changes       
 
 Examples:
 
@@ -194,16 +194,16 @@ Description:
 
 Options:
 
-  -h, --help                  - Show this help.                                
-  -w, --workspace  <slug>     - Target workspace (uses credentials)            
-  --profile        <profile>  - Execution profile (agent-safe)                 
-  -w, --web                   - Open in web browser                            
-  -a, --app                   - Open in Linear.app                             
-  --no-comments               - Exclude comments from the output               
-  --no-pager                  - Disable automatic paging for long output       
-  -j, --json                  - Force machine-readable JSON output             
-  --text                      - Output human-readable text                     
-  --no-download               - Keep remote URLs instead of downloading files  
+  -h, --help                  - Show this help.                                                      
+  -w, --workspace  <slug>     - Target workspace (uses credentials)                                  
+  --profile        <profile>  - Execution profile override (agent-safe default, human-debug opt-in)  
+  -w, --web                   - Open in web browser                                                  
+  -a, --app                   - Open in Linear.app                                                   
+  --no-comments               - Exclude comments from the output                                     
+  --no-pager                  - Disable automatic paging for long output                             
+  -j, --json                  - Force machine-readable JSON output                                   
+  --text                      - Output human-readable text                                           
+  --no-download               - Keep remote URLs instead of downloading files                        
 
 Examples:
 
@@ -225,9 +225,9 @@ Description:
 
 Options:
 
-  -h, --help                  - Show this help.                      
-  -w, --workspace  <slug>     - Target workspace (uses credentials)  
-  --profile        <profile>  - Execution profile (agent-safe)
+  -h, --help                  - Show this help.                                                      
+  -w, --workspace  <slug>     - Target workspace (uses credentials)                                  
+  --profile        <profile>  - Execution profile override (agent-safe default, human-debug opt-in)
 ```
 
 ### describe
@@ -243,9 +243,9 @@ Description:
 
 Options:
 
-  -h, --help                          - Show this help.                                                
-  -w, --workspace          <slug>     - Target workspace (uses credentials)                            
-  --profile                <profile>  - Execution profile (agent-safe)                                 
+  -h, --help                          - Show this help.                                                      
+  -w, --workspace          <slug>     - Target workspace (uses credentials)                                  
+  --profile                <profile>  - Execution profile override (agent-safe default, human-debug opt-in)  
   -r, --references, --ref             - Use 'References' instead of 'Fixes' for the Linear issue link
 ```
 
@@ -262,9 +262,9 @@ Description:
 
 Options:
 
-  -h, --help                  - Show this help.                      
-  -w, --workspace  <slug>     - Target workspace (uses credentials)  
-  --profile        <profile>  - Execution profile (agent-safe)
+  -h, --help                  - Show this help.                                                      
+  -w, --workspace  <slug>     - Target workspace (uses credentials)                                  
+  --profile        <profile>  - Execution profile override (agent-safe default, human-debug opt-in)
 ```
 
 ### pull-request
@@ -282,7 +282,7 @@ Options:
 
   -h, --help                  - Show this help.                                                         
   -w, --workspace  <slug>     - Target workspace (uses credentials)                                     
-  --profile        <profile>  - Execution profile (agent-safe)                                          
+  --profile        <profile>  - Execution profile override (agent-safe default, human-debug opt-in)     
   --base           <branch>   - The branch into which you want your code merged                         
   --draft                     - Create the pull request as a draft                                      
   -t, --title      <title>    - Optional title for the pull request (Linear issue ID will be prefixed)  
@@ -303,14 +303,14 @@ Description:
 
 Options:
 
-  -h, --help                    - Show this help.                                             
-  -w, --workspace    <slug>     - Target workspace (uses credentials)                         
-  --profile          <profile>  - Execution profile (agent-safe)                              
-  -i, --interactive             - Enable interactive confirmation                             
-  -y, --yes                     - Skip confirmation prompt                                    
-  --confirm                     - Deprecated alias for --yes                                  
-  --bulk             <ids...>   - Delete multiple issues by identifier (e.g., TC-123 TC-124)  
-  --bulk-file        <file>     - Read issue identifiers from a file (one per line)           
+  -h, --help                    - Show this help.                                                      
+  -w, --workspace    <slug>     - Target workspace (uses credentials)                                  
+  --profile          <profile>  - Execution profile override (agent-safe default, human-debug opt-in)  
+  -i, --interactive             - Enable interactive confirmation                                      
+  -y, --yes                     - Skip confirmation prompt                                             
+  --confirm                     - Deprecated alias for --yes                                           
+  --bulk             <ids...>   - Delete multiple issues by identifier (e.g., TC-123 TC-124)           
+  --bulk-file        <file>     - Read issue identifiers from a file (one per line)                    
   --bulk-stdin                  - Read issue identifiers from stdin
 ```
 
@@ -329,7 +329,7 @@ Options:
 
   -h, --help                                - Show this help.                                                         
   -w, --workspace            <slug>         - Target workspace (uses credentials)                                     
-  --profile                  <profile>      - Execution profile (agent-safe)                                          
+  --profile                  <profile>      - Execution profile override (agent-safe default, human-debug opt-in)     
   --start                                   - Start the issue after creation                                          
   -a, --assignee             <assignee>     - Assign the issue to 'self' or someone (by username or name)             
   --due-date                 <dueDate>      - Due date of the issue                                                   
@@ -375,15 +375,15 @@ Description:
 
 Options:
 
-  -h, --help                    - Show this help.                                 
-  -w, --workspace  <slug>       - Target workspace (uses credentials)             
-  --profile        <profile>    - Execution profile (agent-safe)                  
-  --file           <path>       - Path to a JSON file describing the issue batch  
-  --team           <team>       - Team key override for the batch file            
-  --project        <project>    - Project name override for the batch file        
-  -j, --json                    - Output as JSON                                  
-  --dry-run                     - Preview the batch without creating issues       
-  --timeout-ms     <timeoutMs>  - Timeout for write confirmation in milliseconds  
+  -h, --help                    - Show this help.                                                      
+  -w, --workspace  <slug>       - Target workspace (uses credentials)                                  
+  --profile        <profile>    - Execution profile override (agent-safe default, human-debug opt-in)  
+  --file           <path>       - Path to a JSON file describing the issue batch                       
+  --team           <team>       - Team key override for the batch file                                 
+  --project        <project>    - Project name override for the batch file                             
+  -j, --json                    - Output as JSON                                                       
+  --dry-run                     - Preview the batch without creating issues                            
+  --timeout-ms     <timeoutMs>  - Timeout for write confirmation in milliseconds                       
 
 Examples:
 
@@ -404,30 +404,30 @@ Description:
 
 Options:
 
-  -h, --help                         - Show this help.                                                     
-  -w, --workspace     <slug>         - Target workspace (uses credentials)                                 
-  --profile           <profile>      - Execution profile (agent-safe)                                      
-  -a, --assignee      <assignee>     - Assign the issue to 'self' or someone (by username or name)         
-  --due-date          <dueDate>      - Due date of the issue                                               
-  --clear-due-date                   - Clear the due date on the issue                                     
-  --parent            <parent>       - Parent issue (if any) as a team_number code                         
-  -p, --priority      <priority>     - Priority of the issue (1-4, descending priority)                    
-  --estimate          <estimate>     - Points estimate of the issue                                        
-  -d, --description   <description>  - Description of the issue (prefer --description-file for markdown)   
-  --comment           <comment>      - Add a comment after successfully updating the issue                 
-  --description-file  <path>         - Read description from a file (preferred for markdown content)       
-  -l, --label         <label>        - Issue label associated with the issue. May be repeated.             
-  --team              <team>         - Team associated with the issue (if not your default team)           
-  --project           <project>      - Name or slug ID of the project with the issue                       
-  -s, --state         <state>        - Workflow state for the issue (by name or type)                      
-  --milestone         <milestone>    - Name of the project milestone                                       
-  --cycle             <cycle>        - Cycle name, number, or 'active'                                     
-  --no-interactive                   - Accepted for compatibility; issue update is always non-interactive  
-  -j, --json                         - Force machine-readable JSON output                                  
-  --text                             - Output human-readable text                                          
-  --dry-run                          - Preview the update without mutating the issue                       
-  --timeout-ms        <timeoutMs>    - Timeout for write confirmation in milliseconds                      
-  -t, --title         <title>        - Title of the issue                                                  
+  -h, --help                         - Show this help.                                                      
+  -w, --workspace     <slug>         - Target workspace (uses credentials)                                  
+  --profile           <profile>      - Execution profile override (agent-safe default, human-debug opt-in)  
+  -a, --assignee      <assignee>     - Assign the issue to 'self' or someone (by username or name)          
+  --due-date          <dueDate>      - Due date of the issue                                                
+  --clear-due-date                   - Clear the due date on the issue                                      
+  --parent            <parent>       - Parent issue (if any) as a team_number code                          
+  -p, --priority      <priority>     - Priority of the issue (1-4, descending priority)                     
+  --estimate          <estimate>     - Points estimate of the issue                                         
+  -d, --description   <description>  - Description of the issue (prefer --description-file for markdown)    
+  --comment           <comment>      - Add a comment after successfully updating the issue                  
+  --description-file  <path>         - Read description from a file (preferred for markdown content)        
+  -l, --label         <label>        - Issue label associated with the issue. May be repeated.              
+  --team              <team>         - Team associated with the issue (if not your default team)            
+  --project           <project>      - Name or slug ID of the project with the issue                        
+  -s, --state         <state>        - Workflow state for the issue (by name or type)                       
+  --milestone         <milestone>    - Name of the project milestone                                        
+  --cycle             <cycle>        - Cycle name, number, or 'active'                                      
+  --no-interactive                   - Accepted for compatibility; issue update is always non-interactive   
+  -j, --json                         - Force machine-readable JSON output                                   
+  --text                             - Output human-readable text                                           
+  --dry-run                          - Preview the update without mutating the issue                        
+  --timeout-ms        <timeoutMs>    - Timeout for write confirmation in milliseconds                       
+  -t, --title         <title>        - Title of the issue                                                   
 
 Examples:
 
@@ -451,10 +451,10 @@ Description:
 
 Options:
 
-  -h, --help                  - Show this help.                      
-  -w, --workspace  <slug>     - Target workspace (uses credentials)  
-  --profile        <profile>  - Execution profile (agent-safe)       
-  -j, --json                  - Output as JSON                       
+  -h, --help                  - Show this help.                                                      
+  -w, --workspace  <slug>     - Target workspace (uses credentials)                                  
+  --profile        <profile>  - Execution profile override (agent-safe default, human-debug opt-in)  
+  -j, --json                  - Output as JSON                                                       
 
 Examples:
 
@@ -476,11 +476,11 @@ Description:
 
 Options:
 
-  -h, --help                  - Show this help.                      
-  -w, --workspace  <slug>     - Target workspace (uses credentials)  
-  --profile        <profile>  - Execution profile (agent-safe)       
-  -j, --json                  - Output as JSON                       
-  --unassign                  - Remove the current assignee          
+  -h, --help                  - Show this help.                                                      
+  -w, --workspace  <slug>     - Target workspace (uses credentials)                                  
+  --profile        <profile>  - Execution profile override (agent-safe default, human-debug opt-in)  
+  -j, --json                  - Output as JSON                                                       
+  --unassign                  - Remove the current assignee                                          
 
 Examples:
 
@@ -502,10 +502,10 @@ Description:
 
 Options:
 
-  -h, --help                  - Show this help.                      
-  -w, --workspace  <slug>     - Target workspace (uses credentials)  
-  --profile        <profile>  - Execution profile (agent-safe)       
-  -j, --json                  - Output as JSON                       
+  -h, --help                  - Show this help.                                                      
+  -w, --workspace  <slug>     - Target workspace (uses credentials)                                  
+  --profile        <profile>  - Execution profile override (agent-safe default, human-debug opt-in)  
+  -j, --json                  - Output as JSON                                                       
 
 Examples:
 
@@ -529,11 +529,11 @@ Description:
 
 Options:
 
-  -h, --help                  - Show this help.                      
-  -w, --workspace  <slug>     - Target workspace (uses credentials)  
-  --profile        <profile>  - Execution profile (agent-safe)       
-  -j, --json                  - Output as JSON                       
-  --clear                     - Clear the estimate                   
+  -h, --help                  - Show this help.                                                      
+  -w, --workspace  <slug>     - Target workspace (uses credentials)                                  
+  --profile        <profile>  - Execution profile override (agent-safe default, human-debug opt-in)  
+  -j, --json                  - Output as JSON                                                       
+  --clear                     - Clear the estimate                                                   
 
 Examples:
 
@@ -555,9 +555,9 @@ Description:
 
 Options:
 
-  -h, --help                  - Show this help.                      
-  -w, --workspace  <slug>     - Target workspace (uses credentials)  
-  --profile        <profile>  - Execution profile (agent-safe)       
+  -h, --help                  - Show this help.                                                      
+  -w, --workspace  <slug>     - Target workspace (uses credentials)                                  
+  --profile        <profile>  - Execution profile override (agent-safe default, human-debug opt-in)  
   -j, --json                  - Output as JSON
 ```
 
@@ -574,9 +574,9 @@ Description:
 
 Options:
 
-  -h, --help                  - Show this help.                      
-  -w, --workspace  <slug>     - Target workspace (uses credentials)  
-  --profile        <profile>  - Execution profile (agent-safe)       
+  -h, --help                  - Show this help.                                                      
+  -w, --workspace  <slug>     - Target workspace (uses credentials)                                  
+  --profile        <profile>  - Execution profile override (agent-safe default, human-debug opt-in)  
   -j, --json                  - Output as JSON
 ```
 
@@ -593,9 +593,9 @@ Description:
 
 Options:
 
-  -h, --help                  - Show this help.                      
-  -w, --workspace  <slug>     - Target workspace (uses credentials)  
-  --profile        <profile>  - Execution profile (agent-safe)       
+  -h, --help                  - Show this help.                                                      
+  -w, --workspace  <slug>     - Target workspace (uses credentials)                                  
+  --profile        <profile>  - Execution profile override (agent-safe default, human-debug opt-in)  
 
 Commands:
 
@@ -616,9 +616,9 @@ Description:
 
 Options:
 
-  -h, --help                  - Show this help.                      
-  -w, --workspace  <slug>     - Target workspace (uses credentials)  
-  --profile        <profile>  - Execution profile (agent-safe)       
+  -h, --help                  - Show this help.                                                      
+  -w, --workspace  <slug>     - Target workspace (uses credentials)                                  
+  --profile        <profile>  - Execution profile override (agent-safe default, human-debug opt-in)  
 
 Examples:
 
@@ -636,9 +636,9 @@ Description:
 
 Options:
 
-  -h, --help                  - Show this help.                      
-  -w, --workspace  <slug>     - Target workspace (uses credentials)  
-  --profile        <profile>  - Execution profile (agent-safe)       
+  -h, --help                  - Show this help.                                                      
+  -w, --workspace  <slug>     - Target workspace (uses credentials)                                  
+  --profile        <profile>  - Execution profile override (agent-safe default, human-debug opt-in)  
 
 Examples:
 
@@ -658,9 +658,9 @@ Description:
 
 Options:
 
-  -h, --help                  - Show this help.                      
-  -w, --workspace  <slug>     - Target workspace (uses credentials)  
-  --profile        <profile>  - Execution profile (agent-safe)       
+  -h, --help                  - Show this help.                                                      
+  -w, --workspace  <slug>     - Target workspace (uses credentials)                                  
+  --profile        <profile>  - Execution profile override (agent-safe default, human-debug opt-in)  
 
 Commands:
 
@@ -683,17 +683,17 @@ Description:
 
 Options:
 
-  -h, --help                      - Show this help.                                                 
-  -w, --workspace    <slug>       - Target workspace (uses credentials)                             
-  --profile          <profile>    - Execution profile (agent-safe)                                  
-  -b, --body         <text>       - Comment body text                                               
-  --body-file        <path>       - Read comment body from a file (preferred for markdown content)  
-  -p, --parent       <id>         - Parent comment ID for replies                                   
-  -a, --attach       <filepath>   - Attach a file to the comment (can be used multiple times)       
-  -i, --interactive               - Enable interactive body prompts                                 
-  -j, --json                      - Output as JSON                                                  
-  --dry-run                       - Preview the comment without creating it                         
-  --timeout-ms       <timeoutMs>  - Timeout for write confirmation in milliseconds                  
+  -h, --help                      - Show this help.                                                      
+  -w, --workspace    <slug>       - Target workspace (uses credentials)                                  
+  --profile          <profile>    - Execution profile override (agent-safe default, human-debug opt-in)  
+  -b, --body         <text>       - Comment body text                                                    
+  --body-file        <path>       - Read comment body from a file (preferred for markdown content)       
+  -p, --parent       <id>         - Parent comment ID for replies                                        
+  -a, --attach       <filepath>   - Attach a file to the comment (can be used multiple times)            
+  -i, --interactive               - Enable interactive body prompts                                      
+  -j, --json                      - Output as JSON                                                       
+  --dry-run                       - Preview the comment without creating it                              
+  --timeout-ms       <timeoutMs>  - Timeout for write confirmation in milliseconds                       
 
 Examples:
 
@@ -714,9 +714,9 @@ Description:
 
 Options:
 
-  -h, --help                  - Show this help.                      
-  -w, --workspace  <slug>     - Target workspace (uses credentials)  
-  --profile        <profile>  - Execution profile (agent-safe)
+  -h, --help                  - Show this help.                                                      
+  -w, --workspace  <slug>     - Target workspace (uses credentials)                                  
+  --profile        <profile>  - Execution profile override (agent-safe default, human-debug opt-in)
 ```
 
 ##### update
@@ -730,13 +730,13 @@ Description:
 
 Options:
 
-  -h, --help                      - Show this help.                                                 
-  -w, --workspace    <slug>       - Target workspace (uses credentials)                             
-  --profile          <profile>    - Execution profile (agent-safe)                                  
-  -b, --body         <text>       - New comment body text                                           
-  --body-file        <path>       - Read comment body from a file (preferred for markdown content)  
-  --timeout-ms       <timeoutMs>  - Timeout for write confirmation in milliseconds                  
-  -i, --interactive               - Enable interactive body prompts                                 
+  -h, --help                      - Show this help.                                                      
+  -w, --workspace    <slug>       - Target workspace (uses credentials)                                  
+  --profile          <profile>    - Execution profile override (agent-safe default, human-debug opt-in)  
+  -b, --body         <text>       - New comment body text                                                
+  --body-file        <path>       - Read comment body from a file (preferred for markdown content)       
+  --timeout-ms       <timeoutMs>  - Timeout for write confirmation in milliseconds                       
+  -i, --interactive               - Enable interactive body prompts                                      
 
 Examples:
 
@@ -754,10 +754,10 @@ Description:
 
 Options:
 
-  -h, --help                  - Show this help.                           
-  -w, --workspace  <slug>     - Target workspace (uses credentials)       
-  --profile        <profile>  - Execution profile (agent-safe)            
-  -j, --json                  - Output as JSON                            
+  -h, --help                  - Show this help.                                                      
+  -w, --workspace  <slug>     - Target workspace (uses credentials)                                  
+  --profile        <profile>  - Execution profile override (agent-safe default, human-debug opt-in)  
+  -j, --json                  - Output as JSON                                                       
   --no-pager                  - Disable automatic paging for long output
 ```
 
@@ -774,10 +774,10 @@ Description:
 
 Options:
 
-  -h, --help                  - Show this help.                              
-  -w, --workspace  <slug>     - Target workspace (uses credentials)          
-  --profile        <profile>  - Execution profile (agent-safe)               
-  -t, --title      <title>    - Custom title for the attachment              
+  -h, --help                  - Show this help.                                                      
+  -w, --workspace  <slug>     - Target workspace (uses credentials)                                  
+  --profile        <profile>  - Execution profile override (agent-safe default, human-debug opt-in)  
+  -t, --title      <title>    - Custom title for the attachment                                      
   -c, --comment    <body>     - Add a comment body linked to the attachment
 ```
 
@@ -794,9 +794,9 @@ Description:
 
 Options:
 
-  -h, --help                  - Show this help.                      
-  -w, --workspace  <slug>     - Target workspace (uses credentials)  
-  --profile        <profile>  - Execution profile (agent-safe)       
+  -h, --help                  - Show this help.                                                      
+  -w, --workspace  <slug>     - Target workspace (uses credentials)                                  
+  --profile        <profile>  - Execution profile override (agent-safe default, human-debug opt-in)  
 
 Commands:
 
@@ -818,12 +818,12 @@ Description:
 
 Options:
 
-  -h, --help                    - Show this help.                                    
-  -w, --workspace  <slug>       - Target workspace (uses credentials)                
-  --profile        <profile>    - Execution profile (agent-safe)                     
-  -j, --json                    - Output as JSON                                     
-  --dry-run                     - Preview relation creation without mutating Linear  
-  --timeout-ms     <timeoutMs>  - Timeout for write confirmation in milliseconds     
+  -h, --help                    - Show this help.                                                      
+  -w, --workspace  <slug>       - Target workspace (uses credentials)                                  
+  --profile        <profile>    - Execution profile override (agent-safe default, human-debug opt-in)  
+  -j, --json                    - Output as JSON                                                       
+  --dry-run                     - Preview relation creation without mutating Linear                    
+  --timeout-ms     <timeoutMs>  - Timeout for write confirmation in milliseconds                       
 
 Examples:
 
@@ -844,11 +844,11 @@ Description:
 
 Options:
 
-  -h, --help                    - Show this help.                                    
-  -w, --workspace  <slug>       - Target workspace (uses credentials)                
-  --profile        <profile>    - Execution profile (agent-safe)                     
-  -j, --json                    - Output as JSON                                     
-  --dry-run                     - Preview relation deletion without mutating Linear  
+  -h, --help                    - Show this help.                                                      
+  -w, --workspace  <slug>       - Target workspace (uses credentials)                                  
+  --profile        <profile>    - Execution profile override (agent-safe default, human-debug opt-in)  
+  -j, --json                    - Output as JSON                                                       
+  --dry-run                     - Preview relation deletion without mutating Linear                    
   --timeout-ms     <timeoutMs>  - Timeout for write confirmation in milliseconds
 ```
 
@@ -863,8 +863,8 @@ Description:
 
 Options:
 
-  -h, --help                  - Show this help.                      
-  -w, --workspace  <slug>     - Target workspace (uses credentials)  
-  --profile        <profile>  - Execution profile (agent-safe)       
+  -h, --help                  - Show this help.                                                      
+  -w, --workspace  <slug>     - Target workspace (uses credentials)                                  
+  --profile        <profile>  - Execution profile override (agent-safe default, human-debug opt-in)  
   -j, --json                  - Output as JSON
 ```

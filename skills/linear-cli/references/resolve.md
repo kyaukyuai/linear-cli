@@ -13,9 +13,9 @@ Description:
 
 Options:
 
-  -h, --help                  - Show this help.                      
-  -w, --workspace  <slug>     - Target workspace (uses credentials)  
-  --profile        <profile>  - Execution profile (agent-safe)       
+  -h, --help                  - Show this help.                                                      
+  -w, --workspace  <slug>     - Target workspace (uses credentials)                                  
+  --profile        <profile>  - Execution profile override (agent-safe default, human-debug opt-in)  
 
 Commands:
 
@@ -41,11 +41,11 @@ Description:
 
 Options:
 
-  -h, --help                  - Show this help.                      
-  -w, --workspace  <slug>     - Target workspace (uses credentials)  
-  --profile        <profile>  - Execution profile (agent-safe)       
-  -j, --json                  - Force machine-readable JSON output   
-  --text                      - Output human-readable text           
+  -h, --help                  - Show this help.                                                      
+  -w, --workspace  <slug>     - Target workspace (uses credentials)                                  
+  --profile        <profile>  - Execution profile override (agent-safe default, human-debug opt-in)  
+  -j, --json                  - Force machine-readable JSON output                                   
+  --text                      - Output human-readable text                                           
 
 Examples:
 
@@ -66,11 +66,11 @@ Description:
 
 Options:
 
-  -h, --help                  - Show this help.                      
-  -w, --workspace  <slug>     - Target workspace (uses credentials)  
-  --profile        <profile>  - Execution profile (agent-safe)       
-  -j, --json                  - Force machine-readable JSON output   
-  --text                      - Output human-readable text           
+  -h, --help                  - Show this help.                                                      
+  -w, --workspace  <slug>     - Target workspace (uses credentials)                                  
+  --profile        <profile>  - Execution profile override (agent-safe default, human-debug opt-in)  
+  -j, --json                  - Force machine-readable JSON output                                   
+  --text                      - Output human-readable text                                           
 
 Examples:
 
@@ -91,12 +91,12 @@ Description:
 
 Options:
 
-  -h, --help                  - Show this help.                      
-  -w, --workspace  <slug>     - Target workspace (uses credentials)  
-  --profile        <profile>  - Execution profile (agent-safe)       
-  --team           <team>     - Team key for team-scoped resolution  
-  -j, --json                  - Force machine-readable JSON output   
-  --text                      - Output human-readable text           
+  -h, --help                  - Show this help.                                                      
+  -w, --workspace  <slug>     - Target workspace (uses credentials)                                  
+  --profile        <profile>  - Execution profile override (agent-safe default, human-debug opt-in)  
+  --team           <team>     - Team key for team-scoped resolution                                  
+  -j, --json                  - Force machine-readable JSON output                                   
+  --text                      - Output human-readable text                                           
 
 Examples:
 
@@ -117,11 +117,11 @@ Description:
 
 Options:
 
-  -h, --help                  - Show this help.                      
-  -w, --workspace  <slug>     - Target workspace (uses credentials)  
-  --profile        <profile>  - Execution profile (agent-safe)       
-  -j, --json                  - Force machine-readable JSON output   
-  --text                      - Output human-readable text           
+  -h, --help                  - Show this help.                                                      
+  -w, --workspace  <slug>     - Target workspace (uses credentials)                                  
+  --profile        <profile>  - Execution profile override (agent-safe default, human-debug opt-in)  
+  -j, --json                  - Force machine-readable JSON output                                   
+  --text                      - Output human-readable text                                           
 
 Examples:
 
@@ -142,12 +142,12 @@ Description:
 
 Options:
 
-  -h, --help                  - Show this help.                      
-  -w, --workspace  <slug>     - Target workspace (uses credentials)  
-  --profile        <profile>  - Execution profile (agent-safe)       
-  --team           <team>     - Team key for team-scoped resolution  
-  -j, --json                  - Force machine-readable JSON output   
-  --text                      - Output human-readable text           
+  -h, --help                  - Show this help.                                                      
+  -w, --workspace  <slug>     - Target workspace (uses credentials)                                  
+  --profile        <profile>  - Execution profile override (agent-safe default, human-debug opt-in)  
+  --team           <team>     - Team key for team-scoped resolution                                  
+  -j, --json                  - Force machine-readable JSON output                                   
+  --text                      - Output human-readable text                                           
 
 Examples:
 

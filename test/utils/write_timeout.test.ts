@@ -3,6 +3,7 @@ import {
   AGENT_SAFE_PROFILE,
   AGENT_SAFE_WRITE_TIMEOUT_MS,
   getCliExecutionProfile,
+  HUMAN_DEBUG_PROFILE,
   setCliExecutionProfile,
 } from "../../src/utils/execution_profile.ts"
 import {
@@ -14,9 +15,16 @@ import {
 } from "../../src/utils/write_timeout.ts"
 import { ValidationError, WriteTimeoutError } from "../../src/utils/errors.ts"
 
-Deno.test("resolveWriteTimeoutMs uses the default when no flag or env is set", () => {
+Deno.test("resolveWriteTimeoutMs uses the agent-safe default when no flag or env is set", () => {
+  const originalProfile = getCliExecutionProfile()
   Deno.env.delete(WRITE_TIMEOUT_ENV_VAR)
-  assertEquals(resolveWriteTimeoutMs(), DEFAULT_WRITE_TIMEOUT_MS)
+  setCliExecutionProfile(undefined)
+
+  try {
+    assertEquals(resolveWriteTimeoutMs(), AGENT_SAFE_WRITE_TIMEOUT_MS)
+  } finally {
+    setCliExecutionProfile(originalProfile)
+  }
 })
 
 Deno.test("resolveWriteTimeoutMs uses the agent-safe default when the profile is active", () => {
@@ -26,6 +34,18 @@ Deno.test("resolveWriteTimeoutMs uses the agent-safe default when the profile is
 
   try {
     assertEquals(resolveWriteTimeoutMs(), AGENT_SAFE_WRITE_TIMEOUT_MS)
+  } finally {
+    setCliExecutionProfile(originalProfile)
+  }
+})
+
+Deno.test("resolveWriteTimeoutMs uses the human-debug default when that profile is active", () => {
+  const originalProfile = getCliExecutionProfile()
+  Deno.env.delete(WRITE_TIMEOUT_ENV_VAR)
+  setCliExecutionProfile(HUMAN_DEBUG_PROFILE)
+
+  try {
+    assertEquals(resolveWriteTimeoutMs(), DEFAULT_WRITE_TIMEOUT_MS)
   } finally {
     setCliExecutionProfile(originalProfile)
   }
@@ -99,21 +119,21 @@ Deno.test("withWriteTimeout throws WriteTimeoutError with stable details", async
   })
 })
 
-Deno.test("buildWriteTimeoutSuggestion mentions agent-safe when the default profile is active", () => {
+Deno.test("buildWriteTimeoutSuggestion omits profile hints under the default agent-safe runtime", () => {
   const originalProfile = getCliExecutionProfile()
   setCliExecutionProfile(undefined)
 
   try {
     assertEquals(
       buildWriteTimeoutSuggestion(),
-      "Check Linear before retrying. Use --profile agent-safe for a longer automation timeout, or increase the timeout with --timeout-ms or LINEAR_WRITE_TIMEOUT_MS if this write path is consistently slow.",
+      "Check Linear before retrying. Increase the timeout with --timeout-ms or LINEAR_WRITE_TIMEOUT_MS if this write path is consistently slow.",
     )
   } finally {
     setCliExecutionProfile(originalProfile)
   }
 })
 
-Deno.test("buildWriteTimeoutSuggestion omits the profile hint under agent-safe", () => {
+Deno.test("buildWriteTimeoutSuggestion matches explicit agent-safe mode", () => {
   const originalProfile = getCliExecutionProfile()
   setCliExecutionProfile(AGENT_SAFE_PROFILE)
 
@@ -121,6 +141,20 @@ Deno.test("buildWriteTimeoutSuggestion omits the profile hint under agent-safe",
     assertEquals(
       buildWriteTimeoutSuggestion(),
       "Check Linear before retrying. Increase the timeout with --timeout-ms or LINEAR_WRITE_TIMEOUT_MS if this write path is consistently slow.",
+    )
+  } finally {
+    setCliExecutionProfile(originalProfile)
+  }
+})
+
+Deno.test("buildWriteTimeoutSuggestion mentions the longer agent-safe timeout under human-debug", () => {
+  const originalProfile = getCliExecutionProfile()
+  setCliExecutionProfile(HUMAN_DEBUG_PROFILE)
+
+  try {
+    assertEquals(
+      buildWriteTimeoutSuggestion(),
+      "Check Linear before retrying. Rerun without --profile human-debug for the longer agent-safe timeout, or increase the timeout with --timeout-ms or LINEAR_WRITE_TIMEOUT_MS if this write path is consistently slow.",
     )
   } finally {
     setCliExecutionProfile(originalProfile)

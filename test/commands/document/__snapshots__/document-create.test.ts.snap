@@ -67,7 +67,7 @@ stdout:
 ""
 stderr:
 "✗ Failed to create document: Title is required
-  Use --title or pass --interactive.
+  Use --title or pass --profile human-debug --interactive.
 "
 `;
 

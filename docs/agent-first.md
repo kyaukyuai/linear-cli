@@ -26,15 +26,15 @@ This tells an agent:
 
 Use the default `linear capabilities` shape for runtime startup compatibility. Reach for `--compat v2` only when the caller is ready to consume richer command schema metadata such as required inputs, constrained values, defaults, context resolution hints, input constraints, canonical argv examples, stdin/file targets, structured output contracts, and write semantics.
 
-When a run is fully agent-controlled, prefer the opt-in execution profile:
+The default runtime now uses agent-safe execution semantics:
 
 ```bash
-linear --profile agent-safe capabilities --compat v2
+linear capabilities --compat v2
 ```
 
-`agent-safe` currently disables pager-by-default behavior, extends the built-in write timeout to `45000ms` unless the caller overrides it, and requires explicit `--yes` for destructive confirmation bypass. It does not force `--json`, auto-confirm destructive actions, or replace missing required inputs.
+`agent-safe` disables pager-by-default behavior, extends the built-in write timeout to `45000ms` unless the caller overrides it, and requires explicit `--yes` for destructive confirmation bypass. It does not force `--json`, auto-confirm destructive actions, or replace missing required inputs.
 
-Human/debug prompt flows are now explicit. When a command supports prompts or editor entry, pass `--interactive`; otherwise missing required inputs fail fast with actionable guidance.
+Human/debug prompt flows are now explicit. When a command supports prompts or editor entry, pass `--profile human-debug --interactive`; otherwise missing required inputs fail fast with actionable guidance.
 
 The default capabilities shape and the read entrypoints below are treated as startup-critical contracts and are release-gated in CI.
 
@@ -83,7 +83,7 @@ linear notification list
 
 Use `--text` only when a human needs terminal-oriented output for inspection or debugging.
 
-For human-guided prompt entry on command surfaces that support it, pass `--interactive` explicitly.
+For human-guided prompt entry on command surfaces that support it, pass `--profile human-debug --interactive` explicitly.
 
 For the full contract surface, see [json-contracts.md](./json-contracts.md).
 
@@ -92,12 +92,11 @@ For the full contract surface, see [json-contracts.md](./json-contracts.md).
 When a command supports `--dry-run`, use it first:
 
 ```bash
-linear --profile agent-safe issue create -t "Backfill docs" --team ENG --dry-run --json
 linear issue create -t "Backfill docs" --team ENG --dry-run --json
 linear issue update ENG-123 --state started --dry-run --json
 linear issue relation add ENG-123 blocked-by ENG-100 --dry-run --json
 linear issue start ENG-123 --dry-run
-linear issue create --interactive
+linear --profile human-debug issue create --interactive
 ```
 
 Preview output is stable and designed for plan/confirm/apply loops.
@@ -107,7 +106,6 @@ Preview output is stable and designed for plan/confirm/apply loops.
 When applying a write, prefer `--json` and inspect the process exit code.
 
 ```bash
-linear --profile agent-safe issue update ENG-123 --state done --comment "Shipped" --json
 linear issue update ENG-123 --state done --comment "Shipped"
 linear notification read notif_123 --json
 ```

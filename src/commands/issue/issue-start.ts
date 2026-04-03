@@ -71,8 +71,8 @@ export const startCommand = new Command()
       if (!resolvedId) {
         ensureInteractiveInputAvailable(
           { interactive },
-          "Issue ID is required unless --interactive is used",
-          "Pass an issue ID like `linear issue start ENG-123`, or use --interactive to pick from a list.",
+          "Issue ID is required unless --profile human-debug --interactive is used",
+          "Pass an issue ID like `linear issue start ENG-123`, or use --profile human-debug --interactive to pick from a list.",
         )
         const result = await fetchIssuesForState({
           teamKey: teamId,

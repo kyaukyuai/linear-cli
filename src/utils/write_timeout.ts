@@ -1,5 +1,7 @@
 import {
   AGENT_SAFE_WRITE_TIMEOUT_MS,
+  getEffectiveExecutionProfile,
+  HUMAN_DEBUG_PROFILE,
   isAgentSafeExecutionProfile,
 } from "./execution_profile.ts"
 import { ValidationError, WriteTimeoutError } from "./errors.ts"
@@ -78,9 +80,9 @@ export async function withWriteTimeout<T>(
 }
 
 export function buildWriteTimeoutSuggestion(): string {
-  return isAgentSafeExecutionProfile()
-    ? "Check Linear before retrying. Increase the timeout with --timeout-ms or LINEAR_WRITE_TIMEOUT_MS if this write path is consistently slow."
-    : "Check Linear before retrying. Use --profile agent-safe for a longer automation timeout, or increase the timeout with --timeout-ms or LINEAR_WRITE_TIMEOUT_MS if this write path is consistently slow."
+  return getEffectiveExecutionProfile() === HUMAN_DEBUG_PROFILE
+    ? "Check Linear before retrying. Rerun without --profile human-debug for the longer agent-safe timeout, or increase the timeout with --timeout-ms or LINEAR_WRITE_TIMEOUT_MS if this write path is consistently slow."
+    : "Check Linear before retrying. Increase the timeout with --timeout-ms or LINEAR_WRITE_TIMEOUT_MS if this write path is consistently slow."
 }
 
 function validateWriteTimeoutMs(value: number, source: string): number {

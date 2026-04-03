@@ -48,8 +48,8 @@ export const loginCommand = new Command()
       if (!apiKey) {
         ensureInteractiveInputAvailable(
           { interactive: options.interactive },
-          "API key is required unless --interactive is used",
-          "Pass --key <token>, or use --interactive to enter the API key in a terminal.",
+          "API key is required unless --profile human-debug --interactive is used",
+          "Pass --key <token>, or use --profile human-debug --interactive to enter the API key in a terminal.",
         )
         apiKey = (await Secret.prompt({
           message: "Enter your Linear API key",

@@ -95,7 +95,7 @@ export const deleteCommand = new Command()
         ensureInteractiveInputAvailable(
           { interactive },
           "Interactive team selection required",
-          "Use --move-issues <teamKey> to specify the destination team, or pass --interactive to choose in a terminal.",
+          "Use --move-issues <teamKey> to specify the destination team, or pass --profile human-debug --interactive to choose in a terminal.",
         )
 
         const allTeams = await getAllTeams()

@@ -48,7 +48,7 @@ Environment Variables:
   )
   .globalOption(
     "--profile <profile:string>",
-    "Execution profile (agent-safe)",
+    "Execution profile override (agent-safe default, human-debug opt-in)",
   )
   .globalAction((options) => {
     setCliWorkspace(options.workspace)

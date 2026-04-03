@@ -13,9 +13,9 @@ Description:
 
 Options:
 
-  -h, --help                  - Show this help.                      
-  -w, --workspace  <slug>     - Target workspace (uses credentials)  
-  --profile        <profile>  - Execution profile (agent-safe)       
+  -h, --help                  - Show this help.                                                      
+  -w, --workspace  <slug>     - Target workspace (uses credentials)                                  
+  --profile        <profile>  - Execution profile override (agent-safe default, human-debug opt-in)  
 
 Commands:
 
@@ -45,17 +45,17 @@ Description:
 
 Options:
 
-  -h, --help                  - Show this help.                                
-  -w, --workspace  <slug>     - Target workspace (uses credentials)            
-  --profile        <profile>  - Execution profile (agent-safe)                 
-  -s, --status     <status>   - Filter by status (active, planned, completed)  
-  --all-statuses              - Show all statuses (default: active only)       
-  -o, --owner      <owner>    - Filter by owner (username or email)            
-  -w, --web                   - Open initiatives page in web browser           
-  -a, --app                   - Open initiatives page in Linear.app            
-  -j, --json                  - Output as JSON                                 
-  --archived                  - Include archived initiatives                   
-  --no-pager                  - Disable automatic paging for long output       
+  -h, --help                  - Show this help.                                                      
+  -w, --workspace  <slug>     - Target workspace (uses credentials)                                  
+  --profile        <profile>  - Execution profile override (agent-safe default, human-debug opt-in)  
+  -s, --status     <status>   - Filter by status (active, planned, completed)                        
+  --all-statuses              - Show all statuses (default: active only)                             
+  -o, --owner      <owner>    - Filter by owner (username or email)                                  
+  -w, --web                   - Open initiatives page in web browser                                 
+  -a, --app                   - Open initiatives page in Linear.app                                  
+  -j, --json                  - Output as JSON                                                       
+  --archived                  - Include archived initiatives                                         
+  --no-pager                  - Disable automatic paging for long output                             
 
 Examples:
 
@@ -75,12 +75,12 @@ Description:
 
 Options:
 
-  -h, --help                  - Show this help.                      
-  -w, --workspace  <slug>     - Target workspace (uses credentials)  
-  --profile        <profile>  - Execution profile (agent-safe)       
-  -w, --web                   - Open in web browser                  
-  -a, --app                   - Open in Linear.app                   
-  -j, --json                  - Output as JSON                       
+  -h, --help                  - Show this help.                                                      
+  -w, --workspace  <slug>     - Target workspace (uses credentials)                                  
+  --profile        <profile>  - Execution profile override (agent-safe default, human-debug opt-in)  
+  -w, --web                   - Open in web browser                                                  
+  -a, --app                   - Open in Linear.app                                                   
+  -j, --json                  - Output as JSON                                                       
 
 Examples:
 
@@ -100,16 +100,16 @@ Description:
 
 Options:
 
-  -h, --help                        - Show this help.                                        
-  -w, --workspace    <slug>         - Target workspace (uses credentials)                    
-  --profile          <profile>      - Execution profile (agent-safe)                         
-  -n, --name         <name>         - Initiative name (required)                             
-  -d, --description  <description>  - Initiative description                                 
-  -s, --status       <status>       - Status: planned, active, completed (default: planned)  
-  -o, --owner        <owner>        - Owner (username, email, or @me for yourself)           
-  --target-date      <targetDate>   - Target completion date (YYYY-MM-DD)                    
-  -c, --color        <color>        - Color hex code (e.g., #5E6AD2)                         
-  --icon             <icon>         - Icon name                                              
+  -h, --help                        - Show this help.                                                      
+  -w, --workspace    <slug>         - Target workspace (uses credentials)                                  
+  --profile          <profile>      - Execution profile override (agent-safe default, human-debug opt-in)  
+  -n, --name         <name>         - Initiative name (required)                                           
+  -d, --description  <description>  - Initiative description                                               
+  -s, --status       <status>       - Status: planned, active, completed (default: planned)                
+  -o, --owner        <owner>        - Owner (username, email, or @me for yourself)                         
+  --target-date      <targetDate>   - Target completion date (YYYY-MM-DD)                                  
+  -c, --color        <color>        - Color hex code (e.g., #5E6AD2)                                       
+  --icon             <icon>         - Icon name                                                            
   -i, --interactive                 - Enable interactive prompts
 ```
 
@@ -126,14 +126,14 @@ Description:
 
 Options:
 
-  -h, --help                    - Show this help.                                    
-  -w, --workspace    <slug>     - Target workspace (uses credentials)                
-  --profile          <profile>  - Execution profile (agent-safe)                     
-  -i, --interactive             - Enable interactive confirmation                    
-  -y, --yes                     - Skip confirmation prompt                           
-  --force                       - Deprecated alias for --yes                         
-  --bulk             <ids...>   - Archive multiple initiatives by ID, slug, or name  
-  --bulk-file        <file>     - Read initiative IDs from a file (one per line)     
+  -h, --help                    - Show this help.                                                      
+  -w, --workspace    <slug>     - Target workspace (uses credentials)                                  
+  --profile          <profile>  - Execution profile override (agent-safe default, human-debug opt-in)  
+  -i, --interactive             - Enable interactive confirmation                                      
+  -y, --yes                     - Skip confirmation prompt                                             
+  --force                       - Deprecated alias for --yes                                           
+  --bulk             <ids...>   - Archive multiple initiatives by ID, slug, or name                    
+  --bulk-file        <file>     - Read initiative IDs from a file (one per line)                       
   --bulk-stdin                  - Read initiative IDs from stdin
 ```
 
@@ -150,16 +150,16 @@ Description:
 
 Options:
 
-  -h, --help                        - Show this help.                                  
-  -w, --workspace    <slug>         - Target workspace (uses credentials)              
-  --profile          <profile>      - Execution profile (agent-safe)                   
-  -n, --name         <name>         - New name for the initiative                      
-  -d, --description  <description>  - New description                                  
-  --status           <status>       - New status (planned, active, completed, paused)  
-  --owner            <owner>        - New owner (username, email, or @me)              
-  --target-date      <targetDate>   - Target completion date (YYYY-MM-DD)              
-  --color            <color>        - Initiative color (hex, e.g., #5E6AD2)            
-  --icon             <icon>         - Initiative icon name                             
+  -h, --help                        - Show this help.                                                      
+  -w, --workspace    <slug>         - Target workspace (uses credentials)                                  
+  --profile          <profile>      - Execution profile override (agent-safe default, human-debug opt-in)  
+  -n, --name         <name>         - New name for the initiative                                          
+  -d, --description  <description>  - New description                                                      
+  --status           <status>       - New status (planned, active, completed, paused)                      
+  --owner            <owner>        - New owner (username, email, or @me)                                  
+  --target-date      <targetDate>   - Target completion date (YYYY-MM-DD)                                  
+  --color            <color>        - Initiative color (hex, e.g., #5E6AD2)                                
+  --icon             <icon>         - Initiative icon name                                                 
   -i, --interactive                 - Interactive mode for updates
 ```
 
@@ -176,11 +176,11 @@ Description:
 
 Options:
 
-  -h, --help                    - Show this help.                      
-  -w, --workspace    <slug>     - Target workspace (uses credentials)  
-  --profile          <profile>  - Execution profile (agent-safe)       
-  -i, --interactive             - Enable interactive confirmation      
-  -y, --yes                     - Skip confirmation prompt             
+  -h, --help                    - Show this help.                                                      
+  -w, --workspace    <slug>     - Target workspace (uses credentials)                                  
+  --profile          <profile>  - Execution profile override (agent-safe default, human-debug opt-in)  
+  -i, --interactive             - Enable interactive confirmation                                      
+  -y, --yes                     - Skip confirmation prompt                                             
   --force                       - Deprecated alias for --yes
 ```
 
@@ -197,14 +197,14 @@ Description:
 
 Options:
 
-  -h, --help                    - Show this help.                                   
-  -w, --workspace    <slug>     - Target workspace (uses credentials)               
-  --profile          <profile>  - Execution profile (agent-safe)                    
-  -i, --interactive             - Enable interactive confirmation                   
-  -y, --yes                     - Skip confirmation prompt                          
-  --force                       - Deprecated alias for --yes                        
-  --bulk             <ids...>   - Delete multiple initiatives by ID, slug, or name  
-  --bulk-file        <file>     - Read initiative IDs from a file (one per line)    
+  -h, --help                    - Show this help.                                                      
+  -w, --workspace    <slug>     - Target workspace (uses credentials)                                  
+  --profile          <profile>  - Execution profile override (agent-safe default, human-debug opt-in)  
+  -i, --interactive             - Enable interactive confirmation                                      
+  -y, --yes                     - Skip confirmation prompt                                             
+  --force                       - Deprecated alias for --yes                                           
+  --bulk             <ids...>   - Delete multiple initiatives by ID, slug, or name                     
+  --bulk-file        <file>     - Read initiative IDs from a file (one per line)                       
   --bulk-stdin                  - Read initiative IDs from stdin
 ```
 
@@ -221,9 +221,9 @@ Description:
 
 Options:
 
-  -h, --help                    - Show this help.                      
-  -w, --workspace  <slug>       - Target workspace (uses credentials)  
-  --profile        <profile>    - Execution profile (agent-safe)       
+  -h, --help                    - Show this help.                                                      
+  -w, --workspace  <slug>       - Target workspace (uses credentials)                                  
+  --profile        <profile>    - Execution profile override (agent-safe default, human-debug opt-in)  
   --sort-order     <sortOrder>  - Sort order within initiative
 ```
 
@@ -240,10 +240,10 @@ Description:
 
 Options:
 
-  -h, --help                    - Show this help.                      
-  -w, --workspace    <slug>     - Target workspace (uses credentials)  
-  --profile          <profile>  - Execution profile (agent-safe)       
-  -i, --interactive             - Enable interactive confirmation      
-  -y, --yes                     - Skip confirmation prompt             
+  -h, --help                    - Show this help.                                                      
+  -w, --workspace    <slug>     - Target workspace (uses credentials)                                  
+  --profile          <profile>  - Execution profile override (agent-safe default, human-debug opt-in)  
+  -i, --interactive             - Enable interactive confirmation                                      
+  -y, --yes                     - Skip confirmation prompt                                             
   --force                       - Deprecated alias for --yes
 ```

@@ -8,7 +8,7 @@ if you want an agent to read Linear state, preview a write, apply it, and return
 linear capabilities
 linear capabilities --compat v2
 linear resolve issue ENG-123
-linear --profile agent-safe issue update ENG-123 --state done --dry-run --json
+linear issue update ENG-123 --state done --dry-run --json
 linear issue list
 linear issue view ENG-123
 linear issue create -t "Backfill webhook contract docs" --team ENG --dry-run --json
@@ -24,12 +24,12 @@ the core agent surfaces now default to machine-readable JSON. use `--text` when 
 If an agent only reads one page, it should be this README plus the two contract docs below.
 
 - start with `linear capabilities` for the stable startup-safe shape; use `linear capabilities --compat v2` when you also need required/optional input refs, constrained values, defaults, context resolution hints, input constraints, canonical argv examples, stdin/file targets, and structured output semantics
-- use `linear --profile agent-safe ...` when you want predictable non-interactive defaults for an automation run
+- use the default runtime for predictable non-interactive agent execution; `--profile human-debug` is the explicit escape hatch for pager and prompt-driven debugging
 - resolve ambiguous issue/team/state/user/label refs with `linear resolve ...` before previewing or applying writes
 - prefer stable read surfaces such as `issue`, `project`, `cycle`, `milestone`, `document`, `webhook`, `notification`, `team`, `user`, `workflow-state`, `label`, `initiative`, and update feeds; those agent-first entrypoints now default to machine-readable JSON
 - preview writes with `--dry-run --json` before mutating Linear
 - apply writes on default-JSON surfaces without `--text`, then inspect exit codes and `error.details` instead of parsing terminal text
-- use `--interactive` explicitly for human/debug prompt flows; missing required inputs now fail fast by default
+- use `--profile human-debug --interactive` for human/debug prompt flows; missing required inputs now fail fast by default
 - use stdin or file flags for Markdown-heavy descriptions and comments instead of long inline shell strings
 
 Recommended docs:
@@ -167,13 +167,13 @@ for bot and org-wide automation use cases, `linear-cli` defines a stable JSON co
 
 to discover the curated agent-facing command surface programmatically, use `linear capabilities`. the default shape preserves the v1-compatible startup contract for existing bots. when you need richer metadata such as required vs optional primary inputs, constrained values, defaults, context resolution hints, input constraints, canonical argv examples, stdin/file targets, structured output semantics, and timeout/no-op traits, opt into `linear capabilities --compat v2`.
 
-`linear --profile agent-safe ...` is the opt-in execution profile for agent-controlled runs. it currently disables pager-by-default behavior, extends the built-in write timeout to `45000ms` unless `--timeout-ms` or `LINEAR_WRITE_TIMEOUT_MS` is set, and rejects destructive confirmation prompts unless the caller passes `--yes`.
+`agent-safe` is now the default execution profile for agent-controlled runs. it disables pager-by-default behavior, extends the built-in write timeout to `45000ms` unless `--timeout-ms` or `LINEAR_WRITE_TIMEOUT_MS` is set, and keeps destructive confirmation bypass explicit with `--yes`. use `--profile human-debug` when a maintainer explicitly wants prompt-driven or pager-oriented debugging behavior.
 
 non-goals:
 
 - it does not force `--json` on commands outside the agent-native default-JSON surface
 - it does not auto-confirm destructive actions
-- it does not replace explicit human/debug prompt flows; callers should pass flags, stdin, file inputs, or opt into `--interactive`
+- it does not replace explicit human/debug prompt flows; callers should pass flags, stdin, file inputs, or opt into `--profile human-debug --interactive`
 
 - v1 in scope: `issue list/view/create/update --json`, `issue relation add/delete/list --json`, `issue comment add --json`, `team members --json`, `issue parent/children/create-batch --json`
 - v2 additions: `project list/view --json`, `cycle list/view/current/next --json`, `milestone list/view --json`

@@ -13,9 +13,9 @@ Description:
 
 Options:
 
-  -h, --help                  - Show this help.                      
-  -w, --workspace  <slug>     - Target workspace (uses credentials)  
-  --profile        <profile>  - Execution profile (agent-safe)       
+  -h, --help                  - Show this help.                                                      
+  -w, --workspace  <slug>     - Target workspace (uses credentials)                                  
+  --profile        <profile>  - Execution profile override (agent-safe default, human-debug opt-in)  
 
 Commands:
 
@@ -38,12 +38,12 @@ Description:
 
 Options:
 
-  -h, --help                    - Show this help.                            
-  -w, --workspace    <slug>     - Target workspace (uses credentials)        
-  --profile          <profile>  - Execution profile (agent-safe)             
-  --body             <body>     - Update content (markdown)                  
-  --body-file        <path>     - Read content from file                     
-  --health           <health>   - Health status (onTrack, atRisk, offTrack)  
+  -h, --help                    - Show this help.                                                      
+  -w, --workspace    <slug>     - Target workspace (uses credentials)                                  
+  --profile          <profile>  - Execution profile override (agent-safe default, human-debug opt-in)  
+  --body             <body>     - Update content (markdown)                                            
+  --body-file        <path>     - Read content from file                                               
+  --health           <health>   - Health status (onTrack, atRisk, offTrack)                            
   -i, --interactive             - Interactive mode with prompts
 ```
 
@@ -60,12 +60,12 @@ Description:
 
 Options:
 
-  -h, --help                  - Show this help.                                        
-  -w, --workspace  <slug>     - Target workspace (uses credentials)                    
-  --profile        <profile>  - Execution profile (agent-safe)                         
-  -j, --json                  - Output as JSON                                         
-  --limit          <limit>    - Limit results                             (Default: 10)
-  --no-pager                  - Disable automatic paging for long output               
+  -h, --help                  - Show this help.                                                                   
+  -w, --workspace  <slug>     - Target workspace (uses credentials)                                               
+  --profile        <profile>  - Execution profile override (agent-safe default, human-debug opt-in)               
+  -j, --json                  - Output as JSON                                                                    
+  --limit          <limit>    - Limit results                                                        (Default: 10)
+  --no-pager                  - Disable automatic paging for long output                                          
 
 Examples:
 

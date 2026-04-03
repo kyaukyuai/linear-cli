@@ -13,12 +13,12 @@ Description:
 
 Options:
 
-  -h, --help                  - Show this help.                                                    
-  -w, --workspace  <slug>     - Target workspace (uses credentials)                                
-  --profile        <profile>  - Execution profile (agent-safe)                                     
-  -j, --json                  - Force machine-readable JSON output                                 
-  --text                      - Output a human-readable summary                                    
-  --compat         <version>  - Select the machine-readable capabilities schema version (v1, v2).  
+  -h, --help                  - Show this help.                                                      
+  -w, --workspace  <slug>     - Target workspace (uses credentials)                                  
+  --profile        <profile>  - Execution profile override (agent-safe default, human-debug opt-in)  
+  -j, --json                  - Force machine-readable JSON output                                   
+  --text                      - Output a human-readable summary                                      
+  --compat         <version>  - Select the machine-readable capabilities schema version (v1, v2).    
 
 Examples:
 

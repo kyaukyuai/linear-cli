@@ -13,9 +13,9 @@ Description:
 
 Options:
 
-  -h, --help                  - Show this help.                      
-  -w, --workspace  <slug>     - Target workspace (uses credentials)  
-  --profile        <profile>  - Execution profile (agent-safe)       
+  -h, --help                  - Show this help.                                                      
+  -w, --workspace  <slug>     - Target workspace (uses credentials)                                  
+  --profile        <profile>  - Execution profile override (agent-safe default, human-debug opt-in)  
 
 Commands:
 
@@ -38,12 +38,12 @@ Description:
 
 Options:
 
-  -h, --help                  - Show this help.                           
-  -w, --workspace  <slug>     - Target workspace (uses credentials)       
-  --profile        <profile>  - Execution profile (agent-safe)            
-  --team           <teamKey>  - Team key (defaults to current team)       
-  -j, --json                  - Output as JSON                            
-  --no-pager                  - Disable automatic paging for long output  
+  -h, --help                  - Show this help.                                                      
+  -w, --workspace  <slug>     - Target workspace (uses credentials)                                  
+  --profile        <profile>  - Execution profile override (agent-safe default, human-debug opt-in)  
+  --team           <teamKey>  - Team key (defaults to current team)                                  
+  -j, --json                  - Output as JSON                                                       
+  --no-pager                  - Disable automatic paging for long output                             
 
 Examples:
 
@@ -63,10 +63,10 @@ Description:
 
 Options:
 
-  -h, --help                  - Show this help.                      
-  -w, --workspace  <slug>     - Target workspace (uses credentials)  
-  --profile        <profile>  - Execution profile (agent-safe)       
-  -j, --json                  - Output as JSON                       
+  -h, --help                  - Show this help.                                                      
+  -w, --workspace  <slug>     - Target workspace (uses credentials)                                  
+  --profile        <profile>  - Execution profile override (agent-safe default, human-debug opt-in)  
+  -j, --json                  - Output as JSON                                                       
 
 Examples:
 

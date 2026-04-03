@@ -41,7 +41,17 @@ function renderCapabilitiesSummary(
     "",
     "execution profiles",
     ...payload.executionProfiles.availableProfiles.map((profile) =>
-      `  ${profile.name}: pager=off json=preferred timeout=${profile.semantics.defaultWriteTimeoutMs}ms confirm=explicit --yes`
+      `  ${profile.name}${
+        payload.executionProfiles.defaultProfile === profile.name
+          ? " (default)"
+          : ""
+      }: pager=${profile.semantics.disablePagerByDefault ? "off" : "on"} json=${
+        profile.semantics.preferJsonWhenSupported ? "preferred" : "optional"
+      } timeout=${profile.semantics.defaultWriteTimeoutMs}ms confirm=${
+        profile.semantics.requireExplicitConfirmationBypass
+          ? "explicit --yes"
+          : "interactive or --yes"
+      }`
     ),
     "",
     "agent-facing commands",

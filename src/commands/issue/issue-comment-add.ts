@@ -185,7 +185,7 @@ export const commentAddCommand = new Command()
         ensureInteractiveInputAvailable(
           { interactive },
           "Comment body cannot be empty",
-          "Provide --body, --body-file, or pipe the comment body on stdin. Use --interactive to enter it in a terminal.",
+          "Provide --body, --body-file, or pipe the comment body on stdin. Use --profile human-debug --interactive to enter it in a terminal.",
         )
         commentBody = await Input.prompt({
           message: "Comment body",

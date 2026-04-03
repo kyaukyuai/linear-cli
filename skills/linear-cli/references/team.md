@@ -13,9 +13,9 @@ Description:
 
 Options:
 
-  -h, --help                  - Show this help.                      
-  -w, --workspace  <slug>     - Target workspace (uses credentials)  
-  --profile        <profile>  - Execution profile (agent-safe)       
+  -h, --help                  - Show this help.                                                      
+  -w, --workspace  <slug>     - Target workspace (uses credentials)                                  
+  --profile        <profile>  - Execution profile override (agent-safe default, human-debug opt-in)  
 
 Commands:
 
@@ -45,7 +45,7 @@ Options:
 
   -h, --help                        - Show this help.                                                        
   -w, --workspace    <slug>         - Target workspace (uses credentials)                                    
-  --profile          <profile>      - Execution profile (agent-safe)                                         
+  --profile          <profile>      - Execution profile override (agent-safe default, human-debug opt-in)    
   -n, --name         <name>         - Name of the team                                                       
   -d, --description  <description>  - Description of the team                                                
   -i, --interactive                 - Enable interactive prompts                                             
@@ -67,12 +67,12 @@ Description:
 
 Options:
 
-  -h, --help                       - Show this help.                                  
-  -w, --workspace    <slug>        - Target workspace (uses credentials)              
-  --profile          <profile>     - Execution profile (agent-safe)                   
-  -i, --interactive                - Enable interactive selection and confirmation    
-  --move-issues      <targetTeam>  - Move all issues to another team before deletion  
-  -y, --yes                        - Skip confirmation prompt                         
+  -h, --help                       - Show this help.                                                      
+  -w, --workspace    <slug>        - Target workspace (uses credentials)                                  
+  --profile          <profile>     - Execution profile override (agent-safe default, human-debug opt-in)  
+  -i, --interactive                - Enable interactive selection and confirmation                        
+  --move-issues      <targetTeam>  - Move all issues to another team before deletion                      
+  -y, --yes                        - Skip confirmation prompt                                             
   --force                          - Deprecated alias for --yes
 ```
 
@@ -89,13 +89,13 @@ Description:
 
 Options:
 
-  -h, --help                  - Show this help.                           
-  -w, --workspace  <slug>     - Target workspace (uses credentials)       
-  --profile        <profile>  - Execution profile (agent-safe)            
-  -j, --json                  - Output as JSON                            
-  -w, --web                   - Open in web browser                       
-  -a, --app                   - Open in Linear.app                        
-  --no-pager                  - Disable automatic paging for long output  
+  -h, --help                  - Show this help.                                                      
+  -w, --workspace  <slug>     - Target workspace (uses credentials)                                  
+  --profile        <profile>  - Execution profile override (agent-safe default, human-debug opt-in)  
+  -j, --json                  - Output as JSON                                                       
+  -w, --web                   - Open in web browser                                                  
+  -a, --app                   - Open in Linear.app                                                   
+  --no-pager                  - Disable automatic paging for long output                             
 
 Examples:
 
@@ -115,10 +115,10 @@ Description:
 
 Options:
 
-  -h, --help                  - Show this help.                      
-  -w, --workspace  <slug>     - Target workspace (uses credentials)  
-  --profile        <profile>  - Execution profile (agent-safe)       
-  -j, --json                  - Output as JSON                       
+  -h, --help                  - Show this help.                                                      
+  -w, --workspace  <slug>     - Target workspace (uses credentials)                                  
+  --profile        <profile>  - Execution profile override (agent-safe default, human-debug opt-in)  
+  -j, --json                  - Output as JSON                                                       
 
 Examples:
 
@@ -138,9 +138,9 @@ Description:
 
 Options:
 
-  -h, --help                  - Show this help.                      
-  -w, --workspace  <slug>     - Target workspace (uses credentials)  
-  --profile        <profile>  - Execution profile (agent-safe)
+  -h, --help                  - Show this help.                                                      
+  -w, --workspace  <slug>     - Target workspace (uses credentials)                                  
+  --profile        <profile>  - Execution profile override (agent-safe default, human-debug opt-in)
 ```
 
 ### autolinks
@@ -156,9 +156,9 @@ Description:
 
 Options:
 
-  -h, --help                  - Show this help.                      
-  -w, --workspace  <slug>     - Target workspace (uses credentials)  
-  --profile        <profile>  - Execution profile (agent-safe)
+  -h, --help                  - Show this help.                                                      
+  -w, --workspace  <slug>     - Target workspace (uses credentials)                                  
+  --profile        <profile>  - Execution profile override (agent-safe default, human-debug opt-in)
 ```
 
 ### members
@@ -174,9 +174,9 @@ Description:
 
 Options:
 
-  -h, --help                  - Show this help.                      
-  -w, --workspace  <slug>     - Target workspace (uses credentials)  
-  --profile        <profile>  - Execution profile (agent-safe)       
-  -a, --all                   - Include inactive members             
+  -h, --help                  - Show this help.                                                      
+  -w, --workspace  <slug>     - Target workspace (uses credentials)                                  
+  --profile        <profile>  - Execution profile override (agent-safe default, human-debug opt-in)  
+  -a, --all                   - Include inactive members                                             
   -j, --json                  - Output as JSON
 ```
