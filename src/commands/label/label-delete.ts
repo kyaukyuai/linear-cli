@@ -9,11 +9,7 @@ import { ensureInteractiveInputAvailable } from "../../utils/interactive.ts"
 import { getGraphQLClient } from "../../utils/graphql.ts"
 import { getTeamKey } from "../../utils/linear.ts"
 import { shouldShowSpinner } from "../../utils/hyperlink.ts"
-import {
-  CliError,
-  handleError,
-  NotFoundError,
-} from "../../utils/errors.ts"
+import { CliError, handleError, NotFoundError } from "../../utils/errors.ts"
 
 const DeleteIssueLabel = gql(`
   mutation DeleteIssueLabel($id: String!) {

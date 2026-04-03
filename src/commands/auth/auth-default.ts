@@ -36,7 +36,9 @@ export const defaultCommand = new Command()
         ensureInteractiveInputAvailable(
           { interactive },
           "Workspace is required unless --interactive is used",
-          `Pass a workspace name directly, or use --interactive to choose from: ${workspaces.join(", ")}`,
+          `Pass a workspace name directly, or use --interactive to choose from: ${
+            workspaces.join(", ")
+          }`,
         )
         workspace = await Select.prompt({
           message: "Select default workspace",

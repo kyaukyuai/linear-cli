@@ -130,7 +130,13 @@ export const startCommand = new Command()
         return
       }
 
-      await startIssue(resolvedId, teamId, fromRef, branch, interactive === true)
+      await startIssue(
+        resolvedId,
+        teamId,
+        fromRef,
+        branch,
+        interactive === true,
+      )
     } catch (error) {
       handleError(error, "Failed to start issue")
     }

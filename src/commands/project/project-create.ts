@@ -292,7 +292,8 @@ export const createCommand = new Command()
       // Validate required fields
       if (!name) {
         throw new ValidationError("Project name is required", {
-          suggestion: "Use --name or -n flag to specify a project name, or pass --interactive.",
+          suggestion:
+            "Use --name or -n flag to specify a project name, or pass --interactive.",
         })
       }
 
@@ -303,7 +304,8 @@ export const createCommand = new Command()
           teams = [defaultTeam]
         } else {
           throw new ValidationError("At least one team is required", {
-            suggestion: "Use --team or -t flag to specify a team, or pass --interactive.",
+            suggestion:
+              "Use --team or -t flag to specify a team, or pass --interactive.",
           })
         }
       }

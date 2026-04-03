@@ -169,7 +169,8 @@ export const createCommand = new Command()
       // Validate required fields
       if (!name) {
         throw new ValidationError("Label name is required", {
-          suggestion: "Use --name or -n flag to specify a label name, or pass --interactive.",
+          suggestion:
+            "Use --name or -n flag to specify a label name, or pass --interactive.",
         })
       }
 
