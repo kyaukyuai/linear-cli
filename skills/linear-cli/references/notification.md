@@ -13,8 +13,9 @@ Description:
 
 Options:
 
-  -h, --help               - Show this help.                      
-  -w, --workspace  <slug>  - Target workspace (uses credentials)  
+  -h, --help                  - Show this help.                      
+  -w, --workspace  <slug>     - Target workspace (uses credentials)  
+  --profile        <profile>  - Execution profile (agent-safe)       
 
 Commands:
 
@@ -39,13 +40,14 @@ Description:
 
 Options:
 
-  -h, --help                   - Show this help.                                        
-  -w, --workspace     <slug>   - Target workspace (uses credentials)                    
-  -n, --limit         <limit>  - Maximum number of notifications           (Default: 20)
-  --include-archived           - Include archived notifications                         
-  --unread                     - Show only unread notifications                         
-  -j, --json                   - Output as JSON                                         
-  --no-pager                   - Disable automatic paging for long output
+  -h, --help                     - Show this help.                                        
+  -w, --workspace     <slug>     - Target workspace (uses credentials)                    
+  --profile           <profile>  - Execution profile (agent-safe)                         
+  -n, --limit         <limit>    - Maximum number of notifications           (Default: 20)
+  --include-archived             - Include archived notifications                         
+  --unread                       - Show only unread notifications                         
+  -j, --json                     - Output as JSON                                         
+  --no-pager                     - Disable automatic paging for long output
 ```
 
 ### count
@@ -61,9 +63,10 @@ Description:
 
 Options:
 
-  -h, --help               - Show this help.                      
-  -w, --workspace  <slug>  - Target workspace (uses credentials)  
-  -j, --json               - Output as JSON
+  -h, --help                  - Show this help.                      
+  -w, --workspace  <slug>     - Target workspace (uses credentials)  
+  --profile        <profile>  - Execution profile (agent-safe)       
+  -j, --json                  - Output as JSON
 ```
 
 ### read
@@ -81,6 +84,7 @@ Options:
 
   -h, --help                    - Show this help.                                 
   -w, --workspace  <slug>       - Target workspace (uses credentials)             
+  --profile        <profile>    - Execution profile (agent-safe)                  
   -j, --json                    - Output as JSON                                  
   --timeout-ms     <timeoutMs>  - Timeout for write confirmation in milliseconds
 ```
@@ -100,6 +104,7 @@ Options:
 
   -h, --help                    - Show this help.                                 
   -w, --workspace  <slug>       - Target workspace (uses credentials)             
+  --profile        <profile>    - Execution profile (agent-safe)                  
   -j, --json                    - Output as JSON                                  
   --timeout-ms     <timeoutMs>  - Timeout for write confirmation in milliseconds
 ```

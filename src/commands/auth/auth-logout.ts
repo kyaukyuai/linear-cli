@@ -6,7 +6,10 @@ import {
   hasWorkspace,
   removeCredential,
 } from "../../credentials.ts"
-import { shouldSkipConfirmation } from "../../utils/confirmation.ts"
+import {
+  ensureInteractiveConfirmationAvailable,
+  shouldSkipConfirmation,
+} from "../../utils/confirmation.ts"
 import { AuthError, handleError, NotFoundError } from "../../utils/errors.ts"
 
 export const logoutCommand = new Command()
@@ -45,6 +48,7 @@ export const logoutCommand = new Command()
 
       // Confirm removal unless a bypass flag is specified
       if (!shouldSkipConfirmation(options)) {
+        ensureInteractiveConfirmationAvailable(options)
         const confirmed = await Confirm.prompt({
           message: `Remove credentials for workspace "${workspace}"?`,
           default: false,

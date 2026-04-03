@@ -28,6 +28,7 @@ Compatibility rules:
 
 - `linear capabilities --json` defaults to the `v1` compatibility shape for runtime startup safety
 - richer schema and output metadata are opt-in via `linear capabilities --json --compat v2`
+- execution profile metadata is only exposed in `--compat v2`
 - top-level `v1` fields stay backward compatible across minor releases
 - additive `v2` fields are allowed within `schemaVersion: "v2"`, but callers must opt in explicitly
 - machine-readable schema changes should be called out explicitly in release notes
@@ -111,6 +112,27 @@ Default top-level shape:
     "defaultSchemaVersion": "v1",
     "latestSchemaVersion": "v2",
     "supportedSchemaVersions": ["v1", "v2"]
+  },
+  "executionProfiles": {
+    "defaultProfile": null,
+    "availableProfiles": [
+      {
+        "name": "agent-safe",
+        "description": "Opt-in profile for agent and automation runs that prefer predictable non-interactive defaults.",
+        "semantics": {
+          "disablePagerByDefault": true,
+          "preferJsonWhenSupported": true,
+          "requireExplicitConfirmationBypass": true,
+          "defaultWriteTimeoutMs": 45000,
+          "allowInteractivePrompts": false
+        },
+        "nonGoals": [
+          "Does not force --json when the caller omits it.",
+          "Does not auto-confirm destructive actions; use --yes explicitly.",
+          "Does not replace missing required inputs or every interactive data-entry fallback."
+        ]
+      }
+    ]
   },
   "commands": [
     {
@@ -257,6 +279,7 @@ Rules:
 - `confirmationBypass` is `--yes` when the command supports canonical confirmation skipping, otherwise `null`
 - `idempotency.category` is one of `read_only`, `retry_safe_update`, `retry_safe_no_op`, `non_idempotent`, `resumable_batch`, `conditional`, or `destructive`
 - `compatibility` describes the default, latest, and supported machine-readable capabilities schema versions
+- `executionProfiles` describes opt-in runtime profiles such as `agent-safe` and their non-interactive defaults
 - `schema.coverage` is currently `curated_primary_inputs`, meaning the metadata is intentionally focused on the primary agent-facing execution path and is not a full parser dump of every flag
 
 Release-gated downstream certification currently covers:

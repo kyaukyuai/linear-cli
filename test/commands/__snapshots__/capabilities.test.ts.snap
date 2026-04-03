@@ -41,6 +41,9 @@ automation tier
   v2: linear cycle current, linear cycle list, linear cycle next, linear cycle view, linear milestone list, linear milestone view, linear project list, linear project view
   v3: linear document list, linear document view, linear notification count, linear notification list, linear webhook list, linear webhook view
 
+execution profiles
+  agent-safe: pager=off json=preferred timeout=45000ms confirm=explicit --yes
+
 agent-facing commands
   linear api :: json=no dry-run=no inputs=flags,stdin success=json_default confirm=none idempotency=read_only
     note: Outputs JSON by default and accepts stdin, but does not use a --json flag.
@@ -1742,6 +1745,27 @@ stdout:
     "supportedSchemaVersions": [
       "v1",
       "v2"
+    ]
+  },
+  "executionProfiles": {
+    "defaultProfile": null,
+    "availableProfiles": [
+      {
+        "name": "agent-safe",
+        "description": "Opt-in profile for agent and automation runs that prefer predictable non-interactive defaults.",
+        "semantics": {
+          "disablePagerByDefault": true,
+          "preferJsonWhenSupported": true,
+          "requireExplicitConfirmationBypass": true,
+          "defaultWriteTimeoutMs": 45000,
+          "allowInteractivePrompts": false
+        },
+        "nonGoals": [
+          "Does not force --json when the caller omits it.",
+          "Does not auto-confirm destructive actions; use --yes explicitly.",
+          "Does not replace missing required inputs or every interactive data-entry fallback."
+        ]
+      }
     ]
   },
   "commands": [

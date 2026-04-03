@@ -3,12 +3,12 @@ import { Confirm } from "@cliffy/prompt"
 import { green } from "@std/fmt/colors"
 import { gql } from "../../__codegen__/gql.ts"
 import {
+  ensureInteractiveConfirmationAvailable,
   shouldSkipConfirmation,
-  USE_YES_SUGGESTION,
 } from "../../utils/confirmation.ts"
 import { getGraphQLClient } from "../../utils/graphql.ts"
 import { emitDryRunOutput } from "../../utils/dry_run.ts"
-import { CliError, handleError, ValidationError } from "../../utils/errors.ts"
+import { CliError, handleError } from "../../utils/errors.ts"
 import { withSpinner } from "../../utils/spinner.ts"
 import { buildWriteCommandPreview } from "../../utils/write_preview.ts"
 import {
@@ -92,11 +92,7 @@ export const deleteCommand = new Command()
       }
 
       if (!shouldSkipConfirmation({ yes })) {
-        if (!Deno.stdin.isTerminal()) {
-          throw new ValidationError("Interactive confirmation required", {
-            suggestion: USE_YES_SUGGESTION,
-          })
-        }
+        ensureInteractiveConfirmationAvailable({ yes })
 
         const confirmed = await Confirm.prompt({
           message: `Are you sure you want to delete webhook "${

@@ -141,10 +141,15 @@ Deno.test("startup-critical capabilities v2 shape keeps schema metadata opt-in",
     "cli",
     "contractVersions",
     "automationTier",
+    "executionProfiles",
     "commands",
   ])
   assertEquals(payload.schemaVersion, "v2")
   assert(Array.isArray(payload.commands), "Expected commands to be an array")
+  assert(
+    isRecord(payload.executionProfiles),
+    "Expected execution profile metadata",
+  )
 
   const issueUpdate = payload.commands.find((command) =>
     isRecord(command) && command.path === "linear issue update"

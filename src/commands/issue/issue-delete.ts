@@ -2,8 +2,8 @@ import { Command } from "@cliffy/command"
 import { Confirm } from "@cliffy/prompt"
 import { gql } from "../../__codegen__/gql.ts"
 import {
+  ensureInteractiveConfirmationAvailable,
   shouldSkipConfirmation,
-  USE_YES_SUGGESTION,
 } from "../../utils/confirmation.ts"
 import { getGraphQLClient } from "../../utils/graphql.ts"
 import { getIssueIdentifier } from "../../utils/linear.ts"
@@ -107,12 +107,10 @@ async function handleSingleDelete(
 
   // Show confirmation prompt unless a bypass flag is used
   if (!shouldSkipConfirmation({ yes, confirm })) {
-    if (!Deno.stdin.isTerminal()) {
-      throw new ValidationError(
-        "Interactive confirmation required",
-        { suggestion: USE_YES_SUGGESTION },
-      )
-    }
+    ensureInteractiveConfirmationAvailable({
+      yes,
+      confirm,
+    })
     const confirmed = await Confirm.prompt({
       message: `Are you sure you want to delete "${identifier}: ${title}"?`,
       default: false,
@@ -174,12 +172,10 @@ async function handleBulkDelete(
 
   // Confirm bulk operation
   if (!shouldSkipConfirmation({ yes, confirm })) {
-    if (!Deno.stdin.isTerminal()) {
-      throw new ValidationError(
-        "Interactive confirmation required",
-        { suggestion: USE_YES_SUGGESTION },
-      )
-    }
+    ensureInteractiveConfirmationAvailable({
+      yes,
+      confirm,
+    })
     const confirmed = await Confirm.prompt({
       message: `Delete ${ids.length} issue(s)?`,
       default: false,

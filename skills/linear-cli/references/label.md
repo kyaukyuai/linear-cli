@@ -13,8 +13,9 @@ Description:
 
 Options:
 
-  -h, --help               - Show this help.                      
-  -w, --workspace  <slug>  - Target workspace (uses credentials)  
+  -h, --help                  - Show this help.                      
+  -w, --workspace  <slug>     - Target workspace (uses credentials)  
+  --profile        <profile>  - Execution profile (agent-safe)       
 
 Commands:
 
@@ -39,6 +40,7 @@ Description:
 Options:
 
   -h, --help              - Show this help.                                              
+  --profile    <profile>  - Execution profile (agent-safe)                               
   --team       <teamKey>  - Filter by team (e.g., TC). Shows team-specific labels only.  
   --workspace             - Show only workspace-level labels (not team-specific)         
   --all                   - Show all labels (both workspace and team)                    
@@ -65,6 +67,7 @@ Options:
 
   -h, --help                        - Show this help.                                              
   -w, --workspace    <slug>         - Target workspace (uses credentials)                          
+  --profile          <profile>      - Execution profile (agent-safe)                               
   -n, --name         <name>         - Label name (required)                                        
   -c, --color        <color>        - Color hex code (e.g., #EB5757)                               
   -d, --description  <description>  - Label description                                            
@@ -87,6 +90,7 @@ Options:
 
   -h, --help                  - Show this help.                                 
   -w, --workspace  <slug>     - Target workspace (uses credentials)             
+  --profile        <profile>  - Execution profile (agent-safe)                  
   -t, --team       <teamKey>  - Team key to disambiguate labels with same name  
   -y, --yes                   - Skip confirmation prompt                        
   -f, --force                 - Deprecated alias for --yes

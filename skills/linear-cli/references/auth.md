@@ -13,8 +13,9 @@ Description:
 
 Options:
 
-  -h, --help               - Show this help.                      
-  -w, --workspace  <slug>  - Target workspace (uses credentials)  
+  -h, --help                  - Show this help.                      
+  -w, --workspace  <slug>     - Target workspace (uses credentials)  
+  --profile        <profile>  - Execution profile (agent-safe)       
 
 Commands:
 
@@ -42,10 +43,11 @@ Description:
 
 Options:
 
-  -h, --help               - Show this help.                                              
-  -w, --workspace  <slug>  - Target workspace (uses credentials)                          
-  -k, --key        <key>   - API key (prompted if not provided)                           
-  --plaintext              - Store API key in credentials file instead of system keyring
+  -h, --help                  - Show this help.                                              
+  -w, --workspace  <slug>     - Target workspace (uses credentials)                          
+  --profile        <profile>  - Execution profile (agent-safe)                               
+  -k, --key        <key>      - API key (prompted if not provided)                           
+  --plaintext                 - Store API key in credentials file instead of system keyring
 ```
 
 ### logout
@@ -61,10 +63,11 @@ Description:
 
 Options:
 
-  -h, --help               - Show this help.                      
-  -w, --workspace  <slug>  - Target workspace (uses credentials)  
-  -y, --yes                - Skip confirmation prompt             
-  -f, --force              - Deprecated alias for --yes
+  -h, --help                  - Show this help.                      
+  -w, --workspace  <slug>     - Target workspace (uses credentials)  
+  --profile        <profile>  - Execution profile (agent-safe)       
+  -y, --yes                   - Skip confirmation prompt             
+  -f, --force                 - Deprecated alias for --yes
 ```
 
 ### list
@@ -80,9 +83,10 @@ Description:
 
 Options:
 
-  -h, --help               - Show this help.                           
-  -w, --workspace  <slug>  - Target workspace (uses credentials)       
-  --no-pager               - Disable automatic paging for long output
+  -h, --help                  - Show this help.                           
+  -w, --workspace  <slug>     - Target workspace (uses credentials)       
+  --profile        <profile>  - Execution profile (agent-safe)            
+  --no-pager                  - Disable automatic paging for long output
 ```
 
 ### default
@@ -98,8 +102,9 @@ Description:
 
 Options:
 
-  -h, --help               - Show this help.                      
-  -w, --workspace  <slug>  - Target workspace (uses credentials)
+  -h, --help                  - Show this help.                      
+  -w, --workspace  <slug>     - Target workspace (uses credentials)  
+  --profile        <profile>  - Execution profile (agent-safe)
 ```
 
 ### token
@@ -115,8 +120,9 @@ Description:
 
 Options:
 
-  -h, --help               - Show this help.                      
-  -w, --workspace  <slug>  - Target workspace (uses credentials)
+  -h, --help                  - Show this help.                      
+  -w, --workspace  <slug>     - Target workspace (uses credentials)  
+  --profile        <profile>  - Execution profile (agent-safe)
 ```
 
 ### whoami
@@ -132,8 +138,9 @@ Description:
 
 Options:
 
-  -h, --help               - Show this help.                      
-  -w, --workspace  <slug>  - Target workspace (uses credentials)
+  -h, --help                  - Show this help.                      
+  -w, --workspace  <slug>     - Target workspace (uses credentials)  
+  --profile        <profile>  - Execution profile (agent-safe)
 ```
 
 ### migrate
@@ -149,6 +156,7 @@ Description:
 
 Options:
 
-  -h, --help               - Show this help.                      
-  -w, --workspace  <slug>  - Target workspace (uses credentials)
+  -h, --help                  - Show this help.                      
+  -w, --workspace  <slug>     - Target workspace (uses credentials)  
+  --profile        <profile>  - Execution profile (agent-safe)
 ```

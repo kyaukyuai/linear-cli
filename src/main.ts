@@ -23,6 +23,10 @@ import { apiCommand } from "./commands/api.ts"
 import { capabilitiesCommand } from "./commands/capabilities.ts"
 import { resolveCommand } from "./commands/resolve/resolve.ts"
 import { setCliWorkspace } from "./config.ts"
+import {
+  parseExecutionProfile,
+  setCliExecutionProfile,
+} from "./utils/execution_profile.ts"
 import { maybeHandleAutomationContractParseError } from "./utils/json_output.ts"
 
 // Import config and credentials setup
@@ -42,8 +46,13 @@ Environment Variables:
     "-w, --workspace <slug:string>",
     "Target workspace (uses credentials)",
   )
+  .globalOption(
+    "--profile <profile:string>",
+    "Execution profile (agent-safe)",
+  )
   .globalAction((options) => {
     setCliWorkspace(options.workspace)
+    setCliExecutionProfile(parseExecutionProfile(options.profile))
   })
   .error((error, cmd) => {
     maybeHandleAutomationContractParseError(error, cmd)

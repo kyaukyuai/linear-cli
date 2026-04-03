@@ -38,6 +38,11 @@ function renderCapabilitiesSummary(
     `  v2: ${payload.automationTier.byVersion.v2.join(", ")}`,
     `  v3: ${payload.automationTier.byVersion.v3.join(", ")}`,
     "",
+    "execution profiles",
+    ...payload.executionProfiles.availableProfiles.map((profile) =>
+      `  ${profile.name}: pager=off json=preferred timeout=${profile.semantics.defaultWriteTimeoutMs}ms confirm=explicit --yes`
+    ),
+    "",
     "agent-facing commands",
   ]
 

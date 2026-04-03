@@ -1,3 +1,7 @@
+import {
+  AGENT_SAFE_WRITE_TIMEOUT_MS,
+  isAgentSafeExecutionProfile,
+} from "./execution_profile.ts"
 import { ValidationError, WriteTimeoutError } from "./errors.ts"
 
 export const DEFAULT_WRITE_TIMEOUT_MS = 30_000
@@ -10,7 +14,9 @@ export function resolveWriteTimeoutMs(timeoutMs?: number): number {
 
   const envValue = Deno.env.get(WRITE_TIMEOUT_ENV_VAR)
   if (envValue == null || envValue.trim().length === 0) {
-    return DEFAULT_WRITE_TIMEOUT_MS
+    return isAgentSafeExecutionProfile()
+      ? AGENT_SAFE_WRITE_TIMEOUT_MS
+      : DEFAULT_WRITE_TIMEOUT_MS
   }
 
   return validateWriteTimeoutMs(Number(envValue), WRITE_TIMEOUT_ENV_VAR)
@@ -72,7 +78,9 @@ export async function withWriteTimeout<T>(
 }
 
 export function buildWriteTimeoutSuggestion(): string {
-  return "Check Linear before retrying. Increase the timeout with --timeout-ms or LINEAR_WRITE_TIMEOUT_MS if this write path is consistently slow."
+  return isAgentSafeExecutionProfile()
+    ? "Check Linear before retrying. Increase the timeout with --timeout-ms or LINEAR_WRITE_TIMEOUT_MS if this write path is consistently slow."
+    : "Check Linear before retrying. Use --profile agent-safe for a longer automation timeout, or increase the timeout with --timeout-ms or LINEAR_WRITE_TIMEOUT_MS if this write path is consistently slow."
 }
 
 function validateWriteTimeoutMs(value: number, source: string): number {

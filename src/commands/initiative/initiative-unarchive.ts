@@ -2,17 +2,12 @@ import { Command } from "@cliffy/command"
 import { Confirm } from "@cliffy/prompt"
 import { gql } from "../../__codegen__/gql.ts"
 import {
+  ensureInteractiveConfirmationAvailable,
   shouldSkipConfirmation,
-  USE_YES_SUGGESTION,
 } from "../../utils/confirmation.ts"
 import { getGraphQLClient } from "../../utils/graphql.ts"
 import { shouldShowSpinner } from "../../utils/hyperlink.ts"
-import {
-  CliError,
-  handleError,
-  NotFoundError,
-  ValidationError,
-} from "../../utils/errors.ts"
+import { CliError, handleError, NotFoundError } from "../../utils/errors.ts"
 
 export const unarchiveCommand = new Command()
   .name("unarchive")
@@ -66,12 +61,10 @@ export const unarchiveCommand = new Command()
 
     // Confirm unarchive
     if (!shouldSkipConfirmation({ yes, force })) {
-      if (!Deno.stdin.isTerminal()) {
-        throw new ValidationError(
-          "Interactive confirmation required.",
-          { suggestion: USE_YES_SUGGESTION },
-        )
-      }
+      ensureInteractiveConfirmationAvailable({
+        yes,
+        force,
+      }, "Interactive confirmation required.")
       const confirmed = await Confirm.prompt({
         message: `Are you sure you want to unarchive "${initiative.name}"?`,
         default: true,
