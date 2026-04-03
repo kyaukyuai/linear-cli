@@ -1,0 +1,442 @@
+import { assert, assertEquals } from "@std/assert"
+import { fromFileUrl } from "@std/path"
+import { MockLinearServer } from "../utils/mock_linear_server.ts"
+
+type MockResponse = {
+  queryName: string
+  variables?: Record<string, unknown>
+  response: Record<string, unknown>
+  status?: number
+  headers?: Record<string, string>
+  delayMs?: number
+  consume?: boolean
+}
+
+const repoRoot = fromFileUrl(new URL("../../", import.meta.url))
+const denoJsonPath = fromFileUrl(new URL("../../deno.json", import.meta.url))
+const mainPath = fromFileUrl(new URL("../../src/main.ts", import.meta.url))
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value != null && !Array.isArray(value)
+}
+
+async function runLinearCommand(
+  args: string[],
+  env: Record<string, string> = {},
+): Promise<Deno.CommandOutput> {
+  const child = new Deno.Command("deno", {
+    args: [
+      "run",
+      "-c",
+      denoJsonPath,
+      "--allow-all",
+      "--quiet",
+      mainPath,
+      ...args,
+    ],
+    cwd: repoRoot,
+    env: {
+      NO_COLOR: "1",
+      ...env,
+    },
+    stdout: "piped",
+    stderr: "piped",
+  }).spawn()
+
+  let timeoutId: ReturnType<typeof setTimeout> | null = null
+
+  try {
+    return await Promise.race([
+      child.output(),
+      new Promise<never>((_, reject) => {
+        timeoutId = setTimeout(() => {
+          child.kill()
+          reject(
+            new Error(
+              `linear ${args.join(" ")} did not exit within 5000ms`,
+            ),
+          )
+        }, 5000)
+      }),
+    ])
+  } finally {
+    if (timeoutId != null) {
+      clearTimeout(timeoutId)
+    }
+  }
+}
+
+async function runLinearJsonCommand(
+  args: string[],
+  env: Record<string, string> = {},
+): Promise<unknown> {
+  const output = await runLinearCommand(args, env)
+  const stderr = new TextDecoder().decode(output.stderr)
+  const stdout = new TextDecoder().decode(output.stdout)
+
+  assertEquals(stderr, "", `Expected no stderr for: linear ${args.join(" ")}`)
+  assert(
+    output.success,
+    `Expected success for: linear ${args.join(" ")}\n${stdout}`,
+  )
+
+  return JSON.parse(stdout)
+}
+
+async function withMockServer<T>(
+  responses: MockResponse[],
+  fn: (env: Record<string, string>) => Promise<T>,
+  env: Record<string, string> = {},
+): Promise<T> {
+  const server = new MockLinearServer(responses)
+  await server.start()
+
+  try {
+    return await fn({
+      LINEAR_GRAPHQL_ENDPOINT: server.getEndpoint(),
+      LINEAR_API_KEY: "Bearer test-token",
+      ...env,
+    })
+  } finally {
+    await server.stop()
+  }
+}
+
+function findCapabilityCommand(
+  payload: unknown,
+  path: string,
+): Record<string, unknown> {
+  assert(isRecord(payload), "Expected capabilities payload to be an object")
+  assert(Array.isArray(payload.commands), "Expected commands to be an array")
+
+  const command = payload.commands.find((value) =>
+    isRecord(value) && value.path === path
+  )
+  assert(isRecord(command), `Expected capability command: ${path}`)
+  return command
+}
+
+Deno.test("downstream consumer certification mirrors startup discovery assumptions", async () => {
+  const defaultPayload = await runLinearJsonCommand(["capabilities", "--json"])
+  const compatV2Payload = await runLinearJsonCommand([
+    "capabilities",
+    "--json",
+    "--compat",
+    "v2",
+  ])
+
+  assert(isRecord(defaultPayload), "Expected default capabilities payload")
+  assert(isRecord(compatV2Payload), "Expected compat v2 capabilities payload")
+  assertEquals(defaultPayload.schemaVersion, "v1")
+  assertEquals(compatV2Payload.schemaVersion, "v2")
+
+  const defaultIssueUpdate = findCapabilityCommand(
+    defaultPayload,
+    "linear issue update",
+  )
+  const compatV2IssueUpdate = findCapabilityCommand(
+    compatV2Payload,
+    "linear issue update",
+  )
+
+  assertEquals("schema" in defaultIssueUpdate, false)
+  assertEquals("output" in defaultIssueUpdate, false)
+
+  assert(isRecord(compatV2IssueUpdate.schema), "Expected schema metadata in v2")
+  assert(isRecord(compatV2IssueUpdate.output), "Expected output metadata in v2")
+  assert(
+    isRecord(compatV2IssueUpdate.writeSemantics),
+    "Expected write semantics in v2",
+  )
+
+  const schema = compatV2IssueUpdate.schema
+  const output = compatV2IssueUpdate.output
+  const writeSemantics = compatV2IssueUpdate.writeSemantics
+
+  assert(Array.isArray(schema.constraints), "Expected schema constraints")
+  assert(Array.isArray(schema.examples), "Expected canonical argv examples")
+  assert(Array.isArray(schema.defaults), "Expected schema defaults")
+  assert(Array.isArray(schema.resolutions), "Expected schema resolutions")
+
+  assert(isRecord(output.preview), "Expected preview output contract")
+  assert(isRecord(output.success), "Expected success output contract")
+
+  assert(Array.isArray(output.preview.topLevelFields))
+  assert(output.preview.topLevelFields.includes("operation"))
+  assert(Array.isArray(output.success.topLevelFields))
+  assert(output.success.topLevelFields.includes("receipt"))
+  assert(output.success.topLevelFields.includes("operation"))
+
+  assertEquals(writeSemantics.timeoutAware, true)
+  assertEquals(writeSemantics.timeoutReconciliation, true)
+})
+
+Deno.test("downstream consumer certification preserves resolve, preview, and apply flow", async () => {
+  await withMockServer(
+    [
+      {
+        queryName: "ResolveIssueReference",
+        variables: { id: "ENG-123" },
+        response: {
+          data: {
+            issue: {
+              id: "issue-123",
+              identifier: "ENG-123",
+              title: "Stabilize auth expiry handling",
+              url: "https://linear.app/test/issue/ENG-123/auth-expiry",
+              team: {
+                id: "team-1",
+                key: "ENG",
+                name: "Engineering",
+              },
+            },
+          },
+        },
+      },
+      {
+        queryName: "GetTeamIdByKey",
+        variables: { team: "ENG" },
+        response: {
+          data: {
+            teams: {
+              nodes: [{ id: "team-1" }],
+            },
+          },
+        },
+      },
+      {
+        queryName: "GetWorkflowStates",
+        variables: { teamKey: "ENG" },
+        response: {
+          data: {
+            team: {
+              states: {
+                nodes: [{
+                  id: "state-done-id",
+                  name: "Done",
+                  type: "completed",
+                }],
+              },
+            },
+          },
+        },
+      },
+      {
+        queryName: "UpdateIssue",
+        response: {
+          data: {
+            issueUpdate: {
+              success: true,
+              issue: {
+                id: "issue-123",
+                identifier: "ENG-123",
+                title: "Stabilize auth expiry handling",
+                url: "https://linear.app/test/issue/ENG-123/auth-expiry",
+                dueDate: null,
+                assignee: null,
+                parent: null,
+                state: {
+                  name: "Done",
+                  color: "#22c55e",
+                },
+              },
+            },
+          },
+        },
+      },
+    ],
+    async (env) => {
+      const resolved = await runLinearJsonCommand(
+        ["resolve", "issue", "ENG-123", "--json"],
+        env,
+      )
+
+      assert(isRecord(resolved), "Expected resolve payload to be an object")
+      assertEquals(resolved.status, "resolved")
+      assert(isRecord(resolved.resolved), "Expected resolved issue object")
+      assertEquals(resolved.resolved.identifier, "ENG-123")
+
+      const preview = await runLinearJsonCommand(
+        [
+          "issue",
+          "update",
+          "ENG-123",
+          "--state",
+          "done",
+          "--json",
+          "--dry-run",
+        ],
+        env,
+      )
+
+      assert(isRecord(preview), "Expected preview payload to be an object")
+      assertEquals(preview.success, true)
+      assertEquals(preview.dryRun, true)
+      assert(isRecord(preview.operation), "Expected preview operation contract")
+      assertEquals(preview.operation.family, "write_operation")
+      assertEquals(preview.operation.phase, "preview")
+      assertEquals(preview.operation.nextSafeAction, "apply")
+      assert(Array.isArray(preview.operation.changes))
+      assert(preview.operation.changes.includes("state"))
+
+      const applied = await runLinearJsonCommand(
+        [
+          "issue",
+          "update",
+          "ENG-123",
+          "--state",
+          "done",
+          "--json",
+        ],
+        env,
+      )
+
+      assert(isRecord(applied), "Expected apply payload to be an object")
+      assertEquals(applied.identifier, "ENG-123")
+      assert(isRecord(applied.receipt), "Expected operation receipt")
+      assertEquals(applied.receipt.operationId, "issue.update")
+      assertEquals(applied.receipt.resource, "issue")
+      assertEquals(applied.receipt.action, "update")
+      assert(Array.isArray(applied.receipt.appliedChanges))
+      assert(applied.receipt.appliedChanges.includes("state"))
+      assert(isRecord(applied.operation), "Expected apply operation contract")
+      assertEquals(applied.operation.family, "write_operation")
+      assertEquals(applied.operation.phase, "apply")
+      assert(isRecord(applied.operation.refs), "Expected resolved refs object")
+      assertEquals(applied.operation.refs.issueIdentifier, "ENG-123")
+      assertEquals(
+        applied.operation.nextSafeAction,
+        applied.receipt.nextSafeAction,
+      )
+    },
+  )
+})
+
+Deno.test("downstream consumer certification preserves machine-actionable recovery semantics", async () => {
+  const output = await withMockServer(
+    [
+      {
+        queryName: "GetTeamIdByKey",
+        variables: { team: "ENG" },
+        response: {
+          data: {
+            teams: {
+              nodes: [{ id: "team-eng-id" }],
+            },
+          },
+        },
+      },
+      {
+        queryName: "UpdateIssue",
+        response: {
+          data: {
+            issueUpdate: {
+              success: true,
+              issue: {
+                id: "issue-existing-123",
+                identifier: "ENG-123",
+                title: "Updated with timeout reconciliation",
+                url:
+                  "https://linear.app/test-team/issue/ENG-123/updated-with-timeout-reconciliation",
+                dueDate: null,
+                assignee: null,
+                parent: null,
+                state: {
+                  name: "Todo",
+                  color: "#bec2c8",
+                },
+              },
+            },
+          },
+        },
+      },
+      {
+        queryName: "AddComment",
+        delayMs: 250,
+        response: {
+          data: {
+            commentCreate: {
+              success: true,
+              comment: {
+                id: "comment-json-timeout-123",
+                body: "Investigating now",
+                createdAt: "2026-03-30T12:00:00Z",
+                url:
+                  "https://linear.app/test-team/issue/ENG-123/updated-with-timeout-reconciliation#comment-json-timeout-123",
+                parent: null,
+                issue: {
+                  id: "issue-existing-123",
+                  identifier: "ENG-123",
+                  title: "Updated with timeout reconciliation",
+                  url:
+                    "https://linear.app/test-team/issue/ENG-123/updated-with-timeout-reconciliation",
+                },
+                user: {
+                  name: "alice.bot",
+                  displayName: "Alice Bot",
+                },
+              },
+            },
+          },
+        },
+      },
+      {
+        queryName: "GetIssueCommentsForTimeoutReconciliation",
+        variables: { id: "ENG-123" },
+        response: {
+          data: {
+            issue: {
+              id: "issue-existing-123",
+              identifier: "ENG-123",
+              title: "Updated with timeout reconciliation",
+              url:
+                "https://linear.app/test-team/issue/ENG-123/updated-with-timeout-reconciliation",
+              comments: {
+                nodes: [],
+              },
+            },
+          },
+        },
+      },
+    ],
+    (env) =>
+      runLinearCommand([
+        "issue",
+        "update",
+        "ENG-123",
+        "--title",
+        "Updated with timeout reconciliation",
+        "--comment",
+        "Investigating now",
+        "--json",
+        "--timeout-ms",
+        "50",
+      ], env),
+  )
+
+  const stderr = new TextDecoder().decode(output.stderr)
+  const stdout = new TextDecoder().decode(output.stdout)
+
+  assertEquals(stderr, "", "Expected timeout contract to stay JSON-only")
+  assertEquals(output.success, false)
+  assertEquals(output.code, 6)
+
+  const payload = JSON.parse(stdout)
+  assert(isRecord(payload), "Expected timeout payload to be an object")
+  assertEquals(payload.success, false)
+  assert(isRecord(payload.error), "Expected error envelope")
+  assertEquals(payload.error.type, "timeout_error")
+  assert(isRecord(payload.error.details), "Expected timeout details")
+  assertEquals(payload.error.details.outcome, "partial_success")
+  assertEquals(payload.error.details.appliedState, "partially_applied")
+  assertEquals(payload.error.details.failureStage, "comment_create")
+  assert(isRecord(payload.error.details.callerGuidance))
+  assertEquals(
+    payload.error.details.callerGuidance.nextAction,
+    "resume_partial_write",
+  )
+  assertEquals(payload.error.details.callerGuidance.readBeforeRetry, false)
+  assert(isRecord(payload.error.details.partialSuccess))
+  assertEquals(payload.error.details.partialSuccess.issueUpdated, true)
+  assertEquals(payload.error.details.partialSuccess.commentAttempted, true)
+})
