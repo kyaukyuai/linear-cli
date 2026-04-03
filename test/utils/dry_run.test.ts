@@ -4,6 +4,7 @@ import {
   emitDryRunOutput,
   runWithDryRun,
 } from "../../src/utils/dry_run.ts"
+import { buildWritePreviewOperation } from "../../src/utils/write_operation.ts"
 
 Deno.test("buildDryRunJsonEnvelope wraps preview data in stable shape", () => {
   assertEquals(
@@ -43,6 +44,54 @@ Deno.test("emitDryRunOutput prints one JSON document when json is enabled", () =
     dryRun: true,
     summary: "Would update issue ENG-123",
     data: { id: "issue-123" },
+  })
+})
+
+Deno.test("emitDryRunOutput includes shared operation metadata when provided", () => {
+  const originalLog = console.log
+  const messages: string[] = []
+  console.log = (...args: unknown[]) => {
+    messages.push(args.map((arg) => String(arg)).join(" "))
+  }
+
+  try {
+    emitDryRunOutput({
+      json: true,
+      summary: "Would update issue ENG-123",
+      data: { id: "issue-123" },
+      operation: buildWritePreviewOperation({
+        command: "issue.update",
+        resource: "issue",
+        action: "update",
+        summary: "Would update issue ENG-123",
+        refs: { issueIdentifier: "ENG-123" },
+        changes: ["state"],
+      }),
+    })
+  } finally {
+    console.log = originalLog
+  }
+
+  assertEquals(messages.length, 1)
+  assertEquals(JSON.parse(messages[0]), {
+    success: true,
+    dryRun: true,
+    summary: "Would update issue ENG-123",
+    data: { id: "issue-123" },
+    operation: {
+      family: "write_operation",
+      version: "v1",
+      phase: "preview",
+      command: "issue.update",
+      resource: "issue",
+      action: "update",
+      summary: "Would update issue ENG-123",
+      refs: { issueIdentifier: "ENG-123" },
+      changes: ["state"],
+      noOp: false,
+      partialSuccess: false,
+      nextSafeAction: "apply",
+    },
   })
 })
 

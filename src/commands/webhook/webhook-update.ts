@@ -7,6 +7,11 @@ import { CliError, handleError, ValidationError } from "../../utils/errors.ts"
 import { withSpinner } from "../../utils/spinner.ts"
 import { buildWriteCommandPreview } from "../../utils/write_preview.ts"
 import {
+  buildWriteApplyOperation,
+  buildWritePreviewOperationFromPayload,
+  withWriteOperationContract,
+} from "../../utils/write_operation.ts"
+import {
   getWebhookDisplayLabel,
   getWebhookScope,
   parseWebhookResourceTypes,
@@ -110,24 +115,30 @@ export const updateCommand = new Command()
         }
 
         if (dryRun) {
+          const previewPayload = buildWriteCommandPreview({
+            command: "webhook.update",
+            operation: "update",
+            target: {
+              resource: "webhook",
+              id: webhookId,
+            },
+            changes: {
+              url: input.url ?? null,
+              label: input.label ?? null,
+              resourceTypes: input.resourceTypes ?? [],
+              enabled: input.enabled ?? null,
+              secretProvided: secret != null,
+            },
+          })
+          const summary = `Would update webhook ${webhookId}`
           emitDryRunOutput({
             json,
-            summary: `Would update webhook ${webhookId}`,
-            data: buildWriteCommandPreview({
-              command: "webhook.update",
-              operation: "update",
-              target: {
-                resource: "webhook",
-                id: webhookId,
-              },
-              changes: {
-                url: input.url ?? null,
-                label: input.label ?? null,
-                resourceTypes: input.resourceTypes ?? [],
-                enabled: input.enabled ?? null,
-                secretProvided: secret != null,
-              },
-            }),
+            summary,
+            data: previewPayload,
+            operation: buildWritePreviewOperationFromPayload(
+              summary,
+              previewPayload,
+            ),
             lines: [
               `Webhook: ${webhookId}`,
               ...Object.entries(input).map(([key, value]) =>
@@ -155,32 +166,53 @@ export const updateCommand = new Command()
         const webhook = result.webhookUpdate.webhook
 
         if (json) {
+          const payload = {
+            id: webhook.id,
+            label: webhook.label,
+            url: webhook.url,
+            enabled: webhook.enabled,
+            archivedAt: webhook.archivedAt,
+            allPublicTeams: webhook.allPublicTeams,
+            resourceTypes: webhook.resourceTypes,
+            createdAt: webhook.createdAt,
+            updatedAt: webhook.updatedAt,
+            team: webhook.team
+              ? {
+                id: webhook.team.id,
+                key: webhook.team.key,
+                name: webhook.team.name,
+              }
+              : null,
+            creator: webhook.creator
+              ? {
+                id: webhook.creator.id,
+                name: webhook.creator.name,
+                displayName: webhook.creator.displayName,
+              }
+              : null,
+          }
           console.log(JSON.stringify(
-            {
-              id: webhook.id,
-              label: webhook.label,
-              url: webhook.url,
-              enabled: webhook.enabled,
-              archivedAt: webhook.archivedAt,
-              allPublicTeams: webhook.allPublicTeams,
-              resourceTypes: webhook.resourceTypes,
-              createdAt: webhook.createdAt,
-              updatedAt: webhook.updatedAt,
-              team: webhook.team
-                ? {
-                  id: webhook.team.id,
-                  key: webhook.team.key,
-                  name: webhook.team.name,
-                }
-                : null,
-              creator: webhook.creator
-                ? {
-                  id: webhook.creator.id,
-                  name: webhook.creator.name,
-                  displayName: webhook.creator.displayName,
-                }
-                : null,
-            },
+            withWriteOperationContract(
+              payload,
+              buildWriteApplyOperation({
+                command: "webhook.update",
+                resource: "webhook",
+                action: "update",
+                summary: `Updated webhook ${webhook.id}`,
+                refs: {
+                  webhookId: webhook.id,
+                  webhookUrl: webhook.url,
+                },
+                changes: [
+                  ...(input.url != null ? ["url"] : []),
+                  ...(input.label != null ? ["label"] : []),
+                  ...(input.resourceTypes != null ? ["resourceTypes"] : []),
+                  ...(input.enabled != null ? ["enabled"] : []),
+                  ...(secret != null ? ["secret"] : []),
+                ],
+                nextSafeAction: "read_before_retry",
+              }),
+            ),
             null,
             2,
           ))

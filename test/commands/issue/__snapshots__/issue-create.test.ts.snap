@@ -106,6 +106,33 @@ stdout:
     "noOp": false,
     "partialSuccess": false,
     "nextSafeAction": "read_before_retry"
+  },
+  "operation": {
+    "family": "write_operation",
+    "version": "v1",
+    "phase": "apply",
+    "command": "issue.create",
+    "resource": "issue",
+    "action": "create",
+    "summary": "Created issue ENG-321",
+    "refs": {
+      "issueIdentifier": "ENG-321",
+      "teamKey": "ENG",
+      "assignee": "alice.bot",
+      "parentIssueIdentifier": "ENG-220",
+      "state": "In Progress"
+    },
+    "changes": [
+      "title",
+      "description",
+      "assignee",
+      "dueDate",
+      "parent",
+      "state"
+    ],
+    "noOp": false,
+    "partialSuccess": false,
+    "nextSafeAction": "read_before_retry"
   }
 }
 '
@@ -150,6 +177,39 @@ stdout:
       "stateId": "state-started",
       "useDefaultTemplate": true
     }
+  },
+  "operation": {
+    "family": "write_operation",
+    "version": "v1",
+    "phase": "preview",
+    "command": "issue.create",
+    "resource": "issue",
+    "action": "create",
+    "summary": "Would create issue in ENG",
+    "refs": {
+      "teamKey": "ENG",
+      "project": null,
+      "parentIssueIdentifier": "ENG-220"
+    },
+    "changes": [
+      "title",
+      "description",
+      "assigneeId",
+      "dueDate",
+      "parent",
+      "priority",
+      "estimate",
+      "labelIds",
+      "teamId",
+      "projectId",
+      "projectMilestoneId",
+      "cycleId",
+      "stateId",
+      "useDefaultTemplate"
+    ],
+    "noOp": false,
+    "partialSuccess": false,
+    "nextSafeAction": "apply"
   }
 }
 '

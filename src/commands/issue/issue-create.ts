@@ -44,6 +44,11 @@ import {
   buildOperationReceipt,
   withOperationReceipt,
 } from "../../utils/operation_receipt.ts"
+import {
+  buildWriteApplyOperationFromReceipt,
+  buildWritePreviewOperation,
+  withWriteOperationContract,
+} from "../../utils/write_operation.ts"
 import { buildIssueCreateDryRunPayload } from "./issue-dry-run-payload.ts"
 import { buildIssueWritePayload } from "./issue-write-payload.ts"
 import { maybeHandleIssueDescriptionParseError } from "./issue-description-parse.ts"
@@ -938,10 +943,26 @@ export const createCommand = new Command()
           start: start === true,
         })
         if (dryRun) {
+          const summary = `Would create issue in ${team}`
           emitDryRunOutput({
             json,
-            summary: `Would create issue in ${team}`,
+            summary,
             data: createPreviewPayload,
+            operation: buildWritePreviewOperation({
+              command: "issue.create",
+              resource: "issue",
+              action: "create",
+              summary,
+              refs: {
+                teamKey: team,
+                project: effectiveProject ?? null,
+                parentIssueIdentifier: parentData?.identifier ?? null,
+              },
+              changes: [
+                ...Object.keys(createPreviewPayload.input),
+                ...(start ? ["start"] : []),
+              ],
+            }),
             lines: [
               `Title: ${title}`,
               `Team: ${team}`,
@@ -1052,7 +1073,13 @@ export const createCommand = new Command()
             nextSafeAction: "read_before_retry",
           })
           console.log(JSON.stringify(
-            withOperationReceipt(issuePayload, receipt),
+            withWriteOperationContract(
+              withOperationReceipt(issuePayload, receipt),
+              buildWriteApplyOperationFromReceipt(
+                `Created issue ${issue.identifier}`,
+                receipt,
+              ),
+            ),
             null,
             2,
           ))

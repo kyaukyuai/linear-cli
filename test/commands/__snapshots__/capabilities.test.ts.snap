@@ -3902,7 +3902,8 @@ stdout:
             "parentId",
             "issue",
             "user",
-            "receipt"
+            "receipt",
+            "operation"
           ]
         },
         "preview": {
@@ -3918,7 +3919,8 @@ stdout:
             "success",
             "dryRun",
             "summary",
-            "data"
+            "data",
+            "operation"
           ]
         },
         "failure": {
@@ -4352,7 +4354,8 @@ stdout:
             "assignee",
             "parent",
             "state",
-            "receipt"
+            "receipt",
+            "operation"
           ]
         },
         "preview": {
@@ -4368,7 +4371,8 @@ stdout:
             "success",
             "dryRun",
             "summary",
-            "data"
+            "data",
+            "operation"
           ]
         },
         "failure": {
@@ -5105,7 +5109,8 @@ stdout:
             "issue",
             "relatedIssue",
             "relationId",
-            "receipt"
+            "receipt",
+            "operation"
           ]
         },
         "preview": {
@@ -5121,7 +5126,8 @@ stdout:
             "success",
             "dryRun",
             "summary",
-            "data"
+            "data",
+            "operation"
           ]
         },
         "failure": {
@@ -5311,7 +5317,8 @@ stdout:
             "issue",
             "relatedIssue",
             "relationId",
-            "receipt"
+            "receipt",
+            "operation"
           ]
         },
         "preview": {
@@ -5327,7 +5334,8 @@ stdout:
             "success",
             "dryRun",
             "summary",
-            "data"
+            "data",
+            "operation"
           ]
         },
         "failure": {
@@ -5869,7 +5877,8 @@ stdout:
             "parent",
             "state",
             "comment",
-            "receipt"
+            "receipt",
+            "operation"
           ]
         },
         "preview": {
@@ -5885,7 +5894,8 @@ stdout:
             "success",
             "dryRun",
             "summary",
-            "data"
+            "data",
+            "operation"
           ]
         },
         "failure": {
@@ -7307,8 +7317,11 @@ stdout:
           "shape": "object",
           "exitCode": 0,
           "topLevelFields": [
-            "success",
-            "data"
+            "id",
+            "slugId",
+            "name",
+            "url",
+            "operation"
           ]
         },
         "preview": {
@@ -7324,7 +7337,8 @@ stdout:
             "success",
             "dryRun",
             "summary",
-            "data"
+            "data",
+            "operation"
           ]
         },
         "failure": {
@@ -8919,8 +8933,18 @@ stdout:
           "shape": "object",
           "exitCode": 0,
           "topLevelFields": [
-            "success",
-            "data"
+            "id",
+            "label",
+            "url",
+            "enabled",
+            "archivedAt",
+            "allPublicTeams",
+            "resourceTypes",
+            "createdAt",
+            "updatedAt",
+            "team",
+            "creator",
+            "operation"
           ]
         },
         "preview": {
@@ -8936,7 +8960,8 @@ stdout:
             "success",
             "dryRun",
             "summary",
-            "data"
+            "data",
+            "operation"
           ]
         },
         "failure": {
@@ -9063,8 +9088,11 @@ stdout:
           "shape": "object",
           "exitCode": 0,
           "topLevelFields": [
+            "id",
+            "label",
+            "url",
             "success",
-            "data"
+            "operation"
           ]
         },
         "preview": {
@@ -9080,7 +9108,8 @@ stdout:
             "success",
             "dryRun",
             "summary",
-            "data"
+            "data",
+            "operation"
           ]
         },
         "failure": {
@@ -9285,8 +9314,18 @@ stdout:
           "shape": "object",
           "exitCode": 0,
           "topLevelFields": [
-            "success",
-            "data"
+            "id",
+            "label",
+            "url",
+            "enabled",
+            "archivedAt",
+            "allPublicTeams",
+            "resourceTypes",
+            "createdAt",
+            "updatedAt",
+            "team",
+            "creator",
+            "operation"
           ]
         },
         "preview": {
@@ -9302,7 +9341,8 @@ stdout:
             "success",
             "dryRun",
             "summary",
-            "data"
+            "data",
+            "operation"
           ]
         },
         "failure": {

@@ -40,7 +40,26 @@ stdout:
   "id": "webhook-1",
   "label": "Issue events",
   "url": "https://example.com/hooks/issues",
-  "success": true
+  "success": true,
+  "operation": {
+    "family": "write_operation",
+    "version": "v1",
+    "phase": "apply",
+    "command": "webhook.delete",
+    "resource": "webhook",
+    "action": "delete",
+    "summary": "Deleted webhook webhook-1",
+    "refs": {
+      "webhookId": "webhook-1",
+      "webhookUrl": "https://example.com/hooks/issues"
+    },
+    "changes": [
+      "deletion"
+    ],
+    "noOp": false,
+    "partialSuccess": false,
+    "nextSafeAction": "read_before_retry"
+  }
 }
 '
 stderr:
@@ -63,6 +82,24 @@ stdout:
       "label": "Issue events",
       "url": "https://example.com/hooks/issues"
     }
+  },
+  "operation": {
+    "family": "write_operation",
+    "version": "v1",
+    "phase": "preview",
+    "command": "webhook.delete",
+    "resource": "webhook",
+    "action": "delete",
+    "summary": "Would delete webhook Issue events",
+    "refs": {
+      "id": "webhook-1",
+      "label": "Issue events",
+      "url": "https://example.com/hooks/issues"
+    },
+    "changes": [],
+    "noOp": false,
+    "partialSuccess": false,
+    "nextSafeAction": "apply"
   }
 }
 '

@@ -2005,6 +2005,7 @@ function buildSuccessTopLevelFields(
       "issue",
       "user",
       "receipt",
+      "operation",
     ],
     "linear issue create": [
       "id",
@@ -2016,6 +2017,7 @@ function buildSuccessTopLevelFields(
       "parent",
       "state",
       "receipt",
+      "operation",
     ],
     "linear issue relation add": [
       "success",
@@ -2026,6 +2028,7 @@ function buildSuccessTopLevelFields(
       "relatedIssue",
       "relationId",
       "receipt",
+      "operation",
     ],
     "linear issue relation delete": [
       "success",
@@ -2036,6 +2039,7 @@ function buildSuccessTopLevelFields(
       "relatedIssue",
       "relationId",
       "receipt",
+      "operation",
     ],
     "linear issue update": [
       "id",
@@ -2048,6 +2052,49 @@ function buildSuccessTopLevelFields(
       "state",
       "comment",
       "receipt",
+      "operation",
+    ],
+    "linear project create": [
+      "id",
+      "slugId",
+      "name",
+      "url",
+      "operation",
+    ],
+    "linear webhook create": [
+      "id",
+      "label",
+      "url",
+      "enabled",
+      "archivedAt",
+      "allPublicTeams",
+      "resourceTypes",
+      "createdAt",
+      "updatedAt",
+      "team",
+      "creator",
+      "operation",
+    ],
+    "linear webhook delete": [
+      "id",
+      "label",
+      "url",
+      "success",
+      "operation",
+    ],
+    "linear webhook update": [
+      "id",
+      "label",
+      "url",
+      "enabled",
+      "archivedAt",
+      "allPublicTeams",
+      "resourceTypes",
+      "createdAt",
+      "updatedAt",
+      "team",
+      "creator",
+      "operation",
     ],
     "linear notification archive": [
       "id",
@@ -2092,6 +2139,83 @@ function buildSuccessTopLevelFields(
   }
 
   return []
+}
+
+function buildPreviewTopLevelFields(
+  command: CapabilityRegistryEntry,
+): string[] | null {
+  if (!command.dryRun.supported) {
+    return null
+  }
+
+  const explicitFields: Record<string, string[]> = {
+    "linear issue comment add": [
+      "success",
+      "dryRun",
+      "summary",
+      "data",
+      "operation",
+    ],
+    "linear issue create": [
+      "success",
+      "dryRun",
+      "summary",
+      "data",
+      "operation",
+    ],
+    "linear issue relation add": [
+      "success",
+      "dryRun",
+      "summary",
+      "data",
+      "operation",
+    ],
+    "linear issue relation delete": [
+      "success",
+      "dryRun",
+      "summary",
+      "data",
+      "operation",
+    ],
+    "linear issue update": [
+      "success",
+      "dryRun",
+      "summary",
+      "data",
+      "operation",
+    ],
+    "linear project create": [
+      "success",
+      "dryRun",
+      "summary",
+      "data",
+      "operation",
+    ],
+    "linear webhook create": [
+      "success",
+      "dryRun",
+      "summary",
+      "data",
+      "operation",
+    ],
+    "linear webhook delete": [
+      "success",
+      "dryRun",
+      "summary",
+      "data",
+      "operation",
+    ],
+    "linear webhook update": [
+      "success",
+      "dryRun",
+      "summary",
+      "data",
+      "operation",
+    ],
+  }
+
+  return explicitFields[command.path] ??
+    ["success", "dryRun", "summary", "data"]
 }
 
 function buildFailureDetailFields(
@@ -2200,9 +2324,7 @@ function buildCommandOutput(
       contract: previewContract,
       shape: command.dryRun.supported ? "object" : null,
       exitCode: command.dryRun.supported ? 0 : null,
-      topLevelFields: command.dryRun.supported
-        ? ["success", "dryRun", "summary", "data"]
-        : null,
+      topLevelFields: buildPreviewTopLevelFields(command),
     },
     failure: {
       jsonWhenRequested: JSON_FAILURE_COMMANDS.has(command.path),

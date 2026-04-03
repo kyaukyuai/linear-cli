@@ -134,6 +134,32 @@ stdout:
     "noOp": false,
     "partialSuccess": false,
     "nextSafeAction": "read_before_retry"
+  },
+  "operation": {
+    "family": "write_operation",
+    "version": "v1",
+    "phase": "apply",
+    "command": "issue.update",
+    "resource": "issue",
+    "action": "update",
+    "summary": "Updated issue ENG-123",
+    "refs": {
+      "issueIdentifier": "ENG-123",
+      "teamKey": "ENG",
+      "assignee": "alice.bot",
+      "parentIssueIdentifier": "ENG-100",
+      "state": "Todo"
+    },
+    "changes": [
+      "title",
+      "assignee",
+      "dueDate",
+      "team",
+      "comment"
+    ],
+    "noOp": false,
+    "partialSuccess": false,
+    "nextSafeAction": "read_before_retry"
   }
 }
 '
@@ -160,6 +186,31 @@ stdout:
       "parent": null
     },
     "comment": "Investigating now"
+  },
+  "operation": {
+    "family": "write_operation",
+    "version": "v1",
+    "phase": "preview",
+    "command": "issue.update",
+    "resource": "issue",
+    "action": "update",
+    "summary": "Would update issue ENG-123",
+    "refs": {
+      "issueIdentifier": "ENG-123",
+      "teamKey": "ENG",
+      "parentIssueIdentifier": null,
+      "state": null
+    },
+    "changes": [
+      "title",
+      "assignee",
+      "dueDate",
+      "team",
+      "comment"
+    ],
+    "noOp": false,
+    "partialSuccess": false,
+    "nextSafeAction": "apply"
   }
 }
 '

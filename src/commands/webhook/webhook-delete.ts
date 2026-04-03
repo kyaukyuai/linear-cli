@@ -11,6 +11,11 @@ import { emitDryRunOutput } from "../../utils/dry_run.ts"
 import { CliError, handleError, ValidationError } from "../../utils/errors.ts"
 import { withSpinner } from "../../utils/spinner.ts"
 import { buildWriteCommandPreview } from "../../utils/write_preview.ts"
+import {
+  buildWriteApplyOperation,
+  buildWritePreviewOperationFromPayload,
+  withWriteOperationContract,
+} from "../../utils/write_operation.ts"
 import { getWebhookDisplayLabel } from "./webhook-utils.ts"
 
 const GetWebhookForDelete = gql(`
@@ -56,21 +61,27 @@ export const deleteCommand = new Command()
       )
 
       if (dryRun) {
+        const previewPayload = buildWriteCommandPreview({
+          command: "webhook.delete",
+          operation: "delete",
+          target: {
+            resource: "webhook",
+            id: webhook.webhook.id,
+            label: webhook.webhook.label,
+            url: webhook.webhook.url,
+          },
+        })
+        const summary = `Would delete webhook ${
+          getWebhookDisplayLabel(webhook.webhook.label)
+        }`
         emitDryRunOutput({
           json,
-          summary: `Would delete webhook ${
-            getWebhookDisplayLabel(webhook.webhook.label)
-          }`,
-          data: buildWriteCommandPreview({
-            command: "webhook.delete",
-            operation: "delete",
-            target: {
-              resource: "webhook",
-              id: webhook.webhook.id,
-              label: webhook.webhook.label,
-              url: webhook.webhook.url,
-            },
-          }),
+          summary,
+          data: previewPayload,
+          operation: buildWritePreviewOperationFromPayload(
+            summary,
+            previewPayload,
+          ),
           lines: [
             `Webhook: ${getWebhookDisplayLabel(webhook.webhook.label)}`,
             `ID: ${webhook.webhook.id}`,
@@ -110,13 +121,28 @@ export const deleteCommand = new Command()
       }
 
       if (json) {
+        const payload = {
+          id: result.webhookDelete.entityId,
+          label: webhook.webhook.label,
+          url: webhook.webhook.url,
+          success: true,
+        }
         console.log(JSON.stringify(
-          {
-            id: result.webhookDelete.entityId,
-            label: webhook.webhook.label,
-            url: webhook.webhook.url,
-            success: true,
-          },
+          withWriteOperationContract(
+            payload,
+            buildWriteApplyOperation({
+              command: "webhook.delete",
+              resource: "webhook",
+              action: "delete",
+              summary: `Deleted webhook ${result.webhookDelete.entityId}`,
+              refs: {
+                webhookId: result.webhookDelete.entityId,
+                webhookUrl: webhook.webhook.url,
+              },
+              changes: ["deletion"],
+              nextSafeAction: "read_before_retry",
+            }),
+          ),
           null,
           2,
         ))

@@ -47,6 +47,11 @@ import {
   buildOperationReceipt,
   withOperationReceipt,
 } from "../../utils/operation_receipt.ts"
+import {
+  buildWriteApplyOperationFromReceipt,
+  buildWritePreviewOperation,
+  withWriteOperationContract,
+} from "../../utils/write_operation.ts"
 
 function getIssueUpdateAppliedChanges(
   input: IssueUpdateReconciliationInput,
@@ -413,10 +418,24 @@ export const updateCommand = new Command()
             parent: parentPreview,
             comment,
           })
+          const summary = `Would update issue ${issueId}`
           emitDryRunOutput({
             json,
-            summary: `Would update issue ${issueId}`,
+            summary,
             data: previewPayload,
+            operation: buildWritePreviewOperation({
+              command: "issue.update",
+              resource: "issue",
+              action: "update",
+              summary,
+              refs: {
+                issueIdentifier: issueId,
+                teamKey,
+                parentIssueIdentifier: parentPreview?.identifier ?? null,
+                state: state ?? null,
+              },
+              changes: getIssueUpdateAppliedChanges(input, comment),
+            }),
             lines: [
               `Issue: ${issueId}`,
               ...(comment != null ? ["Would add comment after update"] : []),
@@ -613,17 +632,23 @@ export const updateCommand = new Command()
 
         if (json) {
           console.log(JSON.stringify(
-            withOperationReceipt(
-              createdComment == null ? issuePayload : {
-                ...issuePayload,
-                comment: buildIssueCommentPayload(createdComment, {
-                  id: issue.id,
-                  identifier: issue.identifier,
-                  title: issue.title,
-                  url: issue.url,
-                }),
-              },
-              receipt,
+            withWriteOperationContract(
+              withOperationReceipt(
+                createdComment == null ? issuePayload : {
+                  ...issuePayload,
+                  comment: buildIssueCommentPayload(createdComment, {
+                    id: issue.id,
+                    identifier: issue.identifier,
+                    title: issue.title,
+                    url: issue.url,
+                  }),
+                },
+                receipt,
+              ),
+              buildWriteApplyOperationFromReceipt(
+                `Updated issue ${issue.identifier}`,
+                receipt,
+              ),
             ),
             null,
             2,
