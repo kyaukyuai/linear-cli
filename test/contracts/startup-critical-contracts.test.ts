@@ -399,6 +399,53 @@ Deno.test("startup-critical reference resolution entrypoints preserve top-level 
   })
 })
 
+Deno.test("startup-critical diagnostics entrypoints preserve team list JSON shape", async () => {
+  const payload = await withMockServer(
+    [{
+      queryName: "GetTeams",
+      variables: { filter: undefined, first: 100, after: undefined },
+      response: {
+        data: {
+          teams: {
+            nodes: [{
+              id: "team-1",
+              name: "Engineering",
+              key: "ENG",
+              description: "Core engineering team",
+              icon: "⚙️",
+              color: "#22c55e",
+              cyclesEnabled: true,
+              createdAt: "2026-04-01T00:00:00Z",
+              updatedAt: "2026-04-03T00:00:00Z",
+              archivedAt: null,
+              organization: {
+                id: "org-1",
+                name: "Acme Corp",
+              },
+            }],
+            pageInfo: {
+              hasNextPage: false,
+              endCursor: null,
+            },
+          },
+        },
+      },
+    }],
+    (env) => runLinearJsonCommand(["team", "list", "--json"], env),
+  )
+
+  assertStartupArrayShape(payload, [
+    "id",
+    "name",
+    "key",
+    "cyclesEnabled",
+    "createdAt",
+    "updatedAt",
+    "archivedAt",
+    "organization",
+  ])
+})
+
 Deno.test("startup-critical agent read entrypoints preserve top-level JSON shape", async (ctx) => {
   await ctx.step("issue view", async () => {
     const payload = await withMockServer(

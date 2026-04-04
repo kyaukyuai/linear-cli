@@ -112,6 +112,24 @@ Recommended preparation work for consumers before `v3.0.0`:
 - adopt `linear resolve ... --json` before preview/apply loops
 - use explicit `--profile human-debug --interactive` only for human/debug prompt flows; do not rely on fallback prompts
 
+### Startup And Diagnostics Migration Examples
+
+When a consumer still uses lightweight startup or diagnostics probes, make the runtime mode explicit instead of relying on older mixed defaults.
+
+```bash
+# Legacy startup parser that still expects the trimmed capabilities shape
+linear capabilities --compat v1
+
+# Startup or diagnostics checks that need machine-readable team data
+linear team list --json
+
+# Human inspection during debugging only
+linear team list
+linear issue view ENG-123 --text
+```
+
+Treat `linear team list --json` as the compatibility-safe diagnostics path for automation. Keep bare `linear team list` only for human inspection, not for parser-driven startup checks.
+
 ## Release Criteria For v3.0.0
 
 Do not cut `v3.0.0` until all of the following are true.

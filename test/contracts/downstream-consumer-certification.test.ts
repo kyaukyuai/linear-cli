@@ -83,6 +83,23 @@ async function runLinearJsonCommand(
   return JSON.parse(stdout)
 }
 
+async function runLinearTextCommand(
+  args: string[],
+  env: Record<string, string> = {},
+): Promise<string> {
+  const output = await runLinearCommand(args, env)
+  const stderr = new TextDecoder().decode(output.stderr)
+  const stdout = new TextDecoder().decode(output.stdout)
+
+  assertEquals(stderr, "", `Expected no stderr for: linear ${args.join(" ")}`)
+  assert(
+    output.success,
+    `Expected success for: linear ${args.join(" ")}\n${stdout}`,
+  )
+
+  return stdout
+}
+
 async function withMockServer<T>(
   responses: MockResponse[],
   fn: (env: Record<string, string>) => Promise<T>,
@@ -114,6 +131,21 @@ function findCapabilityCommand(
   )
   assert(isRecord(command), `Expected capability command: ${path}`)
   return command
+}
+
+function assertObjectArrayPayload(
+  payload: unknown,
+  requiredKeys: string[],
+): asserts payload is Record<string, unknown>[] {
+  assert(Array.isArray(payload), "Expected an array payload")
+  assert(payload.length > 0, "Expected at least one array item")
+
+  const [firstItem] = payload
+  assert(isRecord(firstItem), "Expected array items to be objects")
+
+  for (const key of requiredKeys) {
+    assert(key in firstItem, `Missing required item key: ${key}`)
+  }
 }
 
 Deno.test("downstream consumer certification mirrors startup discovery assumptions", async () => {
@@ -311,6 +343,69 @@ Deno.test("downstream consumer certification preserves resolve, preview, and app
       assertEquals(
         applied.operation.nextSafeAction,
         applied.receipt.nextSafeAction,
+      )
+    },
+  )
+})
+
+Deno.test("downstream consumer certification captures team list diagnostics migration path", async () => {
+  await withMockServer(
+    [{
+      queryName: "GetTeams",
+      variables: { filter: undefined, first: 100, after: undefined },
+      response: {
+        data: {
+          teams: {
+            nodes: [{
+              id: "team-1",
+              name: "Engineering",
+              key: "ENG",
+              description: "Core engineering team",
+              icon: "⚙️",
+              color: "#22c55e",
+              cyclesEnabled: true,
+              createdAt: "2026-04-01T00:00:00Z",
+              updatedAt: "2026-04-03T00:00:00Z",
+              archivedAt: null,
+              organization: {
+                id: "org-1",
+                name: "Acme Corp",
+              },
+            }],
+            pageInfo: {
+              hasNextPage: false,
+              endCursor: null,
+            },
+          },
+        },
+      },
+    }],
+    async (env) => {
+      const diagnosticsPayload = await runLinearJsonCommand(
+        ["team", "list", "--json"],
+        env,
+      )
+      assertObjectArrayPayload(diagnosticsPayload, [
+        "id",
+        "name",
+        "key",
+        "cyclesEnabled",
+        "organization",
+      ])
+
+      const humanOutput = await runLinearTextCommand(["team", "list"], env)
+      assert(
+        humanOutput.includes("KEY"),
+        "Expected text output to include KEY header",
+      )
+      assert(
+        humanOutput.includes("NAME"),
+        "Expected text output to include NAME header",
+      )
+      assertEquals(
+        humanOutput.trimStart().startsWith("["),
+        false,
+        "Expected bare team list diagnostics output to remain human-readable text",
       )
     },
   )
