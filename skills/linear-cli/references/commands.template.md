@@ -7,7 +7,7 @@
 ## Quick Reference
 
 ```bash
-# Discover agent-facing capabilities
+# Discover the agent-native runtime surface
 linear capabilities
 linear capabilities --compat v1
 
@@ -26,4 +26,4 @@ Use the CLI in this order when possible:
 4. Apply writes with `--json`
 5. Inspect exit codes and `error.details` for retries or reconciliation
 
-Use `--profile human-debug --interactive` only for human/debug prompt flows. Agent-controlled runs should pass explicit flags, stdin, or file inputs.
+Use `--text` only for human-readable terminal inspection. Use `--profile human-debug --interactive` only for human/debug prompt flows. Agent-controlled runs should pass explicit flags, stdin, or file inputs.

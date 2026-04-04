@@ -284,5 +284,15 @@ Deno.test("agent-facing source docs keep default v2 and legacy v1 capabilities e
       "linear capabilities --compat v1",
       `${sourceDoc.label} must keep the legacy v1 capabilities example`,
     )
+    assertStringIncludes(
+      text,
+      "--profile human-debug --interactive",
+      `${sourceDoc.label} must document the explicit human/debug prompt mode`,
+    )
+    assertStringIncludes(
+      text,
+      "--text",
+      `${sourceDoc.label} must document the explicit human-readable output escape hatch`,
+    )
   }
 })
