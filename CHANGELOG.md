@@ -2,6 +2,17 @@
 
 ## [Unreleased]
 
+## [3.0.1] - 2026-04-05
+
+### Changed
+
+- published a copy-pasteable v2-to-v3 migration cookbook and strengthened the v3 release guide around startup, diagnostics, and explicit compatibility-mode guidance
+- expanded the v3 release gate to certify both the native startup/discovery path and the explicit compatibility path for diagnostics and human/debug inspection
+
+### Fixed
+
+- improved common v3 compatibility failures so runtime suggestions point callers to `--text`, `--compat v1`, or `--profile human-debug --interactive` instead of forcing migration guidance to live only in docs
+
 ## [3.0.0] - 2026-04-04
 
 ### Added
