@@ -52,7 +52,7 @@ Default top-level shape from `linear capabilities`:
   "cli": {
     "name": "linear-cli",
     "binary": "linear",
-    "version": "2.15.0"
+    "version": "3.0.0"
   },
   "compatibility": {
     "defaultSchemaVersion": "v2",
@@ -151,7 +151,7 @@ Default top-level shape from `linear capabilities`:
   "cli": {
     "name": "linear-cli",
     "binary": "linear",
-    "version": "2.15.0"
+    "version": "3.0.0"
   },
   "commands": [
     {

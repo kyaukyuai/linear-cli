@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## [3.0.0] - 2026-04-04
+
+### Added
+
+- extended the shared `operation` and `receipt` contract family across remaining high-value write commands, including issue assignment/estimate/move/priority, project create and project-label mutation flows, webhook writes, and batch issue creation
+- published an agent-native v3 migration guide and rewrote the README and skill/docs stack around AI agent runtimes instead of mixed human/operator usage
+
+### Changed
+
+- changed the default runtime to agent-native execution for core startup, read, and representative write surfaces by making machine-readable JSON the default output mode and relegating human-readable output to the explicit `--text` escape hatch
+- removed implicit interactive fallback behavior from startup-critical paths; prompt-driven flows now require explicit `--profile human-debug --interactive`
+- made `agent-safe` the default execution profile, so pager-off behavior, longer write timeout defaults, and explicit destructive confirmation semantics are the standard runtime path
+- promoted the richer `linear capabilities` schema metadata to the default discovery surface and kept the legacy trimmed shape available only through explicit `--compat v1`
+
 ## [2.15.0] - 2026-04-03
 
 ### Added
