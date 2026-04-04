@@ -25,6 +25,7 @@ Agent-safe execution semantics are now the default runtime behavior. `--text` an
 Recommended supporting docs:
 
 - [../../docs/agent-first.md](../../docs/agent-first.md)
+- [../../docs/v2-to-v3-migration-cookbook.md](../../docs/v2-to-v3-migration-cookbook.md)
 - [../../docs/json-contracts.md](../../docs/json-contracts.md)
 - [../../docs/stdin-policy.md](../../docs/stdin-policy.md)
 

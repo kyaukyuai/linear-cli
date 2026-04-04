@@ -4,7 +4,7 @@
 
 Use this document as the default operating loop for `v3.0.0` and current `main`. Machine-readable output is the primary runtime contract. Human-readable text and prompt flows are explicit escape hatches.
 
-If you are planning for the breaking default flips in `v3.0.0`, read [agent-only-v3.md](./agent-only-v3.md) alongside this guide.
+If you are planning for the breaking default flips in `v3.0.0`, read [agent-only-v3.md](./agent-only-v3.md) alongside this guide. For copy-pasteable migration examples, also keep [v2-to-v3-migration-cookbook.md](./v2-to-v3-migration-cookbook.md) nearby.
 
 ## 1. Discover The Surface
 

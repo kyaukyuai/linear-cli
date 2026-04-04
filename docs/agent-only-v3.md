@@ -2,6 +2,8 @@
 
 This document is the source of truth for the `linear-cli` `v3.0.0` release that turns the project from an agent-first CLI into an agent-native runtime.
 
+For copy-pasteable command migration examples, pair this guide with [v2-to-v3-migration-cookbook.md](./v2-to-v3-migration-cookbook.md).
+
 Use it to answer three questions:
 
 1. which `2.x` defaults will flip in `3.0`
@@ -129,6 +131,8 @@ linear issue view ENG-123 --text
 ```
 
 Treat `linear team list --json` as the compatibility-safe diagnostics path for automation. Keep bare `linear team list` only for human inspection, not for parser-driven startup checks.
+
+For a broader set of before/after command examples, see [v2-to-v3-migration-cookbook.md](./v2-to-v3-migration-cookbook.md).
 
 ## Release Criteria For v3.0.0
 

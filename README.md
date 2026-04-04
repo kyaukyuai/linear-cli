@@ -68,6 +68,7 @@ Recommended docs:
 - [Agent workflow guide](docs/agent-first.md)
 - [Automation contracts](docs/json-contracts.md)
 - [Agent-only v3 release guide](docs/agent-only-v3.md)
+- [v2 to v3 migration cookbook](docs/v2-to-v3-migration-cookbook.md)
 - [stdin and pipeline policy](docs/stdin-policy.md)
 
 ## migration from 2.x
@@ -80,7 +81,7 @@ If a downstream consumer still assumes the older mixed human/agent behavior, mig
 4. add `--text` anywhere a maintainer still wants terminal-oriented output
 5. add `--profile human-debug --interactive` anywhere a maintainer still wants prompts or pager-oriented debugging
 
-The detailed release and migration guide lives in [docs/agent-only-v3.md](docs/agent-only-v3.md).
+The detailed release and migration guide lives in [docs/agent-only-v3.md](docs/agent-only-v3.md). For copy-pasteable before/after fixes, use [docs/v2-to-v3-migration-cookbook.md](docs/v2-to-v3-migration-cookbook.md).
 
 ## human-debug demos
 
@@ -203,8 +204,9 @@ Use the docs in this order if you are building an agent integration:
 1. [docs/agent-first.md](docs/agent-first.md) for the recommended discover/read/preview/apply/recover loop
 2. [docs/json-contracts.md](docs/json-contracts.md) for stable JSON payloads, exit codes, timeout semantics, and dry-run envelopes
 3. [docs/agent-only-v3.md](docs/agent-only-v3.md) for the `v3.0.0` release contract and downstream migration checklist
-4. [docs/stdin-policy.md](docs/stdin-policy.md) for pipeline and file-input conventions
-5. [`linear capabilities`](#automation-contract) for machine-readable command metadata at runtime
+4. [docs/v2-to-v3-migration-cookbook.md](docs/v2-to-v3-migration-cookbook.md) for consumer-facing before/after upgrade examples
+5. [docs/stdin-policy.md](docs/stdin-policy.md) for pipeline and file-input conventions
+6. [`linear capabilities`](#automation-contract) for machine-readable command metadata at runtime
 
 ## automation contract
 

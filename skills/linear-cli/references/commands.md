@@ -51,3 +51,5 @@ Use the CLI in this order when possible:
 5. Inspect exit codes plus `operation`, `receipt`, and `error.details` for retries or reconciliation
 
 Use `--text` only for human-readable terminal inspection. Use `--profile human-debug --interactive` only for human/debug prompt flows. Agent-controlled runs should pass explicit flags, stdin, or file inputs.
+
+For concrete v2-to-v3 command fixes, see [../../docs/v2-to-v3-migration-cookbook.md](../../docs/v2-to-v3-migration-cookbook.md).
