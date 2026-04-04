@@ -150,38 +150,38 @@ Deno.test("contract docs describe capabilities compat modes that match runtime o
     docs,
     "Default top-level shape from `linear capabilities`:",
   )
-  const compatV2Example = extractJsonExample(
+  const compatV1Example = extractJsonExample(
     docs,
-    "`linear capabilities --compat v2` adds curated command schema metadata and output semantics:",
+    "`linear capabilities --compat v1` preserves the trimmed legacy startup shape for older consumers:",
   )
 
   assertStringIncludes(
     docs,
-    "`linear capabilities` defaults to the `v1` compatibility shape for runtime startup safety",
-    "docs/json-contracts.md must document the startup-safe default capabilities shape",
+    "`linear capabilities` defaults to the richer `v2` schema-like discovery shape in v3",
+    "docs/json-contracts.md must document the v2 default capabilities shape",
   )
   assertStringIncludes(
     docs,
-    "`linear capabilities --compat v2`",
-    "docs/json-contracts.md must document the opt-in v2 capabilities shape",
+    "`linear capabilities --compat v1`",
+    "docs/json-contracts.md must document the explicit legacy v1 capabilities shape",
   )
 
   const runtimeDefault = await runLinearJsonCommand(["capabilities"])
-  const runtimeCompatV2 = await runLinearJsonCommand([
+  const runtimeCompatV1 = await runLinearJsonCommand([
     "capabilities",
     "--compat",
-    "v2",
+    "v1",
   ])
 
   assertEquals(defaultExample.schemaVersion, runtimeDefault.schemaVersion)
-  assertEquals(compatV2Example.schemaVersion, runtimeCompatV2.schemaVersion)
+  assertEquals(compatV1Example.schemaVersion, runtimeCompatV1.schemaVersion)
   assertEquals(
     "compatibility" in defaultExample,
     "compatibility" in runtimeDefault,
   )
   assertEquals(
-    "compatibility" in compatV2Example,
-    "compatibility" in runtimeCompatV2,
+    "compatibility" in compatV1Example,
+    "compatibility" in runtimeCompatV1,
   )
 
   assert(
@@ -238,29 +238,29 @@ Deno.test("contract docs describe capabilities compat modes that match runtime o
     "writeSemantics" in runtimeDefaultIssueUpdate,
   )
 
-  const docsCompatV2IssueUpdate = findCapabilityCommand(
-    compatV2Example,
+  const docsCompatV1IssueUpdate = findCapabilityCommand(
+    compatV1Example,
     "linear issue update",
   )
-  const runtimeCompatV2IssueUpdate = findCapabilityCommand(
-    runtimeCompatV2,
+  const runtimeCompatV1IssueUpdate = findCapabilityCommand(
+    runtimeCompatV1,
     "linear issue update",
   )
   assertEquals(
-    "schema" in docsCompatV2IssueUpdate,
-    "schema" in runtimeCompatV2IssueUpdate,
+    "schema" in docsCompatV1IssueUpdate,
+    "schema" in runtimeCompatV1IssueUpdate,
   )
   assertEquals(
-    "output" in docsCompatV2IssueUpdate,
-    "output" in runtimeCompatV2IssueUpdate,
+    "output" in docsCompatV1IssueUpdate,
+    "output" in runtimeCompatV1IssueUpdate,
   )
   assertEquals(
-    "writeSemantics" in docsCompatV2IssueUpdate,
-    "writeSemantics" in runtimeCompatV2IssueUpdate,
+    "writeSemantics" in docsCompatV1IssueUpdate,
+    "writeSemantics" in runtimeCompatV1IssueUpdate,
   )
 })
 
-Deno.test("agent-facing source docs keep startup-safe capabilities examples", async () => {
+Deno.test("agent-facing source docs keep default v2 and legacy v1 capabilities examples", async () => {
   const sourceDocs = [
     { label: "README", path: readmePath },
     { label: "docs/agent-first.md", path: agentFirstPath },
@@ -277,12 +277,12 @@ Deno.test("agent-facing source docs keep startup-safe capabilities examples", as
     assertStringIncludes(
       text,
       "linear capabilities",
-      `${sourceDoc.label} must keep the startup-safe capabilities example`,
+      `${sourceDoc.label} must keep the default capabilities example`,
     )
     assertStringIncludes(
       text,
-      "linear capabilities --compat v2",
-      `${sourceDoc.label} must keep the opt-in v2 capabilities example`,
+      "linear capabilities --compat v1",
+      `${sourceDoc.label} must keep the legacy v1 capabilities example`,
     )
   }
 })

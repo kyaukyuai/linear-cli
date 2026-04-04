@@ -26,11 +26,11 @@ The example payloads below are validated in CI against the current CLI version a
 
 Compatibility rules:
 
-- `linear capabilities` defaults to the `v1` compatibility shape for runtime startup safety
-- richer schema and output metadata are opt-in via `linear capabilities --compat v2`
-- execution profile metadata is only exposed in `--compat v2`
-- top-level `v1` fields stay backward compatible across minor releases
-- additive `v2` fields are allowed within `schemaVersion: "v2"`, but callers must opt in explicitly
+- `linear capabilities` defaults to the richer `v2` schema-like discovery shape in v3
+- `linear capabilities --compat v1` preserves the trimmed legacy startup shape for older consumers
+- execution profile metadata is part of the default `v2` output
+- top-level `v2` fields stay backward compatible across minor releases
+- `v1` remains available only through explicit `--compat v1`
 - machine-readable schema changes should be called out explicitly in release notes
 - the top-level JSON shape of the agent-first read entrypoints in [agent-first.md](./agent-first.md) is also guarded in CI as a startup contract
 
@@ -38,11 +38,16 @@ Default top-level shape from `linear capabilities`:
 
 ```json
 {
-  "schemaVersion": "v1",
+  "schemaVersion": "v2",
   "cli": {
     "name": "linear-cli",
     "binary": "linear",
     "version": "2.15.0"
+  },
+  "compatibility": {
+    "defaultSchemaVersion": "v2",
+    "latestSchemaVersion": "v2",
+    "supportedSchemaVersions": ["v1", "v2"]
   },
   "contractVersions": {
     "automation": {
@@ -77,6 +82,67 @@ Default top-level shape from `linear capabilities`:
       "linear resolve issue"
     ]
   },
+  "executionProfiles": {
+    "defaultProfile": "agent-safe",
+    "availableProfiles": [
+      {
+        "name": "agent-safe",
+        "description": "Default profile for agent and automation runs that prefer predictable non-interactive defaults."
+      }
+    ]
+  },
+  "commands": [
+    {
+      "path": "linear issue update",
+      "summary": "Update an issue",
+      "json": {
+        "supported": true,
+        "contractVersion": "v1"
+      },
+      "dryRun": {
+        "supported": true,
+        "contractVersion": "v1"
+      },
+      "stdin": {
+        "mode": "implicit_text"
+      },
+      "confirmationBypass": null,
+      "idempotency": {
+        "category": "conditional",
+        "notes": "Field-only updates are retry-safe; adding --comment makes the command non-idempotent."
+      },
+      "schema": {
+        "coverage": "curated_primary_inputs",
+        "inputModes": ["flags", "stdin", "file"]
+      },
+      "output": {
+        "success": {
+          "category": "automation_contract",
+          "topLevelFields": ["success", "data", "receipt", "operation"]
+        }
+      },
+      "writeSemantics": {
+        "timeoutAware": true,
+        "timeoutReconciliation": true,
+        "mayReturnNoOp": false,
+        "mayReturnPartialSuccess": true
+      },
+      "notes": null
+    }
+  ]
+}
+```
+
+`linear capabilities --compat v1` preserves the trimmed legacy startup shape for older consumers:
+
+```json
+{
+  "schemaVersion": "v1",
+  "cli": {
+    "name": "linear-cli",
+    "binary": "linear",
+    "version": "2.15.0"
+  },
   "commands": [
     {
       "path": "linear issue update",
@@ -103,189 +169,6 @@ Default top-level shape from `linear capabilities`:
 }
 ```
 
-`linear capabilities --compat v2` adds curated command schema metadata and output semantics:
-
-```json
-{
-  "schemaVersion": "v2",
-  "compatibility": {
-    "defaultSchemaVersion": "v1",
-    "latestSchemaVersion": "v2",
-    "supportedSchemaVersions": ["v1", "v2"]
-  },
-  "executionProfiles": {
-    "defaultProfile": "agent-safe",
-    "availableProfiles": [
-      {
-        "name": "agent-safe",
-        "description": "Default profile for agent and automation runs that prefer predictable non-interactive defaults.",
-        "semantics": {
-          "disablePagerByDefault": true,
-          "preferJsonWhenSupported": true,
-          "requireExplicitConfirmationBypass": true,
-          "defaultWriteTimeoutMs": 45000,
-          "allowInteractivePrompts": false
-        },
-        "nonGoals": [
-          "Does not force --json when the caller omits it.",
-          "Does not auto-confirm destructive actions; use --yes explicitly.",
-          "Does not replace missing required inputs; human/debug prompt flows still require explicit --profile human-debug --interactive opt-in."
-        ]
-      },
-      {
-        "name": "human-debug",
-        "description": "Opt-in profile for human-guided debugging that re-enables prompt and pager defaults.",
-        "semantics": {
-          "disablePagerByDefault": false,
-          "preferJsonWhenSupported": false,
-          "requireExplicitConfirmationBypass": false,
-          "defaultWriteTimeoutMs": 30000,
-          "allowInteractivePrompts": true
-        },
-        "nonGoals": [
-          "Does not revert default-JSON command surfaces; use --text for human-readable output.",
-          "Does not auto-confirm destructive actions when --interactive is omitted.",
-          "Does not change startup-safe capabilities compatibility defaults."
-        ]
-      }
-    ]
-  },
-  "commands": [
-    {
-      "path": "linear issue update",
-      "schema": {
-        "coverage": "curated_primary_inputs",
-        "arguments": [
-          {
-            "name": "issue",
-            "required": false,
-            "valueType": "issue_ref",
-            "description": "Issue identifier or internal ID. Defaults to the current issue.",
-            "allowedValues": null
-          }
-        ],
-        "flags": [
-          {
-            "name": "--json",
-            "short": "-j",
-            "required": false,
-            "valueType": "boolean",
-            "description": "Emit machine-readable JSON output.",
-            "allowedValues": null
-          }
-        ],
-        "inputModes": ["flags", "stdin", "file"],
-        "requiredInputs": [],
-        "optionalInputs": [
-          { "source": "argument", "name": "issue" },
-          { "source": "flag", "name": "--json" }
-        ],
-        "defaults": [
-          {
-            "source": "argument",
-            "name": "issue",
-            "value": null,
-            "description": "Defaults to the current issue from the branch name or jj trailer."
-          }
-        ],
-        "resolutions": [
-          {
-            "source": "argument",
-            "name": "issue",
-            "strategy": "current_issue_context",
-            "description": "If omitted, the CLI resolves the current issue from the branch name or jj trailer."
-          }
-        ],
-        "constraints": [
-          {
-            "source": { "source": "flag", "name": "--description" },
-            "kind": "conflicts_with",
-            "targets": [{ "source": "flag", "name": "--description-file" }],
-            "reason": "Choose either inline replacement description text or a description file."
-          }
-        ],
-        "stdinTargets": [
-          { "field": "description", "viaFlags": [] }
-        ],
-        "fileTargets": [
-          { "field": "description", "viaFlags": ["--description-file"] }
-        ],
-        "examples": [
-          {
-            "description": "Preview an issue update with dry-run JSON.",
-            "argv": [
-              "linear",
-              "issue",
-              "update",
-              "ENG-123",
-              "--state",
-              "done",
-              "--dry-run",
-              "--json"
-            ]
-          }
-        ]
-      },
-      "output": {
-        "success": {
-          "category": "automation_contract",
-          "contractTarget": "automation_contract:v1",
-          "contract": {
-            "kind": "automation_contract",
-            "version": "v1"
-          },
-          "shape": "object",
-          "exitCode": 0,
-          "topLevelFields": ["success", "data"]
-        },
-        "preview": {
-          "supported": true,
-          "contractTarget": "dry_run_preview:v1",
-          "contract": {
-            "kind": "dry_run_preview",
-            "version": "v1"
-          },
-          "shape": "object",
-          "exitCode": 0,
-          "topLevelFields": ["success", "dryRun", "summary", "data"]
-        },
-        "failure": {
-          "jsonWhenRequested": true,
-          "parseErrorsJsonWhenRequested": true,
-          "exitCodes": [
-            { "code": 1, "meaning": "generic_failure" },
-            { "code": 4, "meaning": "auth_error" },
-            { "code": 6, "meaning": "timeout_error" }
-          ],
-          "topLevelFields": ["success", "error"],
-          "errorFields": [
-            "type",
-            "message",
-            "suggestion",
-            "context",
-            "details"
-          ],
-          "detailFields": [
-            "failureMode",
-            "outcome",
-            "appliedState",
-            "callerGuidance",
-            "partialSuccess",
-            "retryCommand"
-          ]
-        }
-      },
-      "writeSemantics": {
-        "timeoutAware": true,
-        "timeoutReconciliation": true,
-        "mayReturnNoOp": false,
-        "mayReturnPartialSuccess": true
-      }
-    }
-  ]
-}
-```
-
 Rules:
 
 - `automationTier.byVersion` lists the commands added by each automation contract version
@@ -300,7 +183,7 @@ Rules:
 
 Release-gated downstream certification currently covers:
 
-- startup discovery with `linear capabilities` and `--compat v2`
+- startup discovery with `linear capabilities` and explicit legacy `--compat v1`
 - reference resolution with `linear resolve issue/team/workflow-state/user/label --json`
 - startup-safe reads with `issue view/list`, `project view`, `cycle current`, `document list`, `webhook view`, and `notification list`
 - the `resolve -> preview -> apply` flow for `linear issue update --json`
@@ -310,7 +193,7 @@ Automation-tier commands outside those certified flows still follow the compatib
 
 - `schema.arguments` and `schema.flags` are additive, machine-readable hints for the main positional arguments and high-value flags agents should care about first
 - `schema.requiredInputs` and `schema.optionalInputs` summarize the curated primary execution path without forcing callers to re-derive requiredness from each entry
-- `schema.defaults` lists curated defaults and fallbacks that matter for agents, such as `--compat = v1`, current-issue resolution, and timeout fallback behavior
+- `schema.defaults` lists curated defaults and fallbacks that matter for agents, such as `--compat = v2`, current-issue resolution, and timeout fallback behavior
 - `schema.resolutions` explains when the CLI resolves an input from current issue context, configured team context, or environment-backed defaults
 - `schema.constraints` lists high-value machine-readable relationships such as `requires_all_of` and `conflicts_with`
 - `schema.inputModes` is a subset of `flags`, `stdin`, and `file`

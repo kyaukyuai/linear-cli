@@ -32,14 +32,14 @@ Those paths become secondary and must be explicitly requested.
 
 ## Default Changes In v3
 
-| Surface                     | 2.x default                                                                                        | 3.0 default                                                             |
-| --------------------------- | -------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
-| Output mode                 | styled human text unless `--json` is passed                                                        | machine-readable JSON for core read/write command surfaces              |
-| Interactive fallbacks       | some commands still prompt or offer human-oriented fallback flows                                  | missing required input fails fast with actionable guidance              |
-| Pager behavior              | command-dependent, with `--profile agent-safe` disabling pager-by-default behavior                 | pager disabled by default                                               |
-| Execution profile           | `agent-safe` is opt-in via `--profile agent-safe`                                                  | agent-safe semantics are the default runtime behavior                   |
-| Capabilities discovery      | `linear capabilities --json` defaults to startup-safe `v1`; richer metadata requires `--compat v2` | richer schema metadata becomes the default capabilities surface         |
-| Write result interpretation | representative high-value writes expose `operation` / `receipt`                                    | remaining target writes are expected to expose the same contract family |
+| Surface                     | 2.x default                                                                                            | 3.0 default                                                             |
+| --------------------------- | ------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------- |
+| Output mode                 | styled human text unless `--json` is passed                                                            | machine-readable JSON for core read/write command surfaces              |
+| Interactive fallbacks       | some commands still prompt or offer human-oriented fallback flows                                      | missing required input fails fast with actionable guidance              |
+| Pager behavior              | command-dependent, with `--profile agent-safe` disabling pager-by-default behavior                     | pager disabled by default                                               |
+| Execution profile           | `agent-safe` is opt-in via `--profile agent-safe`                                                      | agent-safe semantics are the default runtime behavior                   |
+| Capabilities discovery      | `linear capabilities --json` defaults to richer `v2`; `--compat v1` preserves the legacy startup shape | richer schema metadata remains the default capabilities surface         |
+| Write result interpretation | representative high-value writes expose `operation` / `receipt`                                        | remaining target writes are expected to expose the same contract family |
 
 ## Human And Debug Escape Hatches
 

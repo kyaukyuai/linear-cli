@@ -107,8 +107,36 @@ function assertStartupArrayShape(
   }
 }
 
-Deno.test("startup-critical capabilities default shape stays v1-compatible", async () => {
+Deno.test("startup-critical capabilities default shape stays v2 schema-like", async () => {
   const payload = await runLinearJsonCommand(["capabilities", "--json"])
+
+  assertStartupObjectShape(payload, [
+    "schemaVersion",
+    "cli",
+    "compatibility",
+    "contractVersions",
+    "automationTier",
+    "executionProfiles",
+    "commands",
+  ])
+  assertEquals(payload.schemaVersion, "v2")
+  assert(Array.isArray(payload.commands), "Expected commands to be an array")
+
+  const issueUpdate = payload.commands.find((command) =>
+    isRecord(command) && command.path === "linear issue update"
+  )
+  assert(isRecord(issueUpdate), "Expected linear issue update capability")
+  assertEquals("schema" in issueUpdate, true)
+  assertEquals("output" in issueUpdate, true)
+})
+
+Deno.test("startup-critical capabilities v1 shape remains explicitly available", async () => {
+  const payload = await runLinearJsonCommand([
+    "capabilities",
+    "--json",
+    "--compat",
+    "v1",
+  ])
 
   assertStartupObjectShape(payload, [
     "schemaVersion",
@@ -126,37 +154,6 @@ Deno.test("startup-critical capabilities default shape stays v1-compatible", asy
   assert(isRecord(issueUpdate), "Expected linear issue update capability")
   assertEquals("schema" in issueUpdate, false)
   assertEquals("output" in issueUpdate, false)
-})
-
-Deno.test("startup-critical capabilities v2 shape keeps schema metadata opt-in", async () => {
-  const payload = await runLinearJsonCommand([
-    "capabilities",
-    "--json",
-    "--compat",
-    "v2",
-  ])
-
-  assertStartupObjectShape(payload, [
-    "schemaVersion",
-    "cli",
-    "contractVersions",
-    "automationTier",
-    "executionProfiles",
-    "commands",
-  ])
-  assertEquals(payload.schemaVersion, "v2")
-  assert(Array.isArray(payload.commands), "Expected commands to be an array")
-  assert(
-    isRecord(payload.executionProfiles),
-    "Expected execution profile metadata",
-  )
-
-  const issueUpdate = payload.commands.find((command) =>
-    isRecord(command) && command.path === "linear issue update"
-  )
-  assert(isRecord(issueUpdate), "Expected linear issue update capability")
-  assertEquals("schema" in issueUpdate, true)
-  assertEquals("output" in issueUpdate, true)
 })
 
 Deno.test("startup-critical reference resolution entrypoints preserve top-level JSON shape", async (ctx) => {

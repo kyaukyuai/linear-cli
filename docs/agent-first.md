@@ -12,7 +12,7 @@ Start with the self-describing registry:
 
 ```bash
 linear capabilities
-linear capabilities --compat v2
+linear capabilities --compat v1
 ```
 
 This tells an agent:
@@ -24,12 +24,12 @@ This tells an agent:
 - which contract version or retry semantics apply
 - which success fields and write semantics are exposed for machine-readable execution
 
-Use the default `linear capabilities` shape for runtime startup compatibility. Reach for `--compat v2` only when the caller is ready to consume richer command schema metadata such as required inputs, constrained values, defaults, context resolution hints, input constraints, canonical argv examples, stdin/file targets, structured output contracts, and write semantics.
+Use the default `linear capabilities` shape when the caller is ready for schema-like discovery metadata such as required inputs, constrained values, defaults, context resolution hints, input constraints, canonical argv examples, stdin/file targets, structured output contracts, and write semantics. Reach for `--compat v1` only when an older consumer still expects the trimmed legacy startup shape.
 
 The default runtime now uses agent-safe execution semantics:
 
 ```bash
-linear capabilities --compat v2
+linear capabilities
 ```
 
 `agent-safe` disables pager-by-default behavior, extends the built-in write timeout to `45000ms` unless the caller overrides it, and requires explicit `--yes` for destructive confirmation bypass. It does not force `--json`, auto-confirm destructive actions, or replace missing required inputs.
@@ -40,8 +40,8 @@ The default capabilities shape and the read entrypoints below are treated as sta
 
 Release-gated downstream certification currently covers these real consumer flows:
 
-- startup discovery with `linear capabilities` and `linear capabilities --compat v2`
-- explicit startup discovery with `linear capabilities --json` and `linear capabilities --json --compat v2`
+- startup discovery with `linear capabilities` and `linear capabilities --compat v1`
+- explicit startup discovery with `linear capabilities --json` and `linear capabilities --json --compat v1`
 - reference resolution with `linear resolve issue/team/workflow-state/user/label --json`
 - startup-safe reads with `issue view/list`, `project view`, `cycle current`, `document list`, `webhook view`, and `notification list`
 - the `resolve -> preview -> apply` loop for `linear issue update --json`

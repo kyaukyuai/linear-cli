@@ -6,7 +6,7 @@ if you want an agent to read Linear state, preview a write, apply it, and return
 
 ```bash
 linear capabilities
-linear capabilities --compat v2
+linear capabilities --compat v1
 linear resolve issue ENG-123
 linear issue update ENG-123 --state done --dry-run --json
 linear issue list
@@ -23,7 +23,7 @@ the core agent surfaces now default to machine-readable JSON. use `--text` when 
 
 If an agent only reads one page, it should be this README plus the two contract docs below.
 
-- start with `linear capabilities` for the stable startup-safe shape; use `linear capabilities --compat v2` when you also need required/optional input refs, constrained values, defaults, context resolution hints, input constraints, canonical argv examples, stdin/file targets, and structured output semantics
+- start with `linear capabilities` for the default schema-like discovery shape; use `linear capabilities --compat v1` only when an older consumer still expects the legacy startup shape
 - use the default runtime for predictable non-interactive agent execution; `--profile human-debug` is the explicit escape hatch for pager and prompt-driven debugging
 - resolve ambiguous issue/team/state/user/label refs with `linear resolve ...` before previewing or applying writes
 - prefer stable read surfaces such as `issue`, `project`, `cycle`, `milestone`, `document`, `webhook`, `notification`, `team`, `user`, `workflow-state`, `label`, `initiative`, and update feeds; those agent-first entrypoints now default to machine-readable JSON
@@ -131,7 +131,7 @@ deno task install
 compared to upstream, this fork adds and maintains capabilities aimed at automation-heavy workflows:
 
 - stable JSON contracts for the automation tier, with machine-readable failures for parser, validation, and runtime errors
-- a self-describing `linear capabilities` surface with a backward-compatible default and an explicit `--compat v2` mode for richer schema and output metadata
+- a self-describing `linear capabilities` surface with richer schema and output metadata by default and an explicit `--compat v1` fallback for legacy consumers
 - `--dry-run` previews for high-value write commands, including `issue start`, issue writes, and non-issue writes
 - additive operation receipts on high-value JSON write success paths
 - a shared top-level `operation` contract on representative preview/apply JSON write paths
@@ -165,7 +165,7 @@ Use the docs in this order if you are building an agent integration:
 
 for bot and org-wide automation use cases, `linear-cli` defines a stable JSON contract for a focused automation tier.
 
-to discover the curated agent-facing command surface programmatically, use `linear capabilities`. the default shape preserves the v1-compatible startup contract for existing bots. when you need richer metadata such as required vs optional primary inputs, constrained values, defaults, context resolution hints, input constraints, canonical argv examples, stdin/file targets, structured output semantics, and timeout/no-op traits, opt into `linear capabilities --compat v2`.
+to discover the curated agent-facing command surface programmatically, use `linear capabilities`. the default shape now returns the richer v2 schema metadata for agent-native startup. when an older consumer still expects the trimmed legacy shape, pin it explicitly with `linear capabilities --compat v1`.
 
 `agent-safe` is now the default execution profile for agent-controlled runs. it disables pager-by-default behavior, extends the built-in write timeout to `45000ms` unless `--timeout-ms` or `LINEAR_WRITE_TIMEOUT_MS` is set, and keeps destructive confirmation bypass explicit with `--yes`. use `--profile human-debug` when a maintainer explicitly wants prompt-driven or pager-oriented debugging behavior.
 

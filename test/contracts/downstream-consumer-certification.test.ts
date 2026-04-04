@@ -118,40 +118,44 @@ function findCapabilityCommand(
 
 Deno.test("downstream consumer certification mirrors startup discovery assumptions", async () => {
   const defaultPayload = await runLinearJsonCommand(["capabilities", "--json"])
-  const compatV2Payload = await runLinearJsonCommand([
+  const compatV1Payload = await runLinearJsonCommand([
     "capabilities",
     "--json",
     "--compat",
-    "v2",
+    "v1",
   ])
 
   assert(isRecord(defaultPayload), "Expected default capabilities payload")
-  assert(isRecord(compatV2Payload), "Expected compat v2 capabilities payload")
-  assertEquals(defaultPayload.schemaVersion, "v1")
-  assertEquals(compatV2Payload.schemaVersion, "v2")
+  assert(isRecord(compatV1Payload), "Expected compat v1 capabilities payload")
+  assertEquals(defaultPayload.schemaVersion, "v2")
+  assertEquals(compatV1Payload.schemaVersion, "v1")
 
   const defaultIssueUpdate = findCapabilityCommand(
     defaultPayload,
     "linear issue update",
   )
-  const compatV2IssueUpdate = findCapabilityCommand(
-    compatV2Payload,
+  const compatV1IssueUpdate = findCapabilityCommand(
+    compatV1Payload,
     "linear issue update",
   )
 
-  assertEquals("schema" in defaultIssueUpdate, false)
-  assertEquals("output" in defaultIssueUpdate, false)
+  assertEquals("schema" in defaultIssueUpdate, true)
+  assertEquals("output" in defaultIssueUpdate, true)
 
-  assert(isRecord(compatV2IssueUpdate.schema), "Expected schema metadata in v2")
-  assert(isRecord(compatV2IssueUpdate.output), "Expected output metadata in v2")
+  assertEquals("schema" in compatV1IssueUpdate, false)
+  assertEquals("output" in compatV1IssueUpdate, false)
+  assertEquals("writeSemantics" in compatV1IssueUpdate, false)
+
+  const schema = defaultIssueUpdate.schema
+  const output = defaultIssueUpdate.output
+  const writeSemantics = defaultIssueUpdate.writeSemantics
+
+  assert(isRecord(schema), "Expected schema metadata in the default v2 shape")
+  assert(isRecord(output), "Expected output metadata in the default v2 shape")
   assert(
-    isRecord(compatV2IssueUpdate.writeSemantics),
-    "Expected write semantics in v2",
+    isRecord(writeSemantics),
+    "Expected write semantics in the default v2 shape",
   )
-
-  const schema = compatV2IssueUpdate.schema
-  const output = compatV2IssueUpdate.output
-  const writeSemantics = compatV2IssueUpdate.writeSemantics
 
   assert(Array.isArray(schema.constraints), "Expected schema constraints")
   assert(Array.isArray(schema.examples), "Expected canonical argv examples")

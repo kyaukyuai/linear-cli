@@ -276,7 +276,7 @@ export type CapabilitiesPayloadV1 = CapabilitiesPayloadBase & {
 export type CapabilitiesPayloadV2 = CapabilitiesPayloadBase & {
   schemaVersion: "v2"
   compatibility: {
-    defaultSchemaVersion: "v1"
+    defaultSchemaVersion: "v2"
     latestSchemaVersion: "v2"
     supportedSchemaVersions: CapabilitiesCompatibilityVersion[]
   }
@@ -929,8 +929,8 @@ const INPUT_DEFAULTS: Record<string, CapabilityInputDefault[]> = {
     inputDefault(
       "flag",
       "--compat",
-      "Defaults to the startup-safe capabilities schema shape.",
-      "v1",
+      "Defaults to the richer v2 capabilities schema shape.",
+      "v2",
     ),
   ],
   "linear cycle current": [
@@ -1328,12 +1328,19 @@ const COMMAND_CONSTRAINTS: Record<string, CapabilityConstraint[]> = {
 
 const COMMAND_EXAMPLES: Record<string, CapabilityCommandExample[]> = {
   "linear capabilities": [
-    example("Read the startup-safe capabilities registry.", [
+    example("Read the default schema-like capabilities registry.", [
       "linear",
       "capabilities",
       "--json",
     ]),
-    example("Opt into richer schema metadata for advanced agents.", [
+    example("Request the legacy v1 compatibility shape for older consumers.", [
+      "linear",
+      "capabilities",
+      "--json",
+      "--compat",
+      "v1",
+    ]),
+    example("Pin the richer v2 schema metadata explicitly.", [
       "linear",
       "capabilities",
       "--json",
@@ -1498,7 +1505,7 @@ const COMMANDS: CapabilityRegistryEntry[] = [
     confirmationBypass: null,
     idempotency: idempotency("read_only"),
     notes:
-      "Default --json preserves the v1-compatible shape; use --compat v2 for richer schema and output metadata.",
+      "Default --json exposes the richer v2 schema and output metadata; use --compat v1 only for legacy startup compatibility.",
   },
   {
     path: "linear cycle current",
@@ -2697,7 +2704,7 @@ function buildExecutionProfiles(): CapabilityExecutionProfiles {
         nonGoals: [
           "Does not revert default-JSON command surfaces; use --text for human-readable output.",
           "Does not auto-confirm destructive actions when --interactive is omitted.",
-          "Does not change startup-safe capabilities compatibility defaults.",
+          "Does not change explicit legacy capabilities compatibility requests.",
         ],
       },
     ],
@@ -2750,7 +2757,7 @@ function buildCapabilitiesPayloadV2(version: string): CapabilitiesPayloadV2 {
     schemaVersion: "v2",
     ...buildCapabilitiesPayloadBase(version),
     compatibility: {
-      defaultSchemaVersion: "v1",
+      defaultSchemaVersion: "v2",
       latestSchemaVersion: "v2",
       supportedSchemaVersions: [...CAPABILITIES_COMPATIBILITY_VERSIONS],
     },
@@ -2770,7 +2777,7 @@ function buildCapabilitiesPayloadV2(version: string): CapabilitiesPayloadV2 {
 
 export function buildCapabilitiesPayload(
   version: string,
-): CapabilitiesPayloadV1
+): CapabilitiesPayloadV2
 export function buildCapabilitiesPayload(
   version: string,
   compat: "v1",
@@ -2785,7 +2792,7 @@ export function buildCapabilitiesPayload(
 ): CapabilitiesPayload
 export function buildCapabilitiesPayload(
   version: string,
-  compat: CapabilitiesCompatibilityVersion = "v1",
+  compat: CapabilitiesCompatibilityVersion = "v2",
 ): CapabilitiesPayload {
   if (compat === "v2") {
     return buildCapabilitiesPayloadV2(version)

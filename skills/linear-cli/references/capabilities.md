@@ -22,8 +22,9 @@ Options:
 
 Examples:
 
-  Describe agent-facing capabilities as JSON linear capabilities                                               
-  Request the richer v2 metadata shape       linear capabilities --compat v2                                   
-  Show the human-readable summary            linear capabilities --text                                        
-  Find commands that support dry-run         linear capabilities | jq '.commands[] | select(.dryRun.supported)'
+  Describe agent-facing capabilities as JSON  linear capabilities                                               
+  Request the legacy v1 compatibility shape   linear capabilities --compat v1                                   
+  Pin the richer v2 metadata shape explicitly linear capabilities --compat v2                                   
+  Show the human-readable summary             linear capabilities --text                                        
+  Find commands that support dry-run          linear capabilities | jq '.commands[] | select(.dryRun.supported)'
 ```
