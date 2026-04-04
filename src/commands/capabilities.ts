@@ -100,7 +100,8 @@ function parseCompatibilityVersion(
   throw new ValidationError(
     `Unsupported capabilities compatibility version: ${normalized}`,
     {
-      suggestion: "Use --compat v1 or --compat v2.",
+      suggestion:
+        "Use --compat v2 for the default v3 schema, or --compat v1 only for legacy startup parsers.",
     },
   )
 }
@@ -152,7 +153,7 @@ export const capabilitiesCommand = new Command()
           "--compat requires machine-readable output.",
           {
             suggestion:
-              "Use `linear capabilities --compat v1`, `linear capabilities --compat v2`, or omit --compat when requesting --text.",
+              "Use `linear capabilities` or `linear capabilities --compat v2` for the default v3 schema, `linear capabilities --compat v1` only for legacy startup parsers, or `linear capabilities --text` for a human summary.",
           },
         )
       }

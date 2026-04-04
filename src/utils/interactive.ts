@@ -2,7 +2,7 @@ import { shouldAllowInteractivePrompts } from "./execution_profile.ts"
 import { ValidationError } from "./errors.ts"
 
 export const INTERACTIVE_REQUIRED_SUGGESTION =
-  "Pass --profile human-debug --interactive to enable prompts in a terminal, or provide explicit flags/stdin."
+  "v3 no longer enables prompts by default. Pass --profile human-debug --interactive to restore terminal prompts, or provide explicit flags/stdin."
 
 export type InteractiveOptions = {
   interactive?: boolean
@@ -28,7 +28,7 @@ export function ensureInteractiveInputAvailable(
   if (!shouldAllowInteractivePrompts()) {
     throw new ValidationError(message, {
       suggestion:
-        "Interactive prompts require --profile human-debug together with --interactive, or explicit flags/stdin.",
+        "v3 defaults to the agent-safe profile. Pass --profile human-debug --interactive to restore terminal prompts, or provide explicit flags/stdin.",
     })
   }
 }

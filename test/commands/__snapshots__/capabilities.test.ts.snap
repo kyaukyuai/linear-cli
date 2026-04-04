@@ -11305,6 +11305,22 @@ stdout:
 ""
 stderr:
 "✗ Failed to describe capabilities: --compat requires machine-readable output.
-  Use \`linear capabilities --compat v1\`, \`linear capabilities --compat v2\`, or omit --compat when requesting --text.
+  Use \`linear capabilities\` or \`linear capabilities --compat v2\` for the default v3 schema, \`linear capabilities --compat v1\` only for legacy startup parsers, or \`linear capabilities --text\` for a human summary.
 "
+`;
+
+snapshot[`Capabilities Command - Invalid Compat Version 1`] = `
+stdout:
+'{
+  "success": false,
+  "error": {
+    "type": "validation_error",
+    "message": "Unsupported capabilities compatibility version: v3",
+    "suggestion": "Use --compat v2 for the default v3 schema, or --compat v1 only for legacy startup parsers.",
+    "context": "Failed to describe capabilities"
+  }
+}
+'
+stderr:
+""
 `;
