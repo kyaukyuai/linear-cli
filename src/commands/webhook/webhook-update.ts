@@ -3,11 +3,16 @@ import { green } from "@std/fmt/colors"
 import { gql } from "../../__codegen__/gql.ts"
 import { getGraphQLClient } from "../../utils/graphql.ts"
 import { emitDryRunOutput } from "../../utils/dry_run.ts"
+import {
+  buildOperationReceipt,
+  withOperationReceipt,
+} from "../../utils/operation_receipt.ts"
 import { CliError, handleError, ValidationError } from "../../utils/errors.ts"
+import { handleAutomationCommandError } from "../../utils/json_output.ts"
 import { withSpinner } from "../../utils/spinner.ts"
 import { buildWriteCommandPreview } from "../../utils/write_preview.ts"
 import {
-  buildWriteApplyOperation,
+  buildWriteApplyOperationFromReceipt,
   buildWritePreviewOperationFromPayload,
   withWriteOperationContract,
 } from "../../utils/write_operation.ts"
@@ -191,27 +196,30 @@ export const updateCommand = new Command()
               }
               : null,
           }
+          const receipt = buildOperationReceipt({
+            operationId: "webhook.update",
+            resource: "webhook",
+            action: "update",
+            resolvedRefs: {
+              webhookId: webhook.id,
+              webhookUrl: webhook.url,
+            },
+            appliedChanges: [
+              ...(input.url != null ? ["url"] : []),
+              ...(input.label != null ? ["label"] : []),
+              ...(input.resourceTypes != null ? ["resourceTypes"] : []),
+              ...(input.enabled != null ? ["enabled"] : []),
+              ...(secret != null ? ["secret"] : []),
+            ],
+            nextSafeAction: "read_before_retry",
+          })
           console.log(JSON.stringify(
             withWriteOperationContract(
-              payload,
-              buildWriteApplyOperation({
-                command: "webhook.update",
-                resource: "webhook",
-                action: "update",
-                summary: `Updated webhook ${webhook.id}`,
-                refs: {
-                  webhookId: webhook.id,
-                  webhookUrl: webhook.url,
-                },
-                changes: [
-                  ...(input.url != null ? ["url"] : []),
-                  ...(input.label != null ? ["label"] : []),
-                  ...(input.resourceTypes != null ? ["resourceTypes"] : []),
-                  ...(input.enabled != null ? ["enabled"] : []),
-                  ...(secret != null ? ["secret"] : []),
-                ],
-                nextSafeAction: "read_before_retry",
-              }),
+              withOperationReceipt(payload, receipt),
+              buildWriteApplyOperationFromReceipt(
+                `Updated webhook ${webhook.id}`,
+                receipt,
+              ),
             ),
             null,
             2,
@@ -228,6 +236,9 @@ export const updateCommand = new Command()
         console.log(`  Scope: ${getWebhookScope(webhook)}`)
         console.log(`  Resources: ${webhook.resourceTypes.join(", ")}`)
       } catch (error) {
+        if (json) {
+          handleAutomationCommandError(error, "Failed to update webhook", true)
+        }
         handleError(error, "Failed to update webhook")
       }
     },

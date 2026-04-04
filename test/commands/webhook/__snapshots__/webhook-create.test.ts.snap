@@ -64,6 +64,25 @@ stdout:
     "name": "jdoe",
     "displayName": "John Doe"
   },
+  "receipt": {
+    "operationId": "webhook.create",
+    "resource": "webhook",
+    "action": "create",
+    "resolvedRefs": {
+      "webhookId": "webhook-2",
+      "webhookUrl": "https://example.com/hooks/public",
+      "teamKey": null
+    },
+    "appliedChanges": [
+      "url",
+      "enabled",
+      "resourceTypes",
+      "scope"
+    ],
+    "noOp": false,
+    "partialSuccess": false,
+    "nextSafeAction": "read_before_retry"
+  },
   "operation": {
     "family": "write_operation",
     "version": "v1",

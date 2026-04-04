@@ -3,8 +3,17 @@ import { gql } from "../../__codegen__/gql.ts"
 import { getGraphQLClient } from "../../utils/graphql.ts"
 import { parsePriority } from "../../utils/display.ts"
 import { resolveIssueInternalId } from "../../utils/linear.ts"
+import {
+  buildOperationReceipt,
+  withOperationReceipt,
+} from "../../utils/operation_receipt.ts"
 import { withSpinner } from "../../utils/spinner.ts"
+import {
+  buildWriteApplyOperationFromReceipt,
+  withWriteOperationContract,
+} from "../../utils/write_operation.ts"
 import { green } from "@std/fmt/colors"
+import { handleAutomationCommandError } from "../../utils/json_output.ts"
 import { handleError, ValidationError } from "../../utils/errors.ts"
 
 const UpdateIssuePriority = gql(`
@@ -71,11 +80,30 @@ export const priorityCommand = new Command()
 
       const issue = result.issueUpdate.issue
       if (json) {
-        console.log(JSON.stringify(
-          {
-            identifier: issue?.identifier,
-            priority: issue?.priority,
+        const receipt = buildOperationReceipt({
+          operationId: "issue.priority",
+          resource: "issue",
+          action: "update",
+          resolvedRefs: {
+            issueIdentifier: issue?.identifier ?? null,
           },
+          appliedChanges: ["priority"],
+          nextSafeAction: "read_before_retry",
+        })
+        console.log(JSON.stringify(
+          withWriteOperationContract(
+            withOperationReceipt(
+              {
+                identifier: issue?.identifier,
+                priority: issue?.priority,
+              },
+              receipt,
+            ),
+            buildWriteApplyOperationFromReceipt(
+              `Updated priority for ${issue?.identifier ?? issueId}`,
+              receipt,
+            ),
+          ),
           null,
           2,
         ))
@@ -87,6 +115,9 @@ export const priorityCommand = new Command()
           ` Set ${issue?.identifier} priority to ${priorityLabel}`,
       )
     } catch (error) {
+      if (json) {
+        handleAutomationCommandError(error, "Failed to set priority", true)
+      }
       handleError(error, "Failed to set priority")
     }
   })

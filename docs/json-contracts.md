@@ -369,7 +369,7 @@ Write confirmation timeouts use `error.type = "timeout_error"` and should includ
 
 High-value write commands honor `LINEAR_WRITE_TIMEOUT_MS` and accept `--timeout-ms` for per-command overrides. Today that includes issue create/update/comment/relation/create-batch flows and notification read/archive.
 
-Representative write commands may add a top-level `operation` field to both `--dry-run` previews and successful JSON apply results. High-value write commands that expose machine-readable apply receipts may also add a top-level `receipt` field. Both fields are additive.
+Representative write commands may add a top-level `operation` field to both `--dry-run` previews and successful JSON apply results. High-value write commands that expose machine-readable apply receipts may also add a top-level `receipt` field. Both fields are additive. Current coverage includes issue create/update/comment/relation and batch creation, issue assignment/estimate/move/priority, project create and label add/remove, webhook create/update/delete, and notification read/archive.
 
 ## Common Sub-Shapes
 

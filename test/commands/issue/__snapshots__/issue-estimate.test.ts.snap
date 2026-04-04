@@ -66,7 +66,39 @@ snapshot[`Issue Estimate Command - JSON Output 1`] = `
 stdout:
 '{
   "identifier": "ENG-123",
-  "estimate": 3
+  "estimate": 3,
+  "receipt": {
+    "operationId": "issue.estimate",
+    "resource": "issue",
+    "action": "update",
+    "resolvedRefs": {
+      "issueIdentifier": "ENG-123"
+    },
+    "appliedChanges": [
+      "estimate"
+    ],
+    "noOp": false,
+    "partialSuccess": false,
+    "nextSafeAction": "read_before_retry"
+  },
+  "operation": {
+    "family": "write_operation",
+    "version": "v1",
+    "phase": "apply",
+    "command": "issue.estimate",
+    "resource": "issue",
+    "action": "update",
+    "summary": "Updated estimate for ENG-123",
+    "refs": {
+      "issueIdentifier": "ENG-123"
+    },
+    "changes": [
+      "estimate"
+    ],
+    "noOp": false,
+    "partialSuccess": false,
+    "nextSafeAction": "read_before_retry"
+  }
 }
 '
 stderr:

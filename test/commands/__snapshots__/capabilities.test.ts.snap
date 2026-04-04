@@ -64,15 +64,19 @@ agent-facing commands
   linear initiative list :: json=v5 dry-run=no inputs=flags success=automation_contract confirm=none idempotency=read_only
   linear initiative view :: json=v5 dry-run=no inputs=flags success=automation_contract confirm=none idempotency=read_only
   linear initiative-update list :: json=v5 dry-run=no inputs=flags success=automation_contract confirm=none idempotency=read_only
+  linear issue assign :: json=yes dry-run=no inputs=flags success=curated_json confirm=none idempotency=retry_safe_update
   linear issue children :: json=v1 dry-run=no inputs=flags success=automation_contract confirm=none idempotency=read_only
   linear issue comment add :: json=v1 dry-run=v1 inputs=flags,stdin,file success=automation_contract confirm=none idempotency=non_idempotent
   linear issue comment update :: json=no dry-run=no inputs=flags,stdin,file success=terminal_only confirm=none idempotency=retry_safe_update
   linear issue create :: json=v1 dry-run=v1 inputs=flags,stdin,file success=automation_contract confirm=none idempotency=non_idempotent
   linear issue create-batch :: json=v1 dry-run=v1 inputs=flags,file success=automation_contract confirm=none idempotency=resumable_batch
     retry: Partial failures return createdIdentifiers and failedStep details.
+  linear issue estimate :: json=yes dry-run=no inputs=flags success=curated_json confirm=none idempotency=retry_safe_update
   linear issue list :: json=v1 dry-run=no inputs=flags success=automation_contract confirm=none idempotency=read_only
     note: Issue list JSON keeps the nested state object and adds a stateName convenience field.
+  linear issue move :: json=yes dry-run=no inputs=flags success=curated_json confirm=none idempotency=retry_safe_update
   linear issue parent :: json=v1 dry-run=no inputs=flags success=automation_contract confirm=none idempotency=read_only
+  linear issue priority :: json=yes dry-run=no inputs=flags success=curated_json confirm=none idempotency=retry_safe_update
   linear issue relation add :: json=v1 dry-run=v1 inputs=flags success=automation_contract confirm=none idempotency=retry_safe_no_op
     retry: Adding an existing relation succeeds with noOp: true.
   linear issue relation delete :: json=v1 dry-run=v1 inputs=flags success=automation_contract confirm=none idempotency=retry_safe_no_op
@@ -2294,6 +2298,112 @@ stdout:
       }
     },
     {
+      "path": "linear issue assign",
+      "summary": "Assign an issue",
+      "json": {
+        "supported": true,
+        "contractVersion": null
+      },
+      "dryRun": {
+        "supported": false,
+        "contractVersion": null
+      },
+      "stdin": {
+        "mode": "none"
+      },
+      "confirmationBypass": null,
+      "idempotency": {
+        "category": "retry_safe_update",
+        "notes": null
+      },
+      "notes": null,
+      "writeSemantics": {
+        "timeoutAware": false,
+        "timeoutReconciliation": false,
+        "mayReturnNoOp": false,
+        "mayReturnPartialSuccess": false
+      },
+      "schema": {
+        "coverage": "curated_primary_inputs",
+        "arguments": [],
+        "flags": [
+          {
+            "name": "--json",
+            "short": "-j",
+            "required": false,
+            "valueType": "boolean",
+            "description": "Emit machine-readable JSON output.",
+            "allowedValues": null
+          }
+        ],
+        "inputModes": [
+          "flags"
+        ],
+        "requiredInputs": [],
+        "optionalInputs": [
+          {
+            "source": "flag",
+            "name": "--json"
+          }
+        ],
+        "defaults": [],
+        "resolutions": [],
+        "constraints": [],
+        "stdinTargets": [],
+        "fileTargets": [],
+        "examples": []
+      },
+      "output": {
+        "success": {
+          "category": "curated_json",
+          "contractTarget": null,
+          "contract": null,
+          "shape": "object",
+          "exitCode": 0,
+          "topLevelFields": [
+            "identifier",
+            "assignee",
+            "receipt",
+            "operation"
+          ]
+        },
+        "preview": {
+          "supported": false,
+          "contractTarget": null,
+          "contract": null,
+          "shape": null,
+          "exitCode": null,
+          "topLevelFields": null
+        },
+        "failure": {
+          "jsonWhenRequested": true,
+          "parseErrorsJsonWhenRequested": true,
+          "exitCodes": [
+            {
+              "code": 1,
+              "meaning": "generic_failure"
+            },
+            {
+              "code": 4,
+              "meaning": "auth_error"
+            }
+          ],
+          "topLevelFields": [
+            "success",
+            "error"
+          ],
+          "errorFields": [
+            "type",
+            "message",
+            "suggestion",
+            "context",
+            "details"
+          ],
+          "detailFields": []
+        }
+      }
+    },
+    {
       "path": "linear issue children",
       "summary": "List child issues",
       "json": {
@@ -3266,8 +3376,13 @@ stdout:
           "shape": "object",
           "exitCode": 0,
           "topLevelFields": [
-            "success",
-            "data"
+            "team",
+            "project",
+            "parent",
+            "children",
+            "counts",
+            "receipt",
+            "operation"
           ]
         },
         "preview": {
@@ -3283,7 +3398,8 @@ stdout:
             "success",
             "dryRun",
             "summary",
-            "data"
+            "data",
+            "operation"
           ]
         },
         "failure": {
@@ -3331,6 +3447,112 @@ stdout:
             "retryable",
             "retryHint"
           ]
+        }
+      }
+    },
+    {
+      "path": "linear issue estimate",
+      "summary": "Set an issue estimate",
+      "json": {
+        "supported": true,
+        "contractVersion": null
+      },
+      "dryRun": {
+        "supported": false,
+        "contractVersion": null
+      },
+      "stdin": {
+        "mode": "none"
+      },
+      "confirmationBypass": null,
+      "idempotency": {
+        "category": "retry_safe_update",
+        "notes": null
+      },
+      "notes": null,
+      "writeSemantics": {
+        "timeoutAware": false,
+        "timeoutReconciliation": false,
+        "mayReturnNoOp": false,
+        "mayReturnPartialSuccess": false
+      },
+      "schema": {
+        "coverage": "curated_primary_inputs",
+        "arguments": [],
+        "flags": [
+          {
+            "name": "--json",
+            "short": "-j",
+            "required": false,
+            "valueType": "boolean",
+            "description": "Emit machine-readable JSON output.",
+            "allowedValues": null
+          }
+        ],
+        "inputModes": [
+          "flags"
+        ],
+        "requiredInputs": [],
+        "optionalInputs": [
+          {
+            "source": "flag",
+            "name": "--json"
+          }
+        ],
+        "defaults": [],
+        "resolutions": [],
+        "constraints": [],
+        "stdinTargets": [],
+        "fileTargets": [],
+        "examples": []
+      },
+      "output": {
+        "success": {
+          "category": "curated_json",
+          "contractTarget": null,
+          "contract": null,
+          "shape": "object",
+          "exitCode": 0,
+          "topLevelFields": [
+            "identifier",
+            "estimate",
+            "receipt",
+            "operation"
+          ]
+        },
+        "preview": {
+          "supported": false,
+          "contractTarget": null,
+          "contract": null,
+          "shape": null,
+          "exitCode": null,
+          "topLevelFields": null
+        },
+        "failure": {
+          "jsonWhenRequested": true,
+          "parseErrorsJsonWhenRequested": true,
+          "exitCodes": [
+            {
+              "code": 1,
+              "meaning": "generic_failure"
+            },
+            {
+              "code": 4,
+              "meaning": "auth_error"
+            }
+          ],
+          "topLevelFields": [
+            "success",
+            "error"
+          ],
+          "errorFields": [
+            "type",
+            "message",
+            "suggestion",
+            "context",
+            "details"
+          ],
+          "detailFields": []
         }
       }
     },
@@ -3551,6 +3773,112 @@ stdout:
       }
     },
     {
+      "path": "linear issue move",
+      "summary": "Move an issue to a workflow state",
+      "json": {
+        "supported": true,
+        "contractVersion": null
+      },
+      "dryRun": {
+        "supported": false,
+        "contractVersion": null
+      },
+      "stdin": {
+        "mode": "none"
+      },
+      "confirmationBypass": null,
+      "idempotency": {
+        "category": "retry_safe_update",
+        "notes": null
+      },
+      "notes": null,
+      "writeSemantics": {
+        "timeoutAware": false,
+        "timeoutReconciliation": false,
+        "mayReturnNoOp": false,
+        "mayReturnPartialSuccess": false
+      },
+      "schema": {
+        "coverage": "curated_primary_inputs",
+        "arguments": [],
+        "flags": [
+          {
+            "name": "--json",
+            "short": "-j",
+            "required": false,
+            "valueType": "boolean",
+            "description": "Emit machine-readable JSON output.",
+            "allowedValues": null
+          }
+        ],
+        "inputModes": [
+          "flags"
+        ],
+        "requiredInputs": [],
+        "optionalInputs": [
+          {
+            "source": "flag",
+            "name": "--json"
+          }
+        ],
+        "defaults": [],
+        "resolutions": [],
+        "constraints": [],
+        "stdinTargets": [],
+        "fileTargets": [],
+        "examples": []
+      },
+      "output": {
+        "success": {
+          "category": "curated_json",
+          "contractTarget": null,
+          "contract": null,
+          "shape": "object",
+          "exitCode": 0,
+          "topLevelFields": [
+            "identifier",
+            "state",
+            "receipt",
+            "operation"
+          ]
+        },
+        "preview": {
+          "supported": false,
+          "contractTarget": null,
+          "contract": null,
+          "shape": null,
+          "exitCode": null,
+          "topLevelFields": null
+        },
+        "failure": {
+          "jsonWhenRequested": true,
+          "parseErrorsJsonWhenRequested": true,
+          "exitCodes": [
+            {
+              "code": 1,
+              "meaning": "generic_failure"
+            },
+            {
+              "code": 4,
+              "meaning": "auth_error"
+            }
+          ],
+          "topLevelFields": [
+            "success",
+            "error"
+          ],
+          "errorFields": [
+            "type",
+            "message",
+            "suggestion",
+            "context",
+            "details"
+          ],
+          "detailFields": []
+        }
+      }
+    },
+    {
       "path": "linear issue parent",
       "summary": "Show an issue's parent",
       "json": {
@@ -3645,6 +3973,112 @@ stdout:
           "topLevelFields": [
             "success",
             "data"
+          ]
+        },
+        "preview": {
+          "supported": false,
+          "contractTarget": null,
+          "contract": null,
+          "shape": null,
+          "exitCode": null,
+          "topLevelFields": null
+        },
+        "failure": {
+          "jsonWhenRequested": true,
+          "parseErrorsJsonWhenRequested": true,
+          "exitCodes": [
+            {
+              "code": 1,
+              "meaning": "generic_failure"
+            },
+            {
+              "code": 4,
+              "meaning": "auth_error"
+            }
+          ],
+          "topLevelFields": [
+            "success",
+            "error"
+          ],
+          "errorFields": [
+            "type",
+            "message",
+            "suggestion",
+            "context",
+            "details"
+          ],
+          "detailFields": []
+        }
+      }
+    },
+    {
+      "path": "linear issue priority",
+      "summary": "Set an issue priority",
+      "json": {
+        "supported": true,
+        "contractVersion": null
+      },
+      "dryRun": {
+        "supported": false,
+        "contractVersion": null
+      },
+      "stdin": {
+        "mode": "none"
+      },
+      "confirmationBypass": null,
+      "idempotency": {
+        "category": "retry_safe_update",
+        "notes": null
+      },
+      "notes": null,
+      "writeSemantics": {
+        "timeoutAware": false,
+        "timeoutReconciliation": false,
+        "mayReturnNoOp": false,
+        "mayReturnPartialSuccess": false
+      },
+      "schema": {
+        "coverage": "curated_primary_inputs",
+        "arguments": [],
+        "flags": [
+          {
+            "name": "--json",
+            "short": "-j",
+            "required": false,
+            "valueType": "boolean",
+            "description": "Emit machine-readable JSON output.",
+            "allowedValues": null
+          }
+        ],
+        "inputModes": [
+          "flags"
+        ],
+        "requiredInputs": [],
+        "optionalInputs": [
+          {
+            "source": "flag",
+            "name": "--json"
+          }
+        ],
+        "defaults": [],
+        "resolutions": [],
+        "constraints": [],
+        "stdinTargets": [],
+        "fileTargets": [],
+        "examples": []
+      },
+      "output": {
+        "success": {
+          "category": "curated_json",
+          "contractTarget": null,
+          "contract": null,
+          "shape": "object",
+          "exitCode": 0,
+          "topLevelFields": [
+            "identifier",
+            "priority",
+            "receipt",
+            "operation"
           ]
         },
         "preview": {
@@ -6045,6 +6479,7 @@ stdout:
             "slugId",
             "name",
             "url",
+            "receipt",
             "operation"
           ]
         },
@@ -6066,8 +6501,8 @@ stdout:
           ]
         },
         "failure": {
-          "jsonWhenRequested": false,
-          "parseErrorsJsonWhenRequested": false,
+          "jsonWhenRequested": true,
+          "parseErrorsJsonWhenRequested": true,
           "exitCodes": [
             {
               "code": 1,
@@ -6082,8 +6517,17 @@ stdout:
               "meaning": "plan_limit"
             }
           ],
-          "topLevelFields": [],
-          "errorFields": [],
+          "topLevelFields": [
+            "success",
+            "error"
+          ],
+          "errorFields": [
+            "type",
+            "message",
+            "suggestion",
+            "context",
+            "details"
+          ],
           "detailFields": []
         }
       }
@@ -6277,8 +6721,11 @@ stdout:
           "shape": "object",
           "exitCode": 0,
           "topLevelFields": [
-            "success",
-            "data"
+            "changed",
+            "project",
+            "label",
+            "receipt",
+            "operation"
           ]
         },
         "preview": {
@@ -6290,8 +6737,8 @@ stdout:
           "topLevelFields": null
         },
         "failure": {
-          "jsonWhenRequested": false,
-          "parseErrorsJsonWhenRequested": false,
+          "jsonWhenRequested": true,
+          "parseErrorsJsonWhenRequested": true,
           "exitCodes": [
             {
               "code": 1,
@@ -6302,8 +6749,17 @@ stdout:
               "meaning": "auth_error"
             }
           ],
-          "topLevelFields": [],
-          "errorFields": [],
+          "topLevelFields": [
+            "success",
+            "error"
+          ],
+          "errorFields": [
+            "type",
+            "message",
+            "suggestion",
+            "context",
+            "details"
+          ],
           "detailFields": []
         }
       }
@@ -6372,8 +6828,11 @@ stdout:
           "shape": "object",
           "exitCode": 0,
           "topLevelFields": [
-            "success",
-            "data"
+            "changed",
+            "project",
+            "label",
+            "receipt",
+            "operation"
           ]
         },
         "preview": {
@@ -6385,8 +6844,8 @@ stdout:
           "topLevelFields": null
         },
         "failure": {
-          "jsonWhenRequested": false,
-          "parseErrorsJsonWhenRequested": false,
+          "jsonWhenRequested": true,
+          "parseErrorsJsonWhenRequested": true,
           "exitCodes": [
             {
               "code": 1,
@@ -6397,8 +6856,17 @@ stdout:
               "meaning": "auth_error"
             }
           ],
-          "topLevelFields": [],
-          "errorFields": [],
+          "topLevelFields": [
+            "success",
+            "error"
+          ],
+          "errorFields": [
+            "type",
+            "message",
+            "suggestion",
+            "context",
+            "details"
+          ],
           "detailFields": []
         }
       }
@@ -8458,6 +8926,7 @@ stdout:
             "updatedAt",
             "team",
             "creator",
+            "receipt",
             "operation"
           ]
         },
@@ -8479,8 +8948,8 @@ stdout:
           ]
         },
         "failure": {
-          "jsonWhenRequested": false,
-          "parseErrorsJsonWhenRequested": false,
+          "jsonWhenRequested": true,
+          "parseErrorsJsonWhenRequested": true,
           "exitCodes": [
             {
               "code": 1,
@@ -8495,8 +8964,17 @@ stdout:
               "meaning": "plan_limit"
             }
           ],
-          "topLevelFields": [],
-          "errorFields": [],
+          "topLevelFields": [
+            "success",
+            "error"
+          ],
+          "errorFields": [
+            "type",
+            "message",
+            "suggestion",
+            "context",
+            "details"
+          ],
           "detailFields": []
         }
       }
@@ -8606,6 +9084,7 @@ stdout:
             "label",
             "url",
             "success",
+            "receipt",
             "operation"
           ]
         },
@@ -8627,8 +9106,8 @@ stdout:
           ]
         },
         "failure": {
-          "jsonWhenRequested": false,
-          "parseErrorsJsonWhenRequested": false,
+          "jsonWhenRequested": true,
+          "parseErrorsJsonWhenRequested": true,
           "exitCodes": [
             {
               "code": 1,
@@ -8639,8 +9118,17 @@ stdout:
               "meaning": "auth_error"
             }
           ],
-          "topLevelFields": [],
-          "errorFields": [],
+          "topLevelFields": [
+            "success",
+            "error"
+          ],
+          "errorFields": [
+            "type",
+            "message",
+            "suggestion",
+            "context",
+            "details"
+          ],
           "detailFields": []
         }
       }
@@ -8839,6 +9327,7 @@ stdout:
             "updatedAt",
             "team",
             "creator",
+            "receipt",
             "operation"
           ]
         },
@@ -8860,8 +9349,8 @@ stdout:
           ]
         },
         "failure": {
-          "jsonWhenRequested": false,
-          "parseErrorsJsonWhenRequested": false,
+          "jsonWhenRequested": true,
+          "parseErrorsJsonWhenRequested": true,
           "exitCodes": [
             {
               "code": 1,
@@ -8872,8 +9361,17 @@ stdout:
               "meaning": "auth_error"
             }
           ],
-          "topLevelFields": [],
-          "errorFields": [],
+          "topLevelFields": [
+            "success",
+            "error"
+          ],
+          "errorFields": [
+            "type",
+            "message",
+            "suggestion",
+            "context",
+            "details"
+          ],
           "detailFields": []
         }
       }
@@ -9667,6 +10165,27 @@ stdout:
       "notes": null
     },
     {
+      "path": "linear issue assign",
+      "summary": "Assign an issue",
+      "json": {
+        "supported": true,
+        "contractVersion": null
+      },
+      "dryRun": {
+        "supported": false,
+        "contractVersion": null
+      },
+      "stdin": {
+        "mode": "none"
+      },
+      "confirmationBypass": null,
+      "idempotency": {
+        "category": "retry_safe_update",
+        "notes": null
+      },
+      "notes": null
+    },
+    {
       "path": "linear issue children",
       "summary": "List child issues",
       "json": {
@@ -9772,6 +10291,27 @@ stdout:
       "notes": null
     },
     {
+      "path": "linear issue estimate",
+      "summary": "Set an issue estimate",
+      "json": {
+        "supported": true,
+        "contractVersion": null
+      },
+      "dryRun": {
+        "supported": false,
+        "contractVersion": null
+      },
+      "stdin": {
+        "mode": "none"
+      },
+      "confirmationBypass": null,
+      "idempotency": {
+        "category": "retry_safe_update",
+        "notes": null
+      },
+      "notes": null
+    },
+    {
       "path": "linear issue list",
       "summary": "List issues",
       "json": {
@@ -9793,6 +10333,27 @@ stdout:
       "notes": "Issue list JSON keeps the nested state object and adds a stateName convenience field."
     },
     {
+      "path": "linear issue move",
+      "summary": "Move an issue to a workflow state",
+      "json": {
+        "supported": true,
+        "contractVersion": null
+      },
+      "dryRun": {
+        "supported": false,
+        "contractVersion": null
+      },
+      "stdin": {
+        "mode": "none"
+      },
+      "confirmationBypass": null,
+      "idempotency": {
+        "category": "retry_safe_update",
+        "notes": null
+      },
+      "notes": null
+    },
+    {
       "path": "linear issue parent",
       "summary": "Show an issue's parent",
       "json": {
@@ -9809,6 +10370,27 @@ stdout:
       "confirmationBypass": null,
       "idempotency": {
         "category": "read_only",
+        "notes": null
+      },
+      "notes": null
+    },
+    {
+      "path": "linear issue priority",
+      "summary": "Set an issue priority",
+      "json": {
+        "supported": true,
+        "contractVersion": null
+      },
+      "dryRun": {
+        "supported": false,
+        "contractVersion": null
+      },
+      "stdin": {
+        "mode": "none"
+      },
+      "confirmationBypass": null,
+      "idempotency": {
+        "category": "retry_safe_update",
         "notes": null
       },
       "notes": null

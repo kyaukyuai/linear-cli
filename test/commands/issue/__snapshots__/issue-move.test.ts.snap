@@ -37,7 +37,43 @@ snapshot[`Issue Move Command - JSON Output 1`] = `
 stdout:
 '{
   "identifier": "ENG-123",
-  "state": "In Progress"
+  "state": "In Progress",
+  "receipt": {
+    "operationId": "issue.move",
+    "resource": "issue",
+    "action": "update",
+    "resolvedRefs": {
+      "issueIdentifier": "ENG-123",
+      "teamKey": "ENG",
+      "state": "In Progress"
+    },
+    "appliedChanges": [
+      "state"
+    ],
+    "noOp": false,
+    "partialSuccess": false,
+    "nextSafeAction": "read_before_retry"
+  },
+  "operation": {
+    "family": "write_operation",
+    "version": "v1",
+    "phase": "apply",
+    "command": "issue.move",
+    "resource": "issue",
+    "action": "update",
+    "summary": "Moved ENG-123 to In Progress",
+    "refs": {
+      "issueIdentifier": "ENG-123",
+      "teamKey": "ENG",
+      "state": "In Progress"
+    },
+    "changes": [
+      "state"
+    ],
+    "noOp": false,
+    "partialSuccess": false,
+    "nextSafeAction": "read_before_retry"
+  }
 }
 '
 stderr:

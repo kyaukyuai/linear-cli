@@ -110,7 +110,7 @@ linear issue update ENG-123 --state done --comment "Shipped"
 linear notification read notif_123 --json
 ```
 
-When the write command supports the preview/apply contract family, inspect the top-level `operation` field first. That gives one parser path for both `--dry-run` and apply results. When a high-value apply result also exposes `receipt`, use it as the write-specific summary of what actually happened.
+When the write command supports the preview/apply contract family, inspect the top-level `operation` field first. That gives one parser path for both `--dry-run` and apply results. When a high-value apply result also exposes `receipt`, use it as the write-specific summary of what actually happened. Today that family covers issue create/update/comment/relation and batch creation, issue assignment/estimate/move/priority, project create and label add/remove, webhook create/update/delete, and notification read/archive.
 
 The receipt is the shared place for:
 

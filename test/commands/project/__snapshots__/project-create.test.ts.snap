@@ -41,6 +41,22 @@ stdout:
   "slugId": "json-test-project",
   "name": "JSON Test Project",
   "url": "https://linear.app/test/project/json-test-project",
+  "receipt": {
+    "operationId": "project.create",
+    "resource": "project",
+    "action": "create",
+    "resolvedRefs": {
+      "projectId": "550e8400-e29b-41d4-a716-446655440000",
+      "projectSlugId": "json-test-project"
+    },
+    "appliedChanges": [
+      "name",
+      "teams"
+    ],
+    "noOp": false,
+    "partialSuccess": false,
+    "nextSafeAction": "read_before_retry"
+  },
   "operation": {
     "family": "write_operation",
     "version": "v1",

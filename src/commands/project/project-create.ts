@@ -11,12 +11,17 @@ import {
 } from "../../utils/linear.ts"
 import { shouldShowSpinner } from "../../utils/hyperlink.ts"
 import { ensureInteractiveInputAvailable } from "../../utils/interactive.ts"
+import {
+  buildOperationReceipt,
+  withOperationReceipt,
+} from "../../utils/operation_receipt.ts"
 import { buildWriteCommandPreview } from "../../utils/write_preview.ts"
 import {
-  buildWriteApplyOperation,
+  buildWriteApplyOperationFromReceipt,
   buildWritePreviewOperationFromPayload,
   withWriteOperationContract,
 } from "../../utils/write_operation.ts"
+import { handleAutomationCommandError } from "../../utils/json_output.ts"
 import {
   CliError,
   handleError,
@@ -482,31 +487,34 @@ export const createCommand = new Command()
             name: project.name,
             url: project.url,
           }
+          const receipt = buildOperationReceipt({
+            operationId: "project.create",
+            resource: "project",
+            action: "create",
+            resolvedRefs: {
+              projectId: project.id,
+              projectSlugId: project.slugId,
+            },
+            appliedChanges: [
+              "name",
+              ...(description != null ? ["description"] : []),
+              "teams",
+              ...(leadId != null ? ["lead"] : []),
+              ...(statusId != null ? ["status"] : []),
+              ...(startDate != null ? ["startDate"] : []),
+              ...(targetDate != null ? ["targetDate"] : []),
+              ...(initiative != null ? ["initiative"] : []),
+            ],
+            nextSafeAction: "read_before_retry",
+          })
           console.log(
             JSON.stringify(
               withWriteOperationContract(
-                payload,
-                buildWriteApplyOperation({
-                  command: "project.create",
-                  resource: "project",
-                  action: "create",
-                  summary: `Created project ${project.name}`,
-                  refs: {
-                    projectId: project.id,
-                    projectSlugId: project.slugId,
-                  },
-                  changes: [
-                    "name",
-                    ...(description != null ? ["description"] : []),
-                    "teams",
-                    ...(leadId != null ? ["lead"] : []),
-                    ...(statusId != null ? ["status"] : []),
-                    ...(startDate != null ? ["startDate"] : []),
-                    ...(targetDate != null ? ["targetDate"] : []),
-                    ...(initiative != null ? ["initiative"] : []),
-                  ],
-                  nextSafeAction: "read_before_retry",
-                }),
+                withOperationReceipt(payload, receipt),
+                buildWriteApplyOperationFromReceipt(
+                  `Created project ${project.name}`,
+                  receipt,
+                ),
               ),
               null,
               2,
@@ -521,6 +529,9 @@ export const createCommand = new Command()
         }
       } catch (error) {
         spinner?.stop()
+        if (jsonOutput) {
+          handleAutomationCommandError(error, "Failed to create project", true)
+        }
         handleError(error, "Failed to create project")
       }
     },

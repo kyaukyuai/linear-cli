@@ -65,7 +65,39 @@ snapshot[`Issue Priority Command - JSON Output 1`] = `
 stdout:
 '{
   "identifier": "ENG-123",
-  "priority": 1
+  "priority": 1,
+  "receipt": {
+    "operationId": "issue.priority",
+    "resource": "issue",
+    "action": "update",
+    "resolvedRefs": {
+      "issueIdentifier": "ENG-123"
+    },
+    "appliedChanges": [
+      "priority"
+    ],
+    "noOp": false,
+    "partialSuccess": false,
+    "nextSafeAction": "read_before_retry"
+  },
+  "operation": {
+    "family": "write_operation",
+    "version": "v1",
+    "phase": "apply",
+    "command": "issue.priority",
+    "resource": "issue",
+    "action": "update",
+    "summary": "Updated priority for ENG-123",
+    "refs": {
+      "issueIdentifier": "ENG-123"
+    },
+    "changes": [
+      "priority"
+    ],
+    "noOp": false,
+    "partialSuccess": false,
+    "nextSafeAction": "read_before_retry"
+  }
 }
 '
 stderr:

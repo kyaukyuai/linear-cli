@@ -42,6 +42,21 @@ stdout:
   "label": "Issue events",
   "url": "https://example.com/hooks/issues",
   "success": true,
+  "receipt": {
+    "operationId": "webhook.delete",
+    "resource": "webhook",
+    "action": "delete",
+    "resolvedRefs": {
+      "webhookId": "webhook-1",
+      "webhookUrl": "https://example.com/hooks/issues"
+    },
+    "appliedChanges": [
+      "deletion"
+    ],
+    "noOp": false,
+    "partialSuccess": false,
+    "nextSafeAction": "read_before_retry"
+  },
   "operation": {
     "family": "write_operation",
     "version": "v1",

@@ -15,9 +15,18 @@ import {
   handleAutomationCommandError,
   handleAutomationContractParseError,
 } from "../../utils/json_output.ts"
+import {
+  buildOperationReceipt,
+  withOperationReceipt,
+} from "../../utils/operation_receipt.ts"
 import { emitDryRunOutput } from "../../utils/dry_run.ts"
 import { withSpinner } from "../../utils/spinner.ts"
 import { CliError, NotFoundError, ValidationError } from "../../utils/errors.ts"
+import {
+  buildWriteApplyOperationFromReceipt,
+  buildWritePreviewOperation,
+  withWriteOperationContract,
+} from "../../utils/write_operation.ts"
 import {
   buildWriteTimeoutSuggestion,
   resolveWriteTimeoutMs,
@@ -445,11 +454,12 @@ export const createBatchCommand = new Command()
         ),
       )
       if (dryRun) {
+        const summary = `Would create ${
+          batch.children.length + 1
+        } issues in batch for ${teamKey}`
         emitDryRunOutput({
           json,
-          summary: `Would create ${
-            batch.children.length + 1
-          } issues in batch for ${teamKey}`,
+          summary,
           data: buildIssueCreateBatchDryRunPayload({
             team: { id: teamId, key: teamKey },
             project: {
@@ -458,6 +468,18 @@ export const createBatchCommand = new Command()
             },
             parent: parentInput,
             children: childInputs,
+          }),
+          operation: buildWritePreviewOperation({
+            command: "issue.create-batch",
+            resource: "issue_batch",
+            action: "create",
+            summary,
+            refs: {
+              teamKey,
+              projectId: projectId ?? null,
+              project: effectiveProject ?? null,
+            },
+            changes: ["parent", "children"],
           }),
           lines: [
             `Team: ${teamKey}`,
@@ -532,18 +554,39 @@ export const createBatchCommand = new Command()
       }
 
       if (jsonOutput) {
+        const receipt = buildOperationReceipt({
+          operationId: "issue.create-batch",
+          resource: "issue_batch",
+          action: "create",
+          resolvedRefs: {
+            teamKey,
+            project: effectiveProject ?? null,
+            parentIssueIdentifier: parentPayload.identifier,
+          },
+          appliedChanges: ["parent", "children"],
+          nextSafeAction: "read_before_retry",
+        })
         console.log(
           JSON.stringify(
-            {
-              team: teamKey,
-              project: effectiveProject ?? null,
-              parent: parentPayload,
-              children: childPayloads,
-              counts: {
-                totalCreated: createdParentAndChildren.length,
-                childCount: childPayloads.length,
-              },
-            },
+            withWriteOperationContract(
+              withOperationReceipt(
+                {
+                  team: teamKey,
+                  project: effectiveProject ?? null,
+                  parent: parentPayload,
+                  children: childPayloads,
+                  counts: {
+                    totalCreated: createdParentAndChildren.length,
+                    childCount: childPayloads.length,
+                  },
+                },
+                receipt,
+              ),
+              buildWriteApplyOperationFromReceipt(
+                `Created ${createdParentAndChildren.length} issues in batch for ${teamKey}`,
+                receipt,
+              ),
+            ),
             null,
             2,
           ),
