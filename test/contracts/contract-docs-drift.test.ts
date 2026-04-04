@@ -296,3 +296,25 @@ Deno.test("agent-facing source docs keep default v2 and legacy v1 capabilities e
     )
   }
 })
+
+Deno.test("v3 migration guide keeps explicit diagnostics migration examples", async () => {
+  const v3Guide = await Deno.readTextFile(
+    fromFileUrl(new URL("../../docs/agent-only-v3.md", import.meta.url)),
+  )
+
+  assertStringIncludes(
+    v3Guide,
+    "linear team list --json",
+    "docs/agent-only-v3.md must document the machine-readable diagnostics path",
+  )
+  assertStringIncludes(
+    v3Guide,
+    "linear issue view ENG-123 --text",
+    "docs/agent-only-v3.md must keep the explicit human-readable escape hatch example",
+  )
+  assertStringIncludes(
+    v3Guide,
+    "linear capabilities --compat v1",
+    "docs/agent-only-v3.md must keep the legacy startup compatibility example",
+  )
+})
