@@ -34,7 +34,7 @@ export function resolveJsonOutputMode(
   if (json && text) {
     throw new ValidationError("Cannot use --json with --text", {
       suggestion: defaultsToJsonOutput(commandPath)
-        ? "Omit both flags for machine-readable output, or pass --text for human-readable output."
+        ? "This command defaults to machine-readable output in v3. Omit both flags for JSON, or pass --text for human-readable output."
         : "Use either --json for machine-readable output or --text for human-readable output.",
     })
   }

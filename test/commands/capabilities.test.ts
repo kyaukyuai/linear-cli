@@ -70,3 +70,15 @@ await cliffySnapshotTest({
     await capabilitiesCommand.parse()
   },
 })
+
+await cliffySnapshotTest({
+  name: "Capabilities Command - Invalid Compat Version",
+  meta: import.meta,
+  colors: false,
+  args: ["--compat", "v3"],
+  denoArgs,
+  canFail: true,
+  async fn() {
+    await capabilitiesCommand.parse()
+  },
+})

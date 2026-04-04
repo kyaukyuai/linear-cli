@@ -2,7 +2,7 @@ import { shouldAllowInteractivePrompts } from "./execution_profile.ts"
 import { ValidationError } from "./errors.ts"
 
 export const USE_YES_SUGGESTION =
-  "Use --yes to skip confirmation, or pass --profile human-debug --interactive to confirm in a terminal."
+  "v3 defaults to non-interactive confirmation. Use --yes for automation, or pass --profile human-debug --interactive to confirm in a terminal."
 
 export type ConfirmationBypassOptions = {
   yes?: boolean
