@@ -411,6 +411,139 @@ Deno.test("downstream consumer certification captures team list diagnostics migr
   )
 })
 
+Deno.test("downstream consumer certification distinguishes native v3 startup and explicit compatibility paths", async () => {
+  const defaultCapabilities = await runLinearJsonCommand([
+    "capabilities",
+    "--json",
+  ])
+  const compatCapabilities = await runLinearJsonCommand([
+    "capabilities",
+    "--json",
+    "--compat",
+    "v1",
+  ])
+
+  assert(isRecord(defaultCapabilities), "Expected default capabilities payload")
+  assert(isRecord(compatCapabilities), "Expected compat capabilities payload")
+  assertEquals(defaultCapabilities.schemaVersion, "v2")
+  assertEquals(compatCapabilities.schemaVersion, "v1")
+
+  const defaultIssueView = findCapabilityCommand(
+    defaultCapabilities,
+    "linear issue view",
+  )
+  const compatIssueView = findCapabilityCommand(
+    compatCapabilities,
+    "linear issue view",
+  )
+
+  assertEquals("schema" in defaultIssueView, true)
+  assertEquals("output" in defaultIssueView, true)
+  assertEquals("schema" in compatIssueView, false)
+  assertEquals("output" in compatIssueView, false)
+
+  await withMockServer(
+    [
+      {
+        queryName: "GetTeams",
+        variables: { filter: undefined, first: 100, after: undefined },
+        response: {
+          data: {
+            teams: {
+              nodes: [{
+                id: "team-1",
+                name: "Engineering",
+                key: "ENG",
+                description: "Core engineering team",
+                icon: "⚙️",
+                color: "#22c55e",
+                cyclesEnabled: true,
+                createdAt: "2026-04-01T00:00:00Z",
+                updatedAt: "2026-04-03T00:00:00Z",
+                archivedAt: null,
+                organization: {
+                  id: "org-1",
+                  name: "Acme Corp",
+                },
+              }],
+              pageInfo: {
+                hasNextPage: false,
+                endCursor: null,
+              },
+            },
+          },
+        },
+      },
+      {
+        queryName: "GetIssueDetailsWithComments",
+        variables: { id: "ENG-123" },
+        response: {
+          data: {
+            issue: {
+              identifier: "ENG-123",
+              title: "Fix authentication expiry handling",
+              description: "Investigate the auth timeout edge case.",
+              url:
+                "https://linear.app/test-team/issue/ENG-123/fix-authentication-expiry-handling",
+              branchName: "eng-123-fix-authentication-expiry-handling",
+              state: {
+                name: "In Progress",
+                color: "#f87462",
+              },
+              project: null,
+              projectMilestone: null,
+              parent: null,
+              children: {
+                nodes: [],
+              },
+              comments: {
+                nodes: [],
+                pageInfo: {
+                  hasNextPage: false,
+                },
+              },
+              attachments: {
+                nodes: [],
+              },
+            },
+          },
+        },
+      },
+    ],
+    async (env) => {
+      const diagnosticsPayload = await runLinearJsonCommand(
+        ["team", "list", "--json"],
+        env,
+      )
+
+      assertObjectArrayPayload(diagnosticsPayload, [
+        "id",
+        "name",
+        "key",
+        "cyclesEnabled",
+        "organization",
+      ])
+
+      const humanIssueOutput = await runLinearTextCommand(
+        ["issue", "view", "ENG-123", "--text"],
+        env,
+      )
+
+      assert(
+        humanIssueOutput.includes(
+          "# ENG-123: Fix authentication expiry handling",
+        ),
+        "Expected human issue output to include the issue heading",
+      )
+      assertEquals(
+        humanIssueOutput.trimStart().startsWith("{"),
+        false,
+        "Expected --text issue diagnostics output to remain human-readable",
+      )
+    },
+  )
+})
+
 Deno.test("downstream consumer certification preserves machine-actionable recovery semantics", async () => {
   const output = await withMockServer(
     [
