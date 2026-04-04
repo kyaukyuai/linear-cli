@@ -2,8 +2,17 @@ import { Command } from "@cliffy/command"
 import { gql } from "../../__codegen__/gql.ts"
 import { getGraphQLClient } from "../../utils/graphql.ts"
 import { lookupUserId, resolveIssueInternalId } from "../../utils/linear.ts"
+import {
+  buildOperationReceipt,
+  withOperationReceipt,
+} from "../../utils/operation_receipt.ts"
 import { withSpinner } from "../../utils/spinner.ts"
+import {
+  buildWriteApplyOperationFromReceipt,
+  withWriteOperationContract,
+} from "../../utils/write_operation.ts"
 import { green } from "@std/fmt/colors"
+import { handleAutomationCommandError } from "../../utils/json_output.ts"
 import {
   handleError,
   NotFoundError,
@@ -76,13 +85,35 @@ export const assignCommand = new Command()
 
       const issue = result.issueUpdate.issue
       if (json) {
-        console.log(JSON.stringify(
-          {
-            identifier: issue?.identifier,
+        const receipt = buildOperationReceipt({
+          operationId: "issue.assign",
+          resource: "issue",
+          action: "update",
+          resolvedRefs: {
+            issueIdentifier: issue?.identifier ?? null,
             assignee: issue?.assignee
               ? (issue.assignee.displayName || issue.assignee.name)
               : null,
           },
+          appliedChanges: ["assignee"],
+          nextSafeAction: "read_before_retry",
+        })
+        console.log(JSON.stringify(
+          withWriteOperationContract(
+            withOperationReceipt(
+              {
+                identifier: issue?.identifier,
+                assignee: issue?.assignee
+                  ? (issue.assignee.displayName || issue.assignee.name)
+                  : null,
+              },
+              receipt,
+            ),
+            buildWriteApplyOperationFromReceipt(
+              `Updated assignee for ${issue?.identifier ?? issueId}`,
+              receipt,
+            ),
+          ),
           null,
           2,
         ))
@@ -102,6 +133,9 @@ export const assignCommand = new Command()
         )
       }
     } catch (error) {
+      if (json) {
+        handleAutomationCommandError(error, "Failed to assign issue", true)
+      }
       handleError(error, "Failed to assign issue")
     }
   })

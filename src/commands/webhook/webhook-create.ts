@@ -5,15 +5,20 @@ import { getGraphQLClient } from "../../utils/graphql.ts"
 import { emitDryRunOutput } from "../../utils/dry_run.ts"
 import { getTeamIdByKey, requireTeamKey } from "../../utils/linear.ts"
 import {
+  buildOperationReceipt,
+  withOperationReceipt,
+} from "../../utils/operation_receipt.ts"
+import {
   CliError,
   handleError,
   NotFoundError,
   ValidationError,
 } from "../../utils/errors.ts"
+import { handleAutomationCommandError } from "../../utils/json_output.ts"
 import { withSpinner } from "../../utils/spinner.ts"
 import { buildWriteCommandPreview } from "../../utils/write_preview.ts"
 import {
-  buildWriteApplyOperation,
+  buildWriteApplyOperationFromReceipt,
   buildWritePreviewOperationFromPayload,
   withWriteOperationContract,
 } from "../../utils/write_operation.ts"
@@ -226,31 +231,34 @@ export const createCommand = new Command()
               }
               : null,
           }
+          const receipt = buildOperationReceipt({
+            operationId: "webhook.create",
+            resource: "webhook",
+            action: "create",
+            resolvedRefs: {
+              webhookId: webhook.id,
+              webhookUrl: webhook.url,
+              teamKey: webhook.team?.key ?? null,
+            },
+            appliedChanges: [
+              "url",
+              ...(webhook.label != null ? ["label"] : []),
+              "enabled",
+              "resourceTypes",
+              ...(webhook.team != null || webhook.allPublicTeams
+                ? ["scope"]
+                : []),
+              ...(secret != null ? ["secret"] : []),
+            ],
+            nextSafeAction: "read_before_retry",
+          })
           console.log(JSON.stringify(
             withWriteOperationContract(
-              payload,
-              buildWriteApplyOperation({
-                command: "webhook.create",
-                resource: "webhook",
-                action: "create",
-                summary: `Created webhook ${webhook.id}`,
-                refs: {
-                  webhookId: webhook.id,
-                  webhookUrl: webhook.url,
-                  teamKey: webhook.team?.key ?? null,
-                },
-                changes: [
-                  "url",
-                  ...(webhook.label != null ? ["label"] : []),
-                  "enabled",
-                  "resourceTypes",
-                  ...(webhook.team != null || webhook.allPublicTeams
-                    ? ["scope"]
-                    : []),
-                  ...(secret != null ? ["secret"] : []),
-                ],
-                nextSafeAction: "read_before_retry",
-              }),
+              withOperationReceipt(payload, receipt),
+              buildWriteApplyOperationFromReceipt(
+                `Created webhook ${webhook.id}`,
+                receipt,
+              ),
             ),
             null,
             2,
@@ -267,6 +275,9 @@ export const createCommand = new Command()
         console.log(`  Scope: ${getWebhookScope(webhook)}`)
         console.log(`  Resources: ${webhook.resourceTypes.join(", ")}`)
       } catch (error) {
+        if (json) {
+          handleAutomationCommandError(error, "Failed to create webhook", true)
+        }
         handleError(error, "Failed to create webhook")
       }
     },

@@ -108,6 +108,44 @@ stdout:
   "counts": {
     "totalCreated": 3,
     "childCount": 2
+  },
+  "receipt": {
+    "operationId": "issue.create-batch",
+    "resource": "issue_batch",
+    "action": "create",
+    "resolvedRefs": {
+      "teamKey": "ENG",
+      "project": "Roadmap",
+      "parentIssueIdentifier": "ENG-500"
+    },
+    "appliedChanges": [
+      "parent",
+      "children"
+    ],
+    "noOp": false,
+    "partialSuccess": false,
+    "nextSafeAction": "read_before_retry"
+  },
+  "operation": {
+    "family": "write_operation",
+    "version": "v1",
+    "phase": "apply",
+    "command": "issue.create-batch",
+    "resource": "issue_batch",
+    "action": "create",
+    "summary": "Created 3 issues in batch for ENG",
+    "refs": {
+      "teamKey": "ENG",
+      "project": "Roadmap",
+      "parentIssueIdentifier": "ENG-500"
+    },
+    "changes": [
+      "parent",
+      "children"
+    ],
+    "noOp": false,
+    "partialSuccess": false,
+    "nextSafeAction": "read_before_retry"
   }
 }
 '
@@ -193,6 +231,27 @@ stdout:
       "totalPlanned": 3,
       "childCount": 2
     }
+  },
+  "operation": {
+    "family": "write_operation",
+    "version": "v1",
+    "phase": "preview",
+    "command": "issue.create-batch",
+    "resource": "issue_batch",
+    "action": "create",
+    "summary": "Would create 3 issues in batch for ENG",
+    "refs": {
+      "teamKey": "ENG",
+      "projectId": "project-roadmap-id",
+      "project": "Roadmap"
+    },
+    "changes": [
+      "parent",
+      "children"
+    ],
+    "noOp": false,
+    "partialSuccess": false,
+    "nextSafeAction": "apply"
   }
 }
 '

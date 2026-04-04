@@ -6,8 +6,17 @@ import {
   getWorkflowStateByNameOrType,
   resolveIssueInternalId,
 } from "../../utils/linear.ts"
+import {
+  buildOperationReceipt,
+  withOperationReceipt,
+} from "../../utils/operation_receipt.ts"
 import { withSpinner } from "../../utils/spinner.ts"
+import {
+  buildWriteApplyOperationFromReceipt,
+  withWriteOperationContract,
+} from "../../utils/write_operation.ts"
 import { green } from "@std/fmt/colors"
+import { handleAutomationCommandError } from "../../utils/json_output.ts"
 import {
   handleError,
   NotFoundError,
@@ -89,11 +98,34 @@ export const moveCommand = new Command()
 
       const issue = result.issueUpdate.issue
       if (json) {
-        console.log(JSON.stringify(
-          {
-            identifier: issue?.identifier,
-            state: issue?.state.name,
+        const receipt = buildOperationReceipt({
+          operationId: "issue.move",
+          resource: "issue",
+          action: "update",
+          resolvedRefs: {
+            issueIdentifier: issue?.identifier ?? null,
+            teamKey,
+            state: issue?.state.name ?? null,
           },
+          appliedChanges: ["state"],
+          nextSafeAction: "read_before_retry",
+        })
+        console.log(JSON.stringify(
+          withWriteOperationContract(
+            withOperationReceipt(
+              {
+                identifier: issue?.identifier,
+                state: issue?.state.name,
+              },
+              receipt,
+            ),
+            buildWriteApplyOperationFromReceipt(
+              `Moved ${issue?.identifier ?? resolvedIssueId} to ${
+                issue?.state.name ?? state
+              }`,
+              receipt,
+            ),
+          ),
           null,
           2,
         ))
@@ -104,6 +136,9 @@ export const moveCommand = new Command()
           ` Moved ${issue?.identifier} to ${issue?.state.name}`,
       )
     } catch (error) {
+      if (json) {
+        handleAutomationCommandError(error, "Failed to move issue", true)
+      }
       handleError(error, "Failed to move issue")
     }
   })

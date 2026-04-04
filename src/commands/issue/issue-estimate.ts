@@ -2,8 +2,17 @@ import { Command } from "@cliffy/command"
 import { gql } from "../../__codegen__/gql.ts"
 import { getGraphQLClient } from "../../utils/graphql.ts"
 import { resolveIssueInternalId } from "../../utils/linear.ts"
+import {
+  buildOperationReceipt,
+  withOperationReceipt,
+} from "../../utils/operation_receipt.ts"
 import { withSpinner } from "../../utils/spinner.ts"
+import {
+  buildWriteApplyOperationFromReceipt,
+  withWriteOperationContract,
+} from "../../utils/write_operation.ts"
 import { green } from "@std/fmt/colors"
+import { handleAutomationCommandError } from "../../utils/json_output.ts"
 import { handleError, ValidationError } from "../../utils/errors.ts"
 
 const UpdateIssueEstimate = gql(`
@@ -71,11 +80,30 @@ export const estimateCommand = new Command()
 
       const issue = result.issueUpdate.issue
       if (json) {
-        console.log(JSON.stringify(
-          {
-            identifier: issue?.identifier,
-            estimate: issue?.estimate ?? null,
+        const receipt = buildOperationReceipt({
+          operationId: "issue.estimate",
+          resource: "issue",
+          action: "update",
+          resolvedRefs: {
+            issueIdentifier: issue?.identifier ?? null,
           },
+          appliedChanges: ["estimate"],
+          nextSafeAction: "read_before_retry",
+        })
+        console.log(JSON.stringify(
+          withWriteOperationContract(
+            withOperationReceipt(
+              {
+                identifier: issue?.identifier,
+                estimate: issue?.estimate ?? null,
+              },
+              receipt,
+            ),
+            buildWriteApplyOperationFromReceipt(
+              `Updated estimate for ${issue?.identifier ?? issueId}`,
+              receipt,
+            ),
+          ),
           null,
           2,
         ))
@@ -93,6 +121,9 @@ export const estimateCommand = new Command()
         )
       }
     } catch (error) {
+      if (json) {
+        handleAutomationCommandError(error, "Failed to set estimate", true)
+      }
       handleError(error, "Failed to set estimate")
     }
   })

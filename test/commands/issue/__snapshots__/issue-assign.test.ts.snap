@@ -47,7 +47,41 @@ snapshot[`Issue Assign Command - JSON Output 1`] = `
 stdout:
 '{
   "identifier": "ENG-123",
-  "assignee": "John"
+  "assignee": "John",
+  "receipt": {
+    "operationId": "issue.assign",
+    "resource": "issue",
+    "action": "update",
+    "resolvedRefs": {
+      "issueIdentifier": "ENG-123",
+      "assignee": "John"
+    },
+    "appliedChanges": [
+      "assignee"
+    ],
+    "noOp": false,
+    "partialSuccess": false,
+    "nextSafeAction": "read_before_retry"
+  },
+  "operation": {
+    "family": "write_operation",
+    "version": "v1",
+    "phase": "apply",
+    "command": "issue.assign",
+    "resource": "issue",
+    "action": "update",
+    "summary": "Updated assignee for ENG-123",
+    "refs": {
+      "issueIdentifier": "ENG-123",
+      "assignee": "John"
+    },
+    "changes": [
+      "assignee"
+    ],
+    "noOp": false,
+    "partialSuccess": false,
+    "nextSafeAction": "read_before_retry"
+  }
 }
 '
 stderr:

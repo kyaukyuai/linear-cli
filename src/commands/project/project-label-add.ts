@@ -2,6 +2,15 @@ import { Command } from "@cliffy/command"
 import { green } from "@std/fmt/colors"
 import { gql } from "../../__codegen__/gql.ts"
 import { getGraphQLClient } from "../../utils/graphql.ts"
+import { handleAutomationCommandError } from "../../utils/json_output.ts"
+import {
+  buildOperationReceipt,
+  withOperationReceipt,
+} from "../../utils/operation_receipt.ts"
+import {
+  buildWriteApplyOperationFromReceipt,
+  withWriteOperationContract,
+} from "../../utils/write_operation.ts"
 import { handleError, NotFoundError } from "../../utils/errors.ts"
 import { resolveProjectId } from "../../utils/linear.ts"
 import { withSpinner } from "../../utils/spinner.ts"
@@ -97,23 +106,45 @@ export const addLabelCommand = new Command()
       }, { enabled: !json })
 
       if (json) {
-        console.log(JSON.stringify(
-          {
-            changed: result.changed,
-            project: {
-              id: result.project.id,
-              name: result.project.name,
-              slugId: result.project.slugId,
-              labels: result.project.labels.nodes.map((label) => ({
-                id: label.id,
-                name: label.name,
-              })),
-            },
-            label: {
-              id: result.label.id,
-              name: result.label.name,
-            },
+        const receipt = buildOperationReceipt({
+          operationId: "project.label.add",
+          resource: "project_label_binding",
+          action: "create",
+          resolvedRefs: {
+            projectSlugId: result.project.slugId,
+            labelName: result.label.name,
           },
+          appliedChanges: ["labels"],
+          noOp: !result.changed,
+        })
+        console.log(JSON.stringify(
+          withWriteOperationContract(
+            withOperationReceipt(
+              {
+                changed: result.changed,
+                project: {
+                  id: result.project.id,
+                  name: result.project.name,
+                  slugId: result.project.slugId,
+                  labels: result.project.labels.nodes.map((label) => ({
+                    id: label.id,
+                    name: label.name,
+                  })),
+                },
+                label: {
+                  id: result.label.id,
+                  name: result.label.name,
+                },
+              },
+              receipt,
+            ),
+            buildWriteApplyOperationFromReceipt(
+              `${
+                result.changed ? "Added" : "Verified"
+              } label ${result.label.name} on ${result.project.slugId}`,
+              receipt,
+            ),
+          ),
           null,
           2,
         ))
@@ -130,6 +161,9 @@ export const addLabelCommand = new Command()
           ` Added label "${result.label.name}" to ${result.project.slugId}`,
       )
     } catch (error) {
+      if (json) {
+        handleAutomationCommandError(error, "Failed to add project label", true)
+      }
       handleError(error, "Failed to add project label")
     }
   })

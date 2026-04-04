@@ -8,11 +8,16 @@ import {
 } from "../../utils/confirmation.ts"
 import { getGraphQLClient } from "../../utils/graphql.ts"
 import { emitDryRunOutput } from "../../utils/dry_run.ts"
+import {
+  buildOperationReceipt,
+  withOperationReceipt,
+} from "../../utils/operation_receipt.ts"
+import { handleAutomationCommandError } from "../../utils/json_output.ts"
 import { CliError, handleError } from "../../utils/errors.ts"
 import { withSpinner } from "../../utils/spinner.ts"
 import { buildWriteCommandPreview } from "../../utils/write_preview.ts"
 import {
-  buildWriteApplyOperation,
+  buildWriteApplyOperationFromReceipt,
   buildWritePreviewOperationFromPayload,
   withWriteOperationContract,
 } from "../../utils/write_operation.ts"
@@ -124,21 +129,24 @@ export const deleteCommand = new Command()
           url: webhook.webhook.url,
           success: true,
         }
+        const receipt = buildOperationReceipt({
+          operationId: "webhook.delete",
+          resource: "webhook",
+          action: "delete",
+          resolvedRefs: {
+            webhookId: result.webhookDelete.entityId,
+            webhookUrl: webhook.webhook.url,
+          },
+          appliedChanges: ["deletion"],
+          nextSafeAction: "read_before_retry",
+        })
         console.log(JSON.stringify(
           withWriteOperationContract(
-            payload,
-            buildWriteApplyOperation({
-              command: "webhook.delete",
-              resource: "webhook",
-              action: "delete",
-              summary: `Deleted webhook ${result.webhookDelete.entityId}`,
-              refs: {
-                webhookId: result.webhookDelete.entityId,
-                webhookUrl: webhook.webhook.url,
-              },
-              changes: ["deletion"],
-              nextSafeAction: "read_before_retry",
-            }),
+            withOperationReceipt(payload, receipt),
+            buildWriteApplyOperationFromReceipt(
+              `Deleted webhook ${result.webhookDelete.entityId}`,
+              receipt,
+            ),
           ),
           null,
           2,
@@ -151,6 +159,9 @@ export const deleteCommand = new Command()
           ` Deleted webhook: ${getWebhookDisplayLabel(webhook.webhook.label)}`,
       )
     } catch (error) {
+      if (json) {
+        handleAutomationCommandError(error, "Failed to delete webhook", true)
+      }
       handleError(error, "Failed to delete webhook")
     }
   })

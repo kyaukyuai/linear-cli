@@ -191,7 +191,7 @@ high-value write commands honor `LINEAR_WRITE_TIMEOUT_MS` and accept `--timeout-
 
 the same document also defines the shared preview contract for future `--dry-run` write commands. those commands are not all implemented yet, but the contract now fixes the expected `stdout`, `exit code`, and `--json --dry-run` envelope shape ahead of rollout.
 
-representative preview/apply JSON write paths may add a top-level `operation` field so agents can diff preview intent against apply results with one parser path. successful high-value JSON writes may also add a top-level `receipt` field. this gives agents a shared place to inspect `operationId`, `resolvedRefs`, `appliedChanges`, `noOp`, and `nextSafeAction` without inferring those traits from command-specific payload fields.
+representative preview/apply JSON write paths may add a top-level `operation` field so agents can diff preview intent against apply results with one parser path. successful high-value JSON writes may also add a top-level `receipt` field. this gives agents a shared place to inspect `operationId`, `resolvedRefs`, `appliedChanges`, `noOp`, and `nextSafeAction` without inferring those traits from command-specific payload fields. current coverage includes issue create/update/comment/relation, issue batch creation, issue assignment/estimate/move/priority, project create and label add/remove, webhook create/update/delete, and notification read/archive.
 
 destructive commands use `--yes` as the canonical confirmation-bypass flag. legacy `--force` and `--confirm` flags are still accepted where older workflows already depended on them.
 

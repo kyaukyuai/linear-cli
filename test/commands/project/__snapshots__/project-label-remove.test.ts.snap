@@ -44,6 +44,40 @@ stdout:
   "label": {
     "id": "plabel-1",
     "name": "Customer-facing"
+  },
+  "receipt": {
+    "operationId": "project.label.remove",
+    "resource": "project_label_binding",
+    "action": "delete",
+    "resolvedRefs": {
+      "projectSlugId": "auth-redesign",
+      "labelName": "Customer-facing"
+    },
+    "appliedChanges": [
+      "labels"
+    ],
+    "noOp": false,
+    "partialSuccess": false,
+    "nextSafeAction": "continue"
+  },
+  "operation": {
+    "family": "write_operation",
+    "version": "v1",
+    "phase": "apply",
+    "command": "project.label.remove",
+    "resource": "project_label_binding",
+    "action": "delete",
+    "summary": "Removed label Customer-facing on auth-redesign",
+    "refs": {
+      "projectSlugId": "auth-redesign",
+      "labelName": "Customer-facing"
+    },
+    "changes": [
+      "labels"
+    ],
+    "noOp": false,
+    "partialSuccess": false,
+    "nextSafeAction": "continue"
   }
 }
 '

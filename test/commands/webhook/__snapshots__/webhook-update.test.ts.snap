@@ -76,6 +76,21 @@ stdout:
     "name": "jdoe",
     "displayName": "John Doe"
   },
+  "receipt": {
+    "operationId": "webhook.update",
+    "resource": "webhook",
+    "action": "update",
+    "resolvedRefs": {
+      "webhookId": "webhook-1",
+      "webhookUrl": "https://example.com/hooks/issues"
+    },
+    "appliedChanges": [
+      "resourceTypes"
+    ],
+    "noOp": false,
+    "partialSuccess": false,
+    "nextSafeAction": "read_before_retry"
+  },
   "operation": {
     "family": "write_operation",
     "version": "v1",
