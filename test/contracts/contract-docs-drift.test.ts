@@ -11,6 +11,9 @@ const agentFirstPath = fromFileUrl(
   new URL("../../docs/agent-first.md", import.meta.url),
 )
 const readmePath = fromFileUrl(new URL("../../README.md", import.meta.url))
+const migrationCookbookPath = fromFileUrl(
+  new URL("../../docs/v2-to-v3-migration-cookbook.md", import.meta.url),
+)
 const skillTemplatePath = fromFileUrl(
   new URL("../../skills/linear-cli/SKILL.template.md", import.meta.url),
 )
@@ -294,6 +297,11 @@ Deno.test("agent-facing source docs keep default v2 and legacy v1 capabilities e
       "--text",
       `${sourceDoc.label} must document the explicit human-readable output escape hatch`,
     )
+    assertStringIncludes(
+      text,
+      "v2-to-v3-migration-cookbook.md",
+      `${sourceDoc.label} must reference the v2-to-v3 migration cookbook`,
+    )
   }
 })
 
@@ -317,4 +325,24 @@ Deno.test("v3 migration guide keeps explicit diagnostics migration examples", as
     "linear capabilities --compat v1",
     "docs/agent-only-v3.md must keep the legacy startup compatibility example",
   )
+})
+
+Deno.test("migration cookbook keeps copy-pasteable v2-to-v3 examples", async () => {
+  const cookbook = await Deno.readTextFile(migrationCookbookPath)
+
+  for (
+    const snippet of [
+      "linear capabilities --compat v1",
+      "linear team list --json",
+      "linear issue view ENG-123 --text",
+      "linear --profile human-debug --interactive issue create",
+      "linear issue update ENG-123 --state done --dry-run --json",
+    ]
+  ) {
+    assertStringIncludes(
+      cookbook,
+      snippet,
+      `docs/v2-to-v3-migration-cookbook.md must include ${snippet}`,
+    )
+  }
 })
