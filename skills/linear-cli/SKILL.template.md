@@ -1,16 +1,16 @@
 ---
 name: linear-cli
-description: Use the linear-cli agent-first command surface to read and mutate Linear from Claude Code, Codex, or other agents. Use when the user wants stable JSON output, dry-run previews, workflow-safe automation, or direct CLI control over Linear issues, projects, cycles, documents, notifications, webhooks, or related resources.
+description: Use the linear-cli agent-native runtime to read and mutate Linear from Claude Code, Codex, or other agents. Use when the runtime needs default JSON output, startup discovery, dry-run previews, operation receipts, workflow-safe automation, or direct CLI control over Linear issues, projects, cycles, documents, notifications, webhooks, or related resources.
 allowed-tools: Bash(linear:*), Bash(curl:*)
 ---
 
 # Linear CLI
 
-An agent-first Linear CLI with stable JSON contracts, dry-run previews, timeout-aware write semantics, and git/jj workflow integration.
+An agent-native Linear runtime with stable JSON contracts, dry-run previews, timeout-aware write semantics, and git/jj workflow integration.
 
 ## Recommended Agent Loop
 
-When using this CLI from an agent, prefer this order:
+When using this CLI from an agent runtime, prefer this order:
 
 1. Discover command traits with `linear capabilities`; use `--compat v1` only when an older consumer still expects the trimmed legacy shape
 2. Read Linear state with default-JSON core surfaces or `--json`
@@ -18,9 +18,9 @@ When using this CLI from an agent, prefer this order:
 4. Apply writes with `--json`
 5. Inspect exit codes and `error.details` instead of parsing styled terminal text
 
-Prompt-driven human/debug flows are explicit. When a command supports prompts or editor entry, pass `--profile human-debug --interactive`; otherwise missing required inputs fail fast.
+Prompt-driven human/debug flows are secondary and explicit. When a command supports prompts or editor entry, pass `--profile human-debug --interactive`; otherwise missing required inputs fail fast.
 
-Agent-safe execution semantics are now the default runtime behavior. `--profile human-debug` is the explicit pager/prompt escape hatch for maintainers, and `--profile agent-safe` remains accepted for compatibility with older automation.
+Agent-safe execution semantics are now the default runtime behavior. `--text` and `--profile human-debug` are the explicit human/debug escape hatches for maintainers, and `--profile agent-safe` remains accepted for compatibility with older automation.
 
 Recommended supporting docs:
 

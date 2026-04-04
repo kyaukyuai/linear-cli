@@ -1,8 +1,8 @@
 # linear-cli
 
-`linear-cli` is an agent-first Linear CLI for Claude Code, Codex, and other automation that needs a stable command surface instead of screen scraping or ad-hoc GraphQL scripts. this fork of [`schpet/linear-cli`](https://github.com/schpet/linear-cli) keeps the git and [jj](https://www.jj-vcs.dev/) workflow ergonomics from upstream, then adds stable JSON contracts, dry-run previews, retry-safe error semantics, and pipeline-friendly command behavior for automation-heavy teams.
+`linear-cli` is an agent-native Linear runtime for Claude Code, Codex, and other automation that needs a stable command surface instead of screen scraping or ad-hoc GraphQL scripts. this fork of [`schpet/linear-cli`](https://github.com/schpet/linear-cli) keeps the git and [jj](https://www.jj-vcs.dev/) workflow ergonomics from upstream, then layers on stable JSON contracts, startup discovery, dry-run previews, operation receipts, and workflow-safe error semantics for agent-controlled execution.
 
-if you want an agent to read Linear state, preview a write, apply it, and return structured output without leaving the shell, this repo is designed for that path first.
+if you want an agent to read Linear state, resolve refs, preview a write, apply it, and return structured output without leaving the shell, this repo is designed for that path first. human-oriented terminal output and prompt flows still exist, but they are explicit escape hatches rather than the primary runtime.
 
 ```bash
 linear capabilities
@@ -18,6 +18,17 @@ linear notification list
 ```
 
 the core agent surfaces now default to machine-readable JSON. use `--text` when a human wants terminal-oriented output for ad-hoc inspection or debugging.
+
+## agent-native runtime
+
+Treat `linear-cli` as a shell-native control plane for agents:
+
+- startup discovery comes from `linear capabilities`
+- startup-critical reads and core write surfaces default to machine-readable JSON
+- refs can be normalized with `linear resolve ...`
+- write previews use `--dry-run --json`
+- write results expose `operation`, `receipt`, and structured `error.details`
+- human/debug behavior is explicit with `--text` and `--profile human-debug --interactive`
 
 ## for agents
 
@@ -39,7 +50,21 @@ Recommended docs:
 - [Agent-only v3 transition plan](docs/agent-only-v3.md)
 - [stdin and pipeline policy](docs/stdin-policy.md)
 
-## screencast demos
+## migration from 2.x
+
+If a downstream consumer still assumes the older mixed human/agent behavior, migrate in this order:
+
+1. stop parsing styled terminal output
+2. use `linear capabilities` for startup discovery and pin `--compat v1` only where a legacy consumer still needs it
+3. treat `operation`, `receipt`, and `error.details` as the canonical execution surface
+4. add `--text` anywhere a maintainer still wants terminal-oriented output
+5. add `--profile human-debug --interactive` anywhere a maintainer still wants prompts or pager-oriented debugging
+
+The detailed transition policy and release criteria live in [docs/agent-only-v3.md](docs/agent-only-v3.md).
+
+## human-debug demos
+
+These demos are intentionally secondary. they show the explicit human/debug escape hatch, not the primary runtime path for agents.
 
 <details>
 <summary><code>linear issue create</code></summary>
@@ -163,7 +188,7 @@ Use the docs in this order if you are building an agent integration:
 
 ## automation contract
 
-for bot and org-wide automation use cases, `linear-cli` defines a stable JSON contract for a focused automation tier.
+for bot and org-wide automation use cases, `linear-cli` defines a stable machine-readable contract for a focused automation tier. that contract is the primary runtime surface. `--text` and prompt flows are secondary human/debug escape hatches.
 
 to discover the curated agent-facing command surface programmatically, use `linear capabilities`. the default shape now returns the richer v2 schema metadata for agent-native startup. when an older consumer still expects the trimmed legacy shape, pin it explicitly with `linear capabilities --compat v1`.
 
@@ -222,17 +247,17 @@ this fork is intentionally diverging from upstream in a few ways:
 2. authenticate with the CLI:
 
    ```sh
-   linear auth login
+   linear auth login --profile human-debug --interactive
    ```
 
 3. configure your project:
 
    ```sh
    cd my-project-repo
-   linear config
+   linear config --profile human-debug --interactive
    ```
 
-see [docs/authentication.md](docs/authentication.md) for multi-workspace support and other authentication options.
+For unattended agent runtimes, prefer injected credentials and explicit config over prompt flows. see [docs/authentication.md](docs/authentication.md) for multi-workspace support and other authentication options.
 
 the CLI works with both git and jj version control systems:
 
@@ -251,11 +276,11 @@ the current issue is determined by:
 note that [Linear's GitHub integration](https://linear.app/docs/github#branch-format) will suggest git branch names.
 
 ```bash
-linear issue view      # view current issue details in terminal
+linear issue view      # emit machine-readable current issue details
 linear issue view ABC-123
 linear issue view 123
-linear issue view ABC-123 --json            # emit stable machine-readable issue details
-linear issue view ABC-123 --json --no-comments  # skip raw comments but keep commentsSummary
+linear issue view ABC-123 --text            # human/debug output
+linear issue view ABC-123 --no-comments     # skip raw comments but keep commentsSummary
 linear issue view -w   # open issue in web browser
 linear issue view -a   # open issue in Linear.app
 linear issue id        # prints the issue id from current branch (e.g., "ENG-123")
@@ -510,7 +535,7 @@ linear user view <userId> --json  # emit contract-stable user details
 ```bash
 linear --help          # show all commands
 linear --version       # show version
-linear config          # setup the project
+linear config --profile human-debug --interactive  # maintainer setup flow
 linear completions     # generate shell completions
 ```
 

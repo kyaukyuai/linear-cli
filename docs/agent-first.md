@@ -1,8 +1,8 @@
-# Agent-First Workflow
+# Agent-Native Workflow
 
 `linear-cli` is designed so an agent can discover the command surface, read Linear state, preview writes, apply mutations, and recover from uncertain outcomes without scraping terminal text.
 
-Use this document as the default operating loop.
+Use this document as the default operating loop. Machine-readable output is the primary runtime contract. Human-readable text and prompt flows are explicit escape hatches.
 
 If you are planning for the breaking default flips in `v3.0.0`, read [agent-only-v3.md](./agent-only-v3.md) alongside this guide.
 
@@ -34,7 +34,7 @@ linear capabilities
 
 `agent-safe` disables pager-by-default behavior, extends the built-in write timeout to `45000ms` unless the caller overrides it, and requires explicit `--yes` for destructive confirmation bypass. It does not force `--json`, auto-confirm destructive actions, or replace missing required inputs.
 
-Human/debug prompt flows are now explicit. When a command supports prompts or editor entry, pass `--profile human-debug --interactive`; otherwise missing required inputs fail fast with actionable guidance.
+Human/debug prompt flows are explicit. When a command supports prompts or editor entry, pass `--profile human-debug --interactive`; otherwise missing required inputs fail fast with actionable guidance.
 
 The default capabilities shape and the read entrypoints below are treated as startup-critical contracts and are release-gated in CI.
 
@@ -81,7 +81,7 @@ linear webhook view webhook_123
 linear notification list
 ```
 
-Use `--text` only when a human needs terminal-oriented output for inspection or debugging.
+Use `--text` only when a human needs terminal-oriented output for inspection or debugging. Agent runtimes should treat text mode as a debugging tool, not a normal parser target.
 
 For human-guided prompt entry on command surfaces that support it, pass `--profile human-debug --interactive` explicitly.
 
@@ -99,11 +99,11 @@ linear issue start ENG-123 --dry-run
 linear --profile human-debug issue create --interactive
 ```
 
-Preview output is stable and designed for plan/confirm/apply loops.
+Preview output is stable and designed for plan/confirm/apply loops. On representative write surfaces, `operation` is the shared preview/apply family that callers should diff first.
 
 ## 5. Apply Writes With Machine-Readable Output
 
-When applying a write, prefer `--json` and inspect the process exit code.
+When applying a write on a default-JSON surface, the machine-readable path is already active. Keep `--json` only when you want to be explicit or when the command has not flipped to JSON by default yet. Always inspect the process exit code.
 
 ```bash
 linear issue update ENG-123 --state done --comment "Shipped"
@@ -157,6 +157,18 @@ linear issue comment add ENG-123 --body-file ./comment.md
 ```
 
 The full stdin rules are documented in [stdin-policy.md](./stdin-policy.md).
+
+## 9. Use Human/Debug Mode Only Deliberately
+
+Human/debug mode still exists for maintainers, incident response, and one-off inspection, but it is not the primary runtime:
+
+```bash
+linear issue view ENG-123 --text
+linear --profile human-debug --interactive issue create
+linear --profile human-debug --interactive auth login
+```
+
+If a script or agent still depends on these flows, treat that as migration debt and move the steady-state path back to discovery, JSON reads, dry-run, apply, and structured recovery.
 
 ## 8. Use `linear api` Only As Escape Hatch
 

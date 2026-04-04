@@ -1,4 +1,4 @@
-# Agent-Only v3 Transition Plan
+# Agent-Only v3 Transition Guide
 
 This document is the source of truth for the `linear-cli` v3 transition from an agent-first CLI to an agent-native runtime.
 
@@ -7,6 +7,15 @@ Use it to answer three questions:
 1. which `2.x` defaults will flip in `3.0`
 2. what human-oriented behavior remains available after `3.0`
 3. what must be true before cutting `v3.0.0`
+
+Current status on `main`:
+
+- core read and startup-critical surfaces already default to machine-readable output
+- interactive fallbacks are already explicit
+- `agent-safe` is already the default execution profile
+- `linear capabilities` already defaults to the richer schema metadata
+
+That means the remaining work is less about discovering the direction and more about finishing the rollout, tightening migration guidance, and freezing the major-release contract.
 
 ## Goals
 
@@ -61,7 +70,7 @@ The compatibility policy is intentionally conservative.
 
 ### 2.x policy
 
-Before `v3.0.0`, additive migration helpers may be introduced in `2.x`, but default behavior does not flip.
+Before `v3.0.0`, additive migration helpers may be introduced in `2.x`.
 
 Allowed in `2.x`:
 
@@ -70,11 +79,7 @@ Allowed in `2.x`:
 - migration docs and examples
 - preview or experimental flags that let consumers test `v3` behavior explicitly
 
-Not allowed in `2.x`:
-
-- changing the default startup shape of `linear capabilities --json`
-- changing core command defaults from human output to JSON
-- removing interactive behavior without an explicit opt-in path
+Historically these defaults were conservative. Current `main` now already rehearses most `v3` runtime defaults on the agent-native surfaces, so remaining `2.x` work should focus on migration clarity and contract completion rather than preserving the older mixed human-first behavior.
 
 ### 3.0 policy
 
@@ -95,13 +100,13 @@ Downstream consumers should migrate in this order.
 2. Use `linear capabilities --json` or the richer compatibility mode to discover command traits.
 3. Treat `operation`, `receipt`, and `error.details` as the canonical execution surface.
 4. Pass all required inputs explicitly; do not rely on prompts.
-5. Add explicit human/debug flags in any manual scripts that still expect terminal text.
+5. Add explicit `--text` and `--profile human-debug --interactive` flags in any manual scripts that still expect terminal text or prompt flows.
 
 Recommended preparation work for consumers before `v3.0.0`:
 
 - pin to a `2.x` version while migrating
 - add tests for startup discovery and representative write flows
-- treat the default runtime semantics as the v3 rehearsal, and keep `--profile agent-safe` only as an explicit compatibility override while older scripts migrate
+- treat the current default runtime semantics as the v3 rehearsal, and keep `--profile human-debug` only for explicit maintainer workflows
 - adopt `linear resolve ... --json` before preview/apply loops
 - use explicit `--profile human-debug --interactive` only for human/debug prompt flows; do not rely on fallback prompts
 
@@ -123,6 +128,12 @@ Do not cut `v3.0.0` until all of the following are true.
 - agent-safe execution semantics are the default
 - richer capabilities schema metadata is the default startup discovery surface
 - remaining target write commands expose consistent `operation` / `receipt` contracts
+
+### Migration Readiness
+
+- README and skill docs describe agent-native runtime behavior first
+- human/debug mode is clearly documented as secondary and explicit
+- a downstream consumer can follow the published migration checklist without relying on tribal knowledge
 
 ### Verification
 

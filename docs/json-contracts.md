@@ -2,7 +2,7 @@
 
 `linear-cli` exposes many machine-readable modes, but only a subset is treated as a stable automation contract.
 
-If you are integrating this CLI into an agent loop, read [agent-first.md](./agent-first.md) first, then use this document for the exact JSON and compatibility rules.
+If you are integrating this CLI into an agent runtime, read [agent-first.md](./agent-first.md) first, then use this document for the exact JSON and compatibility rules. The machine-readable contract is the primary product surface; `--text` and `--profile human-debug --interactive` are secondary human/debug escape hatches.
 
 This document defines the stable JSON contracts for org-wide automation. Each contract version applies to:
 
