@@ -6,7 +6,7 @@ allowed-tools: Bash(linear:*), Bash(curl:*)
 
 # Linear CLI
 
-An agent-native Linear runtime with stable JSON contracts, dry-run previews, timeout-aware write semantics, and git/jj workflow integration.
+An agent-native Linear runtime for the `v3.0.0` execution model, with stable JSON contracts, startup discovery, dry-run previews, timeout-aware write semantics, and git/jj workflow integration.
 
 ## Recommended Agent Loop
 
@@ -15,7 +15,7 @@ When using this CLI from an agent runtime, prefer this order:
 1. Discover command traits with `linear capabilities`; use `--compat v1` only when an older consumer still expects the trimmed legacy shape
 2. Read Linear state with default-JSON core surfaces or `--json`
 3. Preview writes with `--dry-run --json` when available
-4. Apply writes with `--json`
+4. Apply writes on the default machine-readable surface, then inspect `operation`, `receipt`, and `error.details`
 5. Inspect exit codes and `error.details` instead of parsing styled terminal text
 
 Prompt-driven human/debug flows are secondary and explicit. When a command supports prompts or editor entry, pass `--profile human-debug --interactive`; otherwise missing required inputs fail fast.

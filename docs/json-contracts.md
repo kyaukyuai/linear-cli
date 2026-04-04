@@ -4,6 +4,14 @@
 
 If you are integrating this CLI into an agent runtime, read [agent-first.md](./agent-first.md) first, then use this document for the exact JSON and compatibility rules. The machine-readable contract is the primary product surface; `--text` and `--profile human-debug --interactive` are secondary human/debug escape hatches.
 
+For `v3.0.0`, this document describes the default runtime contract rather than an optional side channel. A caller should assume:
+
+- startup discovery defaults to the richer capabilities schema
+- startup-critical reads default to machine-readable output
+- representative preview/apply flows share `operation`
+- high-value apply results may expose `receipt`
+- legacy compatibility surfaces such as `--compat v1` are explicit opt-ins
+
 This document defines the stable JSON contracts for org-wide automation. Each contract version applies to:
 
 - success payload top-level shapes
@@ -33,6 +41,8 @@ Compatibility rules:
 - `v1` remains available only through explicit `--compat v1`
 - machine-readable schema changes should be called out explicitly in release notes
 - the top-level JSON shape of the agent-first read entrypoints in [agent-first.md](./agent-first.md) is also guarded in CI as a startup contract
+
+In other words, `v3.0.0` treats the default capabilities surface as the startup contract and `--compat v1` as the legacy escape hatch.
 
 Default top-level shape from `linear capabilities`:
 

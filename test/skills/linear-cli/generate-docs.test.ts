@@ -74,7 +74,11 @@ Deno.test("commands template renders quick reference and workflow from source te
   )
   assertStringIncludes(
     rendered,
-    "5. Inspect exit codes and `error.details` for retries or reconciliation",
+    "linear resolve issue ENG-123",
+  )
+  assertStringIncludes(
+    rendered,
+    "5. Inspect exit codes plus `operation`, `receipt`, and `error.details` for retries or reconciliation",
   )
 })
 

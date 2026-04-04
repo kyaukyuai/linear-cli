@@ -1,12 +1,12 @@
-# Agent-Only v3 Transition Guide
+# Agent-Only v3 Release Guide
 
-This document is the source of truth for the `linear-cli` v3 transition from an agent-first CLI to an agent-native runtime.
+This document is the source of truth for the `linear-cli` `v3.0.0` release that turns the project from an agent-first CLI into an agent-native runtime.
 
 Use it to answer three questions:
 
 1. which `2.x` defaults will flip in `3.0`
 2. what human-oriented behavior remains available after `3.0`
-3. what must be true before cutting `v3.0.0`
+3. what must be true before cutting and publishing `v3.0.0`
 
 Current status on `main`:
 
@@ -14,8 +14,10 @@ Current status on `main`:
 - interactive fallbacks are already explicit
 - `agent-safe` is already the default execution profile
 - `linear capabilities` already defaults to the richer schema metadata
+- representative and remaining high-value writes now expose the `operation` / `receipt` family
+- README, contract docs, and skill docs are already written from the agent-native point of view
 
-That means the remaining work is less about discovering the direction and more about finishing the rollout, tightening migration guidance, and freezing the major-release contract.
+That means `main` is no longer exploring the direction. It is the release candidate line for `v3.0.0`. This document should now be read as a release and migration guide, not an open design brief.
 
 ## Goals
 
@@ -79,7 +81,7 @@ Allowed in `2.x`:
 - migration docs and examples
 - preview or experimental flags that let consumers test `v3` behavior explicitly
 
-Historically these defaults were conservative. Current `main` now already rehearses most `v3` runtime defaults on the agent-native surfaces, so remaining `2.x` work should focus on migration clarity and contract completion rather than preserving the older mixed human-first behavior.
+Historically these defaults were conservative. Current `main` already rehearses the `v3` runtime defaults on the agent-native surfaces, so remaining `2.x` work should focus on migration clarity and contract completion rather than preserving the older mixed human-first behavior.
 
 ### 3.0 policy
 
@@ -141,6 +143,17 @@ Do not cut `v3.0.0` until all of the following are true.
 - downstream consumer certification covers at least one real consumer on v3 defaults
 - release-gated docs and examples match the current CLI version and startup behavior
 - CI and release workflows remain green with the new defaults
+
+## Current Release Readiness
+
+At the time of writing, `main` satisfies the intended runtime direction for `v3.0.0`:
+
+- the project issues `KYA-310` through `KYA-315` are complete
+- startup-critical contract tests and downstream consumer certification are already in CI
+- docs describe agent-native defaults first and treat human/debug mode as explicit secondary behavior
+- the remaining work before tagging is release hygiene: changelog curation, version bump, publishing, and rollout confirmation
+
+If any of those bullets stops being true, update this document before cutting `v3.0.0`.
 
 ## Issue Mapping
 

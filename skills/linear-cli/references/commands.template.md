@@ -7,9 +7,13 @@
 ## Quick Reference
 
 ```bash
-# Discover the agent-native runtime surface
+# Discover the v3 agent-native runtime surface
 linear capabilities
 linear capabilities --compat v1
+
+# Resolve refs before preview/apply
+linear resolve issue ENG-123
+linear resolve team ENG
 
 # Get help for any command
 linear <command> --help
@@ -24,6 +28,6 @@ Use the CLI in this order when possible:
 2. Read state with default-JSON core surfaces or `--json`
 3. Preview writes with `--dry-run --json`
 4. Apply writes with `--json`
-5. Inspect exit codes and `error.details` for retries or reconciliation
+5. Inspect exit codes plus `operation`, `receipt`, and `error.details` for retries or reconciliation
 
 Use `--text` only for human-readable terminal inspection. Use `--profile human-debug --interactive` only for human/debug prompt flows. Agent-controlled runs should pass explicit flags, stdin, or file inputs.

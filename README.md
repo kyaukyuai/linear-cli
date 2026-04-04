@@ -2,7 +2,7 @@
 
 `linear-cli` is an agent-native Linear runtime for Claude Code, Codex, and other automation that needs a stable command surface instead of screen scraping or ad-hoc GraphQL scripts. this fork of [`schpet/linear-cli`](https://github.com/schpet/linear-cli) keeps the git and [jj](https://www.jj-vcs.dev/) workflow ergonomics from upstream, then layers on stable JSON contracts, startup discovery, dry-run previews, operation receipts, and workflow-safe error semantics for agent-controlled execution.
 
-if you want an agent to read Linear state, resolve refs, preview a write, apply it, and return structured output without leaving the shell, this repo is designed for that path first. human-oriented terminal output and prompt flows still exist, but they are explicit escape hatches rather than the primary runtime.
+if you want an agent to read Linear state, resolve refs, preview a write, apply it, and return structured output without leaving the shell, this repo is designed for that path first. `main` now reflects the `v3.0.0` runtime direction: core surfaces default to machine-readable output, startup flows are non-interactive, and human-oriented terminal output is an explicit escape hatch instead of the primary product surface.
 
 ```bash
 linear capabilities
@@ -19,6 +19,18 @@ linear notification list
 
 the core agent surfaces now default to machine-readable JSON. use `--text` when a human wants terminal-oriented output for ad-hoc inspection or debugging.
 
+## what v3.0.0 means
+
+`v3.0.0` is the release where `linear-cli` stops behaving like a mixed human/agent CLI and starts behaving like an agent-native control plane by default.
+
+- startup discovery defaults to the richer `linear capabilities` schema
+- startup-critical reads and representative writes default to machine-readable JSON
+- prompt fallbacks are no longer implicit; use `--profile human-debug --interactive` when a maintainer explicitly wants them
+- `agent-safe` is the default execution profile
+- preview/apply/result flows share `operation`, `receipt`, and structured `error.details`
+
+if you are integrating `linear-cli` into an agent runtime, assume the defaults above and treat `--text` plus `--profile human-debug` as secondary debugging tools.
+
 ## agent-native runtime
 
 Treat `linear-cli` as a shell-native control plane for agents:
@@ -29,6 +41,14 @@ Treat `linear-cli` as a shell-native control plane for agents:
 - write previews use `--dry-run --json`
 - write results expose `operation`, `receipt`, and structured `error.details`
 - human/debug behavior is explicit with `--text` and `--profile human-debug --interactive`
+
+The practical default loop is:
+
+1. `linear capabilities`
+2. `linear resolve ...`
+3. default-JSON reads such as `linear issue view ENG-123`
+4. `--dry-run --json` previews for writes
+5. apply the mutation and inspect `operation`, `receipt`, and `error.details`
 
 ## for agents
 
@@ -47,7 +67,7 @@ Recommended docs:
 
 - [Agent workflow guide](docs/agent-first.md)
 - [Automation contracts](docs/json-contracts.md)
-- [Agent-only v3 transition plan](docs/agent-only-v3.md)
+- [Agent-only v3 release guide](docs/agent-only-v3.md)
 - [stdin and pipeline policy](docs/stdin-policy.md)
 
 ## migration from 2.x
@@ -60,7 +80,7 @@ If a downstream consumer still assumes the older mixed human/agent behavior, mig
 4. add `--text` anywhere a maintainer still wants terminal-oriented output
 5. add `--profile human-debug --interactive` anywhere a maintainer still wants prompts or pager-oriented debugging
 
-The detailed transition policy and release criteria live in [docs/agent-only-v3.md](docs/agent-only-v3.md).
+The detailed release and migration guide lives in [docs/agent-only-v3.md](docs/agent-only-v3.md).
 
 ## human-debug demos
 
@@ -182,7 +202,7 @@ Use the docs in this order if you are building an agent integration:
 
 1. [docs/agent-first.md](docs/agent-first.md) for the recommended discover/read/preview/apply/recover loop
 2. [docs/json-contracts.md](docs/json-contracts.md) for stable JSON payloads, exit codes, timeout semantics, and dry-run envelopes
-3. [docs/agent-only-v3.md](docs/agent-only-v3.md) for the planned v3 transition to agent-native defaults
+3. [docs/agent-only-v3.md](docs/agent-only-v3.md) for the `v3.0.0` release contract and downstream migration checklist
 4. [docs/stdin-policy.md](docs/stdin-policy.md) for pipeline and file-input conventions
 5. [`linear capabilities`](#automation-contract) for machine-readable command metadata at runtime
 
