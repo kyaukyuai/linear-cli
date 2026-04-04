@@ -162,7 +162,7 @@ Do not cut `v3.0.0` until all of the following are true.
 ### Verification
 
 - startup-critical contract tests are updated for v3 defaults
-- downstream consumer certification covers at least one real consumer on v3 defaults
+- downstream consumer certification covers at least one real consumer on v3 defaults, plus explicit compatibility-mode startup/diagnostics paths
 - release-gated docs and examples match the current CLI version and startup behavior
 - CI and release workflows remain green with the new defaults
 
