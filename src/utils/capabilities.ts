@@ -254,9 +254,36 @@ export type CapabilityExecutionProfiles = {
   availableProfiles: CapabilityExecutionProfile[]
 }
 
+export type CapabilitySurfaceClass =
+  | "stable"
+  | "partial"
+  | "escape_hatch"
+
+export type CapabilitySurfaceReason =
+  | "startup_contract"
+  | "automation_contract"
+  | "shared_preview_contract"
+  | "best_effort_machine_readable"
+  | "raw_api"
+  | "human_debug_only"
+
+export type CapabilitySurfaceClassification = {
+  class: CapabilitySurfaceClass
+  reason: CapabilitySurfaceReason
+}
+
+export type CapabilitySurfaceClasses = Record<
+  CapabilitySurfaceClass,
+  {
+    description: string
+    callerExpectation: string
+  }
+>
+
 export type CapabilityCommand = {
   path: string
   summary: string
+  surface: CapabilitySurfaceClassification
   json: {
     supported: boolean
     contractVersion: AutomationContractVersion | null
@@ -281,7 +308,7 @@ export type CapabilityCommand = {
 
 type CapabilityRegistryEntry = Omit<
   CapabilityCommand,
-  "schema" | "output" | "writeSemantics"
+  "surface" | "schema" | "output" | "writeSemantics"
 >
 export type CapabilityCommandV1 = CapabilityRegistryEntry
 
@@ -324,6 +351,7 @@ export type CapabilitiesPayloadV2 = CapabilitiesPayloadBase & {
     latestSchemaVersion: "v2"
     supportedSchemaVersions: CapabilitiesCompatibilityVersion[]
   }
+  surfaceClasses: CapabilitySurfaceClasses
   executionProfiles: CapabilityExecutionProfiles
   commands: CapabilityCommand[]
 }
@@ -3701,6 +3729,68 @@ function buildExecutionProfiles(): CapabilityExecutionProfiles {
   }
 }
 
+function buildSurfaceClasses(): CapabilitySurfaceClasses {
+  return {
+    stable: {
+      description:
+        "Stable machine-readable surface with an explicit startup or automation contract.",
+      callerExpectation:
+        "Safe to treat as the primary agent-runtime path and depend on for startup, read, preview, or apply loops.",
+    },
+    partial: {
+      description:
+        "Agent-usable surface with some structured semantics, but without a full stable apply/read contract.",
+      callerExpectation:
+        "Prefer only when the stable surface does not cover the workflow yet, and pin explicit flags or migration guidance instead of assuming long-term shape stability.",
+    },
+    escape_hatch: {
+      description:
+        "Intentionally raw or human/debug-oriented path outside the stable agent-runtime contract.",
+      callerExpectation:
+        "Use only as an explicit fallback. Do not infer startup-critical or automation-tier guarantees from availability alone.",
+    },
+  }
+}
+
+function buildSurfaceClassification(
+  command: CapabilityRegistryEntry,
+): CapabilitySurfaceClassification {
+  if (command.path === "linear capabilities") {
+    return {
+      class: "stable",
+      reason: "startup_contract",
+    }
+  }
+
+  if (command.json.contractVersion != null) {
+    return {
+      class: "stable",
+      reason: "automation_contract",
+    }
+  }
+
+  if (command.path === "linear api") {
+    return {
+      class: "escape_hatch",
+      reason: "raw_api",
+    }
+  }
+
+  if (command.dryRun.supported || command.json.supported) {
+    return {
+      class: "partial",
+      reason: command.dryRun.supported
+        ? "shared_preview_contract"
+        : "best_effort_machine_readable",
+    }
+  }
+
+  return {
+    class: "escape_hatch",
+    reason: "human_debug_only",
+  }
+}
+
 function buildCapabilitiesPayloadBase(
   version: string,
 ): CapabilitiesPayloadBase {
@@ -3751,9 +3841,11 @@ function buildCapabilitiesPayloadV2(version: string): CapabilitiesPayloadV2 {
       latestSchemaVersion: "v2",
       supportedSchemaVersions: [...CAPABILITIES_COMPATIBILITY_VERSIONS],
     },
+    surfaceClasses: buildSurfaceClasses(),
     executionProfiles: buildExecutionProfiles(),
     commands: CAPABILITY_COMMANDS.map((command) => ({
       ...command,
+      surface: buildSurfaceClassification(command),
       json: { ...command.json },
       dryRun: { ...command.dryRun },
       stdin: { ...command.stdin },

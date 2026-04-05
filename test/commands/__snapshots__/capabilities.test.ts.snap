@@ -311,6 +311,20 @@ stdout:
       "v2"
     ]
   },
+  "surfaceClasses": {
+    "stable": {
+      "description": "Stable machine-readable surface with an explicit startup or automation contract.",
+      "callerExpectation": "Safe to treat as the primary agent-runtime path and depend on for startup, read, preview, or apply loops."
+    },
+    "partial": {
+      "description": "Agent-usable surface with some structured semantics, but without a full stable apply/read contract.",
+      "callerExpectation": "Prefer only when the stable surface does not cover the workflow yet, and pin explicit flags or migration guidance instead of assuming long-term shape stability."
+    },
+    "escape_hatch": {
+      "description": "Intentionally raw or human/debug-oriented path outside the stable agent-runtime contract.",
+      "callerExpectation": "Use only as an explicit fallback. Do not infer startup-critical or automation-tier guarantees from availability alone."
+    }
+  },
   "executionProfiles": {
     "defaultProfile": "agent-safe",
     "availableProfiles": [
@@ -369,6 +383,10 @@ stdout:
         "notes": null
       },
       "notes": "Outputs JSON by default and accepts stdin, but does not use a --json flag.",
+      "surface": {
+        "class": "escape_hatch",
+        "reason": "raw_api"
+      },
       "writeSemantics": {
         "timeoutAware": false,
         "timeoutReconciliation": false,
@@ -532,6 +550,10 @@ stdout:
         "notes": null
       },
       "notes": "Default --json exposes the richer v2 schema and output metadata; use --compat v1 only for legacy startup compatibility.",
+      "surface": {
+        "class": "stable",
+        "reason": "startup_contract"
+      },
       "writeSemantics": {
         "timeoutAware": false,
         "timeoutReconciliation": false,
@@ -756,6 +778,10 @@ stdout:
         "notes": null
       },
       "notes": null,
+      "surface": {
+        "class": "stable",
+        "reason": "automation_contract"
+      },
       "writeSemantics": {
         "timeoutAware": false,
         "timeoutReconciliation": false,
@@ -896,6 +922,10 @@ stdout:
         "notes": null
       },
       "notes": null,
+      "surface": {
+        "class": "stable",
+        "reason": "automation_contract"
+      },
       "writeSemantics": {
         "timeoutAware": false,
         "timeoutReconciliation": false,
@@ -1036,6 +1066,10 @@ stdout:
         "notes": null
       },
       "notes": null,
+      "surface": {
+        "class": "stable",
+        "reason": "automation_contract"
+      },
       "writeSemantics": {
         "timeoutAware": false,
         "timeoutReconciliation": false,
@@ -1176,6 +1210,10 @@ stdout:
         "notes": null
       },
       "notes": null,
+      "surface": {
+        "class": "stable",
+        "reason": "automation_contract"
+      },
       "writeSemantics": {
         "timeoutAware": false,
         "timeoutReconciliation": false,
@@ -1296,6 +1334,10 @@ stdout:
         "notes": null
       },
       "notes": null,
+      "surface": {
+        "class": "partial",
+        "reason": "shared_preview_contract"
+      },
       "writeSemantics": {
         "timeoutAware": false,
         "timeoutReconciliation": false,
@@ -1475,6 +1517,10 @@ stdout:
         "notes": null
       },
       "notes": null,
+      "surface": {
+        "class": "partial",
+        "reason": "shared_preview_contract"
+      },
       "writeSemantics": {
         "timeoutAware": false,
         "timeoutReconciliation": false,
@@ -1657,6 +1703,10 @@ stdout:
         "notes": null
       },
       "notes": null,
+      "surface": {
+        "class": "stable",
+        "reason": "automation_contract"
+      },
       "writeSemantics": {
         "timeoutAware": false,
         "timeoutReconciliation": false,
@@ -1776,6 +1826,10 @@ stdout:
         "notes": null
       },
       "notes": null,
+      "surface": {
+        "class": "partial",
+        "reason": "shared_preview_contract"
+      },
       "writeSemantics": {
         "timeoutAware": false,
         "timeoutReconciliation": false,
@@ -1950,6 +2004,10 @@ stdout:
         "notes": null
       },
       "notes": null,
+      "surface": {
+        "class": "stable",
+        "reason": "automation_contract"
+      },
       "writeSemantics": {
         "timeoutAware": false,
         "timeoutReconciliation": false,
@@ -2070,6 +2128,10 @@ stdout:
         "notes": null
       },
       "notes": null,
+      "surface": {
+        "class": "stable",
+        "reason": "automation_contract"
+      },
       "writeSemantics": {
         "timeoutAware": false,
         "timeoutReconciliation": false,
@@ -2238,6 +2300,10 @@ stdout:
         "notes": null
       },
       "notes": null,
+      "surface": {
+        "class": "stable",
+        "reason": "automation_contract"
+      },
       "writeSemantics": {
         "timeoutAware": false,
         "timeoutReconciliation": false,
@@ -2358,6 +2424,10 @@ stdout:
         "notes": null
       },
       "notes": null,
+      "surface": {
+        "class": "stable",
+        "reason": "automation_contract"
+      },
       "writeSemantics": {
         "timeoutAware": false,
         "timeoutReconciliation": false,
@@ -2490,6 +2560,10 @@ stdout:
         "notes": null
       },
       "notes": null,
+      "surface": {
+        "class": "stable",
+        "reason": "automation_contract"
+      },
       "writeSemantics": {
         "timeoutAware": false,
         "timeoutReconciliation": false,
@@ -2599,6 +2673,10 @@ stdout:
         "notes": null
       },
       "notes": null,
+      "surface": {
+        "class": "stable",
+        "reason": "automation_contract"
+      },
       "writeSemantics": {
         "timeoutAware": false,
         "timeoutReconciliation": false,
@@ -2744,6 +2822,10 @@ stdout:
         "notes": null
       },
       "notes": null,
+      "surface": {
+        "class": "stable",
+        "reason": "automation_contract"
+      },
       "writeSemantics": {
         "timeoutAware": true,
         "timeoutReconciliation": true,
@@ -3101,6 +3183,10 @@ stdout:
         "notes": null
       },
       "notes": null,
+      "surface": {
+        "class": "escape_hatch",
+        "reason": "human_debug_only"
+      },
       "writeSemantics": {
         "timeoutAware": true,
         "timeoutReconciliation": true,
@@ -3289,6 +3375,10 @@ stdout:
         "notes": null
       },
       "notes": null,
+      "surface": {
+        "class": "stable",
+        "reason": "automation_contract"
+      },
       "writeSemantics": {
         "timeoutAware": true,
         "timeoutReconciliation": true,
@@ -3833,6 +3923,10 @@ stdout:
         "notes": "Partial failures return createdIdentifiers and failedStep details."
       },
       "notes": null,
+      "surface": {
+        "class": "stable",
+        "reason": "automation_contract"
+      },
       "writeSemantics": {
         "timeoutAware": true,
         "timeoutReconciliation": true,
@@ -4045,6 +4139,10 @@ stdout:
         "notes": null
       },
       "notes": null,
+      "surface": {
+        "class": "stable",
+        "reason": "automation_contract"
+      },
       "writeSemantics": {
         "timeoutAware": false,
         "timeoutReconciliation": false,
@@ -4154,6 +4252,10 @@ stdout:
         "notes": null
       },
       "notes": "Issue list JSON keeps the nested state object and adds a stateName convenience field.",
+      "surface": {
+        "class": "stable",
+        "reason": "automation_contract"
+      },
       "writeSemantics": {
         "timeoutAware": false,
         "timeoutReconciliation": false,
@@ -4686,6 +4788,10 @@ stdout:
         "notes": null
       },
       "notes": null,
+      "surface": {
+        "class": "stable",
+        "reason": "automation_contract"
+      },
       "writeSemantics": {
         "timeoutAware": false,
         "timeoutReconciliation": false,
@@ -4795,6 +4901,10 @@ stdout:
         "notes": null
       },
       "notes": null,
+      "surface": {
+        "class": "stable",
+        "reason": "automation_contract"
+      },
       "writeSemantics": {
         "timeoutAware": false,
         "timeoutReconciliation": false,
@@ -4940,6 +5050,10 @@ stdout:
         "notes": null
       },
       "notes": null,
+      "surface": {
+        "class": "stable",
+        "reason": "automation_contract"
+      },
       "writeSemantics": {
         "timeoutAware": false,
         "timeoutReconciliation": false,
@@ -5049,6 +5163,10 @@ stdout:
         "notes": "Adding an existing relation succeeds with noOp: true."
       },
       "notes": null,
+      "surface": {
+        "class": "stable",
+        "reason": "automation_contract"
+      },
       "writeSemantics": {
         "timeoutAware": true,
         "timeoutReconciliation": true,
@@ -5257,6 +5375,10 @@ stdout:
         "notes": "Deleting a missing relation succeeds with noOp: true."
       },
       "notes": null,
+      "surface": {
+        "class": "stable",
+        "reason": "automation_contract"
+      },
       "writeSemantics": {
         "timeoutAware": true,
         "timeoutReconciliation": true,
@@ -5465,6 +5587,10 @@ stdout:
         "notes": null
       },
       "notes": null,
+      "surface": {
+        "class": "stable",
+        "reason": "automation_contract"
+      },
       "writeSemantics": {
         "timeoutAware": false,
         "timeoutReconciliation": false,
@@ -5610,6 +5736,10 @@ stdout:
         "notes": "The dry-run is safe to repeat; the live path mutates both Linear state and local VCS state."
       },
       "notes": null,
+      "surface": {
+        "class": "partial",
+        "reason": "shared_preview_contract"
+      },
       "writeSemantics": {
         "timeoutAware": false,
         "timeoutReconciliation": false,
@@ -5748,6 +5878,10 @@ stdout:
         "notes": "Field-only updates are retry-safe; adding --comment makes the command non-idempotent."
       },
       "notes": null,
+      "surface": {
+        "class": "stable",
+        "reason": "automation_contract"
+      },
       "writeSemantics": {
         "timeoutAware": true,
         "timeoutReconciliation": true,
@@ -6335,6 +6469,10 @@ stdout:
         "notes": null
       },
       "notes": null,
+      "surface": {
+        "class": "stable",
+        "reason": "automation_contract"
+      },
       "writeSemantics": {
         "timeoutAware": false,
         "timeoutReconciliation": false,
@@ -6492,6 +6630,10 @@ stdout:
         "notes": null
       },
       "notes": null,
+      "surface": {
+        "class": "stable",
+        "reason": "automation_contract"
+      },
       "writeSemantics": {
         "timeoutAware": false,
         "timeoutReconciliation": false,
@@ -6599,6 +6741,10 @@ stdout:
         "notes": null
       },
       "notes": null,
+      "surface": {
+        "class": "partial",
+        "reason": "shared_preview_contract"
+      },
       "writeSemantics": {
         "timeoutAware": false,
         "timeoutReconciliation": false,
@@ -6703,6 +6849,10 @@ stdout:
         "notes": null
       },
       "notes": null,
+      "surface": {
+        "class": "partial",
+        "reason": "shared_preview_contract"
+      },
       "writeSemantics": {
         "timeoutAware": false,
         "timeoutReconciliation": false,
@@ -6815,6 +6965,10 @@ stdout:
         "notes": null
       },
       "notes": null,
+      "surface": {
+        "class": "stable",
+        "reason": "automation_contract"
+      },
       "writeSemantics": {
         "timeoutAware": false,
         "timeoutReconciliation": false,
@@ -6922,6 +7076,10 @@ stdout:
         "notes": null
       },
       "notes": null,
+      "surface": {
+        "class": "partial",
+        "reason": "shared_preview_contract"
+      },
       "writeSemantics": {
         "timeoutAware": false,
         "timeoutReconciliation": false,
@@ -7022,6 +7180,10 @@ stdout:
         "notes": null
       },
       "notes": null,
+      "surface": {
+        "class": "stable",
+        "reason": "automation_contract"
+      },
       "writeSemantics": {
         "timeoutAware": false,
         "timeoutReconciliation": false,
@@ -7142,6 +7304,10 @@ stdout:
         "notes": "Archiving an already-archived notification succeeds with noOp: true."
       },
       "notes": null,
+      "surface": {
+        "class": "stable",
+        "reason": "automation_contract"
+      },
       "writeSemantics": {
         "timeoutAware": true,
         "timeoutReconciliation": true,
@@ -7299,6 +7465,10 @@ stdout:
         "notes": null
       },
       "notes": null,
+      "surface": {
+        "class": "stable",
+        "reason": "automation_contract"
+      },
       "writeSemantics": {
         "timeoutAware": false,
         "timeoutReconciliation": false,
@@ -7406,6 +7576,10 @@ stdout:
         "notes": null
       },
       "notes": null,
+      "surface": {
+        "class": "stable",
+        "reason": "automation_contract"
+      },
       "writeSemantics": {
         "timeoutAware": false,
         "timeoutReconciliation": false,
@@ -7513,6 +7687,10 @@ stdout:
         "notes": "Reading an already-read notification succeeds with noOp: true."
       },
       "notes": null,
+      "surface": {
+        "class": "stable",
+        "reason": "automation_contract"
+      },
       "writeSemantics": {
         "timeoutAware": true,
         "timeoutReconciliation": true,
@@ -7681,6 +7859,10 @@ stdout:
         "notes": null
       },
       "notes": null,
+      "surface": {
+        "class": "stable",
+        "reason": "automation_contract"
+      },
       "writeSemantics": {
         "timeoutAware": false,
         "timeoutReconciliation": false,
@@ -7978,6 +8160,10 @@ stdout:
         "notes": null
       },
       "notes": null,
+      "surface": {
+        "class": "partial",
+        "reason": "shared_preview_contract"
+      },
       "writeSemantics": {
         "timeoutAware": false,
         "timeoutReconciliation": false,
@@ -8157,6 +8343,10 @@ stdout:
         "notes": "Adding an already-attached label succeeds with changed: false."
       },
       "notes": null,
+      "surface": {
+        "class": "stable",
+        "reason": "automation_contract"
+      },
       "writeSemantics": {
         "timeoutAware": false,
         "timeoutReconciliation": false,
@@ -8267,6 +8457,10 @@ stdout:
         "notes": "Removing a missing label succeeds with changed: false."
       },
       "notes": null,
+      "surface": {
+        "class": "stable",
+        "reason": "automation_contract"
+      },
       "writeSemantics": {
         "timeoutAware": false,
         "timeoutReconciliation": false,
@@ -8377,6 +8571,10 @@ stdout:
         "notes": null
       },
       "notes": null,
+      "surface": {
+        "class": "stable",
+        "reason": "automation_contract"
+      },
       "writeSemantics": {
         "timeoutAware": false,
         "timeoutReconciliation": false,
@@ -8496,6 +8694,10 @@ stdout:
         "notes": null
       },
       "notes": null,
+      "surface": {
+        "class": "partial",
+        "reason": "shared_preview_contract"
+      },
       "writeSemantics": {
         "timeoutAware": false,
         "timeoutReconciliation": false,
@@ -8596,6 +8798,10 @@ stdout:
         "notes": null
       },
       "notes": null,
+      "surface": {
+        "class": "stable",
+        "reason": "automation_contract"
+      },
       "writeSemantics": {
         "timeoutAware": false,
         "timeoutReconciliation": false,
@@ -8716,6 +8922,10 @@ stdout:
         "notes": null
       },
       "notes": null,
+      "surface": {
+        "class": "stable",
+        "reason": "automation_contract"
+      },
       "writeSemantics": {
         "timeoutAware": false,
         "timeoutReconciliation": false,
@@ -8823,6 +9033,10 @@ stdout:
         "notes": null
       },
       "notes": null,
+      "surface": {
+        "class": "stable",
+        "reason": "automation_contract"
+      },
       "writeSemantics": {
         "timeoutAware": false,
         "timeoutReconciliation": false,
@@ -8955,6 +9169,10 @@ stdout:
         "notes": null
       },
       "notes": "Returns canonical issue metadata and unresolved reasons without mutating Linear.",
+      "surface": {
+        "class": "stable",
+        "reason": "automation_contract"
+      },
       "writeSemantics": {
         "timeoutAware": false,
         "timeoutReconciliation": false,
@@ -9132,6 +9350,10 @@ stdout:
         "notes": null
       },
       "notes": "Team-scoped label resolution falls back to the configured current team when --team is omitted.",
+      "surface": {
+        "class": "stable",
+        "reason": "automation_contract"
+      },
       "writeSemantics": {
         "timeoutAware": false,
         "timeoutReconciliation": false,
@@ -9307,6 +9529,10 @@ stdout:
         "notes": null
       },
       "notes": "If omitted, the team reference resolves from the configured current team.",
+      "surface": {
+        "class": "stable",
+        "reason": "automation_contract"
+      },
       "writeSemantics": {
         "timeoutAware": false,
         "timeoutReconciliation": false,
@@ -9466,6 +9692,10 @@ stdout:
         "notes": null
       },
       "notes": "Returns the runtime-selected user match and any ambiguous candidates without mutating Linear.",
+      "surface": {
+        "class": "stable",
+        "reason": "automation_contract"
+      },
       "writeSemantics": {
         "timeoutAware": false,
         "timeoutReconciliation": false,
@@ -9606,6 +9836,10 @@ stdout:
         "notes": null
       },
       "notes": "Workflow state resolution requires team context and reports ambiguous matches as candidates.",
+      "surface": {
+        "class": "stable",
+        "reason": "automation_contract"
+      },
       "writeSemantics": {
         "timeoutAware": false,
         "timeoutReconciliation": false,
@@ -9781,6 +10015,10 @@ stdout:
         "notes": null
       },
       "notes": null,
+      "surface": {
+        "class": "stable",
+        "reason": "automation_contract"
+      },
       "writeSemantics": {
         "timeoutAware": false,
         "timeoutReconciliation": false,
@@ -9888,6 +10126,10 @@ stdout:
         "notes": null
       },
       "notes": null,
+      "surface": {
+        "class": "stable",
+        "reason": "automation_contract"
+      },
       "writeSemantics": {
         "timeoutAware": false,
         "timeoutReconciliation": false,
@@ -10028,6 +10270,10 @@ stdout:
         "notes": null
       },
       "notes": null,
+      "surface": {
+        "class": "stable",
+        "reason": "automation_contract"
+      },
       "writeSemantics": {
         "timeoutAware": false,
         "timeoutReconciliation": false,
@@ -10168,6 +10414,10 @@ stdout:
         "notes": null
       },
       "notes": null,
+      "surface": {
+        "class": "stable",
+        "reason": "automation_contract"
+      },
       "writeSemantics": {
         "timeoutAware": false,
         "timeoutReconciliation": false,
@@ -10275,6 +10525,10 @@ stdout:
         "notes": null
       },
       "notes": null,
+      "surface": {
+        "class": "stable",
+        "reason": "automation_contract"
+      },
       "writeSemantics": {
         "timeoutAware": false,
         "timeoutReconciliation": false,
@@ -10395,6 +10649,10 @@ stdout:
         "notes": null
       },
       "notes": null,
+      "surface": {
+        "class": "stable",
+        "reason": "automation_contract"
+      },
       "writeSemantics": {
         "timeoutAware": false,
         "timeoutReconciliation": false,
@@ -10538,6 +10796,10 @@ stdout:
         "notes": null
       },
       "notes": null,
+      "surface": {
+        "class": "stable",
+        "reason": "automation_contract"
+      },
       "writeSemantics": {
         "timeoutAware": false,
         "timeoutReconciliation": false,
@@ -10695,6 +10957,10 @@ stdout:
         "notes": null
       },
       "notes": null,
+      "surface": {
+        "class": "stable",
+        "reason": "automation_contract"
+      },
       "writeSemantics": {
         "timeoutAware": false,
         "timeoutReconciliation": false,
@@ -10802,6 +11068,10 @@ stdout:
         "notes": null
       },
       "notes": null,
+      "surface": {
+        "class": "stable",
+        "reason": "automation_contract"
+      },
       "writeSemantics": {
         "timeoutAware": false,
         "timeoutReconciliation": false,
@@ -10941,6 +11211,10 @@ stdout:
         "notes": null
       },
       "notes": null,
+      "surface": {
+        "class": "stable",
+        "reason": "automation_contract"
+      },
       "writeSemantics": {
         "timeoutAware": false,
         "timeoutReconciliation": false,
@@ -11061,6 +11335,10 @@ stdout:
         "notes": null
       },
       "notes": null,
+      "surface": {
+        "class": "stable",
+        "reason": "automation_contract"
+      },
       "writeSemantics": {
         "timeoutAware": false,
         "timeoutReconciliation": false,
@@ -11168,6 +11446,10 @@ stdout:
         "notes": null
       },
       "notes": null,
+      "surface": {
+        "class": "stable",
+        "reason": "automation_contract"
+      },
       "writeSemantics": {
         "timeoutAware": false,
         "timeoutReconciliation": false,

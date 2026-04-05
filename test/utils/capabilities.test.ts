@@ -76,6 +76,26 @@ Deno.test("buildCapabilitiesPayload defaults to the v2 compatibility shape", () 
     latestSchemaVersion: "v2",
     supportedSchemaVersions: ["v1", "v2"],
   })
+  assertEquals(payload.surfaceClasses, {
+    stable: {
+      description:
+        "Stable machine-readable surface with an explicit startup or automation contract.",
+      callerExpectation:
+        "Safe to treat as the primary agent-runtime path and depend on for startup, read, preview, or apply loops.",
+    },
+    partial: {
+      description:
+        "Agent-usable surface with some structured semantics, but without a full stable apply/read contract.",
+      callerExpectation:
+        "Prefer only when the stable surface does not cover the workflow yet, and pin explicit flags or migration guidance instead of assuming long-term shape stability.",
+    },
+    escape_hatch: {
+      description:
+        "Intentionally raw or human/debug-oriented path outside the stable agent-runtime contract.",
+      callerExpectation:
+        "Use only as an explicit fallback. Do not infer startup-critical or automation-tier guarantees from availability alone.",
+    },
+  })
   assertEquals(payload.executionProfiles, {
     defaultProfile: "agent-safe",
     availableProfiles: [
@@ -126,8 +146,10 @@ Deno.test("buildCapabilitiesPayload v1 preserves the legacy trimmed shape", () =
   assertEquals(payload.schemaVersion, "v1")
   assert(issueUpdate != null)
   assertEquals("executionProfiles" in payload, false)
+  assertEquals("surfaceClasses" in payload, false)
   assertEquals("schema" in issueUpdate, false)
   assertEquals("output" in issueUpdate, false)
+  assertEquals("surface" in issueUpdate, false)
 })
 
 Deno.test("buildCapabilitiesPayload v2 includes issue update capability traits", () => {
@@ -376,6 +398,10 @@ Deno.test("buildCapabilitiesPayload includes raw api escape hatch traits", () =>
   })
   assertEquals(command.stdin, { mode: "implicit_text" })
   assertEquals(command.idempotency.category, "read_only")
+  assertEquals(command.surface, {
+    class: "escape_hatch",
+    reason: "raw_api",
+  })
   assertEquals(
     command.notes,
     "Outputs JSON by default and accepts stdin, but does not use a --json flag.",
@@ -390,6 +416,28 @@ Deno.test("buildCapabilitiesPayload includes raw api escape hatch traits", () =>
     version: null,
   })
   assertEquals(command.output.failure.jsonWhenRequested, false)
+})
+
+Deno.test("buildCapabilitiesPayload classifies stable and partial surfaces", () => {
+  const payload = buildCapabilitiesPayload("2.11.0", "v2")
+  const capabilities = payload.commands.find((entry) =>
+    entry.path === "linear capabilities"
+  )
+  const documentUpdate = payload.commands.find((entry) =>
+    entry.path === "linear document update"
+  )
+
+  assert(capabilities != null)
+  assertEquals(capabilities.surface, {
+    class: "stable",
+    reason: "startup_contract",
+  })
+
+  assert(documentUpdate != null)
+  assertEquals(documentUpdate.surface, {
+    class: "partial",
+    reason: "shared_preview_contract",
+  })
 })
 
 Deno.test("buildCapabilitiesPayload classifies notification writes as retry-safe no-op", () => {

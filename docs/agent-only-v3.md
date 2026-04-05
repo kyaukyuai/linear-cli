@@ -66,6 +66,12 @@ The intended steady-state is:
 - pager remains available only when the caller explicitly opts in
 - destructive confirmation bypass still uses `--yes`
 
+For agent runtimes, read command surfaces in three buckets:
+
+- `stable`: startup-contract or automation-contract surfaces
+- `partial`: machine-readable or preview-capable helpers without a full stable apply/read contract
+- `escape_hatch`: raw GraphQL and human/debug-only paths
+
 The exact human/debug surface may expand slightly during implementation, but it must stay explicit. Human-oriented behavior must not be the default for startup-critical or automation-tier flows.
 
 ## Compatibility And Deprecation Policy

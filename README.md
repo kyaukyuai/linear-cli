@@ -40,6 +40,7 @@ Treat `linear-cli` as a shell-native control plane for agents:
 - refs can be normalized with `linear resolve ...`
 - write previews use `--dry-run --json`
 - write results expose `operation`, `receipt`, and structured `error.details`
+- `linear capabilities` classifies commands as `stable`, `partial`, or `escape_hatch`
 - human/debug behavior is explicit with `--text` and `--profile human-debug --interactive`
 
 The practical default loop is:
@@ -224,6 +225,12 @@ non-goals:
 - it does not auto-confirm destructive actions
 - it does not replace explicit human/debug prompt flows; callers should pass flags, stdin, file inputs, or opt into `--profile human-debug --interactive`
 
+runtime surface classes:
+
+- `stable`: startup-contract or automation-contract surface. safe for primary agent runtime paths.
+- `partial`: agent-usable surface with shared dry-run or machine-readable traits, but not a full stable contract. pin explicit flags and avoid assuming long-term shape stability.
+- `escape_hatch`: intentionally raw or human/debug-only path, such as `linear api`, `--text`, or `--profile human-debug --interactive`.
+
 - v1 in scope: `issue list/view/create/update --json`, `issue relation add/delete/list --json`, `issue comment add --json`, `team members --json`, `issue parent/children/create-batch --json`
 - v2 additions: `project list/view --json`, `cycle list/view/current/next --json`, `milestone list/view --json`
 - v3 additions: `document list/view --json`, `webhook list/view --json`, `notification list/count --json`
@@ -231,7 +238,8 @@ non-goals:
 - v5 additions: `initiative list/view --json`, `project-update list --json`, `initiative-update list --json`
 - v6 additions: `resolve issue/team/workflow-state/user/label --json`
 - v7 additions: `issue assign/estimate/move/priority --json`, `notification read/archive --json`, `project create --json`, `project label add/remove --json`, `webhook create/update/delete --json`
-- out of scope: non-JSON terminal output, `linear api`, and other `--json` commands that are not listed above
+- partial surfaces today include high-value dry-run adopters that do not yet expose a stable apply contract, such as `document create/update/delete`, `milestone create/update/delete`, `project update/delete`, and `issue start`
+- escape-hatch only surfaces include non-JSON terminal flows, `linear api`, and explicit human/debug output paths
 
 the contract fixes top-level success payload shapes and requires machine-readable failure payloads for the automation tier. see [docs/json-contracts.md](docs/json-contracts.md) for the full contract, compatibility rules, and example payloads. that guarantee also covers parser and argument validation failures when the command is in machine-readable mode, whether that is the default or was requested explicitly with `--json`.
 
