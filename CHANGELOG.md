@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## [3.1.0] - 2026-04-05
+
+### Added
+
+- expanded Automation Contract v7 across remaining high-value write surfaces, including issue assignment, estimate, move, priority, notification read/archive, project create and project-label mutations, and webhook create/update/delete flows
+- enriched `linear capabilities` with more parser-complete metadata such as aliases, repeatability, variadic inputs, defaults, canonical examples, resolution sources, and stronger machine-readable constraints
+- added machine-readable surface classification to `linear capabilities`, distinguishing `stable`, `partial`, and `escape_hatch` runtime surfaces for agent callers
+
+### Changed
+
+- expanded downstream certification from a single generic suite into named startup-monitor, control-plane, diagnostics, compatibility-bridge, and timeout-recovery consumer paths so release gates match real agent-runtime usage more closely
+
 ## [3.0.1] - 2026-04-05
 
 ### Changed

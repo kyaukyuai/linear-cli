@@ -5,7 +5,7 @@ members = ["dist:."]
 [package]
 name = "linear"
 description = "Agent-first Linear CLI with stable JSON contracts, dry-run previews, and workflow-safe automation"
-version = "3.0.1"
+version = "3.1.0"
 license = "MIT"
 repository = "https://github.com/kyaukyuai/linear-cli"
 homepage = "https://github.com/kyaukyuai/linear-cli"
