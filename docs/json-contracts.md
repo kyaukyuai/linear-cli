@@ -61,8 +61,8 @@ Default top-level shape from `linear capabilities`:
   },
   "contractVersions": {
     "automation": {
-      "latest": "v6",
-      "supported": ["v1", "v2", "v3", "v4", "v5", "v6"]
+      "latest": "v7",
+      "supported": ["v1", "v2", "v3", "v4", "v5", "v6", "v7"]
     },
     "dryRunPreview": {
       "latest": "v1",
@@ -74,14 +74,15 @@ Default top-level shape from `linear capabilities`:
     }
   },
   "automationTier": {
-    "latestVersion": "v6",
+    "latestVersion": "v7",
     "byVersion": {
       "v1": ["linear issue list"],
       "v2": ["linear project list"],
       "v3": ["linear document list"],
       "v4": ["linear team list"],
       "v5": ["linear initiative list"],
-      "v6": ["linear resolve issue"]
+      "v6": ["linear resolve issue"],
+      "v7": ["linear issue assign"]
     },
     "allCommands": [
       "linear issue list",
@@ -89,7 +90,8 @@ Default top-level shape from `linear capabilities`:
       "linear document list",
       "linear team list",
       "linear initiative list",
-      "linear resolve issue"
+      "linear resolve issue",
+      "linear issue assign"
     ]
   },
   "executionProfiles": {
@@ -2097,6 +2099,276 @@ Top-level shape:
     }
   ],
   "unresolvedReason": null
+}
+```
+
+## Automation Contract v7
+
+Automation Contract v7 extends the stable automation tier to the remaining high-value JSON write surfaces that already participate in the shared `operation` / `receipt` family or retry-safe no-op semantics.
+
+The v7 additions are:
+
+- `linear issue assign --json`
+- `linear issue estimate --json`
+- `linear issue move --json`
+- `linear issue priority --json`
+- `linear notification archive --json`
+- `linear notification read --json`
+- `linear project create --json`
+- `linear project label add --json`
+- `linear project label remove --json`
+- `linear webhook create --json`
+- `linear webhook delete --json`
+- `linear webhook update --json`
+
+V7 reuses the same machine-readable failure envelope described above. When a command also supports `--dry-run`, it continues to use `dry_run_preview:v1`.
+
+### `issue assign/estimate/move/priority --json`
+
+Top-level shape:
+
+```json
+{
+  "id": "issue-123",
+  "identifier": "ENG-123",
+  "title": "Stabilize auth expiry handling",
+  "receipt": {
+    "operationId": "issue.assign",
+    "resource": "issue",
+    "action": "assign",
+    "resolvedRefs": {
+      "issue": "ENG-123",
+      "assignee": "self"
+    },
+    "appliedChanges": ["assignee"],
+    "noOp": false,
+    "partialSuccess": false,
+    "nextSafeAction": "none"
+  },
+  "operation": {
+    "family": "write_operation",
+    "version": "v1",
+    "command": "issue.assign",
+    "resource": "issue",
+    "action": "assign",
+    "summary": "Assign ENG-123 to self",
+    "refs": {
+      "issue": "ENG-123",
+      "assignee": "self"
+    },
+    "changes": ["assignee"],
+    "noOp": false
+  }
+}
+```
+
+The field that actually changed varies by command:
+
+- `issue assign`: `assignee`
+- `issue estimate`: `estimate`
+- `issue move`: `state`
+- `issue priority`: `priority`
+
+### `notification read/archive --json`
+
+Top-level shape:
+
+```json
+{
+  "id": "notif-123",
+  "title": "New comment on ENG-123",
+  "readAt": "2026-04-05T10:00:00.000Z",
+  "archivedAt": null,
+  "noOp": false,
+  "receipt": {
+    "operationId": "notification.read",
+    "resource": "notification",
+    "action": "read",
+    "resolvedRefs": {
+      "notification": "notif-123"
+    },
+    "appliedChanges": ["readAt"],
+    "noOp": false,
+    "partialSuccess": false,
+    "nextSafeAction": "none"
+  }
+}
+```
+
+These commands are retry-safe no-op writes. When the notification is already in the requested state, they still succeed and return `noOp: true`.
+
+### `project create --json`
+
+Top-level shape:
+
+```json
+{
+  "id": "project-123",
+  "slugId": "agent-cli",
+  "name": "Agent CLI",
+  "url": "https://linear.app/acme/project/agent-cli",
+  "receipt": {
+    "operationId": "project.create",
+    "resource": "project",
+    "action": "create",
+    "resolvedRefs": {
+      "team": "ENG"
+    },
+    "appliedChanges": ["project"],
+    "noOp": false,
+    "partialSuccess": false,
+    "nextSafeAction": "none"
+  },
+  "operation": {
+    "family": "write_operation",
+    "version": "v1",
+    "command": "project.create",
+    "resource": "project",
+    "action": "create",
+    "summary": "Create project Agent CLI",
+    "refs": {
+      "team": "ENG"
+    },
+    "changes": ["project"],
+    "noOp": false
+  }
+}
+```
+
+### `project label add/remove --json`
+
+Top-level shape:
+
+```json
+{
+  "changed": true,
+  "project": {
+    "id": "project-123",
+    "slugId": "agent-cli",
+    "name": "Agent CLI"
+  },
+  "label": {
+    "id": "label-123",
+    "name": "Bug",
+    "color": "#ef4444"
+  },
+  "receipt": {
+    "operationId": "project.label.add",
+    "resource": "project_label",
+    "action": "add",
+    "resolvedRefs": {
+      "project": "agent-cli",
+      "label": "Bug"
+    },
+    "appliedChanges": ["label"],
+    "noOp": false,
+    "partialSuccess": false,
+    "nextSafeAction": "none"
+  },
+  "operation": {
+    "family": "write_operation",
+    "version": "v1",
+    "command": "project.label.add",
+    "resource": "project_label",
+    "action": "add",
+    "summary": "Add Bug to project agent-cli",
+    "refs": {
+      "project": "agent-cli",
+      "label": "Bug"
+    },
+    "changes": ["label"],
+    "noOp": false
+  }
+}
+```
+
+These commands are retry-safe no-op writes. When the project is already in the requested label state, they still succeed and report `changed: false`.
+
+### `webhook create/update/delete --json`
+
+Top-level shape for `create` and `update`:
+
+```json
+{
+  "id": "webhook-123",
+  "label": "agent-webhook",
+  "url": "https://example.com/linear",
+  "enabled": true,
+  "archivedAt": null,
+  "allPublicTeams": false,
+  "resourceTypes": ["Issue", "Comment"],
+  "createdAt": "2026-04-05T10:00:00.000Z",
+  "updatedAt": "2026-04-05T10:00:00.000Z",
+  "team": {
+    "id": "team-123",
+    "key": "ENG",
+    "name": "Engineering"
+  },
+  "creator": {
+    "id": "user-123",
+    "name": "Alice Bot"
+  },
+  "receipt": {
+    "operationId": "webhook.update",
+    "resource": "webhook",
+    "action": "update",
+    "resolvedRefs": {
+      "webhook": "webhook-123"
+    },
+    "appliedChanges": ["webhook"],
+    "noOp": false,
+    "partialSuccess": false,
+    "nextSafeAction": "none"
+  },
+  "operation": {
+    "family": "write_operation",
+    "version": "v1",
+    "command": "webhook.update",
+    "resource": "webhook",
+    "action": "update",
+    "summary": "Update webhook agent-webhook",
+    "refs": {
+      "webhook": "webhook-123"
+    },
+    "changes": ["webhook"],
+    "noOp": false
+  }
+}
+```
+
+Top-level shape for `delete`:
+
+```json
+{
+  "id": "webhook-123",
+  "label": "agent-webhook",
+  "url": "https://example.com/linear",
+  "success": true,
+  "receipt": {
+    "operationId": "webhook.delete",
+    "resource": "webhook",
+    "action": "delete",
+    "resolvedRefs": {
+      "webhook": "webhook-123"
+    },
+    "appliedChanges": ["webhook"],
+    "noOp": false,
+    "partialSuccess": false,
+    "nextSafeAction": "none"
+  },
+  "operation": {
+    "family": "write_operation",
+    "version": "v1",
+    "command": "webhook.delete",
+    "resource": "webhook",
+    "action": "delete",
+    "summary": "Delete webhook agent-webhook",
+    "refs": {
+      "webhook": "webhook-123"
+    },
+    "changes": ["webhook"],
+    "noOp": false
+  }
 }
 ```
 

@@ -34,7 +34,7 @@ stdout:
 "linear-cli 3.0.1
 capabilities schema latest: v2
 json compatibility default: v2
-automation contract latest: v6
+automation contract latest: v7
 dry-run preview contract: v1
 stdin policy: v1
 
@@ -64,19 +64,19 @@ agent-facing commands
   linear initiative list :: json=v5 dry-run=no inputs=flags success=automation_contract confirm=none idempotency=read_only
   linear initiative view :: json=v5 dry-run=no inputs=flags success=automation_contract confirm=none idempotency=read_only
   linear initiative-update list :: json=v5 dry-run=no inputs=flags success=automation_contract confirm=none idempotency=read_only
-  linear issue assign :: json=yes dry-run=no inputs=flags success=curated_json confirm=none idempotency=retry_safe_update
+  linear issue assign :: json=v7 dry-run=no inputs=flags success=automation_contract confirm=none idempotency=retry_safe_update
   linear issue children :: json=v1 dry-run=no inputs=flags success=automation_contract confirm=none idempotency=read_only
   linear issue comment add :: json=v1 dry-run=v1 inputs=flags,stdin,file success=automation_contract confirm=none idempotency=non_idempotent
   linear issue comment update :: json=no dry-run=no inputs=flags,stdin,file success=terminal_only confirm=none idempotency=retry_safe_update
   linear issue create :: json=v1 dry-run=v1 inputs=flags,stdin,file success=automation_contract confirm=none idempotency=non_idempotent
   linear issue create-batch :: json=v1 dry-run=v1 inputs=flags,file success=automation_contract confirm=none idempotency=resumable_batch
     retry: Partial failures return createdIdentifiers and failedStep details.
-  linear issue estimate :: json=yes dry-run=no inputs=flags success=curated_json confirm=none idempotency=retry_safe_update
+  linear issue estimate :: json=v7 dry-run=no inputs=flags success=automation_contract confirm=none idempotency=retry_safe_update
   linear issue list :: json=v1 dry-run=no inputs=flags success=automation_contract confirm=none idempotency=read_only
     note: Issue list JSON keeps the nested state object and adds a stateName convenience field.
-  linear issue move :: json=yes dry-run=no inputs=flags success=curated_json confirm=none idempotency=retry_safe_update
+  linear issue move :: json=v7 dry-run=no inputs=flags success=automation_contract confirm=none idempotency=retry_safe_update
   linear issue parent :: json=v1 dry-run=no inputs=flags success=automation_contract confirm=none idempotency=read_only
-  linear issue priority :: json=yes dry-run=no inputs=flags success=curated_json confirm=none idempotency=retry_safe_update
+  linear issue priority :: json=v7 dry-run=no inputs=flags success=automation_contract confirm=none idempotency=retry_safe_update
   linear issue relation add :: json=v1 dry-run=v1 inputs=flags success=automation_contract confirm=none idempotency=retry_safe_no_op
     retry: Adding an existing relation succeeds with noOp: true.
   linear issue relation delete :: json=v1 dry-run=v1 inputs=flags success=automation_contract confirm=none idempotency=retry_safe_no_op
@@ -93,17 +93,17 @@ agent-facing commands
   linear milestone list :: json=v2 dry-run=no inputs=flags success=automation_contract confirm=none idempotency=read_only
   linear milestone update :: json=no dry-run=v1 inputs=flags success=terminal_only confirm=none idempotency=retry_safe_update
   linear milestone view :: json=v2 dry-run=no inputs=flags success=automation_contract confirm=none idempotency=read_only
-  linear notification archive :: json=yes dry-run=no inputs=flags success=curated_json confirm=none idempotency=retry_safe_no_op
+  linear notification archive :: json=v7 dry-run=no inputs=flags success=automation_contract confirm=none idempotency=retry_safe_no_op
     retry: Archiving an already-archived notification succeeds with noOp: true.
   linear notification count :: json=v3 dry-run=no inputs=flags success=automation_contract confirm=none idempotency=read_only
   linear notification list :: json=v3 dry-run=no inputs=flags success=automation_contract confirm=none idempotency=read_only
-  linear notification read :: json=yes dry-run=no inputs=flags success=curated_json confirm=none idempotency=retry_safe_no_op
+  linear notification read :: json=v7 dry-run=no inputs=flags success=automation_contract confirm=none idempotency=retry_safe_no_op
     retry: Reading an already-read notification succeeds with noOp: true.
-  linear project create :: json=yes dry-run=v1 inputs=flags success=curated_json confirm=none idempotency=non_idempotent
+  linear project create :: json=v7 dry-run=v1 inputs=flags success=automation_contract confirm=none idempotency=non_idempotent
   linear project delete :: json=no dry-run=v1 inputs=flags success=terminal_only confirm=--yes idempotency=destructive
-  linear project label add :: json=yes dry-run=no inputs=flags success=curated_json confirm=none idempotency=retry_safe_no_op
+  linear project label add :: json=v7 dry-run=no inputs=flags success=automation_contract confirm=none idempotency=retry_safe_no_op
     retry: Adding an already-attached label succeeds with changed: false.
-  linear project label remove :: json=yes dry-run=no inputs=flags success=curated_json confirm=none idempotency=retry_safe_no_op
+  linear project label remove :: json=v7 dry-run=no inputs=flags success=automation_contract confirm=none idempotency=retry_safe_no_op
     retry: Removing a missing label succeeds with changed: false.
   linear project list :: json=v2 dry-run=no inputs=flags success=automation_contract confirm=none idempotency=read_only
   linear project update :: json=no dry-run=v1 inputs=flags success=terminal_only confirm=none idempotency=retry_safe_update
@@ -125,10 +125,10 @@ agent-facing commands
   linear team view :: json=v4 dry-run=no inputs=flags success=automation_contract confirm=none idempotency=read_only
   linear user list :: json=v4 dry-run=no inputs=flags success=automation_contract confirm=none idempotency=read_only
   linear user view :: json=v4 dry-run=no inputs=flags success=automation_contract confirm=none idempotency=read_only
-  linear webhook create :: json=yes dry-run=v1 inputs=flags success=curated_json confirm=none idempotency=non_idempotent
-  linear webhook delete :: json=yes dry-run=v1 inputs=flags success=curated_json confirm=--yes idempotency=destructive
+  linear webhook create :: json=v7 dry-run=v1 inputs=flags success=automation_contract confirm=none idempotency=non_idempotent
+  linear webhook delete :: json=v7 dry-run=v1 inputs=flags success=automation_contract confirm=--yes idempotency=destructive
   linear webhook list :: json=v3 dry-run=no inputs=flags success=automation_contract confirm=none idempotency=read_only
-  linear webhook update :: json=yes dry-run=v1 inputs=flags success=curated_json confirm=none idempotency=retry_safe_update
+  linear webhook update :: json=v7 dry-run=v1 inputs=flags success=automation_contract confirm=none idempotency=retry_safe_update
   linear webhook view :: json=v3 dry-run=no inputs=flags success=automation_contract confirm=none idempotency=read_only
   linear workflow-state list :: json=v4 dry-run=no inputs=flags success=automation_contract confirm=none idempotency=read_only
   linear workflow-state view :: json=v4 dry-run=no inputs=flags success=automation_contract confirm=none idempotency=read_only
@@ -148,14 +148,15 @@ stdout:
   },
   "contractVersions": {
     "automation": {
-      "latest": "v6",
+      "latest": "v7",
       "supported": [
         "v1",
         "v2",
         "v3",
         "v4",
         "v5",
-        "v6"
+        "v6",
+        "v7"
       ]
     },
     "dryRunPreview": {
@@ -172,7 +173,7 @@ stdout:
     }
   },
   "automationTier": {
-    "latestVersion": "v6",
+    "latestVersion": "v7",
     "byVersion": {
       "v1": [
         "linear issue children",
@@ -228,6 +229,20 @@ stdout:
         "linear resolve team",
         "linear resolve user",
         "linear resolve workflow-state"
+      ],
+      "v7": [
+        "linear issue assign",
+        "linear issue estimate",
+        "linear issue move",
+        "linear issue priority",
+        "linear notification archive",
+        "linear notification read",
+        "linear project create",
+        "linear project label add",
+        "linear project label remove",
+        "linear webhook create",
+        "linear webhook delete",
+        "linear webhook update"
       ]
     },
     "allCommands": [
@@ -273,7 +288,19 @@ stdout:
       "linear resolve label",
       "linear resolve team",
       "linear resolve user",
-      "linear resolve workflow-state"
+      "linear resolve workflow-state",
+      "linear issue assign",
+      "linear issue estimate",
+      "linear issue move",
+      "linear issue priority",
+      "linear notification archive",
+      "linear notification read",
+      "linear project create",
+      "linear project label add",
+      "linear project label remove",
+      "linear webhook create",
+      "linear webhook delete",
+      "linear webhook update"
     ]
   },
   "compatibility": {
@@ -2302,7 +2329,7 @@ stdout:
       "summary": "Assign an issue",
       "json": {
         "supported": true,
-        "contractVersion": null
+        "contractVersion": "v7"
       },
       "dryRun": {
         "supported": false,
@@ -2355,9 +2382,12 @@ stdout:
       },
       "output": {
         "success": {
-          "category": "curated_json",
-          "contractTarget": null,
-          "contract": null,
+          "category": "automation_contract",
+          "contractTarget": "automation_contract:v7",
+          "contract": {
+            "kind": "automation_contract",
+            "version": "v7"
+          },
           "shape": "object",
           "exitCode": 0,
           "topLevelFields": [
@@ -3455,7 +3485,7 @@ stdout:
       "summary": "Set an issue estimate",
       "json": {
         "supported": true,
-        "contractVersion": null
+        "contractVersion": "v7"
       },
       "dryRun": {
         "supported": false,
@@ -3508,9 +3538,12 @@ stdout:
       },
       "output": {
         "success": {
-          "category": "curated_json",
-          "contractTarget": null,
-          "contract": null,
+          "category": "automation_contract",
+          "contractTarget": "automation_contract:v7",
+          "contract": {
+            "kind": "automation_contract",
+            "version": "v7"
+          },
           "shape": "object",
           "exitCode": 0,
           "topLevelFields": [
@@ -3777,7 +3810,7 @@ stdout:
       "summary": "Move an issue to a workflow state",
       "json": {
         "supported": true,
-        "contractVersion": null
+        "contractVersion": "v7"
       },
       "dryRun": {
         "supported": false,
@@ -3830,9 +3863,12 @@ stdout:
       },
       "output": {
         "success": {
-          "category": "curated_json",
-          "contractTarget": null,
-          "contract": null,
+          "category": "automation_contract",
+          "contractTarget": "automation_contract:v7",
+          "contract": {
+            "kind": "automation_contract",
+            "version": "v7"
+          },
           "shape": "object",
           "exitCode": 0,
           "topLevelFields": [
@@ -4016,7 +4052,7 @@ stdout:
       "summary": "Set an issue priority",
       "json": {
         "supported": true,
-        "contractVersion": null
+        "contractVersion": "v7"
       },
       "dryRun": {
         "supported": false,
@@ -4069,9 +4105,12 @@ stdout:
       },
       "output": {
         "success": {
-          "category": "curated_json",
-          "contractTarget": null,
-          "contract": null,
+          "category": "automation_contract",
+          "contractTarget": "automation_contract:v7",
+          "contract": {
+            "kind": "automation_contract",
+            "version": "v7"
+          },
           "shape": "object",
           "exitCode": 0,
           "topLevelFields": [
@@ -5895,7 +5934,7 @@ stdout:
       "summary": "Archive a notification",
       "json": {
         "supported": true,
-        "contractVersion": null
+        "contractVersion": "v7"
       },
       "dryRun": {
         "supported": false,
@@ -5987,9 +6026,12 @@ stdout:
       },
       "output": {
         "success": {
-          "category": "curated_json",
-          "contractTarget": null,
-          "contract": null,
+          "category": "automation_contract",
+          "contractTarget": "automation_contract:v7",
+          "contract": {
+            "kind": "automation_contract",
+            "version": "v7"
+          },
           "shape": "object",
           "exitCode": 0,
           "topLevelFields": [
@@ -6251,7 +6293,7 @@ stdout:
       "summary": "Mark a notification as read",
       "json": {
         "supported": true,
-        "contractVersion": null
+        "contractVersion": "v7"
       },
       "dryRun": {
         "supported": false,
@@ -6354,9 +6396,12 @@ stdout:
       },
       "output": {
         "success": {
-          "category": "curated_json",
-          "contractTarget": null,
-          "contract": null,
+          "category": "automation_contract",
+          "contractTarget": "automation_contract:v7",
+          "contract": {
+            "kind": "automation_contract",
+            "version": "v7"
+          },
           "shape": "object",
           "exitCode": 0,
           "topLevelFields": [
@@ -6404,7 +6449,7 @@ stdout:
       "summary": "Create a project",
       "json": {
         "supported": true,
-        "contractVersion": null
+        "contractVersion": "v7"
       },
       "dryRun": {
         "supported": true,
@@ -6469,9 +6514,12 @@ stdout:
       },
       "output": {
         "success": {
-          "category": "curated_json",
-          "contractTarget": null,
-          "contract": null,
+          "category": "automation_contract",
+          "contractTarget": "automation_contract:v7",
+          "contract": {
+            "kind": "automation_contract",
+            "version": "v7"
+          },
           "shape": "object",
           "exitCode": 0,
           "topLevelFields": [
@@ -6662,7 +6710,7 @@ stdout:
       "summary": "Add a label to a project",
       "json": {
         "supported": true,
-        "contractVersion": null
+        "contractVersion": "v7"
       },
       "dryRun": {
         "supported": false,
@@ -6715,9 +6763,12 @@ stdout:
       },
       "output": {
         "success": {
-          "category": "curated_json",
-          "contractTarget": null,
-          "contract": null,
+          "category": "automation_contract",
+          "contractTarget": "automation_contract:v7",
+          "contract": {
+            "kind": "automation_contract",
+            "version": "v7"
+          },
           "shape": "object",
           "exitCode": 0,
           "topLevelFields": [
@@ -6769,7 +6820,7 @@ stdout:
       "summary": "Remove a label from a project",
       "json": {
         "supported": true,
-        "contractVersion": null
+        "contractVersion": "v7"
       },
       "dryRun": {
         "supported": false,
@@ -6822,9 +6873,12 @@ stdout:
       },
       "output": {
         "success": {
-          "category": "curated_json",
-          "contractTarget": null,
-          "contract": null,
+          "category": "automation_contract",
+          "contractTarget": "automation_contract:v7",
+          "contract": {
+            "kind": "automation_contract",
+            "version": "v7"
+          },
           "shape": "object",
           "exitCode": 0,
           "topLevelFields": [
@@ -8844,7 +8898,7 @@ stdout:
       "summary": "Create a webhook",
       "json": {
         "supported": true,
-        "contractVersion": null
+        "contractVersion": "v7"
       },
       "dryRun": {
         "supported": true,
@@ -8909,9 +8963,12 @@ stdout:
       },
       "output": {
         "success": {
-          "category": "curated_json",
-          "contractTarget": null,
-          "contract": null,
+          "category": "automation_contract",
+          "contractTarget": "automation_contract:v7",
+          "contract": {
+            "kind": "automation_contract",
+            "version": "v7"
+          },
           "shape": "object",
           "exitCode": 0,
           "topLevelFields": [
@@ -8984,7 +9041,7 @@ stdout:
       "summary": "Delete a webhook",
       "json": {
         "supported": true,
-        "contractVersion": null
+        "contractVersion": "v7"
       },
       "dryRun": {
         "supported": true,
@@ -9074,9 +9131,12 @@ stdout:
       },
       "output": {
         "success": {
-          "category": "curated_json",
-          "contractTarget": null,
-          "contract": null,
+          "category": "automation_contract",
+          "contractTarget": "automation_contract:v7",
+          "contract": {
+            "kind": "automation_contract",
+            "version": "v7"
+          },
           "shape": "object",
           "exitCode": 0,
           "topLevelFields": [
@@ -9245,7 +9305,7 @@ stdout:
       "summary": "Update a webhook",
       "json": {
         "supported": true,
-        "contractVersion": null
+        "contractVersion": "v7"
       },
       "dryRun": {
         "supported": true,
@@ -9310,9 +9370,12 @@ stdout:
       },
       "output": {
         "success": {
-          "category": "curated_json",
-          "contractTarget": null,
-          "contract": null,
+          "category": "automation_contract",
+          "contractTarget": "automation_contract:v7",
+          "contract": {
+            "kind": "automation_contract",
+            "version": "v7"
+          },
           "shape": "object",
           "exitCode": 0,
           "topLevelFields": [
@@ -9741,14 +9804,15 @@ stdout:
   },
   "contractVersions": {
     "automation": {
-      "latest": "v6",
+      "latest": "v7",
       "supported": [
         "v1",
         "v2",
         "v3",
         "v4",
         "v5",
-        "v6"
+        "v6",
+        "v7"
       ]
     },
     "dryRunPreview": {
@@ -9765,7 +9829,7 @@ stdout:
     }
   },
   "automationTier": {
-    "latestVersion": "v6",
+    "latestVersion": "v7",
     "byVersion": {
       "v1": [
         "linear issue children",
@@ -9821,6 +9885,20 @@ stdout:
         "linear resolve team",
         "linear resolve user",
         "linear resolve workflow-state"
+      ],
+      "v7": [
+        "linear issue assign",
+        "linear issue estimate",
+        "linear issue move",
+        "linear issue priority",
+        "linear notification archive",
+        "linear notification read",
+        "linear project create",
+        "linear project label add",
+        "linear project label remove",
+        "linear webhook create",
+        "linear webhook delete",
+        "linear webhook update"
       ]
     },
     "allCommands": [
@@ -9866,7 +9944,19 @@ stdout:
       "linear resolve label",
       "linear resolve team",
       "linear resolve user",
-      "linear resolve workflow-state"
+      "linear resolve workflow-state",
+      "linear issue assign",
+      "linear issue estimate",
+      "linear issue move",
+      "linear issue priority",
+      "linear notification archive",
+      "linear notification read",
+      "linear project create",
+      "linear project label add",
+      "linear project label remove",
+      "linear webhook create",
+      "linear webhook delete",
+      "linear webhook update"
     ]
   },
   "commands": [
@@ -10169,7 +10259,7 @@ stdout:
       "summary": "Assign an issue",
       "json": {
         "supported": true,
-        "contractVersion": null
+        "contractVersion": "v7"
       },
       "dryRun": {
         "supported": false,
@@ -10295,7 +10385,7 @@ stdout:
       "summary": "Set an issue estimate",
       "json": {
         "supported": true,
-        "contractVersion": null
+        "contractVersion": "v7"
       },
       "dryRun": {
         "supported": false,
@@ -10337,7 +10427,7 @@ stdout:
       "summary": "Move an issue to a workflow state",
       "json": {
         "supported": true,
-        "contractVersion": null
+        "contractVersion": "v7"
       },
       "dryRun": {
         "supported": false,
@@ -10379,7 +10469,7 @@ stdout:
       "summary": "Set an issue priority",
       "json": {
         "supported": true,
-        "contractVersion": null
+        "contractVersion": "v7"
       },
       "dryRun": {
         "supported": false,
@@ -10652,7 +10742,7 @@ stdout:
       "summary": "Archive a notification",
       "json": {
         "supported": true,
-        "contractVersion": null
+        "contractVersion": "v7"
       },
       "dryRun": {
         "supported": false,
@@ -10715,7 +10805,7 @@ stdout:
       "summary": "Mark a notification as read",
       "json": {
         "supported": true,
-        "contractVersion": null
+        "contractVersion": "v7"
       },
       "dryRun": {
         "supported": false,
@@ -10736,7 +10826,7 @@ stdout:
       "summary": "Create a project",
       "json": {
         "supported": true,
-        "contractVersion": null
+        "contractVersion": "v7"
       },
       "dryRun": {
         "supported": true,
@@ -10778,7 +10868,7 @@ stdout:
       "summary": "Add a label to a project",
       "json": {
         "supported": true,
-        "contractVersion": null
+        "contractVersion": "v7"
       },
       "dryRun": {
         "supported": false,
@@ -10799,7 +10889,7 @@ stdout:
       "summary": "Remove a label from a project",
       "json": {
         "supported": true,
-        "contractVersion": null
+        "contractVersion": "v7"
       },
       "dryRun": {
         "supported": false,
@@ -11135,7 +11225,7 @@ stdout:
       "summary": "Create a webhook",
       "json": {
         "supported": true,
-        "contractVersion": null
+        "contractVersion": "v7"
       },
       "dryRun": {
         "supported": true,
@@ -11156,7 +11246,7 @@ stdout:
       "summary": "Delete a webhook",
       "json": {
         "supported": true,
-        "contractVersion": null
+        "contractVersion": "v7"
       },
       "dryRun": {
         "supported": true,
@@ -11198,7 +11288,7 @@ stdout:
       "summary": "Update a webhook",
       "json": {
         "supported": true,
-        "contractVersion": null
+        "contractVersion": "v7"
       },
       "dryRun": {
         "supported": true,

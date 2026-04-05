@@ -11,6 +11,7 @@ export type AutomationContractVersion =
   | "v4"
   | "v5"
   | "v6"
+  | "v7"
 export type DryRunContractVersion = "v1"
 export type StdinPolicyVersion = "v1"
 export type CapabilitiesSchemaVersion = "v1" | "v2"
@@ -293,6 +294,7 @@ const AUTOMATION_CONTRACT_VERSIONS = [
   "v4",
   "v5",
   "v6",
+  "v7",
 ] as const
 const DRY_RUN_CONTRACT_VERSIONS = ["v1"] as const
 const STDIN_POLICY_VERSIONS = ["v1"] as const
@@ -1640,7 +1642,7 @@ const COMMANDS: CapabilityRegistryEntry[] = [
   {
     path: "linear issue assign",
     summary: "Assign an issue",
-    json: jsonOptional(),
+    json: jsonContract("v7"),
     dryRun: dryRunContract(null),
     stdin: stdin("none"),
     confirmationBypass: null,
@@ -1703,7 +1705,7 @@ const COMMANDS: CapabilityRegistryEntry[] = [
   {
     path: "linear issue estimate",
     summary: "Set an issue estimate",
-    json: jsonOptional(),
+    json: jsonContract("v7"),
     dryRun: dryRunContract(null),
     stdin: stdin("none"),
     confirmationBypass: null,
@@ -1724,7 +1726,7 @@ const COMMANDS: CapabilityRegistryEntry[] = [
   {
     path: "linear issue move",
     summary: "Move an issue to a workflow state",
-    json: jsonOptional(),
+    json: jsonContract("v7"),
     dryRun: dryRunContract(null),
     stdin: stdin("none"),
     confirmationBypass: null,
@@ -1744,7 +1746,7 @@ const COMMANDS: CapabilityRegistryEntry[] = [
   {
     path: "linear issue priority",
     summary: "Set an issue priority",
-    json: jsonOptional(),
+    json: jsonContract("v7"),
     dryRun: dryRunContract(null),
     stdin: stdin("none"),
     confirmationBypass: null,
@@ -1886,7 +1888,7 @@ const COMMANDS: CapabilityRegistryEntry[] = [
   {
     path: "linear notification archive",
     summary: "Archive a notification",
-    json: jsonOptional(),
+    json: jsonContract("v7"),
     dryRun: dryRunContract(null),
     stdin: stdin("none"),
     confirmationBypass: null,
@@ -1919,7 +1921,7 @@ const COMMANDS: CapabilityRegistryEntry[] = [
   {
     path: "linear notification read",
     summary: "Mark a notification as read",
-    json: jsonOptional(),
+    json: jsonContract("v7"),
     dryRun: dryRunContract(null),
     stdin: stdin("none"),
     confirmationBypass: null,
@@ -1932,7 +1934,7 @@ const COMMANDS: CapabilityRegistryEntry[] = [
   {
     path: "linear project create",
     summary: "Create a project",
-    json: jsonOptional(),
+    json: jsonContract("v7"),
     dryRun: dryRunContract("v1"),
     stdin: stdin("none"),
     confirmationBypass: null,
@@ -1952,7 +1954,7 @@ const COMMANDS: CapabilityRegistryEntry[] = [
   {
     path: "linear project label add",
     summary: "Add a label to a project",
-    json: jsonOptional(),
+    json: jsonContract("v7"),
     dryRun: dryRunContract(null),
     stdin: stdin("none"),
     confirmationBypass: null,
@@ -1965,7 +1967,7 @@ const COMMANDS: CapabilityRegistryEntry[] = [
   {
     path: "linear project label remove",
     summary: "Remove a label from a project",
-    json: jsonOptional(),
+    json: jsonContract("v7"),
     dryRun: dryRunContract(null),
     stdin: stdin("none"),
     confirmationBypass: null,
@@ -2133,7 +2135,7 @@ const COMMANDS: CapabilityRegistryEntry[] = [
   {
     path: "linear webhook create",
     summary: "Create a webhook",
-    json: jsonOptional(),
+    json: jsonContract("v7"),
     dryRun: dryRunContract("v1"),
     stdin: stdin("none"),
     confirmationBypass: null,
@@ -2143,7 +2145,7 @@ const COMMANDS: CapabilityRegistryEntry[] = [
   {
     path: "linear webhook delete",
     summary: "Delete a webhook",
-    json: jsonOptional(),
+    json: jsonContract("v7"),
     dryRun: dryRunContract("v1"),
     stdin: stdin("none"),
     confirmationBypass: "--yes",
@@ -2163,7 +2165,7 @@ const COMMANDS: CapabilityRegistryEntry[] = [
   {
     path: "linear webhook update",
     summary: "Update a webhook",
-    json: jsonOptional(),
+    json: jsonContract("v7"),
     dryRun: dryRunContract("v1"),
     stdin: stdin("none"),
     confirmationBypass: null,
@@ -2754,6 +2756,7 @@ function buildAutomationTier() {
     v4: [] as string[],
     v5: [] as string[],
     v6: [] as string[],
+    v7: [] as string[],
   }
 
   for (const command of CAPABILITY_COMMANDS) {
@@ -2764,7 +2767,7 @@ function buildAutomationTier() {
   }
 
   return {
-    latestVersion: "v6" as const,
+    latestVersion: "v7" as const,
     byVersion,
     allCommands: [
       ...byVersion.v1,
@@ -2773,6 +2776,7 @@ function buildAutomationTier() {
       ...byVersion.v4,
       ...byVersion.v5,
       ...byVersion.v6,
+      ...byVersion.v7,
     ],
   }
 }
@@ -2830,7 +2834,7 @@ function buildCapabilitiesPayloadBase(
     },
     contractVersions: {
       automation: {
-        latest: "v6",
+        latest: "v7",
         supported: [...AUTOMATION_CONTRACT_VERSIONS],
       },
       dryRunPreview: {

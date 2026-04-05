@@ -228,6 +228,7 @@ non-goals:
 - v4 additions: `team list/view --json`, `user list/view --json`, `workflow-state list/view --json`, `label list --json`, `project-label list --json`
 - v5 additions: `initiative list/view --json`, `project-update list --json`, `initiative-update list --json`
 - v6 additions: `resolve issue/team/workflow-state/user/label --json`
+- v7 additions: `issue assign/estimate/move/priority --json`, `notification read/archive --json`, `project create --json`, `project label add/remove --json`, `webhook create/update/delete --json`
 - out of scope: non-JSON terminal output, `linear api`, and other `--json` commands that are not listed above
 
 the contract fixes top-level success payload shapes and requires machine-readable failure payloads for the automation tier. see [docs/json-contracts.md](docs/json-contracts.md) for the full contract, compatibility rules, and example payloads. that guarantee also covers parser and argument validation failures when the command is in machine-readable mode, whether that is the default or was requested explicitly with `--json`.
