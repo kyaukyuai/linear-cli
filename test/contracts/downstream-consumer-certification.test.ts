@@ -148,7 +148,7 @@ function assertObjectArrayPayload(
   }
 }
 
-Deno.test("downstream consumer certification mirrors startup discovery assumptions", async () => {
+Deno.test("downstream consumer certification certifies the startup-monitor consumer suite", async () => {
   const defaultPayload = await runLinearJsonCommand(["capabilities", "--json"])
   const compatV1Payload = await runLinearJsonCommand([
     "capabilities",
@@ -205,9 +205,70 @@ Deno.test("downstream consumer certification mirrors startup discovery assumptio
 
   assertEquals(writeSemantics.timeoutAware, true)
   assertEquals(writeSemantics.timeoutReconciliation, true)
+
+  await withMockServer(
+    [{
+      queryName: "GetIssuesForState",
+      response: {
+        data: {
+          issues: {
+            nodes: [
+              {
+                id: "issue-123",
+                identifier: "ENG-123",
+                title: "Stabilize auth expiry handling",
+                url:
+                  "https://linear.app/test/issue/ENG-123/stabilize-auth-expiry-handling",
+                dueDate: null,
+                priority: 2,
+                priorityLabel: "High",
+                estimate: 3,
+                assignee: null,
+                state: {
+                  id: "state-1",
+                  name: "In Progress",
+                  color: "#f87462",
+                },
+                team: {
+                  id: "team-1",
+                  key: "ENG",
+                  name: "Engineering",
+                },
+                project: null,
+                cycle: null,
+                parent: null,
+                labels: { nodes: [] },
+                updatedAt: "2026-04-05T00:00:00Z",
+              },
+            ],
+            pageInfo: {
+              hasNextPage: false,
+              endCursor: null,
+            },
+          },
+        },
+      },
+    }],
+    async (env) => {
+      const issueListPayload = await runLinearJsonCommand(["issue", "list"], {
+        LINEAR_TEAM_ID: "ENG",
+        LINEAR_ISSUE_SORT: "priority",
+        ...env,
+      })
+
+      assertObjectArrayPayload(issueListPayload, [
+        "id",
+        "identifier",
+        "title",
+        "stateName",
+        "state",
+        "team",
+      ])
+    },
+  )
 })
 
-Deno.test("downstream consumer certification preserves resolve, preview, and apply flow", async () => {
+Deno.test("downstream consumer certification certifies the control-plane consumer suite", async () => {
   await withMockServer(
     [
       {
@@ -348,7 +409,7 @@ Deno.test("downstream consumer certification preserves resolve, preview, and app
   )
 })
 
-Deno.test("downstream consumer certification captures team list diagnostics migration path", async () => {
+Deno.test("downstream consumer certification certifies the diagnostics consumer suite", async () => {
   await withMockServer(
     [{
       queryName: "GetTeams",
@@ -411,7 +472,7 @@ Deno.test("downstream consumer certification captures team list diagnostics migr
   )
 })
 
-Deno.test("downstream consumer certification distinguishes native v3 startup and explicit compatibility paths", async () => {
+Deno.test("downstream consumer certification certifies the compatibility-bridge consumer suite", async () => {
   const defaultCapabilities = await runLinearJsonCommand([
     "capabilities",
     "--json",
@@ -544,7 +605,7 @@ Deno.test("downstream consumer certification distinguishes native v3 startup and
   )
 })
 
-Deno.test("downstream consumer certification preserves machine-actionable recovery semantics", async () => {
+Deno.test("downstream consumer certification certifies the timeout-recovery consumer suite", async () => {
   const output = await withMockServer(
     [
       {
