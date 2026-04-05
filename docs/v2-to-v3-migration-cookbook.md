@@ -27,6 +27,14 @@ If a consumer breaks on upgrade, it is usually because it assumed one of these o
 - if a human wants prompt-driven debugging, use `--profile human-debug --interactive`
 - if a command already defaults to JSON, keep `--json` only when you want to be explicit
 
+## Surface Classes
+
+Use `linear capabilities` to classify each command before building on it:
+
+- `stable`: primary startup-contract or automation-contract surface
+- `partial`: shared dry-run or machine-readable helper surface without a full stable contract
+- `escape_hatch`: raw GraphQL or human/debug-only surface
+
 ## Startup Discovery
 
 ### Capabilities discovery

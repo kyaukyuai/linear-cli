@@ -254,6 +254,11 @@ Deno.test("contract docs describe capabilities compat modes that match runtime o
     "timeout-recovery consumer suite",
     "docs/json-contracts.md must document the timeout recovery certification suite",
   )
+  assertStringIncludes(
+    docs,
+    "`stable`, `partial`, and `escape_hatch`",
+    "docs/json-contracts.md must document runtime surface classes",
+  )
 
   const docsDefaultIssueUpdate = findCapabilityCommand(
     defaultExample,
@@ -272,8 +277,16 @@ Deno.test("contract docs describe capabilities compat modes that match runtime o
     "output" in runtimeDefaultIssueUpdate,
   )
   assertEquals(
+    "surface" in docsDefaultIssueUpdate,
+    "surface" in runtimeDefaultIssueUpdate,
+  )
+  assertEquals(
     "writeSemantics" in docsDefaultIssueUpdate,
     "writeSemantics" in runtimeDefaultIssueUpdate,
+  )
+  assertEquals(
+    "surfaceClasses" in defaultExample,
+    "surfaceClasses" in runtimeDefault,
   )
 
   const docsCompatV1IssueUpdate = findCapabilityCommand(
@@ -337,6 +350,11 @@ Deno.test("agent-facing source docs keep default v2 and legacy v1 capabilities e
       "v2-to-v3-migration-cookbook.md",
       `${sourceDoc.label} must reference the v2-to-v3 migration cookbook`,
     )
+    assertStringIncludes(
+      text,
+      "escape hatch",
+      `${sourceDoc.label} must classify escape-hatch surfaces explicitly`,
+    )
   }
 
   const readme = await Deno.readTextFile(readmePath)
@@ -367,6 +385,11 @@ Deno.test("v3 migration guide keeps explicit diagnostics migration examples", as
     "linear capabilities --compat v1",
     "docs/agent-only-v3.md must keep the legacy startup compatibility example",
   )
+  assertStringIncludes(
+    v3Guide,
+    "`stable`: startup-contract or automation-contract surfaces",
+    "docs/agent-only-v3.md must classify stable surfaces",
+  )
 })
 
 Deno.test("agent-native docs keep named consumer certification suites", async () => {
@@ -387,6 +410,12 @@ Deno.test("agent-native docs keep named consumer certification suites", async ()
       `docs/agent-first.md must document ${suiteName}`,
     )
   }
+
+  assertStringIncludes(
+    runbook,
+    "`partial`: shared dry-run or machine-readable helper surface without a full stable contract.",
+    "docs/agent-first.md must classify partial surfaces",
+  )
 })
 
 Deno.test("migration cookbook keeps copy-pasteable v2-to-v3 examples", async () => {
@@ -399,6 +428,7 @@ Deno.test("migration cookbook keeps copy-pasteable v2-to-v3 examples", async () 
       "linear issue view ENG-123 --text",
       "linear --profile human-debug --interactive issue create",
       "linear issue update ENG-123 --state done --dry-run --json",
+      "## Surface Classes",
     ]
   ) {
     assertStringIncludes(

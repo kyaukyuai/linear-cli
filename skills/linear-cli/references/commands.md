@@ -52,4 +52,10 @@ Use the CLI in this order when possible:
 
 Use `--text` only for human-readable terminal inspection. Use `--profile human-debug --interactive` only for human/debug prompt flows. Agent-controlled runs should pass explicit flags, stdin, or file inputs.
 
+Treat command surfaces in three buckets:
+
+- `stable`: startup-contract or automation-contract surface
+- `partial`: shared dry-run or machine-readable helper surface without a full stable contract
+- `escape_hatch`: raw API or explicit human/debug-only escape hatch fallback
+
 For concrete v2-to-v3 command fixes, see [../../docs/v2-to-v3-migration-cookbook.md](../../docs/v2-to-v3-migration-cookbook.md).

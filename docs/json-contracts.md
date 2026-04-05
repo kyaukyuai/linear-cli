@@ -59,6 +59,20 @@ Default top-level shape from `linear capabilities`:
     "latestSchemaVersion": "v2",
     "supportedSchemaVersions": ["v1", "v2"]
   },
+  "surfaceClasses": {
+    "stable": {
+      "description": "Stable machine-readable surface with an explicit startup or automation contract.",
+      "callerExpectation": "Safe to treat as the primary agent-runtime path."
+    },
+    "partial": {
+      "description": "Agent-usable surface with some structured semantics, but without a full stable apply/read contract.",
+      "callerExpectation": "Use only when the stable surface does not cover the workflow yet."
+    },
+    "escape_hatch": {
+      "description": "Intentionally raw or human/debug-oriented path outside the stable agent-runtime contract.",
+      "callerExpectation": "Use only as an explicit fallback."
+    }
+  },
   "contractVersions": {
     "automation": {
       "latest": "v7",
@@ -107,6 +121,10 @@ Default top-level shape from `linear capabilities`:
     {
       "path": "linear issue update",
       "summary": "Update an issue",
+      "surface": {
+        "class": "stable",
+        "reason": "automation_contract"
+      },
       "json": {
         "supported": true,
         "contractVersion": "v1"
@@ -183,6 +201,9 @@ Default top-level shape from `linear capabilities`:
 
 Rules:
 
+- `surfaceClasses` defines the runtime meaning of `stable`, `partial`, and `escape_hatch`
+- `commands[].surface.class` tells callers whether a command is part of the primary stable runtime, a partial helper surface, or an explicit escape hatch
+- `commands[].surface.reason` explains whether that classification comes from the startup contract, automation contract, shared preview contract, best-effort machine-readable behavior, raw API behavior, or human/debug-only behavior
 - `automationTier.byVersion` lists the commands added by each automation contract version
 - `automationTier.allCommands` is the cumulative ordered list of all automation-tier commands
 - `json.contractVersion` is `null` when a command supports `--json` but is outside the stable automation tier
@@ -202,6 +223,12 @@ Release-gated downstream certification currently covers:
 - timeout-recovery consumer suite: `linear issue update --comment --json` with machine-actionable timeout reconciliation
 
 Automation-tier commands outside those certified flows still follow the compatibility rules above, but they remain best-effort until a downstream certification test is added.
+
+Surface classification guidance:
+
+- `stable` covers `linear capabilities` and commands whose `json.contractVersion` is non-null
+- `partial` covers agent-usable helpers such as shared `--dry-run` adopters that do not yet expose a full stable apply contract
+- `escape_hatch` covers `linear api`, human/debug text paths, and other intentionally non-uniform surfaces
 
 - `schema.arguments` and `schema.flags` are additive, machine-readable hints for the main positional arguments and high-value flags agents should care about first
 - representative arguments and flags may now include `repeatable`, `variadic`, `aliases`, `deprecated`, `defaultValue`, and per-parameter `examples` when those details materially affect command composition

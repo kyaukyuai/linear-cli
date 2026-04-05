@@ -48,6 +48,12 @@ Release-gated downstream certification currently covers these real consumer flow
 
 Commands outside those certified flows remain best-effort until they are promoted into the certification suite.
 
+Use the capabilities surface classification directly when choosing a path:
+
+- `stable`: primary agent-runtime surface. use by default.
+- `partial`: shared dry-run or machine-readable helper surface without a full stable contract. use only when the stable surface does not cover the workflow yet.
+- `escape_hatch`: raw or human/debug-only path. use only with explicit intent, never for startup-critical or automation-tier assumptions.
+
 ## 2. Resolve References Before Mutating
 
 When a caller needs canonical IDs, current-team fallback, or ambiguity data, resolve references explicitly before preview/apply:
