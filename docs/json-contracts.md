@@ -204,10 +204,11 @@ Release-gated downstream certification currently covers:
 Automation-tier commands outside those certified flows still follow the compatibility rules above, but they remain best-effort until a downstream certification test is added.
 
 - `schema.arguments` and `schema.flags` are additive, machine-readable hints for the main positional arguments and high-value flags agents should care about first
+- representative arguments and flags may now include `repeatable`, `variadic`, `aliases`, `deprecated`, `defaultValue`, and per-parameter `examples` when those details materially affect command composition
 - `schema.requiredInputs` and `schema.optionalInputs` summarize the curated primary execution path without forcing callers to re-derive requiredness from each entry
 - `schema.defaults` lists curated defaults and fallbacks that matter for agents, such as `--compat = v2`, current-issue resolution, and timeout fallback behavior
-- `schema.resolutions` explains when the CLI resolves an input from current issue context, configured team context, or environment-backed defaults
-- `schema.constraints` lists high-value machine-readable relationships such as `requires_all_of` and `conflicts_with`
+- `schema.resolutions` explains when the CLI resolves an input from current issue context, configured team context, environment-backed defaults, or implicit stdin; `sources` calls out the concrete config key, env var, git branch, jj trailer, stdin path, or internal default involved
+- `schema.constraints` lists high-value machine-readable relationships such as `requires_all_of`, `requires_any_of`, `conflicts_with`, and `at_most_one_of`
 - `schema.inputModes` is a subset of `flags`, `stdin`, and `file`
 - `schema.stdinTargets` and `schema.fileTargets` describe which semantic field each non-flag input channel populates
 - `schema.examples` provides canonical argv examples that agents can adapt without scraping prose help output

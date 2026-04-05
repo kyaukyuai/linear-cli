@@ -377,14 +377,88 @@ stdout:
       },
       "schema": {
         "coverage": "curated_primary_inputs",
-        "arguments": [],
-        "flags": [],
+        "arguments": [
+          {
+            "name": "query",
+            "required": false,
+            "valueType": "string",
+            "description": "Inline GraphQL query text. Omit to provide the query on stdin.",
+            "allowedValues": null,
+            "examples": [
+              "query { viewer { id } }"
+            ]
+          }
+        ],
+        "flags": [
+          {
+            "name": "--variable",
+            "short": null,
+            "required": false,
+            "valueType": "string",
+            "description": "Variable in key=value format (coerces booleans, numbers, null; @file reads from path).",
+            "allowedValues": null,
+            "repeatable": true,
+            "examples": [
+              "teamId=ENG",
+              "limit=10",
+              "input=@payload.json"
+            ]
+          },
+          {
+            "name": "--variables-json",
+            "short": null,
+            "required": false,
+            "valueType": "string",
+            "description": "JSON object of variables merged with --variable values.",
+            "allowedValues": null,
+            "examples": [
+              "{\\\\"teamId\\\\":\\\\"ENG\\\\",\\\\"limit\\\\":10}"
+            ]
+          },
+          {
+            "name": "--paginate",
+            "short": null,
+            "required": false,
+            "valueType": "boolean",
+            "description": "Auto-paginate a single connection field using cursor pagination.",
+            "allowedValues": null
+          },
+          {
+            "name": "--silent",
+            "short": null,
+            "required": false,
+            "valueType": "boolean",
+            "description": "Suppress response output while still surfacing non-zero exits.",
+            "allowedValues": null
+          }
+        ],
         "inputModes": [
           "flags",
           "stdin"
         ],
         "requiredInputs": [],
-        "optionalInputs": [],
+        "optionalInputs": [
+          {
+            "source": "argument",
+            "name": "query"
+          },
+          {
+            "source": "flag",
+            "name": "--variable"
+          },
+          {
+            "source": "flag",
+            "name": "--variables-json"
+          },
+          {
+            "source": "flag",
+            "name": "--paginate"
+          },
+          {
+            "source": "flag",
+            "name": "--silent"
+          }
+        ],
         "defaults": [],
         "resolutions": [],
         "constraints": [],
@@ -491,7 +565,20 @@ stdout:
                 "value": "v2",
                 "description": null
               }
+            ],
+            "defaultValue": "v2",
+            "examples": [
+              "v1",
+              "v2"
             ]
+          },
+          {
+            "name": "--text",
+            "short": null,
+            "required": false,
+            "valueType": "boolean",
+            "description": "Output a human-readable capabilities summary.",
+            "allowedValues": null
           }
         ],
         "inputModes": [
@@ -506,6 +593,10 @@ stdout:
           {
             "source": "flag",
             "name": "--compat"
+          },
+          {
+            "source": "flag",
+            "name": "--text"
           }
         ],
         "defaults": [
@@ -516,7 +607,21 @@ stdout:
             "value": "v2"
           }
         ],
-        "resolutions": [],
+        "resolutions": [
+          {
+            "source": "flag",
+            "name": "--compat",
+            "strategy": "env_or_internal_default",
+            "description": "The schema defaults to the richer v2 capabilities shape when omitted.",
+            "sources": [
+              {
+                "kind": "internal_default",
+                "name": "default capabilities schema",
+                "value": "v2"
+              }
+            ]
+          }
+        ],
         "constraints": [
           {
             "source": {
@@ -531,6 +636,20 @@ stdout:
               }
             ],
             "reason": "--compat only applies to the machine-readable JSON output."
+          },
+          {
+            "kind": "at_most_one_of",
+            "targets": [
+              {
+                "source": "flag",
+                "name": "--json"
+              },
+              {
+                "source": "flag",
+                "name": "--text"
+              }
+            ],
+            "reason": "Choose either machine-readable JSON output or the human-readable summary."
           }
         ],
         "stdinTargets": [],
@@ -691,7 +810,14 @@ stdout:
             "source": "flag",
             "name": "--team",
             "strategy": "configured_team_context",
-            "description": "If omitted, the CLI resolves the team from the configured current team."
+            "description": "If omitted, the CLI resolves the team from the configured current team.",
+            "sources": [
+              {
+                "kind": "config",
+                "name": "currentTeam",
+                "value": null
+              }
+            ]
           }
         ],
         "constraints": [],
@@ -824,7 +950,14 @@ stdout:
             "source": "flag",
             "name": "--team",
             "strategy": "configured_team_context",
-            "description": "If omitted, the CLI resolves the team from the configured current team."
+            "description": "If omitted, the CLI resolves the team from the configured current team.",
+            "sources": [
+              {
+                "kind": "config",
+                "name": "currentTeam",
+                "value": null
+              }
+            ]
           }
         ],
         "constraints": [],
@@ -957,7 +1090,14 @@ stdout:
             "source": "flag",
             "name": "--team",
             "strategy": "configured_team_context",
-            "description": "If omitted, the CLI resolves the team from the configured current team."
+            "description": "If omitted, the CLI resolves the team from the configured current team.",
+            "sources": [
+              {
+                "kind": "config",
+                "name": "currentTeam",
+                "value": null
+              }
+            ]
           }
         ],
         "constraints": [],
@@ -1349,7 +1489,13 @@ stdout:
             "required": false,
             "valueType": "document_id",
             "description": "One or more document IDs.",
-            "allowedValues": null
+            "allowedValues": null,
+            "repeatable": true,
+            "variadic": true,
+            "examples": [
+              "doc_123",
+              "doc_456"
+            ]
           }
         ],
         "flags": [
@@ -2507,7 +2653,19 @@ stdout:
             "source": "argument",
             "name": "issue",
             "strategy": "current_issue_context",
-            "description": "If omitted, the CLI resolves the current issue from the branch name or jj trailer."
+            "description": "If omitted, the CLI resolves the current issue from the branch name or jj trailer.",
+            "sources": [
+              {
+                "kind": "git_branch",
+                "name": "issue identifier from branch name",
+                "value": null
+              },
+              {
+                "kind": "jj_trailer",
+                "name": "linear issue trailer",
+                "value": null
+              }
+            ]
           }
         ],
         "constraints": [],
@@ -2607,7 +2765,10 @@ stdout:
             "required": false,
             "valueType": "string",
             "description": "Inline comment body. Omit to provide it with --body, --body-file, or stdin.",
-            "allowedValues": null
+            "allowedValues": null,
+            "examples": [
+              "Ready for review"
+            ]
           }
         ],
         "flags": [
@@ -2650,6 +2811,27 @@ stdout:
             "valueType": "path",
             "description": "Read the comment body from a file.",
             "allowedValues": null
+          },
+          {
+            "name": "--attach",
+            "short": "-a",
+            "required": false,
+            "valueType": "path",
+            "description": "Attach a file to the comment.",
+            "allowedValues": null,
+            "repeatable": true,
+            "examples": [
+              "review.md",
+              "screenshot.png"
+            ]
+          },
+          {
+            "name": "--interactive",
+            "short": "-i",
+            "required": false,
+            "valueType": "boolean",
+            "description": "Enable interactive body prompts when the runtime allows them.",
+            "allowedValues": null
           }
         ],
         "inputModes": [
@@ -2686,6 +2868,14 @@ stdout:
           {
             "source": "flag",
             "name": "--body-file"
+          },
+          {
+            "source": "flag",
+            "name": "--attach"
+          },
+          {
+            "source": "flag",
+            "name": "--interactive"
           }
         ],
         "defaults": [
@@ -2707,13 +2897,50 @@ stdout:
             "source": "argument",
             "name": "issue",
             "strategy": "current_issue_context",
-            "description": "If omitted, the CLI resolves the current issue from the branch name or jj trailer."
+            "description": "If omitted, the CLI resolves the current issue from the branch name or jj trailer.",
+            "sources": [
+              {
+                "kind": "git_branch",
+                "name": "issue identifier from branch name",
+                "value": null
+              },
+              {
+                "kind": "jj_trailer",
+                "name": "linear issue trailer",
+                "value": null
+              }
+            ]
+          },
+          {
+            "source": "stdin",
+            "name": "stdin",
+            "strategy": "implicit_input_source",
+            "description": "If no explicit body is provided, the CLI reads stdin before falling back to interactive prompts.",
+            "sources": [
+              {
+                "kind": "stdin",
+                "name": "implicit text body",
+                "value": null
+              }
+            ]
           },
           {
             "source": "flag",
             "name": "--timeout-ms",
             "strategy": "env_or_internal_default",
-            "description": "The timeout falls back to LINEAR_WRITE_TIMEOUT_MS or the built-in default when omitted."
+            "description": "The timeout falls back to LINEAR_WRITE_TIMEOUT_MS or the built-in default when omitted.",
+            "sources": [
+              {
+                "kind": "env",
+                "name": "LINEAR_WRITE_TIMEOUT_MS",
+                "value": null
+              },
+              {
+                "kind": "internal_default",
+                "name": "execution profile write timeout",
+                "value": null
+              }
+            ]
           }
         ],
         "constraints": [
@@ -2730,6 +2957,36 @@ stdout:
               }
             ],
             "reason": "Choose either inline body text or a body file for the comment content."
+          },
+          {
+            "kind": "requires_any_of",
+            "targets": [
+              {
+                "source": "argument",
+                "name": "body"
+              },
+              {
+                "source": "flag",
+                "name": "--body"
+              },
+              {
+                "source": "flag",
+                "name": "--body-file"
+              },
+              {
+                "source": "flag",
+                "name": "--attach"
+              },
+              {
+                "source": "stdin",
+                "name": "stdin"
+              },
+              {
+                "source": "flag",
+                "name": "--interactive"
+              }
+            ],
+            "reason": "Comment creation needs explicit content, an attachment, stdin, or interactive mode."
           }
         ],
         "stdinTargets": [
@@ -2925,7 +3182,19 @@ stdout:
             "source": "flag",
             "name": "--timeout-ms",
             "strategy": "env_or_internal_default",
-            "description": "The timeout falls back to LINEAR_WRITE_TIMEOUT_MS or the built-in default when omitted."
+            "description": "The timeout falls back to LINEAR_WRITE_TIMEOUT_MS or the built-in default when omitted.",
+            "sources": [
+              {
+                "kind": "env",
+                "name": "LINEAR_WRITE_TIMEOUT_MS",
+                "value": null
+              },
+              {
+                "kind": "internal_default",
+                "name": "execution profile write timeout",
+                "value": null
+              }
+            ]
           }
         ],
         "constraints": [
@@ -3055,6 +3324,71 @@ stdout:
             "allowedValues": null
           },
           {
+            "name": "--start",
+            "short": null,
+            "required": false,
+            "valueType": "boolean",
+            "description": "Start the issue after creation.",
+            "allowedValues": null
+          },
+          {
+            "name": "--assignee",
+            "short": "-a",
+            "required": false,
+            "valueType": "user_ref",
+            "description": "Assign the issue to self or another user by username or name.",
+            "allowedValues": null,
+            "examples": [
+              "self",
+              "alice"
+            ]
+          },
+          {
+            "name": "--due-date",
+            "short": null,
+            "required": false,
+            "valueType": "string",
+            "description": "Due date of the issue.",
+            "allowedValues": null,
+            "examples": [
+              "2026-04-30"
+            ]
+          },
+          {
+            "name": "--parent",
+            "short": null,
+            "required": false,
+            "valueType": "issue_ref",
+            "description": "Parent issue identifier.",
+            "allowedValues": null,
+            "examples": [
+              "ENG-100"
+            ]
+          },
+          {
+            "name": "--priority",
+            "short": "-p",
+            "required": false,
+            "valueType": "integer",
+            "description": "Priority of the issue (1-4, descending priority).",
+            "allowedValues": null,
+            "examples": [
+              1,
+              3
+            ]
+          },
+          {
+            "name": "--estimate",
+            "short": null,
+            "required": false,
+            "valueType": "integer",
+            "description": "Points estimate of the issue.",
+            "allowedValues": null,
+            "examples": [
+              3
+            ]
+          },
+          {
             "name": "--title",
             "short": "-t",
             "required": true,
@@ -3068,7 +3402,10 @@ stdout:
             "required": true,
             "valueType": "team_key",
             "description": "Team key.",
-            "allowedValues": null
+            "allowedValues": null,
+            "examples": [
+              "ENG"
+            ]
           },
           {
             "name": "--description",
@@ -3076,7 +3413,10 @@ stdout:
             "required": false,
             "valueType": "string",
             "description": "Issue description as inline text.",
-            "allowedValues": null
+            "allowedValues": null,
+            "examples": [
+              "Backfill the migration guide"
+            ]
           },
           {
             "name": "--description-file",
@@ -3084,7 +3424,34 @@ stdout:
             "required": false,
             "valueType": "path",
             "description": "Read the description from a file.",
-            "allowedValues": null
+            "allowedValues": null,
+            "examples": [
+              "issue.md"
+            ]
+          },
+          {
+            "name": "--label",
+            "short": "-l",
+            "required": false,
+            "valueType": "label_ref",
+            "description": "Issue label associated with the issue.",
+            "allowedValues": null,
+            "repeatable": true,
+            "examples": [
+              "bug",
+              "customer"
+            ]
+          },
+          {
+            "name": "--project",
+            "short": null,
+            "required": false,
+            "valueType": "project_ref",
+            "description": "Name or slug ID of the project with the issue.",
+            "allowedValues": null,
+            "examples": [
+              "auth-refresh"
+            ]
           },
           {
             "name": "--state",
@@ -3092,6 +3459,73 @@ stdout:
             "required": false,
             "valueType": "state_ref",
             "description": "Initial workflow state.",
+            "allowedValues": null,
+            "examples": [
+              "started",
+              "done"
+            ]
+          },
+          {
+            "name": "--milestone",
+            "short": null,
+            "required": false,
+            "valueType": "milestone_ref",
+            "description": "Name of the project milestone.",
+            "allowedValues": null,
+            "examples": [
+              "Phase 1"
+            ]
+          },
+          {
+            "name": "--cycle",
+            "short": null,
+            "required": false,
+            "valueType": "cycle_ref",
+            "description": "Cycle name, number, or active.",
+            "allowedValues": null,
+            "examples": [
+              "active",
+              "42"
+            ]
+          },
+          {
+            "name": "--text",
+            "short": null,
+            "required": false,
+            "valueType": "boolean",
+            "description": "Output human-readable text.",
+            "allowedValues": null
+          },
+          {
+            "name": "--no-pager",
+            "short": null,
+            "required": false,
+            "valueType": "boolean",
+            "description": "Compatibility flag; issue create does not page output.",
+            "allowedValues": null
+          },
+          {
+            "name": "--no-use-default-template",
+            "short": null,
+            "required": false,
+            "valueType": "boolean",
+            "description": "Do not use the default issue template.",
+            "allowedValues": null
+          },
+          {
+            "name": "--interactive",
+            "short": "-i",
+            "required": false,
+            "valueType": "boolean",
+            "description": "Enable interactive prompts and editor flow.",
+            "allowedValues": null
+          },
+          {
+            "name": "--no-interactive",
+            "short": null,
+            "required": false,
+            "valueType": "boolean",
+            "description": "Compatibility flag for explicit non-interactive execution.",
             "allowedValues": null
           }
         ],
@@ -3125,6 +3559,30 @@ stdout:
           },
           {
             "source": "flag",
+            "name": "--start"
+          },
+          {
+            "source": "flag",
+            "name": "--assignee"
+          },
+          {
+            "source": "flag",
+            "name": "--due-date"
+          },
+          {
+            "source": "flag",
+            "name": "--parent"
+          },
+          {
+            "source": "flag",
+            "name": "--priority"
+          },
+          {
+            "source": "flag",
+            "name": "--estimate"
+          },
+          {
+            "source": "flag",
             "name": "--description"
           },
           {
@@ -3133,7 +3591,43 @@ stdout:
           },
           {
             "source": "flag",
+            "name": "--label"
+          },
+          {
+            "source": "flag",
+            "name": "--project"
+          },
+          {
+            "source": "flag",
             "name": "--state"
+          },
+          {
+            "source": "flag",
+            "name": "--milestone"
+          },
+          {
+            "source": "flag",
+            "name": "--cycle"
+          },
+          {
+            "source": "flag",
+            "name": "--text"
+          },
+          {
+            "source": "flag",
+            "name": "--no-pager"
+          },
+          {
+            "source": "flag",
+            "name": "--no-use-default-template"
+          },
+          {
+            "source": "flag",
+            "name": "--interactive"
+          },
+          {
+            "source": "flag",
+            "name": "--no-interactive"
           }
         ],
         "defaults": [
@@ -3149,7 +3643,32 @@ stdout:
             "source": "flag",
             "name": "--timeout-ms",
             "strategy": "env_or_internal_default",
-            "description": "The timeout falls back to LINEAR_WRITE_TIMEOUT_MS or the built-in default when omitted."
+            "description": "The timeout falls back to LINEAR_WRITE_TIMEOUT_MS or the built-in default when omitted.",
+            "sources": [
+              {
+                "kind": "env",
+                "name": "LINEAR_WRITE_TIMEOUT_MS",
+                "value": null
+              },
+              {
+                "kind": "internal_default",
+                "name": "execution profile write timeout",
+                "value": null
+              }
+            ]
+          },
+          {
+            "source": "stdin",
+            "name": "stdin",
+            "strategy": "implicit_input_source",
+            "description": "If no explicit description is provided, the CLI reads stdin before entering interactive editor flow.",
+            "sources": [
+              {
+                "kind": "stdin",
+                "name": "implicit description text",
+                "value": null
+              }
+            ]
           }
         ],
         "constraints": [
@@ -3166,6 +3685,20 @@ stdout:
               }
             ],
             "reason": "Choose either inline description text or a description file."
+          },
+          {
+            "kind": "at_most_one_of",
+            "targets": [
+              {
+                "source": "flag",
+                "name": "--json"
+              },
+              {
+                "source": "flag",
+                "name": "--text"
+              }
+            ],
+            "reason": "Choose either machine-readable JSON output or human-readable text."
           }
         ],
         "stdinTargets": [
@@ -3380,7 +3913,19 @@ stdout:
             "source": "flag",
             "name": "--timeout-ms",
             "strategy": "env_or_internal_default",
-            "description": "The timeout falls back to LINEAR_WRITE_TIMEOUT_MS or the built-in default when omitted."
+            "description": "The timeout falls back to LINEAR_WRITE_TIMEOUT_MS or the built-in default when omitted.",
+            "sources": [
+              {
+                "kind": "env",
+                "name": "LINEAR_WRITE_TIMEOUT_MS",
+                "value": null
+              },
+              {
+                "kind": "internal_default",
+                "name": "execution profile write timeout",
+                "value": null
+              }
+            ]
           }
         ],
         "constraints": [],
@@ -3649,7 +4194,43 @@ stdout:
             "required": false,
             "valueType": "state_ref",
             "description": "Filter by workflow state.",
-            "allowedValues": null
+            "allowedValues": [
+              {
+                "value": "triage",
+                "description": null
+              },
+              {
+                "value": "backlog",
+                "description": null
+              },
+              {
+                "value": "unstarted",
+                "description": null
+              },
+              {
+                "value": "started",
+                "description": null
+              },
+              {
+                "value": "completed",
+                "description": null
+              },
+              {
+                "value": "canceled",
+                "description": null
+              }
+            ],
+            "repeatable": true,
+            "aliases": [
+              "todo"
+            ],
+            "defaultValue": [
+              "unstarted"
+            ],
+            "examples": [
+              "started",
+              "completed"
+            ]
           },
           {
             "name": "--query",
@@ -3657,7 +4238,10 @@ stdout:
             "required": false,
             "valueType": "string",
             "description": "Filter by search text.",
-            "allowedValues": null
+            "allowedValues": null,
+            "examples": [
+              "auth refresh"
+            ]
           },
           {
             "name": "--team",
@@ -3665,7 +4249,10 @@ stdout:
             "required": false,
             "valueType": "team_key",
             "description": "Resolve team-scoped filters and aliases.",
-            "allowedValues": null
+            "allowedValues": null,
+            "examples": [
+              "ENG"
+            ]
           },
           {
             "name": "--parent",
@@ -3673,6 +4260,172 @@ stdout:
             "required": false,
             "valueType": "issue_ref",
             "description": "Filter child issues of a parent issue.",
+            "allowedValues": null,
+            "examples": [
+              "ENG-123"
+            ]
+          },
+          {
+            "name": "--assignee",
+            "short": null,
+            "required": false,
+            "valueType": "user_ref",
+            "description": "Filter by assignee username.",
+            "allowedValues": null,
+            "examples": [
+              "alice"
+            ]
+          },
+          {
+            "name": "--all-assignees",
+            "short": "-A",
+            "required": false,
+            "valueType": "boolean",
+            "description": "Show issues for all assignees.",
+            "allowedValues": null
+          },
+          {
+            "name": "--unassigned",
+            "short": "-U",
+            "required": false,
+            "valueType": "boolean",
+            "description": "Show only unassigned issues.",
+            "allowedValues": null
+          },
+          {
+            "name": "--sort",
+            "short": null,
+            "required": false,
+            "valueType": "string",
+            "description": "Sort order.",
+            "allowedValues": [
+              {
+                "value": "manual",
+                "description": null
+              },
+              {
+                "value": "priority",
+                "description": null
+              }
+            ],
+            "examples": [
+              "manual",
+              "priority"
+            ]
+          },
+          {
+            "name": "--project",
+            "short": null,
+            "required": false,
+            "valueType": "project_ref",
+            "description": "Filter by project name.",
+            "allowedValues": null,
+            "examples": [
+              "auth-refresh"
+            ]
+          },
+          {
+            "name": "--cycle",
+            "short": null,
+            "required": false,
+            "valueType": "cycle_ref",
+            "description": "Filter by cycle name, number, or active.",
+            "allowedValues": null,
+            "examples": [
+              "active",
+              "42"
+            ]
+          },
+          {
+            "name": "--milestone",
+            "short": null,
+            "required": false,
+            "valueType": "milestone_ref",
+            "description": "Filter by project milestone name.",
+            "allowedValues": null,
+            "examples": [
+              "Phase 1"
+            ]
+          },
+          {
+            "name": "--priority",
+            "short": null,
+            "required": false,
+            "valueType": "integer",
+            "description": "Filter by priority.",
+            "allowedValues": null,
+            "examples": [
+              0,
+              1,
+              4
+            ]
+          },
+          {
+            "name": "--updated-before",
+            "short": null,
+            "required": false,
+            "valueType": "string",
+            "description": "Filter issues updated before an ISO date or datetime.",
+            "allowedValues": null,
+            "examples": [
+              "2026-04-01T00:00:00Z"
+            ]
+          },
+          {
+            "name": "--due-before",
+            "short": null,
+            "required": false,
+            "valueType": "string",
+            "description": "Filter issues due before a date.",
+            "allowedValues": null,
+            "examples": [
+              "2026-04-30"
+            ]
+          },
+          {
+            "name": "--limit",
+            "short": null,
+            "required": false,
+            "valueType": "integer",
+            "description": "Maximum number of issues to fetch.",
+            "allowedValues": null,
+            "defaultValue": 50,
+            "examples": [
+              0,
+              50,
+              200
+            ]
+          },
+          {
+            "name": "--text",
+            "short": null,
+            "required": false,
+            "valueType": "boolean",
+            "description": "Output human-readable text.",
+            "allowedValues": null
+          },
+          {
+            "name": "--web",
+            "short": "-w",
+            "required": false,
+            "valueType": "boolean",
+            "description": "Open the list in the web browser.",
+            "allowedValues": null
+          },
+          {
+            "name": "--app",
+            "short": "-a",
+            "required": false,
+            "valueType": "boolean",
+            "description": "Open the list in Linear.app.",
+            "allowedValues": null
+          },
+          {
+            "name": "--no-pager",
+            "short": null,
+            "required": false,
+            "valueType": "boolean",
+            "description": "Disable automatic paging.",
             "allowedValues": null
           }
         ],
@@ -3708,10 +4461,104 @@ stdout:
           {
             "source": "flag",
             "name": "--parent"
+          },
+          {
+            "source": "flag",
+            "name": "--assignee"
+          },
+          {
+            "source": "flag",
+            "name": "--all-assignees"
+          },
+          {
+            "source": "flag",
+            "name": "--unassigned"
+          },
+          {
+            "source": "flag",
+            "name": "--sort"
+          },
+          {
+            "source": "flag",
+            "name": "--project"
+          },
+          {
+            "source": "flag",
+            "name": "--cycle"
+          },
+          {
+            "source": "flag",
+            "name": "--milestone"
+          },
+          {
+            "source": "flag",
+            "name": "--priority"
+          },
+          {
+            "source": "flag",
+            "name": "--updated-before"
+          },
+          {
+            "source": "flag",
+            "name": "--due-before"
+          },
+          {
+            "source": "flag",
+            "name": "--limit"
+          },
+          {
+            "source": "flag",
+            "name": "--text"
+          },
+          {
+            "source": "flag",
+            "name": "--web"
+          },
+          {
+            "source": "flag",
+            "name": "--app"
+          },
+          {
+            "source": "flag",
+            "name": "--no-pager"
           }
         ],
-        "defaults": [],
-        "resolutions": [],
+        "defaults": [
+          {
+            "source": "flag",
+            "name": "--state",
+            "description": "Defaults to unstarted issues when no state filter is provided.",
+            "value": [
+              "unstarted"
+            ]
+          },
+          {
+            "source": "flag",
+            "name": "--limit",
+            "description": "Defaults to 50 issues when omitted.",
+            "value": 50
+          }
+        ],
+        "resolutions": [
+          {
+            "source": "flag",
+            "name": "--sort",
+            "strategy": "config_or_env_default",
+            "description": "If omitted, the CLI resolves issue sort from config or LINEAR_ISSUE_SORT.",
+            "sources": [
+              {
+                "kind": "config",
+                "name": "issue_sort",
+                "value": null
+              },
+              {
+                "kind": "env",
+                "name": "LINEAR_ISSUE_SORT",
+                "value": null
+              }
+            ]
+          }
+        ],
         "constraints": [
           {
             "source": {
@@ -3726,6 +4573,20 @@ stdout:
               }
             ],
             "reason": "--all-states already includes every state, so it cannot be combined with --state."
+          },
+          {
+            "kind": "at_most_one_of",
+            "targets": [
+              {
+                "source": "flag",
+                "name": "--json"
+              },
+              {
+                "source": "flag",
+                "name": "--text"
+              }
+            ],
+            "reason": "Choose either machine-readable JSON output or human-readable text."
           }
         ],
         "stdinTargets": [],
@@ -3988,7 +4849,19 @@ stdout:
             "source": "argument",
             "name": "issue",
             "strategy": "current_issue_context",
-            "description": "If omitted, the CLI resolves the current issue from the branch name or jj trailer."
+            "description": "If omitted, the CLI resolves the current issue from the branch name or jj trailer.",
+            "sources": [
+              {
+                "kind": "git_branch",
+                "name": "issue identifier from branch name",
+                "value": null
+              },
+              {
+                "kind": "jj_trailer",
+                "name": "linear issue trailer",
+                "value": null
+              }
+            ]
           }
         ],
         "constraints": [],
@@ -4646,7 +5519,19 @@ stdout:
             "source": "argument",
             "name": "issue",
             "strategy": "current_issue_context",
-            "description": "If omitted, the CLI resolves the current issue from the branch name or jj trailer."
+            "description": "If omitted, the CLI resolves the current issue from the branch name or jj trailer.",
+            "sources": [
+              {
+                "kind": "git_branch",
+                "name": "issue identifier from branch name",
+                "value": null
+              },
+              {
+                "kind": "jj_trailer",
+                "name": "linear issue trailer",
+                "value": null
+              }
+            ]
           }
         ],
         "constraints": [],
@@ -4779,7 +5664,19 @@ stdout:
             "source": "argument",
             "name": "issue",
             "strategy": "current_issue_context",
-            "description": "If omitted, the CLI resolves the current issue from the branch name or jj trailer."
+            "description": "If omitted, the CLI resolves the current issue from the branch name or jj trailer.",
+            "sources": [
+              {
+                "kind": "git_branch",
+                "name": "issue identifier from branch name",
+                "value": null
+              },
+              {
+                "kind": "jj_trailer",
+                "name": "linear issue trailer",
+                "value": null
+              }
+            ]
           }
         ],
         "constraints": [],
@@ -4894,20 +5791,69 @@ stdout:
             "allowedValues": null
           },
           {
-            "name": "--state",
-            "short": null,
+            "name": "--assignee",
+            "short": "-a",
             "required": false,
-            "valueType": "state_ref",
-            "description": "Target workflow state.",
-            "allowedValues": null
+            "valueType": "user_ref",
+            "description": "Assign the issue to self or another user by username or name.",
+            "allowedValues": null,
+            "examples": [
+              "self",
+              "alice"
+            ]
           },
           {
-            "name": "--comment",
+            "name": "--due-date",
             "short": null,
             "required": false,
             "valueType": "string",
-            "description": "Comment to append after the update.",
+            "description": "Due date of the issue.",
+            "allowedValues": null,
+            "examples": [
+              "2026-04-30"
+            ]
+          },
+          {
+            "name": "--clear-due-date",
+            "short": null,
+            "required": false,
+            "valueType": "boolean",
+            "description": "Clear the due date on the issue.",
             "allowedValues": null
+          },
+          {
+            "name": "--parent",
+            "short": null,
+            "required": false,
+            "valueType": "issue_ref",
+            "description": "Parent issue identifier.",
+            "allowedValues": null,
+            "examples": [
+              "ENG-100"
+            ]
+          },
+          {
+            "name": "--priority",
+            "short": "-p",
+            "required": false,
+            "valueType": "integer",
+            "description": "Priority of the issue (1-4, descending priority).",
+            "allowedValues": null,
+            "examples": [
+              1,
+              3
+            ]
+          },
+          {
+            "name": "--estimate",
+            "short": null,
+            "required": false,
+            "valueType": "integer",
+            "description": "Points estimate of the issue.",
+            "allowedValues": null,
+            "examples": [
+              3
+            ]
           },
           {
             "name": "--description",
@@ -4915,7 +5861,21 @@ stdout:
             "required": false,
             "valueType": "string",
             "description": "Replacement description text.",
-            "allowedValues": null
+            "allowedValues": null,
+            "examples": [
+              "Ship after QA signoff"
+            ]
+          },
+          {
+            "name": "--comment",
+            "short": null,
+            "required": false,
+            "valueType": "string",
+            "description": "Comment to append after the update.",
+            "allowedValues": null,
+            "examples": [
+              "Shipped"
+            ]
           },
           {
             "name": "--description-file",
@@ -4923,7 +5883,107 @@ stdout:
             "required": false,
             "valueType": "path",
             "description": "Read the replacement description from a file.",
+            "allowedValues": null,
+            "examples": [
+              "issue.md"
+            ]
+          },
+          {
+            "name": "--label",
+            "short": "-l",
+            "required": false,
+            "valueType": "label_ref",
+            "description": "Issue label associated with the issue.",
+            "allowedValues": null,
+            "repeatable": true,
+            "examples": [
+              "bug",
+              "customer"
+            ]
+          },
+          {
+            "name": "--team",
+            "short": null,
+            "required": false,
+            "valueType": "team_key",
+            "description": "Team associated with the issue when resolving project or workflow state.",
+            "allowedValues": null,
+            "examples": [
+              "ENG"
+            ]
+          },
+          {
+            "name": "--project",
+            "short": null,
+            "required": false,
+            "valueType": "project_ref",
+            "description": "Name or slug ID of the project with the issue.",
+            "allowedValues": null,
+            "examples": [
+              "auth-refresh"
+            ]
+          },
+          {
+            "name": "--state",
+            "short": null,
+            "required": false,
+            "valueType": "state_ref",
+            "description": "Target workflow state.",
+            "allowedValues": null,
+            "examples": [
+              "done",
+              "started"
+            ]
+          },
+          {
+            "name": "--milestone",
+            "short": null,
+            "required": false,
+            "valueType": "milestone_ref",
+            "description": "Name of the project milestone.",
+            "allowedValues": null,
+            "examples": [
+              "Phase 1"
+            ]
+          },
+          {
+            "name": "--cycle",
+            "short": null,
+            "required": false,
+            "valueType": "cycle_ref",
+            "description": "Cycle name, number, or active.",
+            "allowedValues": null,
+            "examples": [
+              "active",
+              "42"
+            ]
+          },
+          {
+            "name": "--no-interactive",
+            "short": null,
+            "required": false,
+            "valueType": "boolean",
+            "description": "Compatibility flag for explicit non-interactive execution.",
             "allowedValues": null
+          },
+          {
+            "name": "--text",
+            "short": null,
+            "required": false,
+            "valueType": "boolean",
+            "description": "Output human-readable text.",
+            "allowedValues": null
+          },
+          {
+            "name": "--title",
+            "short": "-t",
+            "required": false,
+            "valueType": "string",
+            "description": "Title of the issue.",
+            "allowedValues": null,
+            "examples": [
+              "Backfill migration cookbook"
+            ]
           }
         ],
         "inputModes": [
@@ -4951,11 +6011,27 @@ stdout:
           },
           {
             "source": "flag",
-            "name": "--state"
+            "name": "--assignee"
           },
           {
             "source": "flag",
-            "name": "--comment"
+            "name": "--due-date"
+          },
+          {
+            "source": "flag",
+            "name": "--clear-due-date"
+          },
+          {
+            "source": "flag",
+            "name": "--parent"
+          },
+          {
+            "source": "flag",
+            "name": "--priority"
+          },
+          {
+            "source": "flag",
+            "name": "--estimate"
           },
           {
             "source": "flag",
@@ -4963,7 +6039,47 @@ stdout:
           },
           {
             "source": "flag",
+            "name": "--comment"
+          },
+          {
+            "source": "flag",
             "name": "--description-file"
+          },
+          {
+            "source": "flag",
+            "name": "--label"
+          },
+          {
+            "source": "flag",
+            "name": "--team"
+          },
+          {
+            "source": "flag",
+            "name": "--project"
+          },
+          {
+            "source": "flag",
+            "name": "--state"
+          },
+          {
+            "source": "flag",
+            "name": "--milestone"
+          },
+          {
+            "source": "flag",
+            "name": "--cycle"
+          },
+          {
+            "source": "flag",
+            "name": "--no-interactive"
+          },
+          {
+            "source": "flag",
+            "name": "--text"
+          },
+          {
+            "source": "flag",
+            "name": "--title"
           }
         ],
         "defaults": [
@@ -4985,16 +6101,67 @@ stdout:
             "source": "argument",
             "name": "issue",
             "strategy": "current_issue_context",
-            "description": "If omitted, the CLI resolves the current issue from the branch name or jj trailer."
+            "description": "If omitted, the CLI resolves the current issue from the branch name or jj trailer.",
+            "sources": [
+              {
+                "kind": "git_branch",
+                "name": "issue identifier from branch name",
+                "value": null
+              },
+              {
+                "kind": "jj_trailer",
+                "name": "linear issue trailer",
+                "value": null
+              }
+            ]
+          },
+          {
+            "source": "stdin",
+            "name": "stdin",
+            "strategy": "implicit_input_source",
+            "description": "If no explicit description is provided, the CLI reads stdin before using interactive editor flow.",
+            "sources": [
+              {
+                "kind": "stdin",
+                "name": "implicit description text",
+                "value": null
+              }
+            ]
           },
           {
             "source": "flag",
             "name": "--timeout-ms",
             "strategy": "env_or_internal_default",
-            "description": "The timeout falls back to LINEAR_WRITE_TIMEOUT_MS or the built-in default when omitted."
+            "description": "The timeout falls back to LINEAR_WRITE_TIMEOUT_MS or the built-in default when omitted.",
+            "sources": [
+              {
+                "kind": "env",
+                "name": "LINEAR_WRITE_TIMEOUT_MS",
+                "value": null
+              },
+              {
+                "kind": "internal_default",
+                "name": "execution profile write timeout",
+                "value": null
+              }
+            ]
           }
         ],
         "constraints": [
+          {
+            "source": {
+              "source": "flag",
+              "name": "--due-date"
+            },
+            "kind": "conflicts_with",
+            "targets": [
+              {
+                "source": "flag",
+                "name": "--clear-due-date"
+              }
+            ],
+            "reason": "Choose either a replacement due date or --clear-due-date."
+          },
           {
             "source": {
               "source": "flag",
@@ -5008,6 +6175,20 @@ stdout:
               }
             ],
             "reason": "Choose either inline replacement description text or a description file."
+          },
+          {
+            "kind": "at_most_one_of",
+            "targets": [
+              {
+                "source": "flag",
+                "name": "--json"
+              },
+              {
+                "source": "flag",
+                "name": "--text"
+              }
+            ],
+            "reason": "Choose either machine-readable JSON output or human-readable text."
           }
         ],
         "stdinTargets": [
@@ -5220,7 +6401,19 @@ stdout:
             "source": "argument",
             "name": "issue",
             "strategy": "current_issue_context",
-            "description": "If omitted, the CLI resolves the current issue from the branch name or jj trailer."
+            "description": "If omitted, the CLI resolves the current issue from the branch name or jj trailer.",
+            "sources": [
+              {
+                "kind": "git_branch",
+                "name": "issue identifier from branch name",
+                "value": null
+              },
+              {
+                "kind": "jj_trailer",
+                "name": "linear issue trailer",
+                "value": null
+              }
+            ]
           }
         ],
         "constraints": [],
@@ -6016,7 +7209,19 @@ stdout:
             "source": "flag",
             "name": "--timeout-ms",
             "strategy": "env_or_internal_default",
-            "description": "The timeout falls back to LINEAR_WRITE_TIMEOUT_MS or the built-in default when omitted."
+            "description": "The timeout falls back to LINEAR_WRITE_TIMEOUT_MS or the built-in default when omitted.",
+            "sources": [
+              {
+                "kind": "env",
+                "name": "LINEAR_WRITE_TIMEOUT_MS",
+                "value": null
+              },
+              {
+                "kind": "internal_default",
+                "name": "execution profile write timeout",
+                "value": null
+              }
+            ]
           }
         ],
         "constraints": [],
@@ -6375,7 +7580,19 @@ stdout:
             "source": "flag",
             "name": "--timeout-ms",
             "strategy": "env_or_internal_default",
-            "description": "The timeout falls back to LINEAR_WRITE_TIMEOUT_MS or the built-in default when omitted."
+            "description": "The timeout falls back to LINEAR_WRITE_TIMEOUT_MS or the built-in default when omitted.",
+            "sources": [
+              {
+                "kind": "env",
+                "name": "LINEAR_WRITE_TIMEOUT_MS",
+                "value": null
+              },
+              {
+                "kind": "internal_default",
+                "name": "execution profile write timeout",
+                "value": null
+              }
+            ]
           }
         ],
         "constraints": [],
@@ -6489,12 +7706,145 @@ stdout:
             "valueType": "boolean",
             "description": "Preview the command without mutating Linear.",
             "allowedValues": null
+          },
+          {
+            "name": "--name",
+            "short": "-n",
+            "required": true,
+            "valueType": "string",
+            "description": "Project name.",
+            "allowedValues": null,
+            "examples": [
+              "Auth refresh"
+            ]
+          },
+          {
+            "name": "--description",
+            "short": "-d",
+            "required": false,
+            "valueType": "string",
+            "description": "Project description.",
+            "allowedValues": null,
+            "examples": [
+              "Agent-native rollout work"
+            ]
+          },
+          {
+            "name": "--team",
+            "short": "-t",
+            "required": true,
+            "valueType": "team_key",
+            "description": "Team key.",
+            "allowedValues": null,
+            "repeatable": true,
+            "examples": [
+              "ENG",
+              "PLATFORM"
+            ]
+          },
+          {
+            "name": "--lead",
+            "short": "-l",
+            "required": false,
+            "valueType": "user_ref",
+            "description": "Project lead (username, email, or @me).",
+            "allowedValues": null,
+            "examples": [
+              "@me",
+              "alice@example.com"
+            ]
+          },
+          {
+            "name": "--status",
+            "short": "-s",
+            "required": false,
+            "valueType": "string",
+            "description": "Project status.",
+            "allowedValues": [
+              {
+                "value": "planned",
+                "description": null
+              },
+              {
+                "value": "started",
+                "description": null
+              },
+              {
+                "value": "paused",
+                "description": null
+              },
+              {
+                "value": "completed",
+                "description": null
+              },
+              {
+                "value": "canceled",
+                "description": null
+              },
+              {
+                "value": "backlog",
+                "description": null
+              }
+            ],
+            "examples": [
+              "started"
+            ]
+          },
+          {
+            "name": "--start-date",
+            "short": null,
+            "required": false,
+            "valueType": "string",
+            "description": "Start date (YYYY-MM-DD).",
+            "allowedValues": null,
+            "examples": [
+              "2026-04-01"
+            ]
+          },
+          {
+            "name": "--target-date",
+            "short": null,
+            "required": false,
+            "valueType": "string",
+            "description": "Target completion date (YYYY-MM-DD).",
+            "allowedValues": null,
+            "examples": [
+              "2026-04-30"
+            ]
+          },
+          {
+            "name": "--initiative",
+            "short": null,
+            "required": false,
+            "valueType": "string",
+            "description": "Add to initiative immediately by ID, slug, or name.",
+            "allowedValues": null,
+            "examples": [
+              "roadmap-2026"
+            ]
+          },
+          {
+            "name": "--interactive",
+            "short": "-i",
+            "required": false,
+            "valueType": "boolean",
+            "description": "Enable interactive prompts.",
+            "allowedValues": null
           }
         ],
         "inputModes": [
           "flags"
         ],
-        "requiredInputs": [],
+        "requiredInputs": [
+          {
+            "source": "flag",
+            "name": "--name"
+          },
+          {
+            "source": "flag",
+            "name": "--team"
+          }
+        ],
         "optionalInputs": [
           {
             "source": "flag",
@@ -6503,6 +7853,34 @@ stdout:
           {
             "source": "flag",
             "name": "--dry-run"
+          },
+          {
+            "source": "flag",
+            "name": "--description"
+          },
+          {
+            "source": "flag",
+            "name": "--lead"
+          },
+          {
+            "source": "flag",
+            "name": "--status"
+          },
+          {
+            "source": "flag",
+            "name": "--start-date"
+          },
+          {
+            "source": "flag",
+            "name": "--target-date"
+          },
+          {
+            "source": "flag",
+            "name": "--initiative"
+          },
+          {
+            "source": "flag",
+            "name": "--interactive"
           }
         ],
         "defaults": [],
@@ -6633,6 +8011,29 @@ stdout:
             "valueType": "boolean",
             "description": "Skip the confirmation prompt.",
             "allowedValues": null
+          },
+          {
+            "name": "--interactive",
+            "short": "-i",
+            "required": false,
+            "valueType": "boolean",
+            "description": "Enable interactive confirmation.",
+            "allowedValues": null
+          },
+          {
+            "name": "--force",
+            "short": "-f",
+            "required": false,
+            "valueType": "boolean",
+            "description": "Deprecated alias for --yes.",
+            "allowedValues": null,
+            "aliases": [
+              "--yes"
+            ],
+            "deprecated": {
+              "note": "Deprecated alias for --yes.",
+              "replacement": "--yes"
+            }
           }
         ],
         "inputModes": [
@@ -6652,11 +8053,42 @@ stdout:
           {
             "source": "flag",
             "name": "--yes"
+          },
+          {
+            "source": "flag",
+            "name": "--interactive"
+          },
+          {
+            "source": "flag",
+            "name": "--force"
           }
         ],
         "defaults": [],
         "resolutions": [],
-        "constraints": [],
+        "constraints": [
+          {
+            "kind": "requires_any_of",
+            "targets": [
+              {
+                "source": "flag",
+                "name": "--yes"
+              },
+              {
+                "source": "flag",
+                "name": "--force"
+              },
+              {
+                "source": "flag",
+                "name": "--interactive"
+              },
+              {
+                "source": "flag",
+                "name": "--dry-run"
+              }
+            ],
+            "reason": "Project deletion requires explicit confirmation bypass, explicit interactive mode, or dry-run preview."
+          }
+        ],
         "stdinTargets": [],
         "fileTargets": [],
         "examples": []
@@ -7537,7 +8969,10 @@ stdout:
             "required": false,
             "valueType": "issue_ref",
             "description": "Issue identifier. Defaults to the current issue from VCS context.",
-            "allowedValues": null
+            "allowedValues": null,
+            "examples": [
+              "ENG-123"
+            ]
           }
         ],
         "flags": [
@@ -7577,7 +9012,19 @@ stdout:
             "source": "argument",
             "name": "issue",
             "strategy": "current_issue_context",
-            "description": "If omitted, the CLI resolves the current issue from the branch name or jj trailer."
+            "description": "If omitted, the CLI resolves the current issue from the branch name or jj trailer.",
+            "sources": [
+              {
+                "kind": "git_branch",
+                "name": "issue identifier from branch name",
+                "value": null
+              },
+              {
+                "kind": "jj_trailer",
+                "name": "linear issue trailer",
+                "value": null
+              }
+            ]
           }
         ],
         "constraints": [],
@@ -7752,7 +9199,14 @@ stdout:
             "source": "flag",
             "name": "--team",
             "strategy": "configured_team_context",
-            "description": "If omitted, the CLI resolves the team from the configured current team."
+            "description": "If omitted, the CLI resolves the team from the configured current team.",
+            "sources": [
+              {
+                "kind": "config",
+                "name": "currentTeam",
+                "value": null
+              }
+            ]
           }
         ],
         "constraints": [],
@@ -7907,7 +9361,14 @@ stdout:
             "source": "argument",
             "name": "team",
             "strategy": "configured_team_context",
-            "description": "If omitted, the CLI resolves the team from the configured current team."
+            "description": "If omitted, the CLI resolves the team from the configured current team.",
+            "sources": [
+              {
+                "kind": "config",
+                "name": "currentTeam",
+                "value": null
+              }
+            ]
           }
         ],
         "constraints": [],
@@ -8212,7 +9673,14 @@ stdout:
             "source": "flag",
             "name": "--team",
             "strategy": "configured_team_context",
-            "description": "If omitted, the CLI resolves the team from the configured current team."
+            "description": "If omitted, the CLI resolves the team from the configured current team.",
+            "sources": [
+              {
+                "kind": "config",
+                "name": "currentTeam",
+                "value": null
+              }
+            ]
           }
         ],
         "constraints": [],
@@ -8474,7 +9942,14 @@ stdout:
             "source": "argument",
             "name": "team",
             "strategy": "configured_team_context",
-            "description": "If omitted, the CLI resolves the team from the configured current team."
+            "description": "If omitted, the CLI resolves the team from the configured current team.",
+            "sources": [
+              {
+                "kind": "config",
+                "name": "currentTeam",
+                "value": null
+              }
+            ]
           }
         ],
         "constraints": [],
@@ -8607,7 +10082,14 @@ stdout:
             "source": "argument",
             "name": "team",
             "strategy": "configured_team_context",
-            "description": "If omitted, the CLI resolves the team from the configured current team."
+            "description": "If omitted, the CLI resolves the team from the configured current team.",
+            "sources": [
+              {
+                "kind": "config",
+                "name": "currentTeam",
+                "value": null
+              }
+            ]
           }
         ],
         "constraints": [],

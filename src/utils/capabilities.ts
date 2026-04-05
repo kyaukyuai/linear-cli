@@ -20,8 +20,11 @@ export type CapabilitiesCompatibilityVersion = CapabilitiesSchemaVersion
 export type CapabilityStdinMode = "none" | "implicit_text" | "explicit_bulk"
 export type CapabilityInputMode = "flags" | "stdin" | "file"
 export type CapabilitySchemaCoverage = "curated_primary_inputs"
-export type CapabilityInputReferenceSource = "argument" | "flag"
-export type CapabilityLiteralValue = string | number | boolean
+export type CapabilityInputReferenceSource = "argument" | "flag" | "stdin"
+export type CapabilityScalarLiteralValue = string | number | boolean
+export type CapabilityLiteralValue =
+  | CapabilityScalarLiteralValue
+  | CapabilityScalarLiteralValue[]
 export type CapabilityValueType =
   | "boolean"
   | "string"
@@ -48,12 +51,25 @@ export type CapabilityAllowedValue = {
   description: string | null
 }
 
+export type CapabilityDeprecation = {
+  replacement: string | null
+  note: string
+}
+
+export type CapabilityParameterExampleValue = CapabilityLiteralValue
+
 export type CapabilityArgumentSchema = {
   name: string
   required: boolean
   valueType: CapabilityValueType
   description: string
   allowedValues: CapabilityAllowedValue[] | null
+  repeatable?: boolean
+  variadic?: boolean
+  aliases?: string[]
+  defaultValue?: CapabilityLiteralValue | null
+  examples?: CapabilityParameterExampleValue[]
+  deprecated?: CapabilityDeprecation | null
 }
 
 export type CapabilityFlagSchema = {
@@ -63,6 +79,12 @@ export type CapabilityFlagSchema = {
   valueType: CapabilityValueType
   description: string
   allowedValues: CapabilityAllowedValue[] | null
+  repeatable?: boolean
+  variadic?: boolean
+  aliases?: string[]
+  defaultValue?: CapabilityLiteralValue | null
+  examples?: CapabilityParameterExampleValue[]
+  deprecated?: CapabilityDeprecation | null
 }
 
 export type CapabilityInputReference = {
@@ -79,16 +101,37 @@ export type CapabilityInputResolutionStrategy =
   | "current_issue_context"
   | "configured_team_context"
   | "env_or_internal_default"
+  | "config_or_env_default"
+  | "implicit_input_source"
+
+export type CapabilityResolutionSourceKind =
+  | "config"
+  | "env"
+  | "git_branch"
+  | "jj_trailer"
+  | "stdin"
+  | "internal_default"
+
+export type CapabilityResolutionSource = {
+  kind: CapabilityResolutionSourceKind
+  name: string | null
+  value: CapabilityLiteralValue | null
+}
 
 export type CapabilityInputResolution = CapabilityInputReference & {
   strategy: CapabilityInputResolutionStrategy
   description: string
+  sources?: CapabilityResolutionSource[]
 }
 
-export type CapabilityConstraintKind = "conflicts_with" | "requires_all_of"
+export type CapabilityConstraintKind =
+  | "conflicts_with"
+  | "requires_all_of"
+  | "requires_any_of"
+  | "at_most_one_of"
 
 export type CapabilityConstraint = {
-  source: CapabilityInputReference
+  source?: CapabilityInputReference
   kind: CapabilityConstraintKind
   targets: CapabilityInputReference[]
   reason: string
@@ -305,11 +348,28 @@ const RELATION_TYPE_VALUES = [
   "related",
   "duplicate",
 ] as const
+const ISSUE_STATE_VALUES = [
+  "triage",
+  "backlog",
+  "unstarted",
+  "started",
+  "completed",
+  "canceled",
+] as const
 const INITIATIVE_STATUS_VALUES = [
   "active",
   "planned",
   "completed",
 ] as const
+const PROJECT_STATUS_VALUES = [
+  "planned",
+  "started",
+  "paused",
+  "completed",
+  "canceled",
+  "backlog",
+] as const
+const ISSUE_SORT_VALUES = ["manual", "priority"] as const
 
 function jsonContract(
   contractVersion: AutomationContractVersion | null,
@@ -354,12 +414,22 @@ function idempotency(
   return { category, notes }
 }
 
+type CapabilityParameterOptions = {
+  repeatable?: boolean
+  variadic?: boolean
+  aliases?: string[]
+  deprecated?: CapabilityDeprecation | null
+  defaultValue?: CapabilityLiteralValue | null
+  examples?: CapabilityParameterExampleValue[]
+}
+
 function argument(
   name: string,
   valueType: CapabilityValueType,
   description: string,
   required = true,
   allowedValues: CapabilityAllowedValue[] | null = null,
+  options: CapabilityParameterOptions = {},
 ): CapabilityArgumentSchema {
   return {
     name,
@@ -367,6 +437,18 @@ function argument(
     valueType,
     description,
     allowedValues,
+    ...(options.repeatable ? { repeatable: true } : {}),
+    ...(options.variadic ? { variadic: true } : {}),
+    ...(options.aliases != null && options.aliases.length > 0
+      ? { aliases: options.aliases }
+      : {}),
+    ...(options.deprecated != null ? { deprecated: options.deprecated } : {}),
+    ...(options.defaultValue != null
+      ? { defaultValue: options.defaultValue }
+      : {}),
+    ...(options.examples != null && options.examples.length > 0
+      ? { examples: options.examples }
+      : {}),
   }
 }
 
@@ -377,6 +459,7 @@ function flag(
   description: string,
   required = false,
   allowedValues: CapabilityAllowedValue[] | null = null,
+  options: CapabilityParameterOptions = {},
 ): CapabilityFlagSchema {
   return {
     name,
@@ -385,6 +468,18 @@ function flag(
     valueType,
     description,
     allowedValues,
+    ...(options.repeatable ? { repeatable: true } : {}),
+    ...(options.variadic ? { variadic: true } : {}),
+    ...(options.aliases != null && options.aliases.length > 0
+      ? { aliases: options.aliases }
+      : {}),
+    ...(options.deprecated != null ? { deprecated: options.deprecated } : {}),
+    ...(options.defaultValue != null
+      ? { defaultValue: options.defaultValue }
+      : {}),
+    ...(options.examples != null && options.examples.length > 0
+      ? { examples: options.examples }
+      : {}),
   }
 }
 
@@ -416,8 +511,15 @@ function inputResolution(
   name: string,
   strategy: CapabilityInputResolutionStrategy,
   description: string,
+  sources: CapabilityResolutionSource[] = [],
 ): CapabilityInputResolution {
-  return { source, name, strategy, description }
+  return {
+    source,
+    name,
+    strategy,
+    description,
+    ...(sources.length > 0 ? { sources } : {}),
+  }
 }
 
 function constraint(
@@ -427,6 +529,29 @@ function constraint(
   reason: string,
 ): CapabilityConstraint {
   return { source, kind, targets, reason }
+}
+
+function constraintGroup(
+  kind: CapabilityConstraintKind,
+  targets: CapabilityInputReference[],
+  reason: string,
+): CapabilityConstraint {
+  return { kind, targets, reason }
+}
+
+function deprecation(
+  note: string,
+  replacement: string | null = null,
+): CapabilityDeprecation {
+  return { note, replacement }
+}
+
+function resolutionSource(
+  kind: CapabilityResolutionSourceKind,
+  name: string | null,
+  value: CapabilityLiteralValue | null = null,
+): CapabilityResolutionSource {
+  return { kind, name, value }
 }
 
 function example(
@@ -520,8 +645,31 @@ const PARTIAL_SUCCESS_COMMANDS = new Set<string>([
 ])
 
 const PRIMARY_ARGUMENTS: Record<string, CapabilityArgumentSchema[]> = {
+  "linear api": [
+    argument(
+      "query",
+      "string",
+      "Inline GraphQL query text. Omit to provide the query on stdin.",
+      false,
+      null,
+      {
+        examples: ["query { viewer { id } }"],
+      },
+    ),
+  ],
   "linear document delete": [
-    argument("documentIds", "document_id", "One or more document IDs.", false),
+    argument(
+      "documentIds",
+      "document_id",
+      "One or more document IDs.",
+      false,
+      null,
+      {
+        variadic: true,
+        repeatable: true,
+        examples: ["doc_123", "doc_456"],
+      },
+    ),
   ],
   "linear document view": [
     argument("document", "document_id", "Document ID."),
@@ -546,6 +694,10 @@ const PRIMARY_ARGUMENTS: Record<string, CapabilityArgumentSchema[]> = {
       "string",
       "Inline comment body. Omit to provide it with --body, --body-file, or stdin.",
       false,
+      null,
+      {
+        examples: ["Ready for review"],
+      },
     ),
   ],
   "linear issue comment update": [
@@ -648,6 +800,10 @@ const PRIMARY_ARGUMENTS: Record<string, CapabilityArgumentSchema[]> = {
       "issue_ref",
       "Issue identifier. Defaults to the current issue from VCS context.",
       false,
+      null,
+      {
+        examples: ["ENG-123"],
+      },
     ),
   ],
   "linear resolve label": [
@@ -708,6 +864,43 @@ const PRIMARY_ARGUMENTS: Record<string, CapabilityArgumentSchema[]> = {
 }
 
 const FLAG_OVERRIDES: Record<string, CapabilityFlagSchema[]> = {
+  "linear api": [
+    flag(
+      "--variable",
+      null,
+      "string",
+      "Variable in key=value format (coerces booleans, numbers, null; @file reads from path).",
+      false,
+      null,
+      {
+        repeatable: true,
+        examples: ["teamId=ENG", "limit=10", "input=@payload.json"],
+      },
+    ),
+    flag(
+      "--variables-json",
+      null,
+      "string",
+      "JSON object of variables merged with --variable values.",
+      false,
+      null,
+      {
+        examples: ['{"teamId":"ENG","limit":10}'],
+      },
+    ),
+    flag(
+      "--paginate",
+      null,
+      "boolean",
+      "Auto-paginate a single connection field using cursor pagination.",
+    ),
+    flag(
+      "--silent",
+      null,
+      "boolean",
+      "Suppress response output while still surfacing non-zero exits.",
+    ),
+  ],
   "linear capabilities": [
     flag(
       "--compat",
@@ -716,6 +909,16 @@ const FLAG_OVERRIDES: Record<string, CapabilityFlagSchema[]> = {
       "Select the machine-readable capabilities schema version.",
       false,
       enumValues(CAPABILITIES_COMPATIBILITY_VERSIONS),
+      {
+        defaultValue: "v2",
+        examples: ["v1", "v2"],
+      },
+    ),
+    flag(
+      "--text",
+      null,
+      "boolean",
+      "Output a human-readable capabilities summary.",
     ),
   ],
   "linear cycle current": [
@@ -792,22 +995,171 @@ const FLAG_OVERRIDES: Record<string, CapabilityFlagSchema[]> = {
   "linear issue comment add": [
     flag("--body", null, "string", "Comment body as inline text."),
     flag("--body-file", null, "path", "Read the comment body from a file."),
+    flag(
+      "--attach",
+      "-a",
+      "path",
+      "Attach a file to the comment.",
+      false,
+      null,
+      {
+        repeatable: true,
+        examples: ["review.md", "screenshot.png"],
+      },
+    ),
+    flag(
+      "--interactive",
+      "-i",
+      "boolean",
+      "Enable interactive body prompts when the runtime allows them.",
+    ),
   ],
   "linear issue comment update": [
     flag("--body", null, "string", "Replacement comment body as inline text."),
     flag("--body-file", null, "path", "Read the replacement body from a file."),
   ],
   "linear issue create": [
+    flag("--start", null, "boolean", "Start the issue after creation."),
+    flag(
+      "--assignee",
+      "-a",
+      "user_ref",
+      "Assign the issue to self or another user by username or name.",
+      false,
+      null,
+      { examples: ["self", "alice"] },
+    ),
+    flag(
+      "--due-date",
+      null,
+      "string",
+      "Due date of the issue.",
+      false,
+      null,
+      { examples: ["2026-04-30"] },
+    ),
+    flag(
+      "--parent",
+      null,
+      "issue_ref",
+      "Parent issue identifier.",
+      false,
+      null,
+      { examples: ["ENG-100"] },
+    ),
+    flag(
+      "--priority",
+      "-p",
+      "integer",
+      "Priority of the issue (1-4, descending priority).",
+      false,
+      null,
+      { examples: [1, 3] },
+    ),
+    flag(
+      "--estimate",
+      null,
+      "integer",
+      "Points estimate of the issue.",
+      false,
+      null,
+      { examples: [3] },
+    ),
     flag("--title", "-t", "string", "Issue title.", true),
-    flag("--team", null, "team_key", "Team key.", true),
-    flag("--description", "-d", "string", "Issue description as inline text."),
+    flag("--team", null, "team_key", "Team key.", true, null, {
+      examples: ["ENG"],
+    }),
+    flag(
+      "--description",
+      "-d",
+      "string",
+      "Issue description as inline text.",
+      false,
+      null,
+      { examples: ["Backfill the migration guide"] },
+    ),
     flag(
       "--description-file",
       null,
       "path",
       "Read the description from a file.",
+      false,
+      null,
+      { examples: ["issue.md"] },
     ),
-    flag("--state", null, "state_ref", "Initial workflow state."),
+    flag(
+      "--label",
+      "-l",
+      "label_ref",
+      "Issue label associated with the issue.",
+      false,
+      null,
+      {
+        repeatable: true,
+        examples: ["bug", "customer"],
+      },
+    ),
+    flag(
+      "--project",
+      null,
+      "project_ref",
+      "Name or slug ID of the project with the issue.",
+      false,
+      null,
+      { examples: ["auth-refresh"] },
+    ),
+    flag(
+      "--state",
+      null,
+      "state_ref",
+      "Initial workflow state.",
+      false,
+      null,
+      { examples: ["started", "done"] },
+    ),
+    flag(
+      "--milestone",
+      null,
+      "milestone_ref",
+      "Name of the project milestone.",
+      false,
+      null,
+      { examples: ["Phase 1"] },
+    ),
+    flag(
+      "--cycle",
+      null,
+      "cycle_ref",
+      "Cycle name, number, or active.",
+      false,
+      null,
+      { examples: ["active", "42"] },
+    ),
+    flag("--text", null, "boolean", "Output human-readable text."),
+    flag(
+      "--no-pager",
+      null,
+      "boolean",
+      "Compatibility flag; issue create does not page output.",
+    ),
+    flag(
+      "--no-use-default-template",
+      null,
+      "boolean",
+      "Do not use the default issue template.",
+    ),
+    flag(
+      "--interactive",
+      "-i",
+      "boolean",
+      "Enable interactive prompts and editor flow.",
+    ),
+    flag(
+      "--no-interactive",
+      null,
+      "boolean",
+      "Compatibility flag for explicit non-interactive execution.",
+    ),
   ],
   "linear issue create-batch": [
     flag(
@@ -826,31 +1178,280 @@ const FLAG_OVERRIDES: Record<string, CapabilityFlagSchema[]> = {
       "boolean",
       "Include every workflow state while keeping assignee selection unchanged.",
     ),
-    flag("--state", "-s", "state_ref", "Filter by workflow state."),
-    flag("--query", null, "string", "Filter by search text."),
+    flag(
+      "--state",
+      "-s",
+      "state_ref",
+      "Filter by workflow state.",
+      false,
+      enumValues(ISSUE_STATE_VALUES),
+      {
+        repeatable: true,
+        defaultValue: ["unstarted"],
+        aliases: ["todo"],
+        examples: ["started", "completed"],
+      },
+    ),
+    flag("--query", null, "string", "Filter by search text.", false, null, {
+      examples: ["auth refresh"],
+    }),
     flag(
       "--team",
       null,
       "team_key",
       "Resolve team-scoped filters and aliases.",
+      false,
+      null,
+      { examples: ["ENG"] },
     ),
     flag(
       "--parent",
       null,
       "issue_ref",
       "Filter child issues of a parent issue.",
+      false,
+      null,
+      { examples: ["ENG-123"] },
     ),
+    flag(
+      "--assignee",
+      null,
+      "user_ref",
+      "Filter by assignee username.",
+      false,
+      null,
+      { examples: ["alice"] },
+    ),
+    flag("--all-assignees", "-A", "boolean", "Show issues for all assignees."),
+    flag("--unassigned", "-U", "boolean", "Show only unassigned issues."),
+    flag(
+      "--sort",
+      null,
+      "string",
+      "Sort order.",
+      false,
+      enumValues(ISSUE_SORT_VALUES),
+      {
+        examples: ["manual", "priority"],
+      },
+    ),
+    flag(
+      "--project",
+      null,
+      "project_ref",
+      "Filter by project name.",
+      false,
+      null,
+      { examples: ["auth-refresh"] },
+    ),
+    flag(
+      "--cycle",
+      null,
+      "cycle_ref",
+      "Filter by cycle name, number, or active.",
+      false,
+      null,
+      { examples: ["active", "42"] },
+    ),
+    flag(
+      "--milestone",
+      null,
+      "milestone_ref",
+      "Filter by project milestone name.",
+      false,
+      null,
+      { examples: ["Phase 1"] },
+    ),
+    flag(
+      "--priority",
+      null,
+      "integer",
+      "Filter by priority.",
+      false,
+      null,
+      { examples: [0, 1, 4] },
+    ),
+    flag(
+      "--updated-before",
+      null,
+      "string",
+      "Filter issues updated before an ISO date or datetime.",
+      false,
+      null,
+      { examples: ["2026-04-01T00:00:00Z"] },
+    ),
+    flag(
+      "--due-before",
+      null,
+      "string",
+      "Filter issues due before a date.",
+      false,
+      null,
+      { examples: ["2026-04-30"] },
+    ),
+    flag(
+      "--limit",
+      null,
+      "integer",
+      "Maximum number of issues to fetch.",
+      false,
+      null,
+      {
+        defaultValue: 50,
+        examples: [0, 50, 200],
+      },
+    ),
+    flag("--text", null, "boolean", "Output human-readable text."),
+    flag("--web", "-w", "boolean", "Open the list in the web browser."),
+    flag("--app", "-a", "boolean", "Open the list in Linear.app."),
+    flag("--no-pager", null, "boolean", "Disable automatic paging."),
   ],
   "linear issue update": [
-    flag("--state", null, "state_ref", "Target workflow state."),
-    flag("--comment", null, "string", "Comment to append after the update."),
-    flag("--description", "-d", "string", "Replacement description text."),
+    flag(
+      "--assignee",
+      "-a",
+      "user_ref",
+      "Assign the issue to self or another user by username or name.",
+      false,
+      null,
+      { examples: ["self", "alice"] },
+    ),
+    flag(
+      "--due-date",
+      null,
+      "string",
+      "Due date of the issue.",
+      false,
+      null,
+      { examples: ["2026-04-30"] },
+    ),
+    flag(
+      "--clear-due-date",
+      null,
+      "boolean",
+      "Clear the due date on the issue.",
+    ),
+    flag(
+      "--parent",
+      null,
+      "issue_ref",
+      "Parent issue identifier.",
+      false,
+      null,
+      { examples: ["ENG-100"] },
+    ),
+    flag(
+      "--priority",
+      "-p",
+      "integer",
+      "Priority of the issue (1-4, descending priority).",
+      false,
+      null,
+      { examples: [1, 3] },
+    ),
+    flag(
+      "--estimate",
+      null,
+      "integer",
+      "Points estimate of the issue.",
+      false,
+      null,
+      { examples: [3] },
+    ),
+    flag(
+      "--description",
+      "-d",
+      "string",
+      "Replacement description text.",
+      false,
+      null,
+      { examples: ["Ship after QA signoff"] },
+    ),
+    flag(
+      "--comment",
+      null,
+      "string",
+      "Comment to append after the update.",
+      false,
+      null,
+      { examples: ["Shipped"] },
+    ),
     flag(
       "--description-file",
       null,
       "path",
       "Read the replacement description from a file.",
+      false,
+      null,
+      { examples: ["issue.md"] },
     ),
+    flag(
+      "--label",
+      "-l",
+      "label_ref",
+      "Issue label associated with the issue.",
+      false,
+      null,
+      {
+        repeatable: true,
+        examples: ["bug", "customer"],
+      },
+    ),
+    flag(
+      "--team",
+      null,
+      "team_key",
+      "Team associated with the issue when resolving project or workflow state.",
+      false,
+      null,
+      { examples: ["ENG"] },
+    ),
+    flag(
+      "--project",
+      null,
+      "project_ref",
+      "Name or slug ID of the project with the issue.",
+      false,
+      null,
+      { examples: ["auth-refresh"] },
+    ),
+    flag(
+      "--state",
+      null,
+      "state_ref",
+      "Target workflow state.",
+      false,
+      null,
+      { examples: ["done", "started"] },
+    ),
+    flag(
+      "--milestone",
+      null,
+      "milestone_ref",
+      "Name of the project milestone.",
+      false,
+      null,
+      { examples: ["Phase 1"] },
+    ),
+    flag(
+      "--cycle",
+      null,
+      "cycle_ref",
+      "Cycle name, number, or active.",
+      false,
+      null,
+      { examples: ["active", "42"] },
+    ),
+    flag(
+      "--no-interactive",
+      null,
+      "boolean",
+      "Compatibility flag for explicit non-interactive execution.",
+    ),
+    flag("--text", null, "boolean", "Output human-readable text."),
+    flag("--title", "-t", "string", "Title of the issue.", false, null, {
+      examples: ["Backfill migration cookbook"],
+    }),
   ],
   "linear issue view": [
     flag("--no-comments", null, "boolean", "Skip raw comments in JSON output."),
@@ -873,6 +1474,93 @@ const FLAG_OVERRIDES: Record<string, CapabilityFlagSchema[]> = {
   ],
   "linear project list": [
     flag("--team", null, "team_key", "Filter by team key."),
+  ],
+  "linear project create": [
+    flag("--name", "-n", "string", "Project name.", true, null, {
+      examples: ["Auth refresh"],
+    }),
+    flag(
+      "--description",
+      "-d",
+      "string",
+      "Project description.",
+      false,
+      null,
+      { examples: ["Agent-native rollout work"] },
+    ),
+    flag(
+      "--team",
+      "-t",
+      "team_key",
+      "Team key.",
+      true,
+      null,
+      {
+        repeatable: true,
+        examples: ["ENG", "PLATFORM"],
+      },
+    ),
+    flag(
+      "--lead",
+      "-l",
+      "user_ref",
+      "Project lead (username, email, or @me).",
+      false,
+      null,
+      { examples: ["@me", "alice@example.com"] },
+    ),
+    flag(
+      "--status",
+      "-s",
+      "string",
+      "Project status.",
+      false,
+      enumValues(PROJECT_STATUS_VALUES),
+      { examples: ["started"] },
+    ),
+    flag(
+      "--start-date",
+      null,
+      "string",
+      "Start date (YYYY-MM-DD).",
+      false,
+      null,
+      { examples: ["2026-04-01"] },
+    ),
+    flag(
+      "--target-date",
+      null,
+      "string",
+      "Target completion date (YYYY-MM-DD).",
+      false,
+      null,
+      { examples: ["2026-04-30"] },
+    ),
+    flag(
+      "--initiative",
+      null,
+      "string",
+      "Add to initiative immediately by ID, slug, or name.",
+      false,
+      null,
+      { examples: ["roadmap-2026"] },
+    ),
+    flag("--interactive", "-i", "boolean", "Enable interactive prompts."),
+  ],
+  "linear project delete": [
+    flag("--interactive", "-i", "boolean", "Enable interactive confirmation."),
+    flag(
+      "--force",
+      "-f",
+      "boolean",
+      "Deprecated alias for --yes.",
+      false,
+      null,
+      {
+        aliases: ["--yes"],
+        deprecated: deprecation("Deprecated alias for --yes.", "--yes"),
+      },
+    ),
   ],
   "linear project-update list": [
     flag("--limit", null, "integer", "Limit returned project updates."),
@@ -943,6 +1631,20 @@ const INPUT_DEFAULTS: Record<string, CapabilityInputDefault[]> = {
       "--compat",
       "Defaults to the richer v2 capabilities schema shape.",
       "v2",
+    ),
+  ],
+  "linear issue list": [
+    inputDefault(
+      "flag",
+      "--state",
+      "Defaults to unstarted issues when no state filter is provided.",
+      ["unstarted"],
+    ),
+    inputDefault(
+      "flag",
+      "--limit",
+      "Defaults to 50 issues when omitted.",
+      50,
     ),
   ],
   "linear cycle current": [
@@ -1105,12 +1807,38 @@ const INPUT_DEFAULTS: Record<string, CapabilityInputDefault[]> = {
 }
 
 const INPUT_RESOLUTIONS: Record<string, CapabilityInputResolution[]> = {
+  "linear capabilities": [
+    inputResolution(
+      "flag",
+      "--compat",
+      "env_or_internal_default",
+      "The schema defaults to the richer v2 capabilities shape when omitted.",
+      [resolutionSource(
+        "internal_default",
+        "default capabilities schema",
+        "v2",
+      )],
+    ),
+  ],
+  "linear issue list": [
+    inputResolution(
+      "flag",
+      "--sort",
+      "config_or_env_default",
+      "If omitted, the CLI resolves issue sort from config or LINEAR_ISSUE_SORT.",
+      [
+        resolutionSource("config", "issue_sort"),
+        resolutionSource("env", "LINEAR_ISSUE_SORT"),
+      ],
+    ),
+  ],
   "linear cycle current": [
     inputResolution(
       "flag",
       "--team",
       "configured_team_context",
       "If omitted, the CLI resolves the team from the configured current team.",
+      [resolutionSource("config", "currentTeam")],
     ),
   ],
   "linear cycle list": [
@@ -1119,6 +1847,7 @@ const INPUT_RESOLUTIONS: Record<string, CapabilityInputResolution[]> = {
       "--team",
       "configured_team_context",
       "If omitted, the CLI resolves the team from the configured current team.",
+      [resolutionSource("config", "currentTeam")],
     ),
   ],
   "linear cycle next": [
@@ -1127,6 +1856,7 @@ const INPUT_RESOLUTIONS: Record<string, CapabilityInputResolution[]> = {
       "--team",
       "configured_team_context",
       "If omitted, the CLI resolves the team from the configured current team.",
+      [resolutionSource("config", "currentTeam")],
     ),
   ],
   "linear issue children": [
@@ -1135,6 +1865,10 @@ const INPUT_RESOLUTIONS: Record<string, CapabilityInputResolution[]> = {
       "issue",
       "current_issue_context",
       "If omitted, the CLI resolves the current issue from the branch name or jj trailer.",
+      [
+        resolutionSource("git_branch", "issue identifier from branch name"),
+        resolutionSource("jj_trailer", "linear issue trailer"),
+      ],
     ),
   ],
   "linear issue comment add": [
@@ -1143,12 +1877,27 @@ const INPUT_RESOLUTIONS: Record<string, CapabilityInputResolution[]> = {
       "issue",
       "current_issue_context",
       "If omitted, the CLI resolves the current issue from the branch name or jj trailer.",
+      [
+        resolutionSource("git_branch", "issue identifier from branch name"),
+        resolutionSource("jj_trailer", "linear issue trailer"),
+      ],
+    ),
+    inputResolution(
+      "stdin",
+      "stdin",
+      "implicit_input_source",
+      "If no explicit body is provided, the CLI reads stdin before falling back to interactive prompts.",
+      [resolutionSource("stdin", "implicit text body")],
     ),
     inputResolution(
       "flag",
       "--timeout-ms",
       "env_or_internal_default",
       "The timeout falls back to LINEAR_WRITE_TIMEOUT_MS or the built-in default when omitted.",
+      [
+        resolutionSource("env", "LINEAR_WRITE_TIMEOUT_MS"),
+        resolutionSource("internal_default", "execution profile write timeout"),
+      ],
     ),
   ],
   "linear issue comment update": [
@@ -1157,6 +1906,10 @@ const INPUT_RESOLUTIONS: Record<string, CapabilityInputResolution[]> = {
       "--timeout-ms",
       "env_or_internal_default",
       "The timeout falls back to LINEAR_WRITE_TIMEOUT_MS or the built-in default when omitted.",
+      [
+        resolutionSource("env", "LINEAR_WRITE_TIMEOUT_MS"),
+        resolutionSource("internal_default", "execution profile write timeout"),
+      ],
     ),
   ],
   "linear issue create": [
@@ -1165,6 +1918,17 @@ const INPUT_RESOLUTIONS: Record<string, CapabilityInputResolution[]> = {
       "--timeout-ms",
       "env_or_internal_default",
       "The timeout falls back to LINEAR_WRITE_TIMEOUT_MS or the built-in default when omitted.",
+      [
+        resolutionSource("env", "LINEAR_WRITE_TIMEOUT_MS"),
+        resolutionSource("internal_default", "execution profile write timeout"),
+      ],
+    ),
+    inputResolution(
+      "stdin",
+      "stdin",
+      "implicit_input_source",
+      "If no explicit description is provided, the CLI reads stdin before entering interactive editor flow.",
+      [resolutionSource("stdin", "implicit description text")],
     ),
   ],
   "linear issue create-batch": [
@@ -1173,6 +1937,10 @@ const INPUT_RESOLUTIONS: Record<string, CapabilityInputResolution[]> = {
       "--timeout-ms",
       "env_or_internal_default",
       "The timeout falls back to LINEAR_WRITE_TIMEOUT_MS or the built-in default when omitted.",
+      [
+        resolutionSource("env", "LINEAR_WRITE_TIMEOUT_MS"),
+        resolutionSource("internal_default", "execution profile write timeout"),
+      ],
     ),
   ],
   "linear issue parent": [
@@ -1181,6 +1949,10 @@ const INPUT_RESOLUTIONS: Record<string, CapabilityInputResolution[]> = {
       "issue",
       "current_issue_context",
       "If omitted, the CLI resolves the current issue from the branch name or jj trailer.",
+      [
+        resolutionSource("git_branch", "issue identifier from branch name"),
+        resolutionSource("jj_trailer", "linear issue trailer"),
+      ],
     ),
   ],
   "linear issue relation list": [
@@ -1189,6 +1961,10 @@ const INPUT_RESOLUTIONS: Record<string, CapabilityInputResolution[]> = {
       "issue",
       "current_issue_context",
       "If omitted, the CLI resolves the current issue from the branch name or jj trailer.",
+      [
+        resolutionSource("git_branch", "issue identifier from branch name"),
+        resolutionSource("jj_trailer", "linear issue trailer"),
+      ],
     ),
   ],
   "linear issue start": [
@@ -1197,6 +1973,10 @@ const INPUT_RESOLUTIONS: Record<string, CapabilityInputResolution[]> = {
       "issue",
       "current_issue_context",
       "If omitted, the CLI resolves the current issue from the branch name or jj trailer.",
+      [
+        resolutionSource("git_branch", "issue identifier from branch name"),
+        resolutionSource("jj_trailer", "linear issue trailer"),
+      ],
     ),
   ],
   "linear issue update": [
@@ -1205,12 +1985,27 @@ const INPUT_RESOLUTIONS: Record<string, CapabilityInputResolution[]> = {
       "issue",
       "current_issue_context",
       "If omitted, the CLI resolves the current issue from the branch name or jj trailer.",
+      [
+        resolutionSource("git_branch", "issue identifier from branch name"),
+        resolutionSource("jj_trailer", "linear issue trailer"),
+      ],
+    ),
+    inputResolution(
+      "stdin",
+      "stdin",
+      "implicit_input_source",
+      "If no explicit description is provided, the CLI reads stdin before using interactive editor flow.",
+      [resolutionSource("stdin", "implicit description text")],
     ),
     inputResolution(
       "flag",
       "--timeout-ms",
       "env_or_internal_default",
       "The timeout falls back to LINEAR_WRITE_TIMEOUT_MS or the built-in default when omitted.",
+      [
+        resolutionSource("env", "LINEAR_WRITE_TIMEOUT_MS"),
+        resolutionSource("internal_default", "execution profile write timeout"),
+      ],
     ),
   ],
   "linear issue view": [
@@ -1219,6 +2014,10 @@ const INPUT_RESOLUTIONS: Record<string, CapabilityInputResolution[]> = {
       "issue",
       "current_issue_context",
       "If omitted, the CLI resolves the current issue from the branch name or jj trailer.",
+      [
+        resolutionSource("git_branch", "issue identifier from branch name"),
+        resolutionSource("jj_trailer", "linear issue trailer"),
+      ],
     ),
   ],
   "linear notification archive": [
@@ -1227,6 +2026,10 @@ const INPUT_RESOLUTIONS: Record<string, CapabilityInputResolution[]> = {
       "--timeout-ms",
       "env_or_internal_default",
       "The timeout falls back to LINEAR_WRITE_TIMEOUT_MS or the built-in default when omitted.",
+      [
+        resolutionSource("env", "LINEAR_WRITE_TIMEOUT_MS"),
+        resolutionSource("internal_default", "execution profile write timeout"),
+      ],
     ),
   ],
   "linear notification read": [
@@ -1235,6 +2038,10 @@ const INPUT_RESOLUTIONS: Record<string, CapabilityInputResolution[]> = {
       "--timeout-ms",
       "env_or_internal_default",
       "The timeout falls back to LINEAR_WRITE_TIMEOUT_MS or the built-in default when omitted.",
+      [
+        resolutionSource("env", "LINEAR_WRITE_TIMEOUT_MS"),
+        resolutionSource("internal_default", "execution profile write timeout"),
+      ],
     ),
   ],
   "linear resolve issue": [
@@ -1243,6 +2050,10 @@ const INPUT_RESOLUTIONS: Record<string, CapabilityInputResolution[]> = {
       "issue",
       "current_issue_context",
       "If omitted, the CLI resolves the current issue from the branch name or jj trailer.",
+      [
+        resolutionSource("git_branch", "issue identifier from branch name"),
+        resolutionSource("jj_trailer", "linear issue trailer"),
+      ],
     ),
   ],
   "linear resolve label": [
@@ -1251,6 +2062,7 @@ const INPUT_RESOLUTIONS: Record<string, CapabilityInputResolution[]> = {
       "--team",
       "configured_team_context",
       "If omitted, the CLI resolves the team from the configured current team.",
+      [resolutionSource("config", "currentTeam")],
     ),
   ],
   "linear resolve team": [
@@ -1259,6 +2071,7 @@ const INPUT_RESOLUTIONS: Record<string, CapabilityInputResolution[]> = {
       "team",
       "configured_team_context",
       "If omitted, the CLI resolves the team from the configured current team.",
+      [resolutionSource("config", "currentTeam")],
     ),
   ],
   "linear resolve workflow-state": [
@@ -1267,6 +2080,7 @@ const INPUT_RESOLUTIONS: Record<string, CapabilityInputResolution[]> = {
       "--team",
       "configured_team_context",
       "If omitted, the CLI resolves the team from the configured current team.",
+      [resolutionSource("config", "currentTeam")],
     ),
   ],
   "linear team members": [
@@ -1275,6 +2089,7 @@ const INPUT_RESOLUTIONS: Record<string, CapabilityInputResolution[]> = {
       "team",
       "configured_team_context",
       "If omitted, the CLI resolves the team from the configured current team.",
+      [resolutionSource("config", "currentTeam")],
     ),
   ],
   "linear team view": [
@@ -1283,6 +2098,7 @@ const INPUT_RESOLUTIONS: Record<string, CapabilityInputResolution[]> = {
       "team",
       "configured_team_context",
       "If omitted, the CLI resolves the team from the configured current team.",
+      [resolutionSource("config", "currentTeam")],
     ),
   ],
 }
@@ -1295,6 +2111,14 @@ const COMMAND_CONSTRAINTS: Record<string, CapabilityConstraint[]> = {
       [inputRef("flag", "--json")],
       "--compat only applies to the machine-readable JSON output.",
     ),
+    constraintGroup(
+      "at_most_one_of",
+      [
+        inputRef("flag", "--json"),
+        inputRef("flag", "--text"),
+      ],
+      "Choose either machine-readable JSON output or the human-readable summary.",
+    ),
   ],
   "linear issue comment add": [
     constraint(
@@ -1302,6 +2126,18 @@ const COMMAND_CONSTRAINTS: Record<string, CapabilityConstraint[]> = {
       "conflicts_with",
       [inputRef("flag", "--body-file")],
       "Choose either inline body text or a body file for the comment content.",
+    ),
+    constraintGroup(
+      "requires_any_of",
+      [
+        inputRef("argument", "body"),
+        inputRef("flag", "--body"),
+        inputRef("flag", "--body-file"),
+        inputRef("flag", "--attach"),
+        inputRef("stdin", "stdin"),
+        inputRef("flag", "--interactive"),
+      ],
+      "Comment creation needs explicit content, an attachment, stdin, or interactive mode.",
     ),
   ],
   "linear issue comment update": [
@@ -1319,6 +2155,14 @@ const COMMAND_CONSTRAINTS: Record<string, CapabilityConstraint[]> = {
       [inputRef("flag", "--description-file")],
       "Choose either inline description text or a description file.",
     ),
+    constraintGroup(
+      "at_most_one_of",
+      [
+        inputRef("flag", "--json"),
+        inputRef("flag", "--text"),
+      ],
+      "Choose either machine-readable JSON output or human-readable text.",
+    ),
   ],
   "linear issue list": [
     constraint(
@@ -1327,13 +2171,47 @@ const COMMAND_CONSTRAINTS: Record<string, CapabilityConstraint[]> = {
       [inputRef("flag", "--state")],
       "--all-states already includes every state, so it cannot be combined with --state.",
     ),
+    constraintGroup(
+      "at_most_one_of",
+      [
+        inputRef("flag", "--json"),
+        inputRef("flag", "--text"),
+      ],
+      "Choose either machine-readable JSON output or human-readable text.",
+    ),
   ],
   "linear issue update": [
+    constraint(
+      inputRef("flag", "--due-date"),
+      "conflicts_with",
+      [inputRef("flag", "--clear-due-date")],
+      "Choose either a replacement due date or --clear-due-date.",
+    ),
     constraint(
       inputRef("flag", "--description"),
       "conflicts_with",
       [inputRef("flag", "--description-file")],
       "Choose either inline replacement description text or a description file.",
+    ),
+    constraintGroup(
+      "at_most_one_of",
+      [
+        inputRef("flag", "--json"),
+        inputRef("flag", "--text"),
+      ],
+      "Choose either machine-readable JSON output or human-readable text.",
+    ),
+  ],
+  "linear project delete": [
+    constraintGroup(
+      "requires_any_of",
+      [
+        inputRef("flag", "--yes"),
+        inputRef("flag", "--force"),
+        inputRef("flag", "--interactive"),
+        inputRef("flag", "--dry-run"),
+      ],
+      "Project deletion requires explicit confirmation bypass, explicit interactive mode, or dry-run preview.",
     ),
   ],
 }

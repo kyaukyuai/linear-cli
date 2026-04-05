@@ -229,6 +229,16 @@ Deno.test("contract docs describe capabilities compat modes that match runtime o
     "`linear issue assign --json`",
     "docs/json-contracts.md must list v7 write additions explicitly",
   )
+  assertStringIncludes(
+    docs,
+    "`repeatable`, `variadic`, `aliases`, `deprecated`, `defaultValue`, and per-parameter `examples`",
+    "docs/json-contracts.md must describe richer parser-oriented parameter metadata",
+  )
+  assertStringIncludes(
+    docs,
+    "`requires_any_of`, `conflicts_with`, and `at_most_one_of`",
+    "docs/json-contracts.md must document the stronger constraint kinds",
+  )
 
   const docsDefaultIssueUpdate = findCapabilityCommand(
     defaultExample,
@@ -313,6 +323,13 @@ Deno.test("agent-facing source docs keep default v2 and legacy v1 capabilities e
       `${sourceDoc.label} must reference the v2-to-v3 migration cookbook`,
     )
   }
+
+  const readme = await Deno.readTextFile(readmePath)
+  assertStringIncludes(
+    readme,
+    "repeatable/variadic inputs, deprecated aliases, default values",
+    "README must describe the richer parser-oriented capabilities metadata",
+  )
 })
 
 Deno.test("v3 migration guide keeps explicit diagnostics migration examples", async () => {

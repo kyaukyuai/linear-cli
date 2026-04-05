@@ -1,4 +1,4 @@
-import { assert, assertEquals } from "@std/assert"
+import { assert, assertEquals, assertObjectMatch } from "@std/assert"
 import { buildCapabilitiesPayload } from "../../src/utils/capabilities.ts"
 
 Deno.test("buildCapabilitiesPayload defaults to the v2 compatibility shape", () => {
@@ -171,16 +171,36 @@ Deno.test("buildCapabilitiesPayload v2 includes issue update capability traits",
     },
   ])
   assertEquals(command.schema.requiredInputs, [])
-  assertEquals(command.schema.optionalInputs, [
-    { source: "argument", name: "issue" },
-    { source: "flag", name: "--json" },
-    { source: "flag", name: "--dry-run" },
-    { source: "flag", name: "--timeout-ms" },
-    { source: "flag", name: "--state" },
-    { source: "flag", name: "--comment" },
-    { source: "flag", name: "--description" },
-    { source: "flag", name: "--description-file" },
-  ])
+  assert(
+    command.schema.optionalInputs.some((entry) =>
+      entry.source === "argument" && entry.name === "issue"
+    ),
+  )
+  assert(
+    command.schema.optionalInputs.some((entry) =>
+      entry.source === "flag" && entry.name === "--json"
+    ),
+  )
+  assert(
+    command.schema.optionalInputs.some((entry) =>
+      entry.source === "flag" && entry.name === "--text"
+    ),
+  )
+  assert(
+    command.schema.optionalInputs.some((entry) =>
+      entry.source === "flag" && entry.name === "--timeout-ms"
+    ),
+  )
+  assert(
+    command.schema.optionalInputs.some((entry) =>
+      entry.source === "flag" && entry.name === "--description-file"
+    ),
+  )
+  assert(
+    command.schema.optionalInputs.some((entry) =>
+      entry.source === "flag" && entry.name === "--label"
+    ),
+  )
   assertEquals(command.schema.defaults, [
     {
       source: "argument",
@@ -197,29 +217,53 @@ Deno.test("buildCapabilitiesPayload v2 includes issue update capability traits",
         "Falls back to LINEAR_WRITE_TIMEOUT_MS or the built-in timeout.",
     },
   ])
-  assertEquals(command.schema.resolutions, [
-    {
-      source: "argument",
-      name: "issue",
-      strategy: "current_issue_context",
-      description:
-        "If omitted, the CLI resolves the current issue from the branch name or jj trailer.",
-    },
-    {
-      source: "flag",
-      name: "--timeout-ms",
-      strategy: "env_or_internal_default",
-      description:
-        "The timeout falls back to LINEAR_WRITE_TIMEOUT_MS or the built-in default when omitted.",
-    },
-  ])
+  assertEquals(command.schema.resolutions.length, 3)
+  assertObjectMatch(command.schema.resolutions[0], {
+    source: "argument",
+    name: "issue",
+    strategy: "current_issue_context",
+    sources: [
+      { kind: "git_branch", name: "issue identifier from branch name" },
+      { kind: "jj_trailer", name: "linear issue trailer" },
+    ],
+  })
+  assertObjectMatch(command.schema.resolutions[1], {
+    source: "stdin",
+    name: "stdin",
+    strategy: "implicit_input_source",
+    sources: [{ kind: "stdin", name: "implicit description text" }],
+  })
+  assertObjectMatch(command.schema.resolutions[2], {
+    source: "flag",
+    name: "--timeout-ms",
+    strategy: "env_or_internal_default",
+    sources: [
+      { kind: "env", name: "LINEAR_WRITE_TIMEOUT_MS" },
+      { kind: "internal_default", name: "execution profile write timeout" },
+    ],
+  })
   assertEquals(command.schema.constraints, [
+    {
+      source: { source: "flag", name: "--due-date" },
+      kind: "conflicts_with",
+      targets: [{ source: "flag", name: "--clear-due-date" }],
+      reason: "Choose either a replacement due date or --clear-due-date.",
+    },
     {
       source: { source: "flag", name: "--description" },
       kind: "conflicts_with",
       targets: [{ source: "flag", name: "--description-file" }],
       reason:
         "Choose either inline replacement description text or a description file.",
+    },
+    {
+      kind: "at_most_one_of",
+      targets: [
+        { source: "flag", name: "--json" },
+        { source: "flag", name: "--text" },
+      ],
+      reason:
+        "Choose either machine-readable JSON output or human-readable text.",
     },
   ])
   assertEquals(command.schema.stdinTargets, [
@@ -260,8 +304,10 @@ Deno.test("buildCapabilitiesPayload v2 includes issue update capability traits",
   assert(command.schema.flags.some((flag) => flag.name === "--state"))
   assert(command.schema.flags.some((flag) => flag.name === "--comment"))
   assert(command.schema.flags.some((flag) => flag.name === "--json"))
+  assert(command.schema.flags.some((flag) => flag.name === "--text"))
   assert(command.schema.flags.some((flag) => flag.name === "--dry-run"))
   assert(command.schema.flags.some((flag) => flag.name === "--timeout-ms"))
+  assert(command.schema.flags.some((flag) => flag.name === "--label"))
   assertEquals(command.output.success, {
     category: "automation_contract",
     contractTarget: "automation_contract:v1",
@@ -440,6 +486,117 @@ Deno.test("buildCapabilitiesPayload promotes remaining high-value writes into au
   ])
 })
 
+Deno.test("buildCapabilitiesPayload v2 exposes parser-oriented metadata for representative commands", () => {
+  const payload = buildCapabilitiesPayload("2.11.0", "v2")
+  const capabilities = payload.commands.find((entry) =>
+    entry.path === "linear capabilities"
+  )
+  const issueCreate = payload.commands.find((entry) =>
+    entry.path === "linear issue create"
+  )
+  const issueList = payload.commands.find((entry) =>
+    entry.path === "linear issue list"
+  )
+  const api = payload.commands.find((entry) => entry.path === "linear api")
+  const projectDelete = payload.commands.find((entry) =>
+    entry.path === "linear project delete"
+  )
+  const documentDelete = payload.commands.find((entry) =>
+    entry.path === "linear document delete"
+  )
+
+  assert(capabilities != null)
+  assert(issueCreate != null)
+  assert(issueList != null)
+  assert(api != null)
+  assert(projectDelete != null)
+  assert(documentDelete != null)
+
+  const compatFlag = capabilities.schema.flags.find((flag) =>
+    flag.name === "--compat"
+  )
+  assertEquals(compatFlag?.defaultValue, "v2")
+  assertEquals(compatFlag?.examples, ["v1", "v2"])
+  assert(
+    capabilities.schema.constraints.some((constraint) =>
+      constraint.kind === "at_most_one_of" &&
+      constraint.targets.some((target) => target.name === "--text")
+    ),
+  )
+
+  const issueCreateLabel = issueCreate.schema.flags.find((flag) =>
+    flag.name === "--label"
+  )
+  assertEquals(issueCreateLabel?.repeatable, true)
+  assertEquals(issueCreateLabel?.examples, ["bug", "customer"])
+  assert(
+    issueCreate.schema.flags.some((flag) => flag.name === "--interactive"),
+  )
+  assert(
+    issueCreate.schema.constraints.some((constraint) =>
+      constraint.kind === "at_most_one_of" &&
+      constraint.targets.some((target) => target.name === "--json") &&
+      constraint.targets.some((target) => target.name === "--text")
+    ),
+  )
+
+  const issueListState = issueList.schema.flags.find((flag) =>
+    flag.name === "--state"
+  )
+  assertEquals(issueListState?.repeatable, true)
+  assertEquals(issueListState?.defaultValue, ["unstarted"])
+  assertEquals(issueListState?.aliases, ["todo"])
+  assert(
+    issueList.schema.resolutions.some((resolution) =>
+      resolution.name === "--sort" &&
+      resolution.sources?.some((source) =>
+        source.kind === "env" && source.name === "LINEAR_ISSUE_SORT"
+      )
+    ),
+  )
+
+  const apiVariable = api.schema.flags.find((flag) =>
+    flag.name === "--variable"
+  )
+  assertEquals(apiVariable?.repeatable, true)
+  assertEquals(apiVariable?.examples, [
+    "teamId=ENG",
+    "limit=10",
+    "input=@payload.json",
+  ])
+
+  const projectDeleteForce = projectDelete.schema.flags.find((flag) =>
+    flag.name === "--force"
+  )
+  assert(projectDeleteForce != null)
+  assertObjectMatch(projectDeleteForce, {
+    aliases: ["--yes"],
+    deprecated: {
+      replacement: "--yes",
+      note: "Deprecated alias for --yes.",
+    },
+  })
+  assert(
+    projectDelete.schema.constraints.some((constraint) =>
+      constraint.kind === "requires_any_of" &&
+      constraint.targets.some((target) => target.name === "--interactive")
+    ),
+  )
+
+  assertEquals(documentDelete.schema.arguments, [
+    {
+      name: "documentIds",
+      required: false,
+      valueType: "document_id",
+      description: "One or more document IDs.",
+      allowedValues: null,
+      repeatable: true,
+      variadic: true,
+      examples: ["doc_123", "doc_456"],
+    },
+  ])
+})
+
 Deno.test("buildCapabilitiesPayload v2 exposes constrained values where practical", () => {
   const payload = buildCapabilitiesPayload("2.11.0", "v2")
   const relationCommand = payload.commands.find((entry) =>
@@ -480,14 +637,20 @@ Deno.test("buildCapabilitiesPayload v2 exposes constrained values where practica
       description: "Defaults to the richer v2 capabilities schema shape.",
     },
   ])
-  assertEquals(capabilitiesCommand.schema.constraints, [
-    {
-      source: { source: "flag", name: "--compat" },
-      kind: "requires_all_of",
-      targets: [{ source: "flag", name: "--json" }],
-      reason: "--compat only applies to the machine-readable JSON output.",
-    },
-  ])
+  assert(
+    capabilitiesCommand.schema.constraints.some((constraint) =>
+      constraint.kind === "requires_all_of" &&
+      constraint.source?.name === "--compat" &&
+      constraint.targets.some((target) => target.name === "--json")
+    ),
+  )
+  assert(
+    capabilitiesCommand.schema.constraints.some((constraint) =>
+      constraint.kind === "at_most_one_of" &&
+      constraint.targets.some((target) => target.name === "--json") &&
+      constraint.targets.some((target) => target.name === "--text")
+    ),
+  )
   assertEquals(capabilitiesCommand.schema.examples, [
     {
       description: "Read the default schema-like capabilities registry.",
