@@ -40,12 +40,11 @@ The default capabilities shape and the read entrypoints below are treated as sta
 
 Release-gated downstream certification currently covers these real consumer flows:
 
-- startup discovery with `linear capabilities` and `linear capabilities --compat v1`
-- explicit startup discovery with `linear capabilities --json` and `linear capabilities --json --compat v1`
-- reference resolution with `linear resolve issue/team/workflow-state/user/label --json`
-- startup-safe reads with `issue view/list`, `project view`, `cycle current`, `document list`, `webhook view`, and `notification list`
-- the `resolve -> preview -> apply` loop for `linear issue update --json`
-- the `issue update --comment --json` timeout recovery path
+- startup-monitor consumer suite: `linear capabilities`, `linear capabilities --compat v1`, and the default-JSON `linear issue list`
+- diagnostics consumer suite: `linear team list --json` for machine-readable diagnostics and bare `linear team list` for human inspection
+- compatibility-bridge consumer suite: `linear capabilities --compat v1`, `linear team list --json`, and `linear issue view --text`
+- control-plane consumer suite: `linear resolve issue` -> `linear issue update --dry-run --json` -> `linear issue update`
+- timeout-recovery consumer suite: `linear issue update --comment --json` with machine-actionable timeout reconciliation
 
 Commands outside those certified flows remain best-effort until they are promoted into the certification suite.
 

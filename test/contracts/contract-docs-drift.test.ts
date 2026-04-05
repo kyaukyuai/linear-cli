@@ -239,6 +239,21 @@ Deno.test("contract docs describe capabilities compat modes that match runtime o
     "`requires_any_of`, `conflicts_with`, and `at_most_one_of`",
     "docs/json-contracts.md must document the stronger constraint kinds",
   )
+  assertStringIncludes(
+    docs,
+    "startup-monitor consumer suite",
+    "docs/json-contracts.md must document named consumer certification suites",
+  )
+  assertStringIncludes(
+    docs,
+    "compatibility-bridge consumer suite",
+    "docs/json-contracts.md must document the compatibility certification suite",
+  )
+  assertStringIncludes(
+    docs,
+    "timeout-recovery consumer suite",
+    "docs/json-contracts.md must document the timeout recovery certification suite",
+  )
 
   const docsDefaultIssueUpdate = findCapabilityCommand(
     defaultExample,
@@ -352,6 +367,26 @@ Deno.test("v3 migration guide keeps explicit diagnostics migration examples", as
     "linear capabilities --compat v1",
     "docs/agent-only-v3.md must keep the legacy startup compatibility example",
   )
+})
+
+Deno.test("agent-native docs keep named consumer certification suites", async () => {
+  const runbook = await Deno.readTextFile(agentFirstPath)
+
+  for (
+    const suiteName of [
+      "startup-monitor consumer suite",
+      "diagnostics consumer suite",
+      "compatibility-bridge consumer suite",
+      "control-plane consumer suite",
+      "timeout-recovery consumer suite",
+    ]
+  ) {
+    assertStringIncludes(
+      runbook,
+      suiteName,
+      `docs/agent-first.md must document ${suiteName}`,
+    )
+  }
 })
 
 Deno.test("migration cookbook keeps copy-pasteable v2-to-v3 examples", async () => {

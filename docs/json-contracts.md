@@ -195,11 +195,11 @@ Rules:
 
 Release-gated downstream certification currently covers:
 
-- startup discovery with `linear capabilities` and explicit legacy `--compat v1`
-- reference resolution with `linear resolve issue/team/workflow-state/user/label --json`
-- startup-safe reads with `issue view/list`, `project view`, `cycle current`, `document list`, `webhook view`, and `notification list`
-- the `resolve -> preview -> apply` flow for `linear issue update --json`
-- the `issue update --comment --json` timeout recovery contract
+- startup-monitor consumer suite: `linear capabilities`, `linear capabilities --compat v1`, and the default-JSON `linear issue list`
+- diagnostics consumer suite: `linear team list --json` for machine-readable diagnostics and bare `linear team list` for human inspection
+- compatibility-bridge consumer suite: `linear capabilities --compat v1`, `linear team list --json`, and `linear issue view --text`
+- control-plane consumer suite: `linear resolve issue` -> `linear issue update --dry-run --json` -> `linear issue update`
+- timeout-recovery consumer suite: `linear issue update --comment --json` with machine-actionable timeout reconciliation
 
 Automation-tier commands outside those certified flows still follow the compatibility rules above, but they remain best-effort until a downstream certification test is added.
 
