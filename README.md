@@ -214,6 +214,8 @@ for bot and org-wide automation use cases, `linear-cli` defines a stable machine
 
 to discover the curated agent-facing command surface programmatically, use `linear capabilities`. the default shape now returns the richer v2 schema metadata for agent-native startup. when an older consumer still expects the trimmed legacy shape, pin it explicitly with `linear capabilities --compat v1`.
 
+the default capabilities shape now carries parser-oriented metadata for representative commands, including repeatable/variadic inputs, deprecated aliases, default values, composition constraints, and concrete resolution sources such as env vars, config keys, git branch context, jj trailers, and implicit stdin fallbacks.
+
 `agent-safe` is now the default execution profile for agent-controlled runs. it disables pager-by-default behavior, extends the built-in write timeout to `45000ms` unless `--timeout-ms` or `LINEAR_WRITE_TIMEOUT_MS` is set, and keeps destructive confirmation bypass explicit with `--yes`. use `--profile human-debug` when a maintainer explicitly wants prompt-driven or pager-oriented debugging behavior.
 
 non-goals:

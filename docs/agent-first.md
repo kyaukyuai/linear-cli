@@ -24,7 +24,7 @@ This tells an agent runtime:
 - which contract version or retry semantics apply
 - which success fields and write semantics are exposed for machine-readable execution
 
-Use the default `linear capabilities` shape when the caller is ready for schema-like discovery metadata such as required inputs, constrained values, defaults, context resolution hints, input constraints, canonical argv examples, stdin/file targets, structured output contracts, and write semantics. Reach for `--compat v1` only when an older consumer still expects the trimmed legacy startup shape.
+Use the default `linear capabilities` shape when the caller is ready for schema-like discovery metadata such as required inputs, constrained values, defaults, repeatable or variadic inputs, deprecated aliases, context resolution hints, input constraints, canonical argv examples, stdin/file targets, structured output contracts, and write semantics. Reach for `--compat v1` only when an older consumer still expects the trimmed legacy startup shape.
 
 The default runtime now uses agent-safe execution semantics:
 
