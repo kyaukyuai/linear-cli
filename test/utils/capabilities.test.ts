@@ -10,7 +10,7 @@ Deno.test("buildCapabilitiesPayload defaults to the v2 compatibility shape", () 
     binary: "linear",
     version: "2.11.0",
   })
-  assertEquals(payload.contractVersions.automation.latest, "v6")
+  assertEquals(payload.contractVersions.automation.latest, "v7")
   assertEquals(payload.contractVersions.automation.supported, [
     "v1",
     "v2",
@@ -18,6 +18,7 @@ Deno.test("buildCapabilitiesPayload defaults to the v2 compatibility shape", () 
     "v4",
     "v5",
     "v6",
+    "v7",
   ])
   assertEquals(payload.contractVersions.dryRunPreview.latest, "v1")
   assertEquals(payload.contractVersions.stdinPolicy.latest, "v1")
@@ -52,6 +53,18 @@ Deno.test("buildCapabilitiesPayload defaults to the v2 compatibility shape", () 
   )
   assert(
     payload.automationTier.byVersion.v6.includes("linear resolve issue"),
+  )
+  assert(
+    payload.automationTier.byVersion.v7.includes("linear issue assign"),
+  )
+  assert(
+    payload.automationTier.byVersion.v7.includes("linear project create"),
+  )
+  assert(
+    payload.automationTier.byVersion.v7.includes("linear webhook update"),
+  )
+  assert(
+    payload.automationTier.byVersion.v7.includes("linear notification read"),
   )
 
   const issueUpdate = payload.commands.find((entry) =>
@@ -361,8 +374,70 @@ Deno.test("buildCapabilitiesPayload classifies notification writes as retry-safe
     archiveCommand.idempotency.notes,
     "Archiving an already-archived notification succeeds with noOp: true.",
   )
-  assertEquals(readCommand.output.success.category, "curated_json")
-  assertEquals(archiveCommand.output.success.category, "curated_json")
+  assertEquals(readCommand.json.contractVersion, "v7")
+  assertEquals(archiveCommand.json.contractVersion, "v7")
+  assertEquals(readCommand.output.success.category, "automation_contract")
+  assertEquals(archiveCommand.output.success.category, "automation_contract")
+  assertEquals(
+    readCommand.output.success.contractTarget,
+    "automation_contract:v7",
+  )
+  assertEquals(
+    archiveCommand.output.success.contractTarget,
+    "automation_contract:v7",
+  )
+})
+
+Deno.test("buildCapabilitiesPayload promotes remaining high-value writes into automation contract v7", () => {
+  const payload = buildCapabilitiesPayload("2.11.0", "v2")
+
+  const promotedCommands = [
+    "linear issue assign",
+    "linear issue estimate",
+    "linear issue move",
+    "linear issue priority",
+    "linear project create",
+    "linear project label add",
+    "linear project label remove",
+    "linear webhook create",
+    "linear webhook delete",
+    "linear webhook update",
+    "linear notification archive",
+    "linear notification read",
+  ]
+
+  for (const path of promotedCommands) {
+    const command = payload.commands.find((entry) => entry.path === path)
+    assert(command != null, `Expected capability command: ${path}`)
+    assertEquals(command.json.contractVersion, "v7")
+    assertEquals(command.output.success.category, "automation_contract")
+    assertEquals(
+      command.output.success.contractTarget,
+      "automation_contract:v7",
+    )
+    assert(command.output.success.topLevelFields.length > 0)
+  }
+
+  const projectCreate = payload.commands.find((entry) =>
+    entry.path === "linear project create"
+  )
+  assert(projectCreate != null)
+  assertEquals(projectCreate.dryRun.contractVersion, "v1")
+  assertEquals(
+    projectCreate.output.preview.contractTarget,
+    "dry_run_preview:v1",
+  )
+
+  const issueAssign = payload.commands.find((entry) =>
+    entry.path === "linear issue assign"
+  )
+  assert(issueAssign != null)
+  assertEquals(issueAssign.output.success.topLevelFields, [
+    "identifier",
+    "assignee",
+    "receipt",
+    "operation",
+  ])
 })
 
 Deno.test("buildCapabilitiesPayload v2 exposes constrained values where practical", () => {

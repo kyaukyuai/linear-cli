@@ -219,6 +219,16 @@ Deno.test("contract docs describe capabilities compat modes that match runtime o
     defaultExample.automationTier.latestVersion,
     runtimeDefault.automationTier.latestVersion,
   )
+  assertStringIncludes(
+    docs,
+    "## Automation Contract v7",
+    "docs/json-contracts.md must document the latest automation contract generation",
+  )
+  assertStringIncludes(
+    docs,
+    "`linear issue assign --json`",
+    "docs/json-contracts.md must list v7 write additions explicitly",
+  )
 
   const docsDefaultIssueUpdate = findCapabilityCommand(
     defaultExample,
