@@ -20,6 +20,7 @@ Options:
   --estimate                 <estimate>     - Points estimate of the issue                                            
   -d, --description          <description>  - Description of the issue (prefer --description-file for markdown)       
   --description-file         <path>         - Read description from a file (preferred for markdown content)           
+  --context-file             <path>         - Read a normalized external context JSON envelope from a file.           
   -l, --label                <label>        - Issue label associated with the issue. May be repeated.                 
   --team                     <team>         - Team associated with the issue (if not your default team)               
   --project                  <project>      - Name or slug ID of the project with the issue                           
@@ -38,10 +39,11 @@ Options:
 
 Examples:
 
-  Create an issue as JSON                    linear issue create --title "Fix auth expiry bug" --team ENG                          
-  Create an issue with a piped description   cat description.md | linear issue create --title "Fix auth expiry bug" --team ENG     
-  Create an issue with human-readable output linear issue create --title "Fix auth expiry bug" --team ENG --text                   
-  Preview issue creation                     linear issue create --title "Fix auth expiry bug" --team ENG --state started --dry-run
+  Create an issue as JSON                               linear issue create --title "Fix auth expiry bug" --team ENG                          
+  Create an issue with a piped description              cat description.md | linear issue create --title "Fix auth expiry bug" --team ENG     
+  Create an issue from a normalized source context file linear issue create --team ENG --context-file slack-thread.json --dry-run --json      
+  Create an issue with human-readable output            linear issue create --title "Fix auth expiry bug" --team ENG --text                   
+  Preview issue creation                                linear issue create --title "Fix auth expiry bug" --team ENG --state started --dry-run
 
 \`
 stderr:
@@ -96,7 +98,9 @@ stdout:
       "teamKey": "ENG",
       "assignee": "alice.bot",
       "parentIssueIdentifier": "ENG-220",
-      "state": "In Progress"
+      "state": "In Progress",
+      "sourceSystem": null,
+      "sourceRef": null
     },
     "appliedChanges": [
       "title",
@@ -123,7 +127,9 @@ stdout:
       "teamKey": "ENG",
       "assignee": "alice.bot",
       "parentIssueIdentifier": "ENG-220",
-      "state": "In Progress"
+      "state": "In Progress",
+      "sourceSystem": null,
+      "sourceRef": null
     },
     "changes": [
       "title",
@@ -192,7 +198,9 @@ stdout:
     "refs": {
       "teamKey": "ENG",
       "project": null,
-      "parentIssueIdentifier": "ENG-220"
+      "parentIssueIdentifier": "ENG-220",
+      "sourceSystem": null,
+      "sourceRef": null
     },
     "changes": [
       "title",
@@ -213,6 +221,184 @@ stdout:
     "noOp": false,
     "partialSuccess": false,
     "nextSafeAction": "apply"
+  }
+}
+'
+stderr:
+""
+`;
+
+snapshot[`Issue Create Command - JSON Dry Run With Context File 1`] = `
+stdout:
+'{
+  "success": true,
+  "dryRun": true,
+  "summary": "Would create issue in ENG",
+  "data": {
+    "command": "issue.create",
+    "start": false,
+    "team": {
+      "id": "team-eng-id",
+      "key": "ENG"
+    },
+    "project": {
+      "id": null,
+      "nameOrSlug": null
+    },
+    "input": {
+      "title": "Customer reports auth refresh failures",
+      "description": "## Source Context\\\\n- System: slack\\\\n- Ref: C12345:1712382000.100200\\\\n- URL: https://example.slack.com/archives/C12345/p1712382000100200\\\\n- Captured At: 2026-04-12T10:00:00Z\\\\n\\\\n### Title\\\\nCustomer reports auth refresh failures\\\\n\\\\n### Summary\\\\nA customer thread reports repeated auth refresh failures after the latest deploy.\\\\n\\\\n### Text Blocks\\\\n#### Initial report (alice, 2026-04-12T09:58:00Z)\\\\nMultiple customers say refresh tokens fail after 30 minutes.\\\\n#### Support follow-up (bob, 2026-04-12T09:59:00Z)\\\\nLogs point to the new auth rollout in production.\\\\n\\\\n### Participants\\\\n- Alice Agent @alice (reporter)\\\\n- Bob Support @bob (support)\\\\n\\\\n### Attachments\\\\n- auth-refresh.log (text/plain)\\\\n  URL: https://example.com/auth-refresh.log\\\\n\\\\n### Metadata\\\\n- customerId: cust_123\\\\n- severity: high\\\\n",
+      "assigneeId": null,
+      "dueDate": null,
+      "parent": null,
+      "priority": null,
+      "estimate": null,
+      "labelIds": [],
+      "teamId": "team-eng-id",
+      "projectId": null,
+      "projectMilestoneId": null,
+      "cycleId": null,
+      "stateId": null,
+      "useDefaultTemplate": true
+    },
+    "sourceContext": {
+      "version": "v1",
+      "target": "description",
+      "source": {
+        "system": "slack",
+        "ref": "C12345:1712382000.100200",
+        "url": "https://example.slack.com/archives/C12345/p1712382000100200",
+        "title": "Customer reports auth refresh failures",
+        "capturedAt": "2026-04-12T10:00:00Z"
+      },
+      "title": null,
+      "summary": "A customer thread reports repeated auth refresh failures after the latest deploy.",
+      "participantCount": 2,
+      "textBlockCount": 2,
+      "attachmentCount": 1,
+      "metadataKeys": [
+        "customerId",
+        "severity"
+      ]
+    }
+  },
+  "operation": {
+    "family": "write_operation",
+    "version": "v1",
+    "phase": "preview",
+    "command": "issue.create",
+    "resource": "issue",
+    "action": "create",
+    "summary": "Would create issue in ENG",
+    "refs": {
+      "teamKey": "ENG",
+      "project": null,
+      "parentIssueIdentifier": null,
+      "sourceSystem": "slack",
+      "sourceRef": "C12345:1712382000.100200"
+    },
+    "changes": [
+      "title",
+      "description",
+      "assigneeId",
+      "dueDate",
+      "parent",
+      "priority",
+      "estimate",
+      "labelIds",
+      "teamId",
+      "projectId",
+      "projectMilestoneId",
+      "cycleId",
+      "stateId",
+      "useDefaultTemplate"
+    ],
+    "noOp": false,
+    "partialSuccess": false,
+    "nextSafeAction": "apply"
+  }
+}
+'
+stderr:
+""
+`;
+
+snapshot[`Issue Create Command - JSON Output With Context File 1`] = `
+stdout:
+'{
+  "id": "issue-new-context",
+  "identifier": "ENG-777",
+  "title": "Customer reports auth refresh failures",
+  "url": "https://linear.app/test-team/issue/ENG-777/customer-reports-auth-refresh-failures",
+  "dueDate": null,
+  "assignee": null,
+  "parent": null,
+  "state": null,
+  "sourceContext": {
+    "version": "v1",
+    "target": "description",
+    "source": {
+      "system": "slack",
+      "ref": "C12345:1712382000.100200",
+      "url": "https://example.slack.com/archives/C12345/p1712382000100200",
+      "title": "Customer reports auth refresh failures",
+      "capturedAt": "2026-04-12T10:00:00Z"
+    },
+    "title": null,
+    "summary": "A customer thread reports repeated auth refresh failures after the latest deploy.",
+    "participantCount": 2,
+    "textBlockCount": 2,
+    "attachmentCount": 1,
+    "metadataKeys": [
+      "customerId",
+      "severity"
+    ]
+  },
+  "receipt": {
+    "operationId": "issue.create",
+    "resource": "issue",
+    "action": "create",
+    "resolvedRefs": {
+      "issueIdentifier": "ENG-777",
+      "teamKey": "ENG",
+      "assignee": null,
+      "parentIssueIdentifier": null,
+      "state": null,
+      "sourceSystem": "slack",
+      "sourceRef": "C12345:1712382000.100200"
+    },
+    "appliedChanges": [
+      "title",
+      "description"
+    ],
+    "noOp": false,
+    "partialSuccess": false,
+    "nextSafeAction": "read_before_retry"
+  },
+  "operation": {
+    "family": "write_operation",
+    "version": "v1",
+    "phase": "apply",
+    "command": "issue.create",
+    "resource": "issue",
+    "action": "create",
+    "summary": "Created issue ENG-777",
+    "refs": {
+      "issueIdentifier": "ENG-777",
+      "teamKey": "ENG",
+      "assignee": null,
+      "parentIssueIdentifier": null,
+      "state": null,
+      "sourceSystem": "slack",
+      "sourceRef": "C12345:1712382000.100200"
+    },
+    "changes": [
+      "title",
+      "description"
+    ],
+    "noOp": false,
+    "partialSuccess": false,
+    "nextSafeAction": "read_before_retry"
   }
 }
 '

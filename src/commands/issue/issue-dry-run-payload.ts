@@ -1,4 +1,5 @@
 import type { IssueCreateInput } from "../../__codegen__/graphql.ts"
+import type { ExternalContextPayload } from "../../utils/external_context.ts"
 
 type IssueIdentifierRef = {
   id: string
@@ -32,6 +33,7 @@ export function buildIssueCreateDryRunPayload(options: {
   project: IssueDraftProjectRef
   parent: IssueDraftParentRef
   start: boolean
+  sourceContext?: ExternalContextPayload
 }) {
   return {
     command: "issue.create",
@@ -39,6 +41,9 @@ export function buildIssueCreateDryRunPayload(options: {
     team: options.team,
     project: options.project,
     input: normalizeIssueCreateInput(options.input, options.parent),
+    ...(options.sourceContext != null
+      ? { sourceContext: options.sourceContext }
+      : {}),
   }
 }
 
@@ -47,6 +52,7 @@ export function buildIssueUpdateDryRunPayload(options: {
   input: Record<string, string | number | string[] | null | undefined>
   parent: IssueDraftParentRef
   comment?: string | null
+  sourceContext?: ExternalContextPayload
 }) {
   const { parentId: _parentId, ...rest } = options.input
 
@@ -58,6 +64,9 @@ export function buildIssueUpdateDryRunPayload(options: {
       parent: options.parent,
     }),
     comment: options.comment ?? null,
+    ...(options.sourceContext != null
+      ? { sourceContext: options.sourceContext }
+      : {}),
   }
 }
 

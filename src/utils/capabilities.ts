@@ -1093,7 +1093,7 @@ const FLAG_OVERRIDES: Record<string, CapabilityFlagSchema[]> = {
       null,
       { examples: [3] },
     ),
-    flag("--title", "-t", "string", "Issue title.", true),
+    flag("--title", "-t", "string", "Issue title."),
     flag("--team", null, "team_key", "Team key.", true, null, {
       examples: ["ENG"],
     }),
@@ -1114,6 +1114,15 @@ const FLAG_OVERRIDES: Record<string, CapabilityFlagSchema[]> = {
       false,
       null,
       { examples: ["issue.md"] },
+    ),
+    flag(
+      "--context-file",
+      null,
+      "path",
+      "Read a normalized external context JSON envelope from a file.",
+      false,
+      null,
+      { examples: ["slack-thread.json"] },
     ),
     flag(
       "--label",
@@ -1414,6 +1423,23 @@ const FLAG_OVERRIDES: Record<string, CapabilityFlagSchema[]> = {
       { examples: ["issue.md"] },
     ),
     flag(
+      "--context-file",
+      null,
+      "path",
+      "Read a normalized external context JSON envelope from a file.",
+      false,
+      null,
+      { examples: ["slack-thread.json"] },
+    ),
+    flag(
+      "--context-target",
+      null,
+      "string",
+      "Choose whether --context-file fills the description or comment surface.",
+      false,
+      enumValues(["comment", "description"]),
+    ),
+    flag(
       "--label",
       "-l",
       "label_ref",
@@ -1643,12 +1669,14 @@ const FILE_TARGETS: Record<string, CapabilityInputChannelTarget[]> = {
   ],
   "linear issue create": [
     { field: "description", viaFlags: ["--description-file"] },
+    { field: "sourceContext", viaFlags: ["--context-file"] },
   ],
   "linear issue create-batch": [
     { field: "batch", viaFlags: ["--file"] },
   ],
   "linear issue update": [
     { field: "description", viaFlags: ["--description-file"] },
+    { field: "sourceContext", viaFlags: ["--context-file"] },
   ],
 }
 
@@ -1725,6 +1753,11 @@ const INPUT_DEFAULTS: Record<string, CapabilityInputDefault[]> = {
   "linear issue create": [
     inputDefault(
       "flag",
+      "--context-file",
+      "May provide the issue title when the envelope includes title-bearing source context.",
+    ),
+    inputDefault(
+      "flag",
       "--timeout-ms",
       "Falls back to LINEAR_WRITE_TIMEOUT_MS or the built-in timeout.",
     ),
@@ -1762,6 +1795,12 @@ const INPUT_DEFAULTS: Record<string, CapabilityInputDefault[]> = {
       "argument",
       "issue",
       "Defaults to the current issue from the branch name or jj trailer.",
+    ),
+    inputDefault(
+      "flag",
+      "--context-target",
+      "Defaults to comment when --context-file is provided.",
+      "comment",
     ),
     inputDefault(
       "flag",
@@ -2183,6 +2222,24 @@ const COMMAND_CONSTRAINTS: Record<string, CapabilityConstraint[]> = {
       [inputRef("flag", "--description-file")],
       "Choose either inline description text or a description file.",
     ),
+    constraint(
+      inputRef("flag", "--context-file"),
+      "conflicts_with",
+      [
+        inputRef("flag", "--description"),
+        inputRef("flag", "--description-file"),
+        inputRef("stdin", "stdin"),
+      ],
+      "Normalized source context supplies the description body, so it cannot be combined with explicit description text, a description file, or piped stdin content.",
+    ),
+    constraintGroup(
+      "requires_any_of",
+      [
+        inputRef("flag", "--title"),
+        inputRef("flag", "--context-file"),
+      ],
+      "Issue creation needs an explicit title or a context envelope that carries title-bearing source context.",
+    ),
     constraintGroup(
       "at_most_one_of",
       [
@@ -2220,6 +2277,20 @@ const COMMAND_CONSTRAINTS: Record<string, CapabilityConstraint[]> = {
       "conflicts_with",
       [inputRef("flag", "--description-file")],
       "Choose either inline replacement description text or a description file.",
+    ),
+    constraint(
+      inputRef("flag", "--context-target"),
+      "requires_all_of",
+      [inputRef("flag", "--context-file")],
+      "--context-target only applies when a normalized context file is provided.",
+    ),
+    constraint(
+      inputRef("flag", "--context-file"),
+      "conflicts_with",
+      [
+        inputRef("flag", "--description-file"),
+      ],
+      "Normalized source context and --description-file are mutually exclusive.",
     ),
     constraintGroup(
       "at_most_one_of",
@@ -2278,6 +2349,17 @@ const COMMAND_EXAMPLES: Record<string, CapabilityCommandExample[]> = {
       "--dry-run",
       "--json",
     ]),
+    example("Create from a normalized source context envelope.", [
+      "linear",
+      "issue",
+      "create",
+      "--team",
+      "ENG",
+      "--context-file",
+      "slack-thread.json",
+      "--dry-run",
+      "--json",
+    ]),
   ],
   "linear issue list": [
     example("Read issue list data with a stable JSON envelope.", [
@@ -2304,6 +2386,18 @@ const COMMAND_EXAMPLES: Record<string, CapabilityCommandExample[]> = {
       "ENG-123",
       "--state",
       "done",
+      "--dry-run",
+      "--json",
+    ]),
+    example("Attach normalized source context to an update comment.", [
+      "linear",
+      "issue",
+      "update",
+      "ENG-123",
+      "--state",
+      "triage",
+      "--context-file",
+      "slack-thread.json",
       "--dry-run",
       "--json",
     ]),
@@ -3246,6 +3340,7 @@ function buildSuccessTopLevelFields(
       "assignee",
       "parent",
       "state",
+      "sourceContext",
       "receipt",
       "operation",
     ],
@@ -3308,6 +3403,7 @@ function buildSuccessTopLevelFields(
       "parent",
       "state",
       "comment",
+      "sourceContext",
       "receipt",
       "operation",
     ],

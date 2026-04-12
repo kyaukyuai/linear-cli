@@ -1,4 +1,5 @@
 import { assertEquals } from "@std/assert"
+import { fromFileUrl } from "@std/path"
 import { snapshotTest } from "@cliffy/testing"
 import { createCommand } from "../../../src/commands/issue/issue-create.ts"
 import {
@@ -6,6 +7,10 @@ import {
   setupMockLinearServer,
 } from "../../utils/test-helpers.ts"
 import { runSnapshotCommand } from "../../utils/snapshot_with_fake_time.ts"
+
+const sourceContextPath = fromFileUrl(
+  new URL("../../fixtures/external-context/slack-thread.json", import.meta.url),
+)
 
 // Test help output
 await snapshotTest({
@@ -357,6 +362,103 @@ await snapshotTest({
                     inheritedFrom: null,
                   },
                 ],
+              },
+            },
+          },
+        },
+      },
+    ], { LINEAR_TEAM_ID: "ENG" })
+
+    try {
+      await createCommand.parse()
+    } finally {
+      await cleanup()
+    }
+  },
+})
+
+await snapshotTest({
+  name: "Issue Create Command - JSON Dry Run With Context File",
+  meta: import.meta,
+  colors: false,
+  args: [
+    "--team",
+    "ENG",
+    "--context-file",
+    sourceContextPath,
+    "--json",
+    "--dry-run",
+    "--no-interactive",
+  ],
+  denoArgs: commonDenoArgs,
+  async fn() {
+    const { cleanup } = await setupMockLinearServer([
+      {
+        queryName: "GetTeamIdByKey",
+        variables: { team: "ENG" },
+        response: {
+          data: {
+            teams: {
+              nodes: [{ id: "team-eng-id" }],
+            },
+          },
+        },
+      },
+    ], { LINEAR_TEAM_ID: "ENG" })
+
+    try {
+      await createCommand.parse()
+    } finally {
+      await cleanup()
+    }
+  },
+})
+
+await snapshotTest({
+  name: "Issue Create Command - JSON Output With Context File",
+  meta: import.meta,
+  colors: false,
+  args: [
+    "--team",
+    "ENG",
+    "--context-file",
+    sourceContextPath,
+    "--json",
+    "--no-interactive",
+  ],
+  denoArgs: commonDenoArgs,
+  async fn() {
+    const { cleanup } = await setupMockLinearServer([
+      {
+        queryName: "GetTeamIdByKey",
+        variables: { team: "ENG" },
+        response: {
+          data: {
+            teams: {
+              nodes: [{ id: "team-eng-id" }],
+            },
+          },
+        },
+      },
+      {
+        queryName: "CreateIssue",
+        response: {
+          data: {
+            issueCreate: {
+              success: true,
+              issue: {
+                id: "issue-new-context",
+                identifier: "ENG-777",
+                title: "Customer reports auth refresh failures",
+                url:
+                  "https://linear.app/test-team/issue/ENG-777/customer-reports-auth-refresh-failures",
+                dueDate: null,
+                assignee: null,
+                parent: null,
+                state: null,
+                team: {
+                  key: "ENG",
+                },
               },
             },
           },

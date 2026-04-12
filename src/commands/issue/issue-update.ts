@@ -45,6 +45,12 @@ import {
   reconcileIssueUpdateTimeout,
 } from "./issue-reconciliation.ts"
 import {
+  buildExternalContextPayload,
+  type ExternalContextTarget,
+  readExternalContextFromFile,
+  renderExternalContextMarkdown,
+} from "../../utils/external_context.ts"
+import {
   buildOperationReceipt,
   withOperationReceipt,
 } from "../../utils/operation_receipt.ts"
@@ -76,6 +82,22 @@ function getIssueUpdateAppliedChanges(
   if (comment != null) changes.push("comment")
 
   return changes
+}
+
+function parseExternalContextTarget(
+  value: string | undefined,
+): ExternalContextTarget {
+  if (value == null || value === "comment" || value === "description") {
+    return value ?? "comment"
+  }
+
+  throw new ValidationError(
+    `Unsupported --context-target value: ${value}`,
+    {
+      suggestion:
+        "Use --context-target comment or --context-target description.",
+    },
+  )
 }
 
 export const updateCommand = new Command()
@@ -117,6 +139,14 @@ export const updateCommand = new Command()
   .option(
     "--description-file <path:string>",
     "Read description from a file (preferred for markdown content)",
+  )
+  .option(
+    "--context-file <path:string>",
+    "Read a normalized external context JSON envelope from a file.",
+  )
+  .option(
+    "--context-target <target:string>",
+    "Map --context-file into description or comment (default: comment).",
   )
   .option(
     "-l, --label <label:string>",
@@ -168,6 +198,10 @@ export const updateCommand = new Command()
     "cat description.md | linear issue update ENG-123 --state started --dry-run --json",
   )
   .example(
+    "Preview an update with normalized source context",
+    "linear issue update ENG-123 --state triage --context-file slack-thread.json --dry-run --json",
+  )
+  .example(
     "Return the updated issue as JSON",
     'linear issue update ENG-123 --title "Fix auth timeout edge case"',
   )
@@ -199,6 +233,8 @@ export const updateCommand = new Command()
         description,
         comment,
         descriptionFile,
+        contextFile,
+        contextTarget,
         label: labels,
         team,
         project,
@@ -222,6 +258,25 @@ export const updateCommand = new Command()
         if (description && descriptionFile) {
           throw new ValidationError(
             "Cannot specify both --description and --description-file",
+          )
+        }
+        const resolvedContextTarget = parseExternalContextTarget(contextTarget)
+        if (contextFile == null && contextTarget != null) {
+          throw new ValidationError(
+            "--context-target requires --context-file",
+            {
+              suggestion:
+                "Pass --context-file with a normalized external context envelope before choosing a target.",
+            },
+          )
+        }
+        if (contextFile != null && descriptionFile != null) {
+          throw new ValidationError(
+            "Cannot specify both --context-file and --description-file",
+            {
+              suggestion:
+                "Use --context-file to derive content from normalized source context, or --description-file to provide explicit markdown content.",
+            },
           )
         }
         if (dueDate != null && clearDueDate) {
@@ -254,8 +309,42 @@ export const updateCommand = new Command()
             finalDescription = stdinDescription
           }
         }
+        let finalComment = comment
+        const externalContext = contextFile == null
+          ? null
+          : await readExternalContextFromFile(contextFile)
+        if (externalContext != null) {
+          const renderedContext = renderExternalContextMarkdown(externalContext)
 
-        if (comment != null && comment.trim().length === 0) {
+          if (resolvedContextTarget === "description") {
+            if (finalDescription != null) {
+              throw new ValidationError(
+                "Cannot combine --context-file with explicit description input when --context-target description is used",
+                {
+                  suggestion:
+                    "Use only --context-file for the description, or remove it and pass --description, --description-file, or stdin content explicitly.",
+                },
+              )
+            }
+            finalDescription = renderedContext
+          } else {
+            if (finalComment != null) {
+              throw new ValidationError(
+                "Cannot combine --context-file with --comment when --context-target comment is used",
+                {
+                  suggestion:
+                    "Use only --context-file for the comment body, or remove it and pass --comment explicitly.",
+                },
+              )
+            }
+            finalComment = renderedContext
+          }
+        }
+        const sourceContext = externalContext == null
+          ? null
+          : buildExternalContextPayload(externalContext, resolvedContextTarget)
+
+        if (finalComment != null && finalComment.trim().length === 0) {
           throw new ValidationError("Comment body cannot be empty")
         }
 
@@ -273,12 +362,13 @@ export const updateCommand = new Command()
           milestone != null ||
           cycle != null ||
           title != null
-        if (comment != null && !hasIssueUpdates) {
+        if (finalComment != null && !hasIssueUpdates) {
           throw new ValidationError(
-            "Cannot use --comment without any issue updates",
+            "Cannot add a comment without any issue updates",
             {
-              suggestion:
-                "Use `linear issue comment add <ISSUE> --body <text>` or pipe the comment body to `linear issue comment add` for a standalone comment.",
+              suggestion: sourceContext != null
+                ? "Use --context-target description, pair --context-file with another issue update, or use `linear issue comment add <ISSUE> --body-file <path>` for a standalone context comment."
+                : "Use `linear issue comment add <ISSUE> --body <text>` or pipe the comment body to `linear issue comment add` for a standalone comment.",
             },
           )
         }
@@ -427,7 +517,8 @@ export const updateCommand = new Command()
             issue: { identifier: issueId },
             input,
             parent: parentPreview,
-            comment,
+            comment: finalComment,
+            sourceContext: sourceContext ?? undefined,
           })
           const summary = `Would update issue ${issueId}`
           emitDryRunOutput({
@@ -444,12 +535,16 @@ export const updateCommand = new Command()
                 teamKey,
                 parentIssueIdentifier: parentPreview?.identifier ?? null,
                 state: state ?? null,
+                sourceSystem: sourceContext?.source.system ?? null,
+                sourceRef: sourceContext?.source.ref ?? null,
               },
-              changes: getIssueUpdateAppliedChanges(input, comment),
+              changes: getIssueUpdateAppliedChanges(input, finalComment),
             }),
             lines: [
               `Issue: ${issueId}`,
-              ...(comment != null ? ["Would add comment after update"] : []),
+              ...(finalComment != null
+                ? ["Would add comment after update"]
+                : []),
             ],
           })
           return
@@ -548,18 +643,22 @@ export const updateCommand = new Command()
             assignee: issuePayload.assignee?.name ?? null,
             parentIssueIdentifier: issuePayload.parent?.identifier ?? null,
             state: issuePayload.state?.name ?? null,
+            sourceSystem: sourceContext?.source.system ?? null,
+            sourceRef: sourceContext?.source.ref ?? null,
           },
-          appliedChanges: getIssueUpdateAppliedChanges(input, comment),
-          nextSafeAction: comment != null ? "read_before_retry" : "continue",
+          appliedChanges: getIssueUpdateAppliedChanges(input, finalComment),
+          nextSafeAction: finalComment != null
+            ? "read_before_retry"
+            : "continue",
         })
 
         let createdComment = null
-        if (comment != null) {
+        if (finalComment != null) {
           try {
             createdComment = await createIssueComment(
               {
                 issueId: issue.id,
-                body: comment,
+                body: finalComment,
               },
               {
                 client,
@@ -571,7 +670,7 @@ export const updateCommand = new Command()
             if (isWriteTimeoutError(error)) {
               const timeoutContextError = buildIssueUpdateCommentFailureError(
                 issuePayload,
-                comment,
+                finalComment,
                 error,
               )
               await reconcileWriteTimeoutError(
@@ -579,13 +678,13 @@ export const updateCommand = new Command()
                 async () => {
                   const retryCommand =
                     `linear issue comment add ${issue.identifier} --body ${
-                      JSON.stringify(comment)
+                      JSON.stringify(finalComment)
                     }`
                   const reconciledComment =
                     await findIssueCommentForTimeoutReconciliation(
                       client,
                       issue.identifier,
-                      comment,
+                      finalComment,
                       {
                         fallbackIssue: {
                           id: issue.id,
@@ -635,18 +734,24 @@ export const updateCommand = new Command()
             }
             throw buildIssueUpdateCommentFailureError(
               issuePayload,
-              comment,
+              finalComment,
               error,
             )
           }
         }
 
         if (json) {
+          const issuePayloadWithContext = sourceContext == null
+            ? issuePayload
+            : {
+              ...issuePayload,
+              sourceContext,
+            }
           console.log(JSON.stringify(
             withWriteOperationContract(
               withOperationReceipt(
-                createdComment == null ? issuePayload : {
-                  ...issuePayload,
+                createdComment == null ? issuePayloadWithContext : {
+                  ...issuePayloadWithContext,
                   comment: buildIssueCommentPayload(createdComment, {
                     id: issue.id,
                     identifier: issue.identifier,

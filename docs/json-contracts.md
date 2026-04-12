@@ -628,12 +628,31 @@ Top-level shape:
   "assignee": null,
   "parent": null,
   "state": null,
+  "sourceContext": {
+    "version": "v1",
+    "target": "description",
+    "source": {
+      "system": "slack",
+      "ref": "C12345:1712382000.100200",
+      "url": "https://example.slack.com/archives/C12345/p1712382000100200",
+      "title": "Customer reports auth refresh failures",
+      "capturedAt": "2026-04-12T10:00:00Z"
+    },
+    "title": null,
+    "summary": "A customer thread reports repeated auth refresh failures after the latest deploy.",
+    "participantCount": 2,
+    "textBlockCount": 2,
+    "attachmentCount": 1,
+    "metadataKeys": ["customerId", "severity"]
+  },
   "receipt": { "...": "operationReceipt" },
   "operation": { "...": "writeOperation" }
 }
 ```
 
-When `issue update --json` is called with `--comment`, the same top-level object is returned with an additional `comment` field shaped like `issue comment add --json`.
+`sourceContext` is optional and is present only when the caller supplied `--context-file`.
+
+When `issue update --json` is called with `--comment` or with `--context-file --context-target comment`, the same top-level object is returned with an additional `comment` field shaped like `issue comment add --json`.
 
 If the issue update succeeds but the follow-up comment fails or times out, the command exits non-zero with the normal failure envelope and adds:
 

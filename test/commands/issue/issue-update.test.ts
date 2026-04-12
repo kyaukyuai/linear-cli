@@ -12,6 +12,9 @@ import { runSnapshotCommand } from "../../utils/snapshot_with_fake_time.ts"
 const repoRoot = fromFileUrl(new URL("../../../", import.meta.url))
 const denoJsonPath = fromFileUrl(new URL("../../../deno.json", import.meta.url))
 const mainPath = fromFileUrl(new URL("../../../src/main.ts", import.meta.url))
+const sourceContextPath = fromFileUrl(
+  new URL("../../fixtures/external-context/slack-thread.json", import.meta.url),
+)
 
 // Test help output
 await snapshotTest({
@@ -308,6 +311,200 @@ await snapshotTest({
           data: {
             viewer: {
               id: "user-self-123",
+            },
+          },
+        },
+      },
+    ], { LINEAR_TEAM_ID: "ENG" })
+
+    try {
+      await updateCommand.parse()
+    } finally {
+      await cleanup()
+    }
+  },
+})
+
+await snapshotTest({
+  name: "Issue Update Command - JSON Dry Run With Context File",
+  meta: import.meta,
+  colors: false,
+  args: [
+    "ENG-123",
+    "--state",
+    "triage",
+    "--context-file",
+    sourceContextPath,
+    "--json",
+    "--dry-run",
+  ],
+  denoArgs: commonDenoArgs,
+  async fn() {
+    const { cleanup } = await setupMockLinearServer([
+      {
+        queryName: "GetTeamIdByKey",
+        variables: { team: "ENG" },
+        response: {
+          data: {
+            teams: {
+              nodes: [{ id: "team-eng-id" }],
+            },
+          },
+        },
+      },
+      {
+        queryName: "GetWorkflowStates",
+        variables: { teamKey: "ENG" },
+        response: {
+          data: {
+            team: {
+              id: "team-eng-id",
+              key: "ENG",
+              name: "Engineering",
+              states: {
+                nodes: [
+                  {
+                    id: "state-triage",
+                    name: "Triage",
+                    type: "triage",
+                    position: 1,
+                    color: "#f2c94c",
+                    description: null,
+                    createdAt: "2026-01-01T00:00:00Z",
+                    updatedAt: "2026-01-01T00:00:00Z",
+                    archivedAt: null,
+                    team: {
+                      id: "team-eng-id",
+                      key: "ENG",
+                      name: "Engineering",
+                    },
+                    inheritedFrom: null,
+                  },
+                ],
+              },
+            },
+          },
+        },
+      },
+    ], { LINEAR_TEAM_ID: "ENG" })
+
+    try {
+      await updateCommand.parse()
+    } finally {
+      await cleanup()
+    }
+  },
+})
+
+await snapshotTest({
+  name: "Issue Update Command - JSON Output With Context File",
+  meta: import.meta,
+  colors: false,
+  args: [
+    "ENG-123",
+    "--state",
+    "triage",
+    "--context-file",
+    sourceContextPath,
+    "--json",
+  ],
+  denoArgs: commonDenoArgs,
+  async fn() {
+    const { cleanup } = await setupMockLinearServer([
+      {
+        queryName: "GetTeamIdByKey",
+        variables: { team: "ENG" },
+        response: {
+          data: {
+            teams: {
+              nodes: [{ id: "team-eng-id" }],
+            },
+          },
+        },
+      },
+      {
+        queryName: "GetWorkflowStates",
+        variables: { teamKey: "ENG" },
+        response: {
+          data: {
+            team: {
+              id: "team-eng-id",
+              key: "ENG",
+              name: "Engineering",
+              states: {
+                nodes: [
+                  {
+                    id: "state-triage",
+                    name: "Triage",
+                    type: "triage",
+                    position: 1,
+                    color: "#f2c94c",
+                    description: null,
+                    createdAt: "2026-01-01T00:00:00Z",
+                    updatedAt: "2026-01-01T00:00:00Z",
+                    archivedAt: null,
+                    team: {
+                      id: "team-eng-id",
+                      key: "ENG",
+                      name: "Engineering",
+                    },
+                    inheritedFrom: null,
+                  },
+                ],
+              },
+            },
+          },
+        },
+      },
+      {
+        queryName: "UpdateIssue",
+        response: {
+          data: {
+            issueUpdate: {
+              success: true,
+              issue: {
+                id: "issue-existing-123",
+                identifier: "ENG-123",
+                title: "Updated from context",
+                url:
+                  "https://linear.app/test-team/issue/ENG-123/updated-from-context",
+                dueDate: null,
+                assignee: null,
+                parent: null,
+                state: {
+                  name: "Triage",
+                  color: "#f2c94c",
+                },
+              },
+            },
+          },
+        },
+      },
+      {
+        queryName: "AddComment",
+        response: {
+          data: {
+            commentCreate: {
+              success: true,
+              comment: {
+                id: "comment-context-123",
+                body: "## Source Context\n- System: slack",
+                createdAt: "2026-04-12T10:00:00Z",
+                url:
+                  "https://linear.app/test-team/issue/ENG-123/updated-from-context#comment-context-123",
+                parent: null,
+                issue: {
+                  id: "issue-existing-123",
+                  identifier: "ENG-123",
+                  title: "Updated from context",
+                  url:
+                    "https://linear.app/test-team/issue/ENG-123/updated-from-context",
+                },
+                user: {
+                  name: "alice.bot",
+                  displayName: "Alice Bot",
+                },
+              },
             },
           },
         },
