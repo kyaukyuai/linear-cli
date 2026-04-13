@@ -3481,7 +3481,7 @@ stdout:
           {
             "name": "--title",
             "short": "-t",
-            "required": true,
+            "required": false,
             "valueType": "string",
             "description": "Issue title.",
             "allowedValues": null
@@ -3517,6 +3517,17 @@ stdout:
             "allowedValues": null,
             "examples": [
               "issue.md"
+            ]
+          },
+          {
+            "name": "--context-file",
+            "short": null,
+            "required": false,
+            "valueType": "path",
+            "description": "Read a normalized external context JSON envelope from a file.",
+            "allowedValues": null,
+            "examples": [
+              "slack-thread.json"
             ]
           },
           {
@@ -3627,10 +3638,6 @@ stdout:
         "requiredInputs": [
           {
             "source": "flag",
-            "name": "--title"
-          },
-          {
-            "source": "flag",
             "name": "--team"
           }
         ],
@@ -3673,11 +3680,19 @@ stdout:
           },
           {
             "source": "flag",
+            "name": "--title"
+          },
+          {
+            "source": "flag",
             "name": "--description"
           },
           {
             "source": "flag",
             "name": "--description-file"
+          },
+          {
+            "source": "flag",
+            "name": "--context-file"
           },
           {
             "source": "flag",
@@ -3721,6 +3736,12 @@ stdout:
           }
         ],
         "defaults": [
+          {
+            "source": "flag",
+            "name": "--context-file",
+            "description": "May provide the issue title when the envelope includes title-bearing source context.",
+            "value": null
+          },
           {
             "source": "flag",
             "name": "--timeout-ms",
@@ -3777,6 +3798,42 @@ stdout:
             "reason": "Choose either inline description text or a description file."
           },
           {
+            "source": {
+              "source": "flag",
+              "name": "--context-file"
+            },
+            "kind": "conflicts_with",
+            "targets": [
+              {
+                "source": "flag",
+                "name": "--description"
+              },
+              {
+                "source": "flag",
+                "name": "--description-file"
+              },
+              {
+                "source": "stdin",
+                "name": "stdin"
+              }
+            ],
+            "reason": "Normalized source context supplies the description body, so it cannot be combined with explicit description text, a description file, or piped stdin content."
+          },
+          {
+            "kind": "requires_any_of",
+            "targets": [
+              {
+                "source": "flag",
+                "name": "--title"
+              },
+              {
+                "source": "flag",
+                "name": "--context-file"
+              }
+            ],
+            "reason": "Issue creation needs an explicit title or a context envelope that carries title-bearing source context."
+          },
+          {
             "kind": "at_most_one_of",
             "targets": [
               {
@@ -3803,6 +3860,12 @@ stdout:
             "viaFlags": [
               "--description-file"
             ]
+          },
+          {
+            "field": "sourceContext",
+            "viaFlags": [
+              "--context-file"
+            ]
           }
         ],
         "examples": [
@@ -3816,6 +3879,20 @@ stdout:
               "Backfill docs",
               "--team",
               "ENG",
+              "--dry-run",
+              "--json"
+            ]
+          },
+          {
+            "description": "Create from a normalized source context envelope.",
+            "argv": [
+              "linear",
+              "issue",
+              "create",
+              "--team",
+              "ENG",
+              "--context-file",
+              "slack-thread.json",
               "--dry-run",
               "--json"
             ]
@@ -3841,6 +3918,7 @@ stdout:
             "assignee",
             "parent",
             "state",
+            "sourceContext",
             "receipt",
             "operation"
           ]
@@ -6023,6 +6101,34 @@ stdout:
             ]
           },
           {
+            "name": "--context-file",
+            "short": null,
+            "required": false,
+            "valueType": "path",
+            "description": "Read a normalized external context JSON envelope from a file.",
+            "allowedValues": null,
+            "examples": [
+              "slack-thread.json"
+            ]
+          },
+          {
+            "name": "--context-target",
+            "short": null,
+            "required": false,
+            "valueType": "string",
+            "description": "Choose whether --context-file fills the description or comment surface.",
+            "allowedValues": [
+              {
+                "value": "comment",
+                "description": null
+              },
+              {
+                "value": "description",
+                "description": null
+              }
+            ]
+          },
+          {
             "name": "--label",
             "short": "-l",
             "required": false,
@@ -6181,6 +6287,14 @@ stdout:
           },
           {
             "source": "flag",
+            "name": "--context-file"
+          },
+          {
+            "source": "flag",
+            "name": "--context-target"
+          },
+          {
+            "source": "flag",
             "name": "--label"
           },
           {
@@ -6222,6 +6336,12 @@ stdout:
             "name": "issue",
             "description": "Defaults to the current issue from the branch name or jj trailer.",
             "value": null
+          },
+          {
+            "source": "flag",
+            "name": "--context-target",
+            "description": "Defaults to comment when --context-file is provided.",
+            "value": "comment"
           },
           {
             "source": "flag",
@@ -6311,6 +6431,34 @@ stdout:
             "reason": "Choose either inline replacement description text or a description file."
           },
           {
+            "source": {
+              "source": "flag",
+              "name": "--context-target"
+            },
+            "kind": "requires_all_of",
+            "targets": [
+              {
+                "source": "flag",
+                "name": "--context-file"
+              }
+            ],
+            "reason": "--context-target only applies when a normalized context file is provided."
+          },
+          {
+            "source": {
+              "source": "flag",
+              "name": "--context-file"
+            },
+            "kind": "conflicts_with",
+            "targets": [
+              {
+                "source": "flag",
+                "name": "--description-file"
+              }
+            ],
+            "reason": "Normalized source context and --description-file are mutually exclusive."
+          },
+          {
             "kind": "at_most_one_of",
             "targets": [
               {
@@ -6337,6 +6485,12 @@ stdout:
             "viaFlags": [
               "--description-file"
             ]
+          },
+          {
+            "field": "sourceContext",
+            "viaFlags": [
+              "--context-file"
+            ]
           }
         ],
         "examples": [
@@ -6349,6 +6503,21 @@ stdout:
               "ENG-123",
               "--state",
               "done",
+              "--dry-run",
+              "--json"
+            ]
+          },
+          {
+            "description": "Attach normalized source context to an update comment.",
+            "argv": [
+              "linear",
+              "issue",
+              "update",
+              "ENG-123",
+              "--state",
+              "triage",
+              "--context-file",
+              "slack-thread.json",
               "--dry-run",
               "--json"
             ]
@@ -6389,6 +6558,7 @@ stdout:
             "parent",
             "state",
             "comment",
+            "sourceContext",
             "receipt",
             "operation"
           ]

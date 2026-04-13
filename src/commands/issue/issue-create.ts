@@ -47,6 +47,12 @@ import {
   withOperationReceipt,
 } from "../../utils/operation_receipt.ts"
 import {
+  buildExternalContextPayload,
+  deriveTitleFromExternalContext,
+  readExternalContextFromFile,
+  renderExternalContextMarkdown,
+} from "../../utils/external_context.ts"
+import {
   buildWriteApplyOperationFromReceipt,
   buildWritePreviewOperation,
   withWriteOperationContract,
@@ -502,6 +508,10 @@ export const createCommand = new Command()
     "Read description from a file (preferred for markdown content)",
   )
   .option(
+    "--context-file <path:string>",
+    "Read a normalized external context JSON envelope from a file.",
+  )
+  .option(
     "-l, --label <label:string>",
     "Issue label associated with the issue. May be repeated.",
     { collect: true },
@@ -556,6 +566,10 @@ export const createCommand = new Command()
     'cat description.md | linear issue create --title "Fix auth expiry bug" --team ENG',
   )
   .example(
+    "Create an issue from a normalized source context file",
+    "linear issue create --team ENG --context-file slack-thread.json --dry-run --json",
+  )
+  .example(
     "Create an issue with human-readable output",
     'linear issue create --title "Fix auth expiry bug" --team ENG --text',
   )
@@ -587,6 +601,7 @@ export const createCommand = new Command()
         estimate,
         description,
         descriptionFile,
+        contextFile,
         label: labels,
         team,
         project,
@@ -621,6 +636,15 @@ export const createCommand = new Command()
             "Cannot specify both --description and --description-file",
           )
         }
+        if (contextFile != null && descriptionFile != null) {
+          throw new ValidationError(
+            "Cannot specify both --context-file and --description-file",
+            {
+              suggestion:
+                "Use --context-file to derive the description from normalized source context, or --description-file to provide explicit markdown content.",
+            },
+          )
+        }
         if (json && start && !dryRun) {
           throw new ValidationError(
             "Cannot use machine-readable output with --start",
@@ -652,6 +676,24 @@ export const createCommand = new Command()
             finalDescription = stdinDescription
           }
         }
+        const externalContext = contextFile == null
+          ? null
+          : await readExternalContextFromFile(contextFile)
+        if (externalContext != null) {
+          if (finalDescription != null) {
+            throw new ValidationError(
+              "Cannot combine --context-file with explicit description input",
+              {
+                suggestion:
+                  "Use only --context-file, or remove it and pass --description, --description-file, or stdin content explicitly.",
+              },
+            )
+          }
+          finalDescription = renderExternalContextMarkdown(externalContext)
+        }
+        const sourceContext = externalContext == null
+          ? null
+          : buildExternalContextPayload(externalContext, "description")
 
         // If no flags are provided (or only parent is provided), interactive mode
         // must be explicitly requested.
@@ -793,12 +835,21 @@ export const createCommand = new Command()
 
         // Fallback to flag-based mode
         if (!title) {
+          const derivedTitle = externalContext == null
+            ? null
+            : deriveTitleFromExternalContext(externalContext)
+          if (derivedTitle != null) {
+            title = derivedTitle
+          }
+        }
+
+        if (!title) {
           throw new ValidationError(
             "Title is required unless --profile human-debug --interactive is used",
             {
               suggestion: json
-                ? "Use --title when requesting --json output."
-                : "Use --title, or pass --profile human-debug --interactive to create the issue with prompts.",
+                ? "Use --title or provide title-bearing --context-file input when requesting --json output."
+                : "Use --title, provide title-bearing --context-file input, or pass --profile human-debug --interactive to create the issue with prompts.",
             },
           )
         }
@@ -963,6 +1014,7 @@ export const createCommand = new Command()
             title: parentData.title,
           },
           start: start === true,
+          sourceContext: sourceContext ?? undefined,
         })
         if (dryRun) {
           const summary = `Would create issue in ${team}`
@@ -979,6 +1031,8 @@ export const createCommand = new Command()
                 teamKey: team,
                 project: effectiveProject ?? null,
                 parentIssueIdentifier: parentData?.identifier ?? null,
+                sourceSystem: sourceContext?.source.system ?? null,
+                sourceRef: sourceContext?.source.ref ?? null,
               },
               changes: [
                 ...Object.keys(createPreviewPayload.input),
@@ -1065,6 +1119,12 @@ export const createCommand = new Command()
         const issueId = issue.id
         if (json) {
           const issuePayload = buildIssueWritePayload(issue)
+          const issuePayloadWithContext = sourceContext == null
+            ? issuePayload
+            : {
+              ...issuePayload,
+              sourceContext,
+            }
           const receipt = buildOperationReceipt({
             operationId: "issue.create",
             resource: "issue",
@@ -1075,6 +1135,8 @@ export const createCommand = new Command()
               assignee: issuePayload.assignee?.name ?? null,
               parentIssueIdentifier: issuePayload.parent?.identifier ?? null,
               state: issuePayload.state?.name ?? null,
+              sourceSystem: sourceContext?.source.system ?? null,
+              sourceRef: sourceContext?.source.ref ?? null,
             },
             appliedChanges: [
               "title",
@@ -1096,7 +1158,7 @@ export const createCommand = new Command()
           })
           console.log(JSON.stringify(
             withWriteOperationContract(
-              withOperationReceipt(issuePayload, receipt),
+              withOperationReceipt(issuePayloadWithContext, receipt),
               buildWriteApplyOperationFromReceipt(
                 `Created issue ${issue.identifier}`,
                 receipt,

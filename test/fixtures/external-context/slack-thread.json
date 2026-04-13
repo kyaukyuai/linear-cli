@@ -1,0 +1,48 @@
+{
+  "version": "v1",
+  "source": {
+    "system": "slack",
+    "ref": "C12345:1712382000.100200",
+    "url": "https://example.slack.com/archives/C12345/p1712382000100200",
+    "title": "Customer reports auth refresh failures",
+    "capturedAt": "2026-04-12T10:00:00Z"
+  },
+  "summary": "A customer thread reports repeated auth refresh failures after the latest deploy.",
+  "textBlocks": [
+    {
+      "label": "Initial report",
+      "author": "alice",
+      "timestamp": "2026-04-12T09:58:00Z",
+      "text": "Multiple customers say refresh tokens fail after 30 minutes."
+    },
+    {
+      "label": "Support follow-up",
+      "author": "bob",
+      "timestamp": "2026-04-12T09:59:00Z",
+      "text": "Logs point to the new auth rollout in production."
+    }
+  ],
+  "participants": [
+    {
+      "name": "Alice Agent",
+      "handle": "alice",
+      "role": "reporter"
+    },
+    {
+      "name": "Bob Support",
+      "handle": "bob",
+      "role": "support"
+    }
+  ],
+  "attachments": [
+    {
+      "title": "auth-refresh.log",
+      "url": "https://example.com/auth-refresh.log",
+      "mimeType": "text/plain"
+    }
+  ],
+  "metadata": {
+    "customerId": "cust_123",
+    "severity": "high"
+  }
+}

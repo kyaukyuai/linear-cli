@@ -338,6 +338,7 @@ Options:
   --estimate                 <estimate>     - Points estimate of the issue                                            
   -d, --description          <description>  - Description of the issue (prefer --description-file for markdown)       
   --description-file         <path>         - Read description from a file (preferred for markdown content)           
+  --context-file             <path>         - Read a normalized external context JSON envelope from a file.           
   -l, --label                <label>        - Issue label associated with the issue. May be repeated.                 
   --team                     <team>         - Team associated with the issue (if not your default team)               
   --project                  <project>      - Name or slug ID of the project with the issue                           
@@ -356,10 +357,11 @@ Options:
 
 Examples:
 
-  Create an issue as JSON                    linear issue create --title "Fix auth expiry bug" --team ENG                          
-  Create an issue with a piped description   cat description.md | linear issue create --title "Fix auth expiry bug" --team ENG     
-  Create an issue with human-readable output linear issue create --title "Fix auth expiry bug" --team ENG --text                   
-  Preview issue creation                     linear issue create --title "Fix auth expiry bug" --team ENG --state started --dry-run
+  Create an issue as JSON                               linear issue create --title "Fix auth expiry bug" --team ENG                          
+  Create an issue with a piped description              cat description.md | linear issue create --title "Fix auth expiry bug" --team ENG     
+  Create an issue from a normalized source context file linear issue create --team ENG --context-file slack-thread.json --dry-run --json      
+  Create an issue with human-readable output            linear issue create --title "Fix auth expiry bug" --team ENG --text                   
+  Preview issue creation                                linear issue create --title "Fix auth expiry bug" --team ENG --state started --dry-run
 ```
 
 ### create-batch
@@ -416,6 +418,8 @@ Options:
   -d, --description   <description>  - Description of the issue (prefer --description-file for markdown)    
   --comment           <comment>      - Add a comment after successfully updating the issue                  
   --description-file  <path>         - Read description from a file (preferred for markdown content)        
+  --context-file      <path>         - Read a normalized external context JSON envelope from a file.        
+  --context-target    <target>       - Map --context-file into description or comment (default: comment).   
   -l, --label         <label>        - Issue label associated with the issue. May be repeated.              
   --team              <team>         - Team associated with the issue (if not your default team)            
   --project           <project>      - Name or slug ID of the project with the issue                        
@@ -431,11 +435,12 @@ Options:
 
 Examples:
 
-  Update state and assignee             linear issue update ENG-123 --state started --assignee self                         
-  Preview an update with a comment      linear issue update ENG-123 --state completed --comment "Ready for review" --dry-run
-  Pipe a description into an update     cat description.md | linear issue update ENG-123 --state started --dry-run --json   
-  Return the updated issue as JSON      linear issue update ENG-123 --title "Fix auth timeout edge case"                    
-  Return human-readable terminal output linear issue update ENG-123 --title "Fix auth timeout edge case" --text
+  Update state and assignee                        linear issue update ENG-123 --state started --assignee self                                 
+  Preview an update with a comment                 linear issue update ENG-123 --state completed --comment "Ready for review" --dry-run        
+  Pipe a description into an update                cat description.md | linear issue update ENG-123 --state started --dry-run --json           
+  Preview an update with normalized source context linear issue update ENG-123 --state triage --context-file slack-thread.json --dry-run --json
+  Return the updated issue as JSON                 linear issue update ENG-123 --title "Fix auth timeout edge case"                            
+  Return human-readable terminal output            linear issue update ENG-123 --title "Fix auth timeout edge case" --text
 ```
 
 ### move

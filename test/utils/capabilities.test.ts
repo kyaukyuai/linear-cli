@@ -233,6 +233,12 @@ Deno.test("buildCapabilitiesPayload v2 includes issue update capability traits",
     },
     {
       source: "flag",
+      name: "--context-target",
+      value: "comment",
+      description: "Defaults to comment when --context-file is provided.",
+    },
+    {
+      source: "flag",
       name: "--timeout-ms",
       value: null,
       description:
@@ -279,6 +285,20 @@ Deno.test("buildCapabilitiesPayload v2 includes issue update capability traits",
         "Choose either inline replacement description text or a description file.",
     },
     {
+      source: { source: "flag", name: "--context-target" },
+      kind: "requires_all_of",
+      targets: [{ source: "flag", name: "--context-file" }],
+      reason:
+        "--context-target only applies when a normalized context file is provided.",
+    },
+    {
+      source: { source: "flag", name: "--context-file" },
+      kind: "conflicts_with",
+      targets: [{ source: "flag", name: "--description-file" }],
+      reason:
+        "Normalized source context and --description-file are mutually exclusive.",
+    },
+    {
       kind: "at_most_one_of",
       targets: [
         { source: "flag", name: "--json" },
@@ -293,6 +313,7 @@ Deno.test("buildCapabilitiesPayload v2 includes issue update capability traits",
   ])
   assertEquals(command.schema.fileTargets, [
     { field: "description", viaFlags: ["--description-file"] },
+    { field: "sourceContext", viaFlags: ["--context-file"] },
   ])
   assertEquals(command.schema.examples, [
     {
@@ -304,6 +325,21 @@ Deno.test("buildCapabilitiesPayload v2 includes issue update capability traits",
         "ENG-123",
         "--state",
         "done",
+        "--dry-run",
+        "--json",
+      ],
+    },
+    {
+      description: "Attach normalized source context to an update comment.",
+      argv: [
+        "linear",
+        "issue",
+        "update",
+        "ENG-123",
+        "--state",
+        "triage",
+        "--context-file",
+        "slack-thread.json",
         "--dry-run",
         "--json",
       ],
@@ -330,6 +366,8 @@ Deno.test("buildCapabilitiesPayload v2 includes issue update capability traits",
   assert(command.schema.flags.some((flag) => flag.name === "--dry-run"))
   assert(command.schema.flags.some((flag) => flag.name === "--timeout-ms"))
   assert(command.schema.flags.some((flag) => flag.name === "--label"))
+  assert(command.schema.flags.some((flag) => flag.name === "--context-file"))
+  assert(command.schema.flags.some((flag) => flag.name === "--context-target"))
   assertEquals(command.output.success, {
     category: "automation_contract",
     contractTarget: "automation_contract:v1",
@@ -349,6 +387,7 @@ Deno.test("buildCapabilitiesPayload v2 includes issue update capability traits",
       "parent",
       "state",
       "comment",
+      "sourceContext",
       "receipt",
       "operation",
     ],
@@ -542,6 +581,9 @@ Deno.test("buildCapabilitiesPayload v2 exposes parser-oriented metadata for repr
   const issueCreate = payload.commands.find((entry) =>
     entry.path === "linear issue create"
   )
+  const issueUpdate = payload.commands.find((entry) =>
+    entry.path === "linear issue update"
+  )
   const issueList = payload.commands.find((entry) =>
     entry.path === "linear issue list"
   )
@@ -555,6 +597,7 @@ Deno.test("buildCapabilitiesPayload v2 exposes parser-oriented metadata for repr
 
   assert(capabilities != null)
   assert(issueCreate != null)
+  assert(issueUpdate != null)
   assert(issueList != null)
   assert(api != null)
   assert(projectDelete != null)
@@ -575,16 +618,44 @@ Deno.test("buildCapabilitiesPayload v2 exposes parser-oriented metadata for repr
   const issueCreateLabel = issueCreate.schema.flags.find((flag) =>
     flag.name === "--label"
   )
+  const issueCreateContextFile = issueCreate.schema.flags.find((flag) =>
+    flag.name === "--context-file"
+  )
   assertEquals(issueCreateLabel?.repeatable, true)
   assertEquals(issueCreateLabel?.examples, ["bug", "customer"])
+  assertEquals(issueCreateContextFile?.examples, ["slack-thread.json"])
   assert(
     issueCreate.schema.flags.some((flag) => flag.name === "--interactive"),
+  )
+  assert(
+    issueCreate.schema.fileTargets.some((target) =>
+      target.field === "sourceContext"
+    ),
+  )
+  assert(
+    issueCreate.schema.constraints.some((constraint) =>
+      constraint.kind === "requires_any_of" &&
+      constraint.targets.some((target) => target.name === "--context-file")
+    ),
   )
   assert(
     issueCreate.schema.constraints.some((constraint) =>
       constraint.kind === "at_most_one_of" &&
       constraint.targets.some((target) => target.name === "--json") &&
       constraint.targets.some((target) => target.name === "--text")
+    ),
+  )
+
+  const issueUpdateContextTarget = issueUpdate.schema.flags.find((flag) =>
+    flag.name === "--context-target"
+  )
+  assertEquals(
+    issueUpdateContextTarget?.allowedValues?.map((entry) => entry.value),
+    ["comment", "description"],
+  )
+  assert(
+    issueUpdate.schema.fileTargets.some((target) =>
+      target.field === "sourceContext"
     ),
   )
 
