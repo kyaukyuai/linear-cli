@@ -59,6 +59,7 @@ import {
   buildWritePreviewOperation,
   withWriteOperationContract,
 } from "../../utils/write_operation.ts"
+import { buildSourceTriageContract } from "../../utils/source_triage.ts"
 
 function getIssueUpdateAppliedChanges(
   input: IssueUpdateReconciliationInput,
@@ -149,6 +150,10 @@ export const updateCommand = new Command()
     "Map --context-file into description or comment (default: comment).",
   )
   .option(
+    "--apply-triage",
+    "Apply deterministic triage hints from --context-file when routing fields are omitted.",
+  )
+  .option(
     "-l, --label <label:string>",
     "Issue label associated with the issue. May be repeated.",
     { collect: true },
@@ -202,6 +207,10 @@ export const updateCommand = new Command()
     "linear issue update ENG-123 --state triage --context-file slack-thread.json --dry-run --json",
   )
   .example(
+    "Apply deterministic triage from normalized source context",
+    "linear issue update ENG-123 --context-file slack-thread.json --apply-triage --dry-run --json",
+  )
+  .example(
     "Return the updated issue as JSON",
     'linear issue update ENG-123 --title "Fix auth timeout edge case"',
   )
@@ -235,6 +244,7 @@ export const updateCommand = new Command()
         descriptionFile,
         contextFile,
         contextTarget,
+        applyTriage,
         label: labels,
         team,
         project,
@@ -276,6 +286,15 @@ export const updateCommand = new Command()
             {
               suggestion:
                 "Use --context-file to derive content from normalized source context, or --description-file to provide explicit markdown content.",
+            },
+          )
+        }
+        if (applyTriage && contextFile == null) {
+          throw new ValidationError(
+            "--apply-triage requires --context-file",
+            {
+              suggestion:
+                "Pass --context-file with a normalized external context envelope before applying deterministic triage.",
             },
           )
         }
@@ -343,34 +362,18 @@ export const updateCommand = new Command()
         const sourceContext = externalContext == null
           ? null
           : buildExternalContextPayload(externalContext, resolvedContextTarget)
+        if (applyTriage && externalContext?.triage == null) {
+          throw new ValidationError(
+            "--apply-triage requires triage hints inside --context-file",
+            {
+              suggestion:
+                "Add a triage object with team, state, labels, duplicateIssueRefs, or relatedIssueRefs to the normalized context envelope.",
+            },
+          )
+        }
 
         if (finalComment != null && finalComment.trim().length === 0) {
           throw new ValidationError("Comment body cannot be empty")
-        }
-
-        const hasIssueUpdates = assignee != null ||
-          dueDate != null ||
-          clearDueDate ||
-          parent != null ||
-          (priority != null && !Number.isNaN(priority)) ||
-          (estimate != null && !Number.isNaN(estimate)) ||
-          finalDescription != null ||
-          (labels != null && labels.length > 0) ||
-          team != null ||
-          project != null ||
-          state != null ||
-          milestone != null ||
-          cycle != null ||
-          title != null
-        if (finalComment != null && !hasIssueUpdates) {
-          throw new ValidationError(
-            "Cannot add a comment without any issue updates",
-            {
-              suggestion: sourceContext != null
-                ? "Use --context-target description, pair --context-file with another issue update, or use `linear issue comment add <ISSUE> --body-file <path>` for a standalone context comment."
-                : "Use `linear issue comment add <ISSUE> --body <text>` or pipe the comment body to `linear issue comment add` for a standalone comment.",
-            },
-          )
         }
 
         const writeTimeoutMs = resolveWriteTimeoutMs(timeoutMs)
@@ -397,6 +400,61 @@ export const updateCommand = new Command()
           throw new ValidationError(
             "Could not determine team key from issue ID",
           )
+        }
+
+        const triageResult = externalContext == null || applyTriage !== true
+          ? null
+          : await buildSourceTriageContract({
+            context: externalContext,
+            target: "issue.update",
+            applyRequested: applyTriage === true,
+            fallbackTeamKey: teamKey,
+            preferTriageTeamForResolution: false,
+            explicitTeam: team ?? null,
+            explicitState: state ?? null,
+            explicitLabels: labels ?? [],
+            supportsTeamApply: false,
+          })
+
+        if (applyTriage && triageResult != null) {
+          const { state: triageState, labels: triageLabels } =
+            triageResult.triage.suggestions
+
+          if (state == null && externalContext?.triage?.state != null) {
+            if (triageState.status === "unresolved") {
+              throw new ValidationError(
+                "Failed to apply triage workflow state suggestion",
+                {
+                  suggestion: triageState.reason ??
+                    "Fix the triage state hint in --context-file or pass --state explicitly.",
+                },
+              )
+            }
+            if (triageState.applied && triageResult.resolved.state != null) {
+              state = triageResult.resolved.state.name
+            }
+          }
+
+          const unresolvedTriageLabels = triageLabels.filter((label) =>
+            label.status === "unresolved"
+          )
+          if (unresolvedTriageLabels.length > 0) {
+            throw new ValidationError(
+              "Failed to apply triage label suggestions",
+              {
+                suggestion: unresolvedTriageLabels.map((label) =>
+                  label.reason ?? `Fix triage label hint: ${label.requested}`
+                ).join(" "),
+              },
+            )
+          }
+
+          const appliedTriageLabels = triageLabels.flatMap((label) =>
+            label.applied && label.resolved != null ? [label.resolved.name] : []
+          )
+          if (appliedTriageLabels.length > 0) {
+            labels = [...new Set([...(labels ?? []), ...appliedTriageLabels])]
+          }
         }
 
         // Convert team key to team ID for some operations
@@ -512,6 +570,18 @@ export const updateCommand = new Command()
         }
         if (cycleId !== undefined) input.cycleId = cycleId
         if (stateId !== undefined) input.stateId = stateId
+
+        if (finalComment != null && Object.keys(input).length === 0) {
+          throw new ValidationError(
+            "Cannot add a comment without any issue updates",
+            {
+              suggestion: sourceContext != null
+                ? "Use --context-target description, pair --context-file with another issue update, apply triage with --apply-triage, or use `linear issue comment add <ISSUE> --body-file <path>` for a standalone context comment."
+                : "Use `linear issue comment add <ISSUE> --body <text>` or pipe the comment body to `linear issue comment add` for a standalone comment.",
+            },
+          )
+        }
+
         if (dryRun) {
           const previewPayload = buildIssueUpdateDryRunPayload({
             issue: { identifier: issueId },
@@ -519,6 +589,7 @@ export const updateCommand = new Command()
             parent: parentPreview,
             comment: finalComment,
             sourceContext: sourceContext ?? undefined,
+            triage: triageResult?.triage,
           })
           const summary = `Would update issue ${issueId}`
           emitDryRunOutput({
@@ -544,6 +615,15 @@ export const updateCommand = new Command()
               `Issue: ${issueId}`,
               ...(finalComment != null
                 ? ["Would add comment after update"]
+                : []),
+              ...(triageResult != null
+                ? [
+                  `Triage suggestions: ${
+                    triageResult.triage.appliedChanges.length > 0
+                      ? triageResult.triage.appliedChanges.join(", ")
+                      : "preview only"
+                  }`,
+                ]
                 : []),
             ],
           })
@@ -747,11 +827,17 @@ export const updateCommand = new Command()
               ...issuePayload,
               sourceContext,
             }
+          const issuePayloadWithTriage = triageResult == null
+            ? issuePayloadWithContext
+            : {
+              ...issuePayloadWithContext,
+              triage: triageResult.triage,
+            }
           console.log(JSON.stringify(
             withWriteOperationContract(
               withOperationReceipt(
-                createdComment == null ? issuePayloadWithContext : {
-                  ...issuePayloadWithContext,
+                createdComment == null ? issuePayloadWithTriage : {
+                  ...issuePayloadWithTriage,
                   comment: buildIssueCommentPayload(createdComment, {
                     id: issue.id,
                     identifier: issue.identifier,

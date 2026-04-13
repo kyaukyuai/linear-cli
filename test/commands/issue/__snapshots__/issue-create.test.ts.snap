@@ -11,39 +11,42 @@ Description:
 
 Options:
 
-  -h, --help                                - Show this help.                                                         
-  --start                                   - Start the issue after creation                                          
-  -a, --assignee             <assignee>     - Assign the issue to 'self' or someone (by username or name)             
-  --due-date                 <dueDate>      - Due date of the issue                                                   
-  --parent                   <parent>       - Parent issue (if any) as a team_number code                             
-  -p, --priority             <priority>     - Priority of the issue (1-4, descending priority)                        
-  --estimate                 <estimate>     - Points estimate of the issue                                            
-  -d, --description          <description>  - Description of the issue (prefer --description-file for markdown)       
-  --description-file         <path>         - Read description from a file (preferred for markdown content)           
-  --context-file             <path>         - Read a normalized external context JSON envelope from a file.           
-  -l, --label                <label>        - Issue label associated with the issue. May be repeated.                 
-  --team                     <team>         - Team associated with the issue (if not your default team)               
-  --project                  <project>      - Name or slug ID of the project with the issue                           
-  -s, --state                <state>        - Workflow state for the issue (by name or type)                          
-  --milestone                <milestone>    - Name of the project milestone                                           
-  --cycle                    <cycle>        - Cycle name, number, or 'active'                                         
-  -j, --json                                - Force machine-readable JSON output                                      
-  --text                                    - Output human-readable text                                              
-  --dry-run                                 - Preview the created issue without creating it                           
-  --timeout-ms               <timeoutMs>    - Timeout for write confirmation in milliseconds                          
-  --no-pager                                - Accepted for compatibility; issue create does not use a pager           
-  --no-use-default-template                 - Do not use default template for the issue                               
-  -i, --interactive                         - Enable interactive prompts and editor flow                              
-  --no-interactive                          - Accepted for compatibility; issue create is non-interactive by default  
-  -t, --title                <title>        - Title of the issue                                                      
+  -h, --help                                - Show this help.                                                               
+  --start                                   - Start the issue after creation                                                
+  -a, --assignee             <assignee>     - Assign the issue to 'self' or someone (by username or name)                   
+  --due-date                 <dueDate>      - Due date of the issue                                                         
+  --parent                   <parent>       - Parent issue (if any) as a team_number code                                   
+  -p, --priority             <priority>     - Priority of the issue (1-4, descending priority)                              
+  --estimate                 <estimate>     - Points estimate of the issue                                                  
+  -d, --description          <description>  - Description of the issue (prefer --description-file for markdown)             
+  --description-file         <path>         - Read description from a file (preferred for markdown content)                 
+  --context-file             <path>         - Read a normalized external context JSON envelope from a file.                 
+  --apply-triage                            - Apply deterministic triage hints from --context-file when routing fields are  
+                                              omitted.                                                                      
+  -l, --label                <label>        - Issue label associated with the issue. May be repeated.                       
+  --team                     <team>         - Team associated with the issue (if not your default team)                     
+  --project                  <project>      - Name or slug ID of the project with the issue                                 
+  -s, --state                <state>        - Workflow state for the issue (by name or type)                                
+  --milestone                <milestone>    - Name of the project milestone                                                 
+  --cycle                    <cycle>        - Cycle name, number, or 'active'                                               
+  -j, --json                                - Force machine-readable JSON output                                            
+  --text                                    - Output human-readable text                                                    
+  --dry-run                                 - Preview the created issue without creating it                                 
+  --timeout-ms               <timeoutMs>    - Timeout for write confirmation in milliseconds                                
+  --no-pager                                - Accepted for compatibility; issue create does not use a pager                 
+  --no-use-default-template                 - Do not use default template for the issue                                     
+  -i, --interactive                         - Enable interactive prompts and editor flow                                    
+  --no-interactive                          - Accepted for compatibility; issue create is non-interactive by default        
+  -t, --title                <title>        - Title of the issue                                                            
 
 Examples:
 
-  Create an issue as JSON                               linear issue create --title "Fix auth expiry bug" --team ENG                          
-  Create an issue with a piped description              cat description.md | linear issue create --title "Fix auth expiry bug" --team ENG     
-  Create an issue from a normalized source context file linear issue create --team ENG --context-file slack-thread.json --dry-run --json      
-  Create an issue with human-readable output            linear issue create --title "Fix auth expiry bug" --team ENG --text                   
-  Preview issue creation                                linear issue create --title "Fix auth expiry bug" --team ENG --state started --dry-run
+  Create an issue as JSON                                   linear issue create --title "Fix auth expiry bug" --team ENG                          
+  Create an issue with a piped description                  cat description.md | linear issue create --title "Fix auth expiry bug" --team ENG     
+  Create an issue from a normalized source context file     linear issue create --team ENG --context-file slack-thread.json --dry-run --json      
+  Apply deterministic triage from normalized source context linear issue create --context-file slack-thread.json --apply-triage --dry-run --json  
+  Create an issue with human-readable output                linear issue create --title "Fix auth expiry bug" --team ENG --text                   
+  Preview issue creation                                    linear issue create --title "Fix auth expiry bug" --team ENG --state started --dry-run
 
 \`
 stderr:
@@ -395,6 +398,382 @@ stdout:
     "changes": [
       "title",
       "description"
+    ],
+    "noOp": false,
+    "partialSuccess": false,
+    "nextSafeAction": "read_before_retry"
+  }
+}
+'
+stderr:
+""
+`;
+
+snapshot[`Issue Create Command - JSON Dry Run With Applied Triage 1`] = `
+stdout:
+'{
+  "success": true,
+  "dryRun": true,
+  "summary": "Would create issue in ENG",
+  "data": {
+    "command": "issue.create",
+    "start": false,
+    "team": {
+      "id": "team-eng-id",
+      "key": "ENG"
+    },
+    "project": {
+      "id": null,
+      "nameOrSlug": null
+    },
+    "input": {
+      "title": "Customer reports auth refresh failures",
+      "description": "## Source Context\\\\n- System: slack\\\\n- Ref: C12345:1712382000.100200\\\\n- URL: https://example.slack.com/archives/C12345/p1712382000100200\\\\n- Captured At: 2026-04-12T10:00:00Z\\\\n\\\\n### Title\\\\nCustomer reports auth refresh failures\\\\n\\\\n### Summary\\\\nA customer thread reports repeated auth refresh failures after the latest deploy.\\\\n\\\\n### Text Blocks\\\\n#### Initial report (alice, 2026-04-12T09:58:00Z)\\\\nMultiple customers say refresh tokens fail after 30 minutes.\\\\n#### Support follow-up (bob, 2026-04-12T09:59:00Z)\\\\nLogs point to the new auth rollout in production.\\\\n\\\\n### Participants\\\\n- Alice Agent @alice (reporter)\\\\n- Bob Support @bob (support)\\\\n\\\\n### Attachments\\\\n- auth-refresh.log (text/plain)\\\\n  URL: https://example.com/auth-refresh.log\\\\n\\\\n### Metadata\\\\n- customerId: cust_123\\\\n- severity: high\\\\n",
+      "assigneeId": null,
+      "dueDate": null,
+      "parent": null,
+      "priority": null,
+      "estimate": null,
+      "labelIds": [
+        "label-customer",
+        "label-incident"
+      ],
+      "teamId": "team-eng-id",
+      "projectId": null,
+      "projectMilestoneId": null,
+      "cycleId": null,
+      "stateId": "state-triage",
+      "useDefaultTemplate": true
+    },
+    "sourceContext": {
+      "version": "v1",
+      "target": "description",
+      "source": {
+        "system": "slack",
+        "ref": "C12345:1712382000.100200",
+        "url": "https://example.slack.com/archives/C12345/p1712382000100200",
+        "title": "Customer reports auth refresh failures",
+        "capturedAt": "2026-04-12T10:00:00Z"
+      },
+      "title": null,
+      "summary": "A customer thread reports repeated auth refresh failures after the latest deploy.",
+      "participantCount": 2,
+      "textBlockCount": 2,
+      "attachmentCount": 1,
+      "metadataKeys": [
+        "customerId",
+        "severity"
+      ]
+    },
+    "triage": {
+      "family": "source_intake_triage",
+      "version": "v1",
+      "target": "issue.create",
+      "applyRequested": true,
+      "appliedChanges": [
+        "team",
+        "state",
+        "labels"
+      ],
+      "suggestions": {
+        "team": {
+          "requested": "ENG",
+          "status": "resolved",
+          "resolved": {
+            "id": "team-eng-id",
+            "key": "ENG",
+            "name": "Engineering"
+          },
+          "applied": true,
+          "reason": null
+        },
+        "state": {
+          "requested": "triage",
+          "status": "resolved",
+          "resolved": {
+            "id": "state-triage",
+            "name": "Triage",
+            "type": "triage",
+            "color": "#f2c94c"
+          },
+          "applied": true,
+          "reason": null
+        },
+        "labels": [
+          {
+            "requested": "customer",
+            "status": "resolved",
+            "resolved": {
+              "id": "label-customer",
+              "name": "customer",
+              "color": "#f87462"
+            },
+            "applied": true,
+            "reason": null
+          },
+          {
+            "requested": "incident",
+            "status": "resolved",
+            "resolved": {
+              "id": "label-incident",
+              "name": "incident",
+              "color": "#f2c94c"
+            },
+            "applied": true,
+            "reason": null
+          }
+        ],
+        "duplicateCandidates": [
+          {
+            "requested": "ENG-88",
+            "status": "resolved",
+            "resolved": {
+              "id": "issue-88",
+              "identifier": "ENG-88",
+              "title": "Previous auth bug",
+              "url": "https://linear.app/test-team/issue/ENG-88/previous-auth-bug",
+              "state": {
+                "name": "Done",
+                "color": "#68cc58"
+              }
+            },
+            "reason": null
+          }
+        ],
+        "relatedIssues": [
+          {
+            "requested": "ENG-42",
+            "status": "resolved",
+            "resolved": {
+              "id": "issue-42",
+              "identifier": "ENG-42",
+              "title": "Auth incident follow-up",
+              "url": "https://linear.app/test-team/issue/ENG-42/auth-incident-follow-up",
+              "state": {
+                "name": "In Progress",
+                "color": "#f87462"
+              }
+            },
+            "reason": null
+          }
+        ]
+      }
+    }
+  },
+  "operation": {
+    "family": "write_operation",
+    "version": "v1",
+    "phase": "preview",
+    "command": "issue.create",
+    "resource": "issue",
+    "action": "create",
+    "summary": "Would create issue in ENG",
+    "refs": {
+      "teamKey": "ENG",
+      "project": null,
+      "parentIssueIdentifier": null,
+      "sourceSystem": "slack",
+      "sourceRef": "C12345:1712382000.100200"
+    },
+    "changes": [
+      "title",
+      "description",
+      "assigneeId",
+      "dueDate",
+      "parent",
+      "priority",
+      "estimate",
+      "labelIds",
+      "teamId",
+      "projectId",
+      "projectMilestoneId",
+      "cycleId",
+      "stateId",
+      "useDefaultTemplate"
+    ],
+    "noOp": false,
+    "partialSuccess": false,
+    "nextSafeAction": "apply"
+  }
+}
+'
+stderr:
+""
+`;
+
+snapshot[`Issue Create Command - JSON Output With Applied Triage 1`] = `
+stdout:
+'{
+  "id": "issue-new-triage",
+  "identifier": "ENG-778",
+  "title": "Customer reports auth refresh failures",
+  "url": "https://linear.app/test-team/issue/ENG-778/customer-reports-auth-refresh-failures",
+  "dueDate": null,
+  "assignee": null,
+  "parent": null,
+  "state": {
+    "name": "Triage",
+    "color": "#f2c94c"
+  },
+  "sourceContext": {
+    "version": "v1",
+    "target": "description",
+    "source": {
+      "system": "slack",
+      "ref": "C12345:1712382000.100200",
+      "url": "https://example.slack.com/archives/C12345/p1712382000100200",
+      "title": "Customer reports auth refresh failures",
+      "capturedAt": "2026-04-12T10:00:00Z"
+    },
+    "title": null,
+    "summary": "A customer thread reports repeated auth refresh failures after the latest deploy.",
+    "participantCount": 2,
+    "textBlockCount": 2,
+    "attachmentCount": 1,
+    "metadataKeys": [
+      "customerId",
+      "severity"
+    ]
+  },
+  "triage": {
+    "family": "source_intake_triage",
+    "version": "v1",
+    "target": "issue.create",
+    "applyRequested": true,
+    "appliedChanges": [
+      "team",
+      "state",
+      "labels"
+    ],
+    "suggestions": {
+      "team": {
+        "requested": "ENG",
+        "status": "resolved",
+        "resolved": {
+          "id": "team-eng-id",
+          "key": "ENG",
+          "name": "Engineering"
+        },
+        "applied": true,
+        "reason": null
+      },
+      "state": {
+        "requested": "triage",
+        "status": "resolved",
+        "resolved": {
+          "id": "state-triage",
+          "name": "Triage",
+          "type": "triage",
+          "color": "#f2c94c"
+        },
+        "applied": true,
+        "reason": null
+      },
+      "labels": [
+        {
+          "requested": "customer",
+          "status": "resolved",
+          "resolved": {
+            "id": "label-customer",
+            "name": "customer",
+            "color": "#f87462"
+          },
+          "applied": true,
+          "reason": null
+        },
+        {
+          "requested": "incident",
+          "status": "resolved",
+          "resolved": {
+            "id": "label-incident",
+            "name": "incident",
+            "color": "#f2c94c"
+          },
+          "applied": true,
+          "reason": null
+        }
+      ],
+      "duplicateCandidates": [
+        {
+          "requested": "ENG-88",
+          "status": "resolved",
+          "resolved": {
+            "id": "issue-88",
+            "identifier": "ENG-88",
+            "title": "Previous auth bug",
+            "url": "https://linear.app/test-team/issue/ENG-88/previous-auth-bug",
+            "state": {
+              "name": "Done",
+              "color": "#68cc58"
+            }
+          },
+          "reason": null
+        }
+      ],
+      "relatedIssues": [
+        {
+          "requested": "ENG-42",
+          "status": "resolved",
+          "resolved": {
+            "id": "issue-42",
+            "identifier": "ENG-42",
+            "title": "Auth incident follow-up",
+            "url": "https://linear.app/test-team/issue/ENG-42/auth-incident-follow-up",
+            "state": {
+              "name": "In Progress",
+              "color": "#f87462"
+            }
+          },
+          "reason": null
+        }
+      ]
+    }
+  },
+  "receipt": {
+    "operationId": "issue.create",
+    "resource": "issue",
+    "action": "create",
+    "resolvedRefs": {
+      "issueIdentifier": "ENG-778",
+      "teamKey": "ENG",
+      "assignee": null,
+      "parentIssueIdentifier": null,
+      "state": "Triage",
+      "sourceSystem": "slack",
+      "sourceRef": "C12345:1712382000.100200"
+    },
+    "appliedChanges": [
+      "title",
+      "description",
+      "labels",
+      "state"
+    ],
+    "noOp": false,
+    "partialSuccess": false,
+    "nextSafeAction": "read_before_retry"
+  },
+  "operation": {
+    "family": "write_operation",
+    "version": "v1",
+    "phase": "apply",
+    "command": "issue.create",
+    "resource": "issue",
+    "action": "create",
+    "summary": "Created issue ENG-778",
+    "refs": {
+      "issueIdentifier": "ENG-778",
+      "teamKey": "ENG",
+      "assignee": null,
+      "parentIssueIdentifier": null,
+      "state": "Triage",
+      "sourceSystem": "slack",
+      "sourceRef": "C12345:1712382000.100200"
+    },
+    "changes": [
+      "title",
+      "description",
+      "labels",
+      "state"
     ],
     "noOp": false,
     "partialSuccess": false,

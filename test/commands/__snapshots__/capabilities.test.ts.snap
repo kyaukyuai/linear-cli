@@ -3531,6 +3531,14 @@ stdout:
             ]
           },
           {
+            "name": "--apply-triage",
+            "short": null,
+            "required": false,
+            "valueType": "boolean",
+            "description": "Apply deterministic triage hints from --context-file when routing fields are omitted.",
+            "allowedValues": null
+          },
+          {
             "name": "--label",
             "short": "-l",
             "required": false,
@@ -3696,6 +3704,10 @@ stdout:
           },
           {
             "source": "flag",
+            "name": "--apply-triage"
+          },
+          {
+            "source": "flag",
             "name": "--label"
           },
           {
@@ -3820,6 +3832,20 @@ stdout:
             "reason": "Normalized source context supplies the description body, so it cannot be combined with explicit description text, a description file, or piped stdin content."
           },
           {
+            "source": {
+              "source": "flag",
+              "name": "--apply-triage"
+            },
+            "kind": "requires_all_of",
+            "targets": [
+              {
+                "source": "flag",
+                "name": "--context-file"
+              }
+            ],
+            "reason": "--apply-triage only applies when a normalized context file is provided."
+          },
+          {
             "kind": "requires_any_of",
             "targets": [
               {
@@ -3896,6 +3922,19 @@ stdout:
               "--dry-run",
               "--json"
             ]
+          },
+          {
+            "description": "Preview deterministic triage from normalized source context.",
+            "argv": [
+              "linear",
+              "issue",
+              "create",
+              "--context-file",
+              "slack-thread.json",
+              "--apply-triage",
+              "--dry-run",
+              "--json"
+            ]
           }
         ]
       },
@@ -3919,6 +3958,7 @@ stdout:
             "parent",
             "state",
             "sourceContext",
+            "triage",
             "receipt",
             "operation"
           ]
@@ -6129,6 +6169,14 @@ stdout:
             ]
           },
           {
+            "name": "--apply-triage",
+            "short": null,
+            "required": false,
+            "valueType": "boolean",
+            "description": "Apply deterministic triage hints from --context-file when routing fields are omitted.",
+            "allowedValues": null
+          },
+          {
             "name": "--label",
             "short": "-l",
             "required": false,
@@ -6292,6 +6340,10 @@ stdout:
           {
             "source": "flag",
             "name": "--context-target"
+          },
+          {
+            "source": "flag",
+            "name": "--apply-triage"
           },
           {
             "source": "flag",
@@ -6459,6 +6511,20 @@ stdout:
             "reason": "Normalized source context and --description-file are mutually exclusive."
           },
           {
+            "source": {
+              "source": "flag",
+              "name": "--apply-triage"
+            },
+            "kind": "requires_all_of",
+            "targets": [
+              {
+                "source": "flag",
+                "name": "--context-file"
+              }
+            ],
+            "reason": "--apply-triage only applies when a normalized context file is provided."
+          },
+          {
             "kind": "at_most_one_of",
             "targets": [
               {
@@ -6523,6 +6589,20 @@ stdout:
             ]
           },
           {
+            "description": "Preview deterministic triage from normalized source context.",
+            "argv": [
+              "linear",
+              "issue",
+              "update",
+              "ENG-123",
+              "--context-file",
+              "slack-thread.json",
+              "--apply-triage",
+              "--dry-run",
+              "--json"
+            ]
+          },
+          {
             "description": "Apply an update and append a comment.",
             "argv": [
               "linear",
@@ -6559,6 +6639,7 @@ stdout:
             "state",
             "comment",
             "sourceContext",
+            "triage",
             "receipt",
             "operation"
           ]

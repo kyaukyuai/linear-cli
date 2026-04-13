@@ -2,6 +2,14 @@ import { ValidationError } from "./errors.ts"
 
 type ExternalContextMetadataValue = string | number | boolean | null
 
+type ExternalContextTriage = {
+  team: string | null
+  state: string | null
+  labels: string[]
+  duplicateIssueRefs: string[]
+  relatedIssueRefs: string[]
+}
+
 type ExternalContextParticipant = {
   name: string
   handle: string | null
@@ -37,6 +45,7 @@ export type ExternalContextEnvelope = {
   textBlocks: ExternalContextTextBlock[]
   attachments: ExternalContextAttachment[]
   metadata: Record<string, ExternalContextMetadataValue>
+  triage: ExternalContextTriage | null
 }
 
 export type ExternalContextTarget = "description" | "comment"
@@ -214,6 +223,67 @@ function readMetadata(
   return metadata
 }
 
+function readStringArray(
+  value: unknown,
+  path: string,
+): string[] {
+  if (value == null) {
+    return []
+  }
+
+  if (!Array.isArray(value)) {
+    throw new ValidationError(
+      `External context field ${path} must be an array`,
+    )
+  }
+
+  return value.map((entry, index) => {
+    if (typeof entry !== "string" || entry.trim().length === 0) {
+      throw new ValidationError(
+        `External context field ${path}[${index}] must be a non-empty string`,
+      )
+    }
+
+    return entry.trim()
+  })
+}
+
+function readTriage(
+  value: unknown,
+): ExternalContextTriage | null {
+  if (value == null) {
+    return null
+  }
+
+  const record = expectRecord(value, "triage")
+  const team = readOptionalString(record, "team", "triage")
+  const state = readOptionalString(record, "state", "triage")
+  const labels = readStringArray(record.labels, "triage.labels")
+  const duplicateIssueRefs = readStringArray(
+    record.duplicateIssueRefs,
+    "triage.duplicateIssueRefs",
+  )
+  const relatedIssueRefs = readStringArray(
+    record.relatedIssueRefs,
+    "triage.relatedIssueRefs",
+  )
+
+  if (
+    team == null && state == null && labels.length === 0 &&
+    duplicateIssueRefs.length === 0 && relatedIssueRefs.length === 0
+  ) {
+    return null
+  }
+
+  return {
+    team,
+    state,
+    labels,
+    duplicateIssueRefs,
+    relatedIssueRefs,
+  }
+}
+
 function hasRenderableContent(context: ExternalContextEnvelope): boolean {
   return context.title != null ||
     context.summary != null ||
@@ -277,6 +347,7 @@ export async function readExternalContextFromFile(
     textBlocks: readTextBlocks(record.textBlocks),
     attachments: readAttachments(record.attachments),
     metadata: readMetadata(record.metadata),
+    triage: readTriage(record.triage),
   }
 
   if (!hasRenderableContent(context)) {

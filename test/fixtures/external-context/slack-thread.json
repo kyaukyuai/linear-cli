@@ -41,6 +41,13 @@
       "mimeType": "text/plain"
     }
   ],
+  "triage": {
+    "team": "ENG",
+    "state": "triage",
+    "labels": ["customer", "incident"],
+    "duplicateIssueRefs": ["ENG-88"],
+    "relatedIssueRefs": ["ENG-42"]
+  },
   "metadata": {
     "customerId": "cust_123",
     "severity": "high"

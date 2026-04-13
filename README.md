@@ -14,6 +14,7 @@ linear issue view ENG-123
 linear issue create -t "Backfill webhook contract docs" --team ENG --dry-run --json
 linear issue update ENG-123 --state done --comment "Shipped in v2.10.0"
 linear issue create --team ENG --context-file slack-thread.json --dry-run --json
+linear issue update ENG-123 --context-file slack-thread.json --apply-triage --dry-run --json
 linear project view "Automation Contract v3"
 linear notification list
 ```
@@ -65,6 +66,7 @@ If an agent only reads one page, it should be this README plus the two contract 
 - use `--profile human-debug --interactive` for human/debug prompt flows; missing required inputs now fail fast by default
 - use stdin or file flags for Markdown-heavy descriptions and comments instead of long inline shell strings
 - use `--context-file` when upstream tooling can hand `linear-cli` a normalized source-context envelope for create/update flows
+- use `--apply-triage` with `--context-file` when the envelope already carries deterministic team/state/label hints
 
 Recommended docs:
 
@@ -186,6 +188,7 @@ compared to upstream, this fork adds and maintains capabilities aimed at automat
 - a shared top-level `operation` contract on representative preview/apply JSON write paths
 - stdin and pipeline support for high-value write paths
 - normalized source-context intake for issue create/update through `--context-file`
+- deterministic triage preview/apply for source-adjacent intake through `--apply-triage`
 - retry-safe semantics for relation add/delete, project label add/remove, notification read/archive, and structured partial-failure details
 - canonical `--yes` confirmation bypass handling for destructive commands
 - agent-focused help examples across automation-tier and major write commands

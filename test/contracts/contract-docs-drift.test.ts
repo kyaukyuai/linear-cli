@@ -347,6 +347,11 @@ Deno.test("agent-facing source docs keep default v2 and legacy v1 capabilities e
     )
     assertStringIncludes(
       text,
+      "--apply-triage",
+      `${sourceDoc.label} must document deterministic source triage intake`,
+    )
+    assertStringIncludes(
+      text,
       "v2-to-v3-migration-cookbook.md",
       `${sourceDoc.label} must reference the v2-to-v3 migration cookbook`,
     )
@@ -415,6 +420,11 @@ Deno.test("agent-native docs keep named consumer certification suites", async ()
     runbook,
     "`partial`: shared dry-run or machine-readable helper surface without a full stable contract.",
     "docs/agent-first.md must classify partial surfaces",
+  )
+  assertStringIncludes(
+    runbook,
+    "linear issue update ENG-123 --context-file ./slack-thread.json --apply-triage --dry-run --json",
+    "docs/agent-first.md must keep the triage preview example",
   )
 })
 

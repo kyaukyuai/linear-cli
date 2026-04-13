@@ -1,5 +1,6 @@
 import type { IssueCreateInput } from "../../__codegen__/graphql.ts"
 import type { ExternalContextPayload } from "../../utils/external_context.ts"
+import type { SourceTriageContract } from "../../utils/source_triage.ts"
 
 type IssueIdentifierRef = {
   id: string
@@ -34,6 +35,7 @@ export function buildIssueCreateDryRunPayload(options: {
   parent: IssueDraftParentRef
   start: boolean
   sourceContext?: ExternalContextPayload
+  triage?: SourceTriageContract
 }) {
   return {
     command: "issue.create",
@@ -44,6 +46,7 @@ export function buildIssueCreateDryRunPayload(options: {
     ...(options.sourceContext != null
       ? { sourceContext: options.sourceContext }
       : {}),
+    ...(options.triage != null ? { triage: options.triage } : {}),
   }
 }
 
@@ -53,6 +56,7 @@ export function buildIssueUpdateDryRunPayload(options: {
   parent: IssueDraftParentRef
   comment?: string | null
   sourceContext?: ExternalContextPayload
+  triage?: SourceTriageContract
 }) {
   const { parentId: _parentId, ...rest } = options.input
 
@@ -67,6 +71,7 @@ export function buildIssueUpdateDryRunPayload(options: {
     ...(options.sourceContext != null
       ? { sourceContext: options.sourceContext }
       : {}),
+    ...(options.triage != null ? { triage: options.triage } : {}),
   }
 }
 

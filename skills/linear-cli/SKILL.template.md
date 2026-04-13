@@ -22,6 +22,8 @@ Prompt-driven human/debug flows are secondary and explicit. When a command suppo
 
 Agent-safe execution semantics are now the default runtime behavior. `--text` and `--profile human-debug` are the explicit human/debug escape hatches for maintainers, and `--profile agent-safe` remains accepted for compatibility with older automation.
 
+When upstream tooling hands the runtime a normalized Slack, ticket, or similar source envelope, prefer `--context-file` and add `--apply-triage` if that envelope already contains deterministic team/state/label hints.
+
 Recommended supporting docs:
 
 - [../../docs/agent-first.md](../../docs/agent-first.md)

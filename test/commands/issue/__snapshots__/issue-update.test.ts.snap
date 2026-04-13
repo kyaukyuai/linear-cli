@@ -11,39 +11,42 @@ Description:
 
 Options:
 
-  -h, --help                         - Show this help.                                                     
-  -a, --assignee      <assignee>     - Assign the issue to 'self' or someone (by username or name)         
-  --due-date          <dueDate>      - Due date of the issue                                               
-  --clear-due-date                   - Clear the due date on the issue                                     
-  --parent            <parent>       - Parent issue (if any) as a team_number code                         
-  -p, --priority      <priority>     - Priority of the issue (1-4, descending priority)                    
-  --estimate          <estimate>     - Points estimate of the issue                                        
-  -d, --description   <description>  - Description of the issue (prefer --description-file for markdown)   
-  --comment           <comment>      - Add a comment after successfully updating the issue                 
-  --description-file  <path>         - Read description from a file (preferred for markdown content)       
-  --context-file      <path>         - Read a normalized external context JSON envelope from a file.       
-  --context-target    <target>       - Map --context-file into description or comment (default: comment).  
-  -l, --label         <label>        - Issue label associated with the issue. May be repeated.             
-  --team              <team>         - Team associated with the issue (if not your default team)           
-  --project           <project>      - Name or slug ID of the project with the issue                       
-  -s, --state         <state>        - Workflow state for the issue (by name or type)                      
-  --milestone         <milestone>    - Name of the project milestone                                       
-  --cycle             <cycle>        - Cycle name, number, or 'active'                                     
-  --no-interactive                   - Accepted for compatibility; issue update is always non-interactive  
-  -j, --json                         - Force machine-readable JSON output                                  
-  --text                             - Output human-readable text                                          
-  --dry-run                          - Preview the update without mutating the issue                       
-  --timeout-ms        <timeoutMs>    - Timeout for write confirmation in milliseconds                      
-  -t, --title         <title>        - Title of the issue                                                  
+  -h, --help                         - Show this help.                                                               
+  -a, --assignee      <assignee>     - Assign the issue to 'self' or someone (by username or name)                   
+  --due-date          <dueDate>      - Due date of the issue                                                         
+  --clear-due-date                   - Clear the due date on the issue                                               
+  --parent            <parent>       - Parent issue (if any) as a team_number code                                   
+  -p, --priority      <priority>     - Priority of the issue (1-4, descending priority)                              
+  --estimate          <estimate>     - Points estimate of the issue                                                  
+  -d, --description   <description>  - Description of the issue (prefer --description-file for markdown)             
+  --comment           <comment>      - Add a comment after successfully updating the issue                           
+  --description-file  <path>         - Read description from a file (preferred for markdown content)                 
+  --context-file      <path>         - Read a normalized external context JSON envelope from a file.                 
+  --context-target    <target>       - Map --context-file into description or comment (default: comment).            
+  --apply-triage                     - Apply deterministic triage hints from --context-file when routing fields are  
+                                       omitted.                                                                      
+  -l, --label         <label>        - Issue label associated with the issue. May be repeated.                       
+  --team              <team>         - Team associated with the issue (if not your default team)                     
+  --project           <project>      - Name or slug ID of the project with the issue                                 
+  -s, --state         <state>        - Workflow state for the issue (by name or type)                                
+  --milestone         <milestone>    - Name of the project milestone                                                 
+  --cycle             <cycle>        - Cycle name, number, or 'active'                                               
+  --no-interactive                   - Accepted for compatibility; issue update is always non-interactive            
+  -j, --json                         - Force machine-readable JSON output                                            
+  --text                             - Output human-readable text                                                    
+  --dry-run                          - Preview the update without mutating the issue                                 
+  --timeout-ms        <timeoutMs>    - Timeout for write confirmation in milliseconds                                
+  -t, --title         <title>        - Title of the issue                                                            
 
 Examples:
 
-  Update state and assignee                        linear issue update ENG-123 --state started --assignee self                                 
-  Preview an update with a comment                 linear issue update ENG-123 --state completed --comment "Ready for review" --dry-run        
-  Pipe a description into an update                cat description.md | linear issue update ENG-123 --state started --dry-run --json           
-  Preview an update with normalized source context linear issue update ENG-123 --state triage --context-file slack-thread.json --dry-run --json
-  Return the updated issue as JSON                 linear issue update ENG-123 --title "Fix auth timeout edge case"                            
-  Return human-readable terminal output            linear issue update ENG-123 --title "Fix auth timeout edge case" --text                     
+  Update state and assignee                                 linear issue update ENG-123 --state started --assignee self                                 
+  Preview an update with a comment                          linear issue update ENG-123 --state completed --comment "Ready for review" --dry-run        
+  Pipe a description into an update                         cat description.md | linear issue update ENG-123 --state started --dry-run --json           
+  Preview an update with normalized source context          linear issue update ENG-123 --state triage --context-file slack-thread.json --dry-run --json
+  Apply deterministic triage from normalized source context linear issue update ENG-123 --context-file slack-thread.json --apply-triage --dry-run --json
+  Return the updated issue as JSON                          linear issue update ENG-123 --title "Fix auth timeout edge case"                            
+  Return human-readable terminal output                     linear issue update ENG-123 --title "Fix auth timeout edge case" --text                     
 
 \`
 stderr:
@@ -403,6 +406,373 @@ stderr:
 ""
 `;
 
+snapshot[`Issue Update Command - JSON Dry Run With Applied Triage 1`] = `
+stdout:
+'{
+  "success": true,
+  "dryRun": true,
+  "summary": "Would update issue ENG-123",
+  "data": {
+    "command": "issue.update",
+    "issue": {
+      "identifier": "ENG-123"
+    },
+    "changes": {
+      "labelIds": [
+        "label-customer",
+        "label-incident"
+      ],
+      "teamId": "team-eng-id",
+      "stateId": "state-triage",
+      "parent": null
+    },
+    "comment": "## Source Context\\\\n- System: slack\\\\n- Ref: C12345:1712382000.100200\\\\n- URL: https://example.slack.com/archives/C12345/p1712382000100200\\\\n- Captured At: 2026-04-12T10:00:00Z\\\\n\\\\n### Title\\\\nCustomer reports auth refresh failures\\\\n\\\\n### Summary\\\\nA customer thread reports repeated auth refresh failures after the latest deploy.\\\\n\\\\n### Text Blocks\\\\n#### Initial report (alice, 2026-04-12T09:58:00Z)\\\\nMultiple customers say refresh tokens fail after 30 minutes.\\\\n#### Support follow-up (bob, 2026-04-12T09:59:00Z)\\\\nLogs point to the new auth rollout in production.\\\\n\\\\n### Participants\\\\n- Alice Agent @alice (reporter)\\\\n- Bob Support @bob (support)\\\\n\\\\n### Attachments\\\\n- auth-refresh.log (text/plain)\\\\n  URL: https://example.com/auth-refresh.log\\\\n\\\\n### Metadata\\\\n- customerId: cust_123\\\\n- severity: high\\\\n",
+    "sourceContext": {
+      "version": "v1",
+      "target": "comment",
+      "source": {
+        "system": "slack",
+        "ref": "C12345:1712382000.100200",
+        "url": "https://example.slack.com/archives/C12345/p1712382000100200",
+        "title": "Customer reports auth refresh failures",
+        "capturedAt": "2026-04-12T10:00:00Z"
+      },
+      "title": null,
+      "summary": "A customer thread reports repeated auth refresh failures after the latest deploy.",
+      "participantCount": 2,
+      "textBlockCount": 2,
+      "attachmentCount": 1,
+      "metadataKeys": [
+        "customerId",
+        "severity"
+      ]
+    },
+    "triage": {
+      "family": "source_intake_triage",
+      "version": "v1",
+      "target": "issue.update",
+      "applyRequested": true,
+      "appliedChanges": [
+        "state",
+        "labels"
+      ],
+      "suggestions": {
+        "team": {
+          "requested": "ENG",
+          "status": "resolved",
+          "resolved": {
+            "id": "team-eng-id",
+            "key": "ENG",
+            "name": "Engineering"
+          },
+          "applied": false,
+          "reason": "This command previews team routing but does not apply it."
+        },
+        "state": {
+          "requested": "triage",
+          "status": "resolved",
+          "resolved": {
+            "id": "state-triage",
+            "name": "Triage",
+            "type": "triage",
+            "color": "#f2c94c"
+          },
+          "applied": true,
+          "reason": null
+        },
+        "labels": [
+          {
+            "requested": "customer",
+            "status": "resolved",
+            "resolved": {
+              "id": "label-customer",
+              "name": "customer",
+              "color": "#f87462"
+            },
+            "applied": true,
+            "reason": null
+          },
+          {
+            "requested": "incident",
+            "status": "resolved",
+            "resolved": {
+              "id": "label-incident",
+              "name": "incident",
+              "color": "#f2c94c"
+            },
+            "applied": true,
+            "reason": null
+          }
+        ],
+        "duplicateCandidates": [
+          {
+            "requested": "ENG-88",
+            "status": "resolved",
+            "resolved": {
+              "id": "issue-88",
+              "identifier": "ENG-88",
+              "title": "Previous auth bug",
+              "url": "https://linear.app/test-team/issue/ENG-88/previous-auth-bug",
+              "state": {
+                "name": "Done",
+                "color": "#68cc58"
+              }
+            },
+            "reason": null
+          }
+        ],
+        "relatedIssues": [
+          {
+            "requested": "ENG-42",
+            "status": "resolved",
+            "resolved": {
+              "id": "issue-42",
+              "identifier": "ENG-42",
+              "title": "Auth incident follow-up",
+              "url": "https://linear.app/test-team/issue/ENG-42/auth-incident-follow-up",
+              "state": {
+                "name": "In Progress",
+                "color": "#f87462"
+              }
+            },
+            "reason": null
+          }
+        ]
+      }
+    }
+  },
+  "operation": {
+    "family": "write_operation",
+    "version": "v1",
+    "phase": "preview",
+    "command": "issue.update",
+    "resource": "issue",
+    "action": "update",
+    "summary": "Would update issue ENG-123",
+    "refs": {
+      "issueIdentifier": "ENG-123",
+      "teamKey": "ENG",
+      "parentIssueIdentifier": null,
+      "state": "Triage",
+      "sourceSystem": "slack",
+      "sourceRef": "C12345:1712382000.100200"
+    },
+    "changes": [
+      "labels",
+      "team",
+      "state",
+      "comment"
+    ],
+    "noOp": false,
+    "partialSuccess": false,
+    "nextSafeAction": "apply"
+  }
+}
+'
+stderr:
+""
+`;
+
+snapshot[`Issue Update Command - JSON Output With Applied Triage 1`] = `
+stdout:
+'{
+  "id": "issue-existing-123",
+  "identifier": "ENG-123",
+  "title": "Updated from triage context",
+  "url": "https://linear.app/test-team/issue/ENG-123/updated-from-triage-context",
+  "dueDate": null,
+  "assignee": null,
+  "parent": null,
+  "state": {
+    "name": "Triage",
+    "color": "#f2c94c"
+  },
+  "sourceContext": {
+    "version": "v1",
+    "target": "comment",
+    "source": {
+      "system": "slack",
+      "ref": "C12345:1712382000.100200",
+      "url": "https://example.slack.com/archives/C12345/p1712382000100200",
+      "title": "Customer reports auth refresh failures",
+      "capturedAt": "2026-04-12T10:00:00Z"
+    },
+    "title": null,
+    "summary": "A customer thread reports repeated auth refresh failures after the latest deploy.",
+    "participantCount": 2,
+    "textBlockCount": 2,
+    "attachmentCount": 1,
+    "metadataKeys": [
+      "customerId",
+      "severity"
+    ]
+  },
+  "triage": {
+    "family": "source_intake_triage",
+    "version": "v1",
+    "target": "issue.update",
+    "applyRequested": true,
+    "appliedChanges": [
+      "state",
+      "labels"
+    ],
+    "suggestions": {
+      "team": {
+        "requested": "ENG",
+        "status": "resolved",
+        "resolved": {
+          "id": "team-eng-id",
+          "key": "ENG",
+          "name": "Engineering"
+        },
+        "applied": false,
+        "reason": "This command previews team routing but does not apply it."
+      },
+      "state": {
+        "requested": "triage",
+        "status": "resolved",
+        "resolved": {
+          "id": "state-triage",
+          "name": "Triage",
+          "type": "triage",
+          "color": "#f2c94c"
+        },
+        "applied": true,
+        "reason": null
+      },
+      "labels": [
+        {
+          "requested": "customer",
+          "status": "resolved",
+          "resolved": {
+            "id": "label-customer",
+            "name": "customer",
+            "color": "#f87462"
+          },
+          "applied": true,
+          "reason": null
+        },
+        {
+          "requested": "incident",
+          "status": "resolved",
+          "resolved": {
+            "id": "label-incident",
+            "name": "incident",
+            "color": "#f2c94c"
+          },
+          "applied": true,
+          "reason": null
+        }
+      ],
+      "duplicateCandidates": [
+        {
+          "requested": "ENG-88",
+          "status": "resolved",
+          "resolved": {
+            "id": "issue-88",
+            "identifier": "ENG-88",
+            "title": "Previous auth bug",
+            "url": "https://linear.app/test-team/issue/ENG-88/previous-auth-bug",
+            "state": {
+              "name": "Done",
+              "color": "#68cc58"
+            }
+          },
+          "reason": null
+        }
+      ],
+      "relatedIssues": [
+        {
+          "requested": "ENG-42",
+          "status": "resolved",
+          "resolved": {
+            "id": "issue-42",
+            "identifier": "ENG-42",
+            "title": "Auth incident follow-up",
+            "url": "https://linear.app/test-team/issue/ENG-42/auth-incident-follow-up",
+            "state": {
+              "name": "In Progress",
+              "color": "#f87462"
+            }
+          },
+          "reason": null
+        }
+      ]
+    }
+  },
+  "comment": {
+    "id": "comment-triage-123",
+    "body": "## Source Context\\\\n- System: slack",
+    "createdAt": "2026-04-12T10:00:00Z",
+    "url": "https://linear.app/test-team/issue/ENG-123/updated-from-triage-context#comment-triage-123",
+    "parentId": null,
+    "issue": {
+      "id": "issue-existing-123",
+      "identifier": "ENG-123",
+      "title": "Updated from triage context",
+      "url": "https://linear.app/test-team/issue/ENG-123/updated-from-triage-context"
+    },
+    "user": {
+      "name": "alice.bot",
+      "displayName": "Alice Bot"
+    }
+  },
+  "receipt": {
+    "operationId": "issue.update",
+    "resource": "issue",
+    "action": "update",
+    "resolvedRefs": {
+      "issueIdentifier": "ENG-123",
+      "teamKey": "ENG",
+      "assignee": null,
+      "parentIssueIdentifier": null,
+      "state": "Triage",
+      "sourceSystem": "slack",
+      "sourceRef": "C12345:1712382000.100200"
+    },
+    "appliedChanges": [
+      "labels",
+      "team",
+      "state",
+      "comment"
+    ],
+    "noOp": false,
+    "partialSuccess": false,
+    "nextSafeAction": "read_before_retry"
+  },
+  "operation": {
+    "family": "write_operation",
+    "version": "v1",
+    "phase": "apply",
+    "command": "issue.update",
+    "resource": "issue",
+    "action": "update",
+    "summary": "Updated issue ENG-123",
+    "refs": {
+      "issueIdentifier": "ENG-123",
+      "teamKey": "ENG",
+      "assignee": null,
+      "parentIssueIdentifier": null,
+      "state": "Triage",
+      "sourceSystem": "slack",
+      "sourceRef": "C12345:1712382000.100200"
+    },
+    "changes": [
+      "labels",
+      "team",
+      "state",
+      "comment"
+    ],
+    "noOp": false,
+    "partialSuccess": false,
+    "nextSafeAction": "read_before_retry"
+  }
+}
+'
+stderr:
+""
+`;
+
 snapshot[`Issue Update Command - With Comment 1`] = `
 stdout:
 "Updating issue ENG-123
@@ -501,9 +871,9 @@ stdout:
 '{
   "success": false,
   "error": {
-    "type": "validation_error",
-    "message": "Cannot add a comment without any issue updates",
-    "suggestion": "Use \`linear issue comment add <ISSUE> --body <text>\` or pipe the comment body to \`linear issue comment add\` for a standalone comment.",
+    "type": "not_found",
+    "message": "Team not found: ENG",
+    "suggestion": null,
     "context": "Failed to update issue"
   }
 }
