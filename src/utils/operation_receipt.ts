@@ -4,6 +4,31 @@ export type OperationReceiptNextSafeAction =
 
 export type OperationReceiptResolvedRefs = Record<string, string | null>
 
+export type OperationReceiptSourceProvenance = {
+  version: "v1"
+  target: "description" | "comment"
+  source: {
+    system: string
+    ref: string | null
+    url: string | null
+    title: string | null
+    capturedAt: string | null
+  }
+  contextIds: Record<string, string>
+  evidenceRefs: string[]
+  relatedUrls: string[]
+  participantHandles: string[]
+  metadataKeys: string[]
+  triage: {
+    applied: boolean
+    team: string | null
+    state: string | null
+    labels: string[]
+    duplicateIssueRefs: string[]
+    relatedIssueRefs: string[]
+  } | null
+}
+
 export type OperationReceipt = {
   operationId: string
   resource: string
@@ -13,6 +38,7 @@ export type OperationReceipt = {
   noOp: boolean
   partialSuccess: boolean
   nextSafeAction: OperationReceiptNextSafeAction
+  sourceProvenance?: OperationReceiptSourceProvenance
 }
 
 export function buildOperationReceipt(
@@ -25,6 +51,7 @@ export function buildOperationReceipt(
     noOp?: boolean
     partialSuccess?: boolean
     nextSafeAction?: OperationReceiptNextSafeAction
+    sourceProvenance?: OperationReceiptSourceProvenance
   },
 ): OperationReceipt {
   const resolvedRefs: OperationReceiptResolvedRefs = {}
@@ -35,7 +62,7 @@ export function buildOperationReceipt(
     }
   }
 
-  return {
+  const receipt: OperationReceipt = {
     operationId: options.operationId,
     resource: options.resource,
     action: options.action,
@@ -45,6 +72,12 @@ export function buildOperationReceipt(
     partialSuccess: options.partialSuccess ?? false,
     nextSafeAction: options.nextSafeAction ?? "continue",
   }
+
+  if (options.sourceProvenance != null) {
+    receipt.sourceProvenance = options.sourceProvenance
+  }
+
+  return receipt
 }
 
 export function withOperationReceipt<TPayload extends Record<string, unknown>>(

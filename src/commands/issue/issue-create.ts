@@ -48,6 +48,7 @@ import {
 } from "../../utils/operation_receipt.ts"
 import {
   buildExternalContextPayload,
+  buildExternalContextSourceProvenance,
   deriveTitleFromExternalContext,
   readExternalContextFromFile,
   renderExternalContextMarkdown,
@@ -1228,6 +1229,15 @@ export const createCommand = new Command()
         const issueId = issue.id
         if (json) {
           const issuePayload = buildIssueWritePayload(issue)
+          const sourceProvenance = externalContext == null
+            ? undefined
+            : buildExternalContextSourceProvenance(
+              externalContext,
+              "description",
+              {
+                triageApplied: triageResult != null,
+              },
+            )
           const issuePayloadWithContext = sourceContext == null
             ? issuePayload
             : {
@@ -1270,6 +1280,7 @@ export const createCommand = new Command()
               ...(issuePayload.state != null ? ["state"] : []),
             ],
             nextSafeAction: "read_before_retry",
+            sourceProvenance,
           })
           console.log(JSON.stringify(
             withWriteOperationContract(

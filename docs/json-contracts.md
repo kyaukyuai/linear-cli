@@ -502,9 +502,40 @@ Used by successful high-value write commands that expose machine-readable receip
   "appliedChanges": ["state", "comment"],
   "noOp": false,
   "partialSuccess": false,
-  "nextSafeAction": "read_before_retry"
+  "nextSafeAction": "read_before_retry",
+  "sourceProvenance": {
+    "version": "v1",
+    "target": "comment",
+    "source": {
+      "system": "slack",
+      "ref": "C12345:1712382000.100200",
+      "url": "https://example.slack.com/archives/C12345/p1712382000100200",
+      "title": "Customer reports auth refresh failures",
+      "capturedAt": "2026-04-12T10:00:00Z"
+    },
+    "contextIds": {
+      "customerId": "cust_123"
+    },
+    "evidenceRefs": ["https://example.com/auth-refresh.log"],
+    "relatedUrls": [
+      "https://example.slack.com/archives/C12345/p1712382000100200",
+      "https://example.com/auth-refresh.log"
+    ],
+    "participantHandles": ["alice", "bob"],
+    "metadataKeys": ["customerId", "severity"],
+    "triage": {
+      "applied": true,
+      "team": "ENG",
+      "state": "triage",
+      "labels": ["customer", "incident"],
+      "duplicateIssueRefs": ["ENG-88"],
+      "relatedIssueRefs": ["ENG-42"]
+    }
+  }
 }
 ```
+
+`sourceProvenance` is optional and is present when a write command consumed normalized source context, such as `issue create --context-file` or `issue update --context-file`.
 
 ### `writeOperation`
 
@@ -659,6 +690,8 @@ Top-level shape:
 ```
 
 `sourceContext` is optional and is present only when the caller supplied `--context-file`.
+
+When `--context-file` is supplied, `receipt.sourceProvenance` is also present and carries the upstream source reference, related URLs, context IDs inferred from metadata, evidence refs, participant handles, and any deterministic triage hints that shaped the write.
 
 `triage` is optional and is present only when the caller supplied both `--context-file` and `--apply-triage`, and the normalized envelope included a deterministic `triage` object. `--apply-triage` applies team/state/label suggestions when the corresponding routing flags were omitted; duplicate and related issue candidates remain preview-only suggestions in the returned `triage` contract.
 
