@@ -2,7 +2,7 @@
 
 `linear-cli` is an agent-native Linear runtime for Claude Code, Codex, and other automation that needs a stable command surface instead of screen scraping or ad-hoc GraphQL scripts. this fork of [`schpet/linear-cli`](https://github.com/schpet/linear-cli) keeps the git and [jj](https://www.jj-vcs.dev/) workflow ergonomics from upstream, then layers on stable JSON contracts, startup discovery, dry-run previews, operation receipts, and workflow-safe error semantics for agent-controlled execution.
 
-if you want an agent to read Linear state, resolve refs, preview a write, apply it, and return structured output without leaving the shell, this repo is designed for that path first. `main` now reflects the `v3.0.0` runtime direction: core surfaces default to machine-readable output, startup flows are non-interactive, and human-oriented terminal output is an explicit escape hatch instead of the primary product surface.
+if you want an agent to read Linear state, resolve refs, preview a write, apply it, and return structured output without leaving the shell, this repo is designed for that path first. `main` now reflects the current `v3` runtime direction: core surfaces default to machine-readable output, startup flows are non-interactive, human-oriented terminal output is an explicit escape hatch, and source-adjacent intake can flow through normalized context envelopes instead of wrapper-specific glue code.
 
 ```bash
 linear capabilities
@@ -23,15 +23,16 @@ linear notification list
 
 the core agent surfaces now default to machine-readable JSON. use `--text` when a human wants terminal-oriented output for ad-hoc inspection or debugging.
 
-## what v3.0.0 means
+## what the v3 runtime means
 
-`v3.0.0` is the release where `linear-cli` stops behaving like a mixed human/agent CLI and starts behaving like an agent-native control plane by default.
+the `v3` line is where `linear-cli` stops behaving like a mixed human/agent CLI and starts behaving like an agent-native control plane by default.
 
 - startup discovery defaults to the richer `linear capabilities` schema
 - startup-critical reads and representative writes default to machine-readable JSON
 - prompt fallbacks are no longer implicit; use `--profile human-debug --interactive` when a maintainer explicitly wants them
 - `agent-safe` is the default execution profile
 - preview/apply/result flows share `operation`, `receipt`, and structured `error.details`
+- source-adjacent intake can use `--context-file`, `--apply-triage`, `--autonomy-policy`, and `receipt.sourceProvenance` as first-class runtime surfaces
 
 if you are integrating `linear-cli` into an agent runtime, assume the defaults above and treat `--text` plus `--profile human-debug` as secondary debugging tools.
 
@@ -45,6 +46,7 @@ Treat `linear-cli` as a shell-native control plane for agents:
 - write previews use `--dry-run --json`
 - write results expose `operation`, `receipt`, and structured `error.details`
 - `linear capabilities` classifies commands as `stable`, `partial`, or `escape_hatch`
+- source-adjacent intake can carry deterministic context, triage, autonomy policy, and provenance through `--context-file`
 - human/debug behavior is explicit with `--text` and `--profile human-debug --interactive`
 
 The practical default loop is:
@@ -70,12 +72,13 @@ If an agent only reads one page, it should be this README plus the two contract 
 - use `--context-file` when upstream tooling can hand `linear-cli` a normalized source-context envelope for create/update flows
 - use `--apply-triage` with `--context-file` when the envelope already carries deterministic team/state/label hints
 - use `--autonomy-policy suggest-only | preview-required | apply-allowed` to decide whether source-adjacent intake may only suggest, must preview, or may apply
+- inspect `receipt.sourceProvenance` after apply when the source-adjacent intake path needs a machine-readable audit trail back to Slack, tickets, or other upstream context
 
 Recommended docs:
 
 - [Agent workflow guide](docs/agent-first.md)
 - [Automation contracts](docs/json-contracts.md)
-- [Agent-only v3 release guide](docs/agent-only-v3.md)
+- [Agent-only v3 runtime guide](docs/agent-only-v3.md)
 - [v2 to v3 migration cookbook](docs/v2-to-v3-migration-cookbook.md)
 - [stdin and pipeline policy](docs/stdin-policy.md)
 
@@ -193,6 +196,7 @@ compared to upstream, this fork adds and maintains capabilities aimed at automat
 - stdin and pipeline support for high-value write paths
 - normalized source-context intake for issue create/update through `--context-file`
 - deterministic triage preview/apply for source-adjacent intake through `--apply-triage`
+- explicit source-intake autonomy policies through `--autonomy-policy suggest-only|preview-required|apply-allowed`
 - retry-safe semantics for relation add/delete, project label add/remove, notification read/archive, and structured partial-failure details
 - canonical `--yes` confirmation bypass handling for destructive commands
 - agent-focused help examples across automation-tier and major write commands
@@ -214,7 +218,7 @@ Use the docs in this order if you are building an agent integration:
 
 1. [docs/agent-first.md](docs/agent-first.md) for the recommended discover/read/preview/apply/recover loop
 2. [docs/json-contracts.md](docs/json-contracts.md) for stable JSON payloads, exit codes, timeout semantics, and dry-run envelopes
-3. [docs/agent-only-v3.md](docs/agent-only-v3.md) for the `v3.0.0` release contract and downstream migration checklist
+3. [docs/agent-only-v3.md](docs/agent-only-v3.md) for the current `v3` runtime contract and downstream migration checklist
 4. [docs/v2-to-v3-migration-cookbook.md](docs/v2-to-v3-migration-cookbook.md) for consumer-facing before/after upgrade examples
 5. [docs/stdin-policy.md](docs/stdin-policy.md) for pipeline and file-input conventions
 6. [`linear capabilities`](#automation-contract) for machine-readable command metadata at runtime

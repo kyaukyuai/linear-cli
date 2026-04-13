@@ -2,9 +2,9 @@
 
 `linear-cli` is designed so an agent can discover the command surface, read Linear state, preview writes, apply mutations, and recover from uncertain outcomes without scraping terminal text.
 
-Use this document as the default operating loop for `v3.0.0` and current `main`. Machine-readable output is the primary runtime contract. Human-readable text and prompt flows are explicit escape hatches.
+Use this document as the default operating loop for the current `v3` line and current `main`. Machine-readable output is the primary runtime contract. Human-readable text and prompt flows are explicit escape hatches.
 
-If you are planning for the breaking default flips in `v3.0.0`, read [agent-only-v3.md](./agent-only-v3.md) alongside this guide. For copy-pasteable migration examples, also keep [v2-to-v3-migration-cookbook.md](./v2-to-v3-migration-cookbook.md) nearby.
+If you need the breaking-default context or migration checklist for the `v3` line, read [agent-only-v3.md](./agent-only-v3.md) alongside this guide. For copy-pasteable migration examples, also keep [v2-to-v3-migration-cookbook.md](./v2-to-v3-migration-cookbook.md) nearby.
 
 ## 1. Discover The Surface
 
@@ -34,7 +34,7 @@ linear capabilities
 
 `agent-safe` disables pager-by-default behavior, extends the built-in write timeout to `45000ms` unless the caller overrides it, and requires explicit `--yes` for destructive confirmation bypass. It does not force `--json`, auto-confirm destructive actions, or replace missing required inputs.
 
-Human/debug prompt flows are explicit. When a command supports prompts or editor entry, pass `--profile human-debug --interactive`; otherwise missing required inputs fail fast with actionable guidance. In other words, the steady-state assumption for `v3.0.0` is: no prompts, no pager, no styled text parsing.
+Human/debug prompt flows are explicit. When a command supports prompts or editor entry, pass `--profile human-debug --interactive`; otherwise missing required inputs fail fast with actionable guidance. In other words, the steady-state assumption for the `v3` runtime is: no prompts, no pager, no styled text parsing.
 
 The default capabilities shape and the read entrypoints below are treated as startup-critical contracts and are release-gated in CI.
 
@@ -105,7 +105,7 @@ linear issue start ENG-123 --dry-run
 linear --profile human-debug issue create --interactive
 ```
 
-Preview output is stable and designed for plan/confirm/apply loops. On representative write surfaces, `operation` is the shared preview/apply family that callers should diff first. The goal in `v3.0.0` is that an agent can run the same parser path for preview, apply, no-op, and partial-success handling.
+Preview output is stable and designed for plan/confirm/apply loops. On representative write surfaces, `operation` is the shared preview/apply family that callers should diff first. The goal in the `v3` runtime is that an agent can run the same parser path for preview, apply, no-op, and partial-success handling.
 
 ## 5. Apply Writes With Machine-Readable Output
 
@@ -126,7 +126,7 @@ The receipt is the shared place for:
 - `noOp`
 - `nextSafeAction`
 
-When the write came from `--context-file`, also inspect `receipt.sourceProvenance`. That is the machine-readable audit trail for source system, source ref, related URLs, context IDs, and deterministic triage hints.
+When the write came from `--context-file`, also inspect `receipt.sourceProvenance`. That is the machine-readable audit trail for source system, source ref, related URLs, context IDs, deterministic triage hints, and any normalized participant or evidence metadata that shaped the intake flow.
 
 Important non-zero exit codes:
 
@@ -169,9 +169,16 @@ linear issue update ENG-123 --context-file ./slack-thread.json --autonomy-policy
 
 The full stdin rules are documented in [stdin-policy.md](./stdin-policy.md). When upstream tooling already normalized a Slack thread, support ticket, or similar source into JSON, prefer `--context-file` over inventing ad-hoc markdown at the wrapper layer. When that envelope already carries deterministic routing hints, add `--apply-triage` to preview or apply team/state/label suggestions without re-implementing triage in the wrapper. Use `--autonomy-policy suggest-only` when the wrapper should only surface source and triage suggestions, `--autonomy-policy preview-required` when a preview is mandatory before a later apply, and `--autonomy-policy apply-allowed` when the intake flow may mutate Linear once `--dry-run` is removed.
 
+In that source-adjacent path, read the payloads in this order:
+
+- `triage` for deterministic routing or duplicate hints
+- `autonomyPolicy` for the caller-selected runtime policy and its semantics
+- `operation` for the shared preview/apply contract
+- `receipt.sourceProvenance` after apply for the upstream audit trail
+
 ## 9. Use Human/Debug Mode Only Deliberately
 
-Human/debug mode still exists for maintainers, incident response, and one-off inspection, but it is not the primary runtime. In `v3.0.0`, using the commands below should feel like consciously leaving the agent-native path:
+Human/debug mode still exists for maintainers, incident response, and one-off inspection, but it is not the primary runtime. In the `v3` runtime, using the commands below should feel like consciously leaving the agent-native path:
 
 ```bash
 linear issue view ENG-123 --text

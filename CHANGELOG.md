@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+### Added
+
+- added normalized source-adjacent intake for `issue create` and `issue update` through `--context-file`, so upstream tooling can hand the CLI a deterministic external-context envelope instead of wrapper-specific markdown glue
+- added deterministic source triage preview/apply support for source-adjacent intake, including `--apply-triage` and explicit `--autonomy-policy suggest-only|preview-required|apply-allowed` controls
+- added source provenance to write receipts and a stable `linear resolve pack --json` context-pack surface so multi-entity agent workflows can resolve shared issue/team/user/project context in one step
+
+### Changed
+
+- refreshed the README, runtime docs, and generated skill guidance so the current `v3` runtime and upcoming `v3.2.0` release explain source-adjacent intake as a first-class agent path
+
 ## [3.1.0] - 2026-04-05
 
 ### Added

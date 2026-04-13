@@ -6,7 +6,7 @@ The goal is not to explain every design choice. The goal is to give consumer dev
 
 ## What Changed
 
-`v3.0.0` flips the default runtime toward agent-native behavior:
+the `v3` line flips the default runtime toward agent-native behavior:
 
 - core startup, read, and representative write surfaces default to machine-readable JSON
 - richer `linear capabilities` metadata is now the default startup shape

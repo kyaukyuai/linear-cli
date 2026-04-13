@@ -4,7 +4,7 @@
 
 If you are integrating this CLI into an agent runtime, read [agent-first.md](./agent-first.md) first, then use this document for the exact JSON and compatibility rules. The machine-readable contract is the primary product surface; `--text` and `--profile human-debug --interactive` are secondary human/debug escape hatches.
 
-For `v3.1.0`, this document describes the default runtime contract rather than an optional side channel. A caller should assume:
+For the current `v3` line, this document describes the default runtime contract rather than an optional side channel. A caller should assume:
 
 - startup discovery defaults to the richer capabilities schema
 - startup-critical reads default to machine-readable output
@@ -42,7 +42,7 @@ Compatibility rules:
 - machine-readable schema changes should be called out explicitly in release notes
 - the top-level JSON shape of the agent-first read entrypoints in [agent-first.md](./agent-first.md) is also guarded in CI as a startup contract
 
-In other words, `v3.1.0` treats the default capabilities surface as the startup contract and `--compat v1` as the legacy escape hatch.
+In other words, the current `v3` runtime treats the default capabilities surface as the startup contract and `--compat v1` as the legacy escape hatch.
 
 Default top-level shape from `linear capabilities`:
 
@@ -119,6 +119,19 @@ Default top-level shape from `linear capabilities`:
       }
     ]
   },
+  "runtimePolicies": {
+    "source_intake_autonomy": {
+      "description": "Controls how far normalized source-adjacent intake is allowed to progress in a single run.",
+      "defaultValue": "apply-allowed",
+      "appliesTo": ["linear issue create", "linear issue update"],
+      "values": [
+        {
+          "value": "suggest-only",
+          "description": "Preview source context and triage suggestions without applying triage or mutating Linear."
+        }
+      ]
+    }
+  },
   "commands": [
     {
       "path": "linear issue update",
@@ -127,6 +140,7 @@ Default top-level shape from `linear capabilities`:
         "class": "stable",
         "reason": "automation_contract"
       },
+      "runtimePolicies": ["source_intake_autonomy"],
       "json": {
         "supported": true,
         "contractVersion": "v1"
@@ -206,6 +220,7 @@ Rules:
 - `surfaceClasses` defines the runtime meaning of `stable`, `partial`, and `escape_hatch`
 - `commands[].surface.class` tells callers whether a command is part of the primary stable runtime, a partial helper surface, or an explicit escape hatch
 - `commands[].surface.reason` explains whether that classification comes from the startup contract, automation contract, shared preview contract, best-effort machine-readable behavior, raw API behavior, or human/debug-only behavior
+- `commands[].runtimePolicies` lists runtime policy families, such as source-intake autonomy, that the caller can opt into on that command
 - `automationTier.byVersion` lists the commands added by each automation contract version
 - `automationTier.allCommands` is the cumulative ordered list of all automation-tier commands
 - `json.contractVersion` is `null` when a command supports `--json` but is outside the stable automation tier
@@ -214,6 +229,7 @@ Rules:
 - `idempotency.category` is one of `read_only`, `retry_safe_update`, `retry_safe_no_op`, `non_idempotent`, `resumable_batch`, `conditional`, or `destructive`
 - `compatibility` describes the default, latest, and supported machine-readable capabilities schema versions
 - `executionProfiles` describes runtime profiles and their non-interactive defaults; `defaultProfile` shows which profile is active when callers do not override it
+- `runtimePolicies` describes explicit runtime policy families that the CLI can enforce without out-of-band orchestration logic
 - `schema.coverage` is currently `curated_primary_inputs`, meaning the metadata is intentionally focused on the primary agent-facing execution path and is not a full parser dump of every flag
 
 Release-gated downstream certification currently covers:

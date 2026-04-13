@@ -1,6 +1,6 @@
-# Agent-Only v3 Release Guide
+# Agent-Only v3 Runtime Guide
 
-This document is the source of truth for the `linear-cli` `v3.0.0` release that turns the project from an agent-first CLI into an agent-native runtime.
+This document is the source of truth for the `linear-cli` `v3` line that turns the project from an agent-first CLI into an agent-native runtime.
 
 For copy-pasteable command migration examples, pair this guide with [v2-to-v3-migration-cookbook.md](./v2-to-v3-migration-cookbook.md).
 
@@ -8,7 +8,7 @@ Use it to answer three questions:
 
 1. which `2.x` defaults will flip in `3.0`
 2. what human-oriented behavior remains available after `3.0`
-3. what must be true before cutting and publishing `v3.0.0`
+3. what the current `v3` line guarantees after the default flips shipped
 
 Current status on `main`:
 
@@ -18,8 +18,9 @@ Current status on `main`:
 - `linear capabilities` already defaults to the richer schema metadata
 - representative and remaining high-value writes now expose the `operation` / `receipt` family
 - README, contract docs, and skill docs are already written from the agent-native point of view
+- source-adjacent intake is already available through normalized context envelopes, deterministic triage, provenance-rich receipts, `resolve pack`, and explicit intake autonomy policies
 
-That means `main` is no longer exploring the direction. It is the release candidate line for `v3.0.0`. This document should now be read as a release and migration guide, not an open design brief.
+That means `main` is no longer exploring the direction. It is the active `v3` runtime line. This document should now be read as a runtime and migration guide, not an open design brief.
 
 ## Goals
 
@@ -80,7 +81,7 @@ The compatibility policy is intentionally conservative.
 
 ### 2.x policy
 
-Before `v3.0.0`, additive migration helpers may be introduced in `2.x`.
+Before the `v3` defaults shipped, additive migration helpers could be introduced in `2.x`.
 
 Allowed in `2.x`:
 
@@ -89,13 +90,13 @@ Allowed in `2.x`:
 - migration docs and examples
 - preview or experimental flags that let consumers test `v3` behavior explicitly
 
-Historically these defaults were conservative. Current `main` already rehearses the `v3` runtime defaults on the agent-native surfaces, so remaining `2.x` work should focus on migration clarity and contract completion rather than preserving the older mixed human-first behavior.
+Historically these defaults were conservative. Current `main` already ships the `v3` runtime defaults on the agent-native surfaces, so any remaining `2.x` references in downstream tooling should be treated as migration debt rather than an active compatibility target.
 
-### 3.0 policy
+### v3 policy
 
-`v3.0.0` is the point where defaults flip.
+The `v3` line is where defaults flipped.
 
-After `v3.0.0`:
+After the `v3` switch:
 
 - agent-native behavior is the default
 - human/debug behavior is opt-in only
@@ -112,7 +113,7 @@ Downstream consumers should migrate in this order.
 4. Pass all required inputs explicitly; do not rely on prompts.
 5. Add explicit `--text` and `--profile human-debug --interactive` flags in any manual scripts that still expect terminal text or prompt flows.
 
-Recommended preparation work for consumers before `v3.0.0`:
+Recommended preparation work for consumers moving onto the `v3` line:
 
 - pin to a `2.x` version while migrating
 - add tests for startup discovery and representative write flows
@@ -140,9 +141,9 @@ Treat `linear team list --json` as the compatibility-safe diagnostics path for a
 
 For a broader set of before/after command examples, see [v2-to-v3-migration-cookbook.md](./v2-to-v3-migration-cookbook.md).
 
-## Release Criteria For v3.0.0
+## Current v3 Guarantees
 
-Do not cut `v3.0.0` until all of the following are true.
+The following guarantees are what the `v3` line is expected to keep true.
 
 ### Design And Docs
 
@@ -172,16 +173,16 @@ Do not cut `v3.0.0` until all of the following are true.
 - release-gated docs and examples match the current CLI version and startup behavior
 - CI and release workflows remain green with the new defaults
 
-## Current Release Readiness
+## Current v3 Readiness
 
-At the time of writing, `main` satisfies the intended runtime direction for `v3.0.0`:
+At the time of writing, `main` satisfies the current `v3` runtime direction:
 
 - the project issues `KYA-310` through `KYA-315` are complete
 - startup-critical contract tests and downstream consumer certification are already in CI
 - docs describe agent-native defaults first and treat human/debug mode as explicit secondary behavior
-- the remaining work before tagging is release hygiene: changelog curation, version bump, publishing, and rollout confirmation
+- source-adjacent intake is now a first-class runtime path through `--context-file`, deterministic triage, provenance-rich receipts, `resolve pack`, and explicit autonomy policies
 
-If any of those bullets stops being true, update this document before cutting `v3.0.0`.
+If any of those bullets stops being true, update this document before treating a new `v3.x` release as ready.
 
 ## Issue Mapping
 

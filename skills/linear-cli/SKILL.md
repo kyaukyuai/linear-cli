@@ -6,7 +6,7 @@ allowed-tools: Bash(linear:*), Bash(curl:*)
 
 # Linear CLI
 
-An agent-native Linear runtime for the `v3.0.0` execution model, with stable JSON contracts, startup discovery, dry-run previews, timeout-aware write semantics, and git/jj workflow integration.
+An agent-native Linear runtime for the current `v3` execution model, with stable JSON contracts, startup discovery, dry-run previews, timeout-aware write semantics, source-adjacent intake, and git/jj workflow integration.
 
 ## Recommended Agent Loop
 
@@ -22,7 +22,7 @@ Prompt-driven human/debug flows are secondary and explicit. When a command suppo
 
 Agent-safe execution semantics are now the default runtime behavior. `--text` and `--profile human-debug` are the explicit human/debug escape hatches for maintainers, and `--profile agent-safe` remains accepted for compatibility with older automation.
 
-When upstream tooling hands the runtime a normalized Slack, ticket, or similar source envelope, prefer `--context-file` and add `--apply-triage` if that envelope already contains deterministic team/state/label hints.
+When upstream tooling hands the runtime a normalized Slack, ticket, or similar source envelope, prefer `--context-file`, add `--apply-triage` if that envelope already contains deterministic team/state/label hints, and choose `--autonomy-policy` explicitly when the wrapper needs suggest-only or preview-required staging.
 
 Recommended supporting docs:
 
