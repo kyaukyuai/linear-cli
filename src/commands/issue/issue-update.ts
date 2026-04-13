@@ -362,8 +362,7 @@ export const updateCommand = new Command()
         const sourceContext = externalContext == null
           ? null
           : buildExternalContextPayload(externalContext, resolvedContextTarget)
-        const hasExplicitIssueUpdates =
-          title !== undefined ||
+        const hasExplicitIssueUpdates = title !== undefined ||
           assignee !== undefined ||
           dueDate !== undefined ||
           clearDueDate === true ||
