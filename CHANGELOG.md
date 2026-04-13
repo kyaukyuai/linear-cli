@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unreleased]
+## [3.2.0] - 2026-04-13
 
 ### Added
 
@@ -10,7 +10,7 @@
 
 ### Changed
 
-- refreshed the README, runtime docs, and generated skill guidance so the current `v3` runtime and upcoming `v3.2.0` release explain source-adjacent intake as a first-class agent path
+- refreshed the README, runtime docs, and generated skill guidance so the current `v3` runtime explains source-adjacent intake as a first-class agent path
 
 ## [3.1.0] - 2026-04-05
 
