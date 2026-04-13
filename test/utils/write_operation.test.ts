@@ -13,6 +13,16 @@ Deno.test("buildWritePreviewOperation normalizes refs and defaults to apply", ()
       resource: "issue",
       action: "update",
       summary: "Would update issue ENG-123",
+      autonomyPolicy: {
+        family: "source_intake_autonomy_policy",
+        version: "v1",
+        selected: "preview-required",
+        semantics: {
+          requiresDryRun: true,
+          allowsMutation: false,
+          allowsTriageApply: true,
+        },
+      },
       refs: {
         issueIdentifier: "ENG-123",
         state: null,
@@ -36,6 +46,16 @@ Deno.test("buildWritePreviewOperation normalizes refs and defaults to apply", ()
       noOp: false,
       partialSuccess: false,
       nextSafeAction: "apply",
+      autonomyPolicy: {
+        family: "source_intake_autonomy_policy",
+        version: "v1",
+        selected: "preview-required",
+        semantics: {
+          requiresDryRun: true,
+          allowsMutation: false,
+          allowsTriageApply: true,
+        },
+      },
     },
   )
 })
@@ -90,6 +110,16 @@ Deno.test("buildWriteApplyOperationFromReceipt mirrors receipt semantics", () =>
       noOp: false,
       partialSuccess: false,
       nextSafeAction: "read_before_retry",
+      autonomyPolicy: {
+        family: "source_intake_autonomy_policy",
+        version: "v1",
+        selected: "apply-allowed",
+        semantics: {
+          requiresDryRun: false,
+          allowsMutation: true,
+          allowsTriageApply: true,
+        },
+      },
     }),
     {
       family: "write_operation",
@@ -106,6 +136,16 @@ Deno.test("buildWriteApplyOperationFromReceipt mirrors receipt semantics", () =>
       noOp: false,
       partialSuccess: false,
       nextSafeAction: "read_before_retry",
+      autonomyPolicy: {
+        family: "source_intake_autonomy_policy",
+        version: "v1",
+        selected: "apply-allowed",
+        semantics: {
+          requiresDryRun: false,
+          allowsMutation: true,
+          allowsTriageApply: true,
+        },
+      },
     },
   )
 })

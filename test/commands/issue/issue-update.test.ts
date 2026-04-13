@@ -704,6 +704,163 @@ await snapshotTest({
 })
 
 await snapshotTest({
+  name: "Issue Update Command - JSON Dry Run With Suggest-Only Autonomy Policy",
+  meta: import.meta,
+  colors: false,
+  args: [
+    "ENG-123",
+    "--context-file",
+    sourceContextPath,
+    "--autonomy-policy",
+    "suggest-only",
+    "--json",
+    "--dry-run",
+  ],
+  denoArgs: commonDenoArgs,
+  async fn() {
+    const { cleanup } = await setupMockLinearServer([
+      {
+        queryName: "GetAllTeams",
+        response: {
+          data: {
+            teams: {
+              nodes: [{ id: "team-eng-id", key: "ENG", name: "Engineering" }],
+              pageInfo: {
+                hasNextPage: false,
+                endCursor: null,
+              },
+            },
+          },
+        },
+      },
+      {
+        queryName: "GetTeamIdByKey",
+        variables: { team: "ENG" },
+        response: {
+          data: {
+            teams: {
+              nodes: [{ id: "team-eng-id" }],
+            },
+          },
+        },
+      },
+      {
+        queryName: "GetWorkflowStates",
+        variables: { teamKey: "ENG" },
+        response: {
+          data: {
+            team: {
+              id: "team-eng-id",
+              key: "ENG",
+              name: "Engineering",
+              states: {
+                nodes: [
+                  {
+                    id: "state-triage",
+                    name: "Triage",
+                    type: "triage",
+                    position: 1,
+                    color: "#f2c94c",
+                    description: null,
+                    createdAt: "2026-01-01T00:00:00Z",
+                    updatedAt: "2026-01-01T00:00:00Z",
+                    archivedAt: null,
+                    team: {
+                      id: "team-eng-id",
+                      key: "ENG",
+                      name: "Engineering",
+                    },
+                    inheritedFrom: null,
+                  },
+                ],
+              },
+            },
+          },
+        },
+      },
+      {
+        queryName: "GetLabelsForTeam",
+        variables: { teamKey: "ENG" },
+        response: {
+          data: {
+            team: {
+              labels: {
+                nodes: [
+                  { id: "label-customer", name: "customer", color: "#f87462" },
+                  { id: "label-incident", name: "incident", color: "#f2c94c" },
+                ],
+              },
+            },
+          },
+        },
+      },
+      {
+        queryName: "GetIssueId",
+        variables: { id: "ENG-88" },
+        response: {
+          data: {
+            issue: { id: "issue-88" },
+          },
+        },
+      },
+      {
+        queryName: "GetIssueDetails",
+        variables: { id: "ENG-88" },
+        response: {
+          data: {
+            issue: {
+              id: "issue-88",
+              identifier: "ENG-88",
+              title: "Previous auth bug",
+              url:
+                "https://linear.app/test-team/issue/ENG-88/previous-auth-bug",
+              state: {
+                name: "Done",
+                color: "#68cc58",
+              },
+            },
+          },
+        },
+      },
+      {
+        queryName: "GetIssueId",
+        variables: { id: "ENG-42" },
+        response: {
+          data: {
+            issue: { id: "issue-42" },
+          },
+        },
+      },
+      {
+        queryName: "GetIssueDetails",
+        variables: { id: "ENG-42" },
+        response: {
+          data: {
+            issue: {
+              id: "issue-42",
+              identifier: "ENG-42",
+              title: "Auth incident follow-up",
+              url:
+                "https://linear.app/test-team/issue/ENG-42/auth-incident-follow-up",
+              state: {
+                name: "In Progress",
+                color: "#f87462",
+              },
+            },
+          },
+        },
+      },
+    ], { LINEAR_TEAM_ID: "ENG" })
+
+    try {
+      await updateCommand.parse()
+    } finally {
+      await cleanup()
+    }
+  },
+})
+
+await snapshotTest({
   name: "Issue Update Command - JSON Output With Applied Triage",
   meta: import.meta,
   colors: false,

@@ -256,6 +256,11 @@ Deno.test("contract docs describe capabilities compat modes that match runtime o
   )
   assertStringIncludes(
     docs,
+    "`autonomyPolicy` is optional and is present only when the caller supplied `--context-file`",
+    "docs/json-contracts.md must document source-intake autonomy policy payloads",
+  )
+  assertStringIncludes(
+    docs,
     "`stable`, `partial`, and `escape_hatch`",
     "docs/json-contracts.md must document runtime surface classes",
   )

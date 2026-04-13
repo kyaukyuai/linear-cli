@@ -1,5 +1,10 @@
 import type { ExternalContextEnvelope } from "./external_context.ts"
 import {
+  buildSourceIntakeAutonomyPolicyContract,
+  type SourceIntakeAutonomyPolicy,
+  type SourceIntakeAutonomyPolicyContract,
+} from "./source_intake_policy.ts"
+import {
   fetchIssueDetails,
   getAllTeams,
   getIssueId,
@@ -77,6 +82,7 @@ export type SourceTriageContract = {
   version: "v1"
   target: "issue.create" | "issue.update"
   applyRequested: boolean
+  autonomyPolicy: SourceIntakeAutonomyPolicyContract
   appliedChanges: string[]
   suggestions: {
     team: TriageTeamDecision
@@ -290,6 +296,7 @@ export async function buildSourceTriageContract(options: {
   context: ExternalContextEnvelope
   target: "issue.create" | "issue.update"
   applyRequested: boolean
+  autonomyPolicy: SourceIntakeAutonomyPolicy
   fallbackTeamKey?: string | null
   preferTriageTeamForResolution?: boolean
   explicitTeam?: string | null
@@ -407,6 +414,9 @@ export async function buildSourceTriageContract(options: {
       version: "v1",
       target: options.target,
       applyRequested: options.applyRequested,
+      autonomyPolicy: buildSourceIntakeAutonomyPolicyContract(
+        options.autonomyPolicy,
+      ),
       appliedChanges,
       suggestions: {
         team: {

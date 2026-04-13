@@ -1,5 +1,6 @@
 import type { IssueCreateInput } from "../../__codegen__/graphql.ts"
 import type { ExternalContextPayload } from "../../utils/external_context.ts"
+import type { SourceIntakeAutonomyPolicyContract } from "../../utils/source_intake_policy.ts"
 import type { SourceTriageContract } from "../../utils/source_triage.ts"
 
 type IssueIdentifierRef = {
@@ -35,6 +36,7 @@ export function buildIssueCreateDryRunPayload(options: {
   parent: IssueDraftParentRef
   start: boolean
   sourceContext?: ExternalContextPayload
+  autonomyPolicy?: SourceIntakeAutonomyPolicyContract
   triage?: SourceTriageContract
 }) {
   return {
@@ -46,6 +48,9 @@ export function buildIssueCreateDryRunPayload(options: {
     ...(options.sourceContext != null
       ? { sourceContext: options.sourceContext }
       : {}),
+    ...(options.autonomyPolicy != null
+      ? { autonomyPolicy: options.autonomyPolicy }
+      : {}),
     ...(options.triage != null ? { triage: options.triage } : {}),
   }
 }
@@ -56,6 +61,7 @@ export function buildIssueUpdateDryRunPayload(options: {
   parent: IssueDraftParentRef
   comment?: string | null
   sourceContext?: ExternalContextPayload
+  autonomyPolicy?: SourceIntakeAutonomyPolicyContract
   triage?: SourceTriageContract
 }) {
   const { parentId: _parentId, ...rest } = options.input
@@ -70,6 +76,9 @@ export function buildIssueUpdateDryRunPayload(options: {
     comment: options.comment ?? null,
     ...(options.sourceContext != null
       ? { sourceContext: options.sourceContext }
+      : {}),
+    ...(options.autonomyPolicy != null
+      ? { autonomyPolicy: options.autonomyPolicy }
       : {}),
     ...(options.triage != null ? { triage: options.triage } : {}),
   }
