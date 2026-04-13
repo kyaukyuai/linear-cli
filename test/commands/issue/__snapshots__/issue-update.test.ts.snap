@@ -871,9 +871,9 @@ stdout:
 '{
   "success": false,
   "error": {
-    "type": "not_found",
-    "message": "Team not found: ENG",
-    "suggestion": null,
+    "type": "validation_error",
+    "message": "Cannot add a comment without any issue updates",
+    "suggestion": "Use \`linear issue comment add <ISSUE> --body <text>\` or pipe the comment body to \`linear issue comment add\` for a standalone comment.",
     "context": "Failed to update issue"
   }
 }

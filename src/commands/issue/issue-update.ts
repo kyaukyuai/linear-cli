@@ -362,6 +362,21 @@ export const updateCommand = new Command()
         const sourceContext = externalContext == null
           ? null
           : buildExternalContextPayload(externalContext, resolvedContextTarget)
+        const hasExplicitIssueUpdates =
+          title !== undefined ||
+          assignee !== undefined ||
+          dueDate !== undefined ||
+          clearDueDate === true ||
+          parent !== undefined ||
+          priority !== undefined ||
+          estimate !== undefined ||
+          finalDescription !== undefined ||
+          (labels?.length ?? 0) > 0 ||
+          team !== undefined ||
+          project !== undefined ||
+          state !== undefined ||
+          milestone !== undefined ||
+          cycle !== undefined
         if (applyTriage && externalContext?.triage == null) {
           throw new ValidationError(
             "--apply-triage requires triage hints inside --context-file",
@@ -374,6 +389,16 @@ export const updateCommand = new Command()
 
         if (finalComment != null && finalComment.trim().length === 0) {
           throw new ValidationError("Comment body cannot be empty")
+        }
+        if (finalComment != null && !hasExplicitIssueUpdates && !applyTriage) {
+          throw new ValidationError(
+            "Cannot add a comment without any issue updates",
+            {
+              suggestion: sourceContext != null
+                ? "Use --context-target description, pair --context-file with another issue update, apply triage with --apply-triage, or use `linear issue comment add <ISSUE> --body-file <path>` for a standalone context comment."
+                : "Use `linear issue comment add <ISSUE> --body <text>` or pipe the comment body to `linear issue comment add` for a standalone comment.",
+            },
+          )
         }
 
         const writeTimeoutMs = resolveWriteTimeoutMs(timeoutMs)
