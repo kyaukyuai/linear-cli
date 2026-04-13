@@ -139,6 +139,46 @@ Deno.test("buildCapabilitiesPayload defaults to the v2 compatibility shape", () 
       },
     ],
   })
+  assertEquals(payload.runtimePolicies, {
+    source_intake_autonomy: {
+      description:
+        "Controls how far normalized source-adjacent intake is allowed to progress in a single run.",
+      defaultValue: "apply-allowed",
+      appliesTo: ["linear issue create", "linear issue update"],
+      values: [
+        {
+          value: "suggest-only",
+          description:
+            "Preview source context and triage suggestions without applying triage or mutating Linear.",
+          effects: {
+            requiresDryRun: true,
+            allowsMutation: false,
+            allowsTriageApply: false,
+          },
+        },
+        {
+          value: "preview-required",
+          description:
+            "Allow deterministic triage planning, but require a dry-run preview before any later apply.",
+          effects: {
+            requiresDryRun: true,
+            allowsMutation: false,
+            allowsTriageApply: true,
+          },
+        },
+        {
+          value: "apply-allowed",
+          description:
+            "Allow the source-adjacent intake flow to apply once the caller omits --dry-run.",
+          effects: {
+            requiresDryRun: false,
+            allowsMutation: true,
+            allowsTriageApply: true,
+          },
+        },
+      ],
+    },
+  })
 })
 
 Deno.test("buildCapabilitiesPayload v1 preserves the legacy trimmed shape", () => {
@@ -150,6 +190,7 @@ Deno.test("buildCapabilitiesPayload v1 preserves the legacy trimmed shape", () =
   assertEquals(payload.schemaVersion, "v1")
   assert(issueUpdate != null)
   assertEquals("executionProfiles" in payload, false)
+  assertEquals("runtimePolicies" in payload, false)
   assertEquals("surfaceClasses" in payload, false)
   assertEquals("schema" in issueUpdate, false)
   assertEquals("output" in issueUpdate, false)
@@ -173,6 +214,7 @@ Deno.test("buildCapabilitiesPayload v2 includes issue update capability traits",
   })
   assertEquals(command.stdin, { mode: "implicit_text" })
   assertEquals(command.confirmationBypass, null)
+  assertEquals(command.runtimePolicies, ["source_intake_autonomy"])
   assertEquals(command.idempotency.category, "conditional")
   assertEquals(
     command.idempotency.notes,
@@ -243,6 +285,12 @@ Deno.test("buildCapabilitiesPayload v2 includes issue update capability traits",
     },
     {
       source: "flag",
+      name: "--autonomy-policy",
+      value: "apply-allowed",
+      description: "Defaults to apply-allowed when --context-file is provided.",
+    },
+    {
+      source: "flag",
       name: "--timeout-ms",
       value: null,
       description:
@@ -310,6 +358,13 @@ Deno.test("buildCapabilitiesPayload v2 includes issue update capability traits",
         "--apply-triage only applies when a normalized context file is provided.",
     },
     {
+      source: { source: "flag", name: "--autonomy-policy" },
+      kind: "requires_all_of",
+      targets: [{ source: "flag", name: "--context-file" }],
+      reason:
+        "--autonomy-policy only applies when a normalized context file is provided.",
+    },
+    {
       kind: "at_most_one_of",
       targets: [
         { source: "flag", name: "--json" },
@@ -371,6 +426,21 @@ Deno.test("buildCapabilitiesPayload v2 includes issue update capability traits",
       ],
     },
     {
+      description: "Preview source-intake suggestions without applying them.",
+      argv: [
+        "linear",
+        "issue",
+        "update",
+        "ENG-123",
+        "--context-file",
+        "slack-thread.json",
+        "--autonomy-policy",
+        "suggest-only",
+        "--dry-run",
+        "--json",
+      ],
+    },
+    {
       description: "Apply an update and append a comment.",
       argv: [
         "linear",
@@ -395,6 +465,7 @@ Deno.test("buildCapabilitiesPayload v2 includes issue update capability traits",
   assert(command.schema.flags.some((flag) => flag.name === "--context-file"))
   assert(command.schema.flags.some((flag) => flag.name === "--context-target"))
   assert(command.schema.flags.some((flag) => flag.name === "--apply-triage"))
+  assert(command.schema.flags.some((flag) => flag.name === "--autonomy-policy"))
   assertEquals(command.output.success, {
     category: "automation_contract",
     contractTarget: "automation_contract:v1",
@@ -415,6 +486,7 @@ Deno.test("buildCapabilitiesPayload v2 includes issue update capability traits",
       "state",
       "comment",
       "sourceContext",
+      "autonomyPolicy",
       "triage",
       "receipt",
       "operation",
@@ -697,15 +769,27 @@ Deno.test("buildCapabilitiesPayload v2 exposes parser-oriented metadata for repr
   const issueCreateContextFile = issueCreate.schema.flags.find((flag) =>
     flag.name === "--context-file"
   )
+  const issueCreateAutonomyPolicy = issueCreate.schema.flags.find((flag) =>
+    flag.name === "--autonomy-policy"
+  )
   assertEquals(issueCreateLabel?.repeatable, true)
   assertEquals(issueCreateLabel?.examples, ["bug", "customer"])
   assertEquals(issueCreateContextFile?.examples, ["slack-thread.json"])
+  assertEquals(
+    issueCreateAutonomyPolicy?.allowedValues?.map((entry) => entry.value),
+    ["suggest-only", "preview-required", "apply-allowed"],
+  )
+  assertEquals(issueCreateAutonomyPolicy?.defaultValue, "apply-allowed")
   assert(
     issueCreate.schema.flags.some((flag) => flag.name === "--interactive"),
   )
   assert(
     issueCreate.schema.flags.some((flag) => flag.name === "--apply-triage"),
   )
+  assert(
+    issueCreate.schema.flags.some((flag) => flag.name === "--autonomy-policy"),
+  )
+  assertEquals(issueCreate.runtimePolicies, ["source_intake_autonomy"])
   assert(
     issueCreate.schema.fileTargets.some((target) =>
       target.field === "sourceContext"
@@ -726,6 +810,13 @@ Deno.test("buildCapabilitiesPayload v2 exposes parser-oriented metadata for repr
   )
   assert(
     issueCreate.schema.constraints.some((constraint) =>
+      constraint.source?.name === "--autonomy-policy" &&
+      constraint.kind === "requires_all_of" &&
+      constraint.targets.some((target) => target.name === "--context-file")
+    ),
+  )
+  assert(
+    issueCreate.schema.constraints.some((constraint) =>
       constraint.kind === "at_most_one_of" &&
       constraint.targets.some((target) => target.name === "--json") &&
       constraint.targets.some((target) => target.name === "--text")
@@ -735,13 +826,25 @@ Deno.test("buildCapabilitiesPayload v2 exposes parser-oriented metadata for repr
   const issueUpdateContextTarget = issueUpdate.schema.flags.find((flag) =>
     flag.name === "--context-target"
   )
+  const issueUpdateAutonomyPolicy = issueUpdate.schema.flags.find((flag) =>
+    flag.name === "--autonomy-policy"
+  )
   assertEquals(
     issueUpdateContextTarget?.allowedValues?.map((entry) => entry.value),
     ["comment", "description"],
   )
+  assertEquals(
+    issueUpdateAutonomyPolicy?.allowedValues?.map((entry) => entry.value),
+    ["suggest-only", "preview-required", "apply-allowed"],
+  )
+  assertEquals(issueUpdateAutonomyPolicy?.defaultValue, "apply-allowed")
   assert(
     issueUpdate.schema.flags.some((flag) => flag.name === "--apply-triage"),
   )
+  assert(
+    issueUpdate.schema.flags.some((flag) => flag.name === "--autonomy-policy"),
+  )
+  assertEquals(issueUpdate.runtimePolicies, ["source_intake_autonomy"])
   assert(
     issueUpdate.schema.fileTargets.some((target) =>
       target.field === "sourceContext"
@@ -750,6 +853,13 @@ Deno.test("buildCapabilitiesPayload v2 exposes parser-oriented metadata for repr
   assert(
     issueUpdate.schema.constraints.some((constraint) =>
       constraint.source?.name === "--apply-triage" &&
+      constraint.kind === "requires_all_of" &&
+      constraint.targets.some((target) => target.name === "--context-file")
+    ),
+  )
+  assert(
+    issueUpdate.schema.constraints.some((constraint) =>
+      constraint.source?.name === "--autonomy-policy" &&
       constraint.kind === "requires_all_of" &&
       constraint.targets.some((target) => target.name === "--context-file")
     ),

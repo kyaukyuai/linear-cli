@@ -678,11 +678,22 @@ Top-level shape:
     "attachmentCount": 1,
     "metadataKeys": ["customerId", "severity"]
   },
+  "autonomyPolicy": {
+    "family": "source_intake_autonomy_policy",
+    "version": "v1",
+    "selected": "apply-allowed",
+    "semantics": {
+      "requiresDryRun": false,
+      "allowsMutation": true,
+      "allowsTriageApply": true
+    }
+  },
   "triage": {
     "family": "source_intake_triage",
     "version": "v1",
     "target": "issue.create",
     "applyRequested": true,
+    "autonomyPolicy": { "...": "sourceIntakeAutonomyPolicy" },
     "appliedChanges": ["team", "state", "labels"],
     "suggestions": { "...": "triageSuggestions" }
   },
@@ -693,9 +704,11 @@ Top-level shape:
 
 `sourceContext` is optional and is present only when the caller supplied `--context-file`.
 
+`autonomyPolicy` is optional and is present only when the caller supplied `--context-file`. The default selected policy is `apply-allowed`. `suggest-only` requires `--dry-run` and keeps triage in suggestion mode, `preview-required` requires `--dry-run` before a later apply, and `apply-allowed` permits the intake flow to mutate Linear once `--dry-run` is removed.
+
 When `--context-file` is supplied, `receipt.sourceProvenance` is also present and carries the upstream source reference, related URLs, context IDs inferred from metadata, evidence refs, participant handles, and any deterministic triage hints that shaped the write.
 
-`triage` is optional and is present only when the caller supplied both `--context-file` and `--apply-triage`, and the normalized envelope included a deterministic `triage` object. `--apply-triage` applies team/state/label suggestions when the corresponding routing flags were omitted; duplicate and related issue candidates remain preview-only suggestions in the returned `triage` contract.
+`triage` is optional and is present when the normalized envelope included a deterministic `triage` object and the selected intake policy asked the CLI to surface it. `--apply-triage` applies team/state/label suggestions when the corresponding routing flags were omitted, while `--autonomy-policy suggest-only` returns the same suggestions with `applyRequested = false`. Duplicate and related issue candidates remain preview-only suggestions in the returned `triage` contract.
 
 When `issue update --json` is called with `--comment` or with `--context-file --context-target comment`, the same top-level object is returned with an additional `comment` field shaped like `issue comment add --json`.
 

@@ -16,6 +16,7 @@ linear issue create -t "Backfill webhook contract docs" --team ENG --dry-run --j
 linear issue update ENG-123 --state done --comment "Shipped in v2.10.0"
 linear issue create --team ENG --context-file slack-thread.json --dry-run --json
 linear issue update ENG-123 --context-file slack-thread.json --apply-triage --dry-run --json
+linear issue update ENG-123 --context-file slack-thread.json --autonomy-policy suggest-only --dry-run --json
 linear project view "Automation Contract v3"
 linear notification list
 ```
@@ -68,6 +69,7 @@ If an agent only reads one page, it should be this README plus the two contract 
 - use stdin or file flags for Markdown-heavy descriptions and comments instead of long inline shell strings
 - use `--context-file` when upstream tooling can hand `linear-cli` a normalized source-context envelope for create/update flows
 - use `--apply-triage` with `--context-file` when the envelope already carries deterministic team/state/label hints
+- use `--autonomy-policy suggest-only | preview-required | apply-allowed` to decide whether source-adjacent intake may only suggest, must preview, or may apply
 
 Recommended docs:
 

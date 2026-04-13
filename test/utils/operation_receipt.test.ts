@@ -79,6 +79,31 @@ Deno.test("buildOperationReceipt preserves source provenance when provided", () 
   assertEquals(receipt.sourceProvenance?.triage?.applied, true)
 })
 
+Deno.test("buildOperationReceipt preserves autonomy policy when provided", () => {
+  const receipt = buildOperationReceipt({
+    operationId: "issue.create",
+    resource: "issue",
+    action: "create",
+    resolvedRefs: {
+      teamKey: "ENG",
+    },
+    appliedChanges: ["title"],
+    autonomyPolicy: {
+      family: "source_intake_autonomy_policy",
+      version: "v1",
+      selected: "apply-allowed",
+      semantics: {
+        requiresDryRun: false,
+        allowsMutation: true,
+        allowsTriageApply: true,
+      },
+    },
+  })
+
+  assertEquals(receipt.autonomyPolicy?.selected, "apply-allowed")
+  assertEquals(receipt.autonomyPolicy?.semantics.allowsMutation, true)
+})
+
 Deno.test("withOperationReceipt appends receipt without changing payload fields", () => {
   const receipt = buildOperationReceipt({
     operationId: "issue.comment.add",

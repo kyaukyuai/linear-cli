@@ -164,9 +164,10 @@ linear issue update ENG-123 --description-file ./description.md
 linear issue comment add ENG-123 --body-file ./comment.md
 linear issue update ENG-123 --state triage --context-file ./slack-thread.json --dry-run --json
 linear issue update ENG-123 --context-file ./slack-thread.json --apply-triage --dry-run --json
+linear issue update ENG-123 --context-file ./slack-thread.json --autonomy-policy suggest-only --dry-run --json
 ```
 
-The full stdin rules are documented in [stdin-policy.md](./stdin-policy.md). When upstream tooling already normalized a Slack thread, support ticket, or similar source into JSON, prefer `--context-file` over inventing ad-hoc markdown at the wrapper layer. When that envelope already carries deterministic routing hints, add `--apply-triage` to preview or apply team/state/label suggestions without re-implementing triage in the wrapper.
+The full stdin rules are documented in [stdin-policy.md](./stdin-policy.md). When upstream tooling already normalized a Slack thread, support ticket, or similar source into JSON, prefer `--context-file` over inventing ad-hoc markdown at the wrapper layer. When that envelope already carries deterministic routing hints, add `--apply-triage` to preview or apply team/state/label suggestions without re-implementing triage in the wrapper. Use `--autonomy-policy suggest-only` when the wrapper should only surface source and triage suggestions, `--autonomy-policy preview-required` when a preview is mandatory before a later apply, and `--autonomy-policy apply-allowed` when the intake flow may mutate Linear once `--dry-run` is removed.
 
 ## 9. Use Human/Debug Mode Only Deliberately
 

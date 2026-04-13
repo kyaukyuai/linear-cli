@@ -1,3 +1,5 @@
+import type { SourceIntakeAutonomyPolicyContract } from "./source_intake_policy.ts"
+
 export type OperationReceiptNextSafeAction =
   | "continue"
   | "read_before_retry"
@@ -38,6 +40,7 @@ export type OperationReceipt = {
   noOp: boolean
   partialSuccess: boolean
   nextSafeAction: OperationReceiptNextSafeAction
+  autonomyPolicy?: SourceIntakeAutonomyPolicyContract
   sourceProvenance?: OperationReceiptSourceProvenance
 }
 
@@ -51,6 +54,7 @@ export function buildOperationReceipt(
     noOp?: boolean
     partialSuccess?: boolean
     nextSafeAction?: OperationReceiptNextSafeAction
+    autonomyPolicy?: SourceIntakeAutonomyPolicyContract
     sourceProvenance?: OperationReceiptSourceProvenance
   },
 ): OperationReceipt {
@@ -75,6 +79,10 @@ export function buildOperationReceipt(
 
   if (options.sourceProvenance != null) {
     receipt.sourceProvenance = options.sourceProvenance
+  }
+
+  if (options.autonomyPolicy != null) {
+    receipt.autonomyPolicy = options.autonomyPolicy
   }
 
   return receipt

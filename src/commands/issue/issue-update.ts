@@ -52,6 +52,11 @@ import {
   renderExternalContextMarkdown,
 } from "../../utils/external_context.ts"
 import {
+  buildSourceIntakeAutonomyPolicyContract,
+  resolveSourceIntakeAutonomyPolicy,
+  validateSourceIntakeAutonomyPolicy,
+} from "../../utils/source_intake_policy.ts"
+import {
   buildOperationReceipt,
   withOperationReceipt,
 } from "../../utils/operation_receipt.ts"
@@ -155,6 +160,10 @@ export const updateCommand = new Command()
     "Apply deterministic triage hints from --context-file when routing fields are omitted.",
   )
   .option(
+    "--autonomy-policy <policy:string>",
+    "Gate source-adjacent intake to suggest-only, preview-required, or apply-allowed.",
+  )
+  .option(
     "-l, --label <label:string>",
     "Issue label associated with the issue. May be repeated.",
     { collect: true },
@@ -212,6 +221,10 @@ export const updateCommand = new Command()
     "linear issue update ENG-123 --context-file slack-thread.json --apply-triage --dry-run --json",
   )
   .example(
+    "Preview source-intake suggestions without applying them",
+    "linear issue update ENG-123 --context-file slack-thread.json --autonomy-policy suggest-only --dry-run --json",
+  )
+  .example(
     "Return the updated issue as JSON",
     'linear issue update ENG-123 --title "Fix auth timeout edge case"',
   )
@@ -246,6 +259,7 @@ export const updateCommand = new Command()
         contextFile,
         contextTarget,
         applyTriage,
+        autonomyPolicy: autonomyPolicyValue,
         label: labels,
         team,
         project,
@@ -299,6 +313,16 @@ export const updateCommand = new Command()
             },
           )
         }
+        const selectedAutonomyPolicy = resolveSourceIntakeAutonomyPolicy(
+          autonomyPolicyValue,
+        )
+        validateSourceIntakeAutonomyPolicy({
+          policy: selectedAutonomyPolicy,
+          explicit: autonomyPolicyValue != null,
+          hasContextFile: contextFile != null,
+          dryRun: dryRun === true,
+          applyTriage: applyTriage === true,
+        })
         if (dueDate != null && clearDueDate) {
           throw new ValidationError(
             "Cannot specify both --due-date and --clear-due-date",
@@ -363,6 +387,13 @@ export const updateCommand = new Command()
         const sourceContext = externalContext == null
           ? null
           : buildExternalContextPayload(externalContext, resolvedContextTarget)
+        const autonomyPolicy = externalContext == null
+          ? null
+          : buildSourceIntakeAutonomyPolicyContract(selectedAutonomyPolicy)
+        const allowsStandaloneTriagePreview = selectedAutonomyPolicy ===
+            "suggest-only" &&
+          dryRun === true &&
+          externalContext?.triage != null
         const hasExplicitIssueUpdates = title !== undefined ||
           assignee !== undefined ||
           dueDate !== undefined ||
@@ -390,7 +421,10 @@ export const updateCommand = new Command()
         if (finalComment != null && finalComment.trim().length === 0) {
           throw new ValidationError("Comment body cannot be empty")
         }
-        if (finalComment != null && !hasExplicitIssueUpdates && !applyTriage) {
+        if (
+          finalComment != null && !hasExplicitIssueUpdates && !applyTriage &&
+          !allowsStandaloneTriagePreview
+        ) {
           throw new ValidationError(
             "Cannot add a comment without any issue updates",
             {
@@ -427,19 +461,23 @@ export const updateCommand = new Command()
           )
         }
 
-        const triageResult = externalContext == null || applyTriage !== true
-          ? null
-          : await buildSourceTriageContract({
-            context: externalContext,
-            target: "issue.update",
-            applyRequested: applyTriage === true,
-            fallbackTeamKey: teamKey,
-            preferTriageTeamForResolution: false,
-            explicitTeam: team ?? null,
-            explicitState: state ?? null,
-            explicitLabels: labels ?? [],
-            supportsTeamApply: false,
-          })
+        const shouldBuildTriagePreview = externalContext?.triage != null &&
+          (applyTriage === true || selectedAutonomyPolicy === "suggest-only")
+        const triageResult =
+          externalContext == null || !shouldBuildTriagePreview
+            ? null
+            : await buildSourceTriageContract({
+              context: externalContext,
+              target: "issue.update",
+              applyRequested: applyTriage === true,
+              autonomyPolicy: selectedAutonomyPolicy,
+              fallbackTeamKey: teamKey,
+              preferTriageTeamForResolution: false,
+              explicitTeam: team ?? null,
+              explicitState: state ?? null,
+              explicitLabels: labels ?? [],
+              supportsTeamApply: false,
+            })
 
         if (applyTriage && triageResult != null) {
           const { state: triageState, labels: triageLabels } =
@@ -596,7 +634,10 @@ export const updateCommand = new Command()
         if (cycleId !== undefined) input.cycleId = cycleId
         if (stateId !== undefined) input.stateId = stateId
 
-        if (finalComment != null && Object.keys(input).length === 0) {
+        if (
+          finalComment != null && Object.keys(input).length === 0 &&
+          !allowsStandaloneTriagePreview
+        ) {
           throw new ValidationError(
             "Cannot add a comment without any issue updates",
             {
@@ -614,6 +655,7 @@ export const updateCommand = new Command()
             parent: parentPreview,
             comment: finalComment,
             sourceContext: sourceContext ?? undefined,
+            autonomyPolicy: autonomyPolicy ?? undefined,
             triage: triageResult?.triage,
           })
           const summary = `Would update issue ${issueId}`
@@ -626,6 +668,7 @@ export const updateCommand = new Command()
               resource: "issue",
               action: "update",
               summary,
+              autonomyPolicy: autonomyPolicy ?? undefined,
               refs: {
                 issueIdentifier: issueId,
                 teamKey,
@@ -638,6 +681,9 @@ export const updateCommand = new Command()
             }),
             lines: [
               `Issue: ${issueId}`,
+              ...(autonomyPolicy != null
+                ? [`Autonomy policy: ${autonomyPolicy.selected}`]
+                : []),
               ...(finalComment != null
                 ? ["Would add comment after update"]
                 : []),
@@ -764,6 +810,7 @@ export const updateCommand = new Command()
           nextSafeAction: finalComment != null
             ? "read_before_retry"
             : "continue",
+          autonomyPolicy: autonomyPolicy ?? undefined,
           sourceProvenance,
         })
 
@@ -862,10 +909,16 @@ export const updateCommand = new Command()
               ...issuePayload,
               sourceContext,
             }
-          const issuePayloadWithTriage = triageResult == null
+          const issuePayloadWithAutonomyPolicy = autonomyPolicy == null
             ? issuePayloadWithContext
             : {
               ...issuePayloadWithContext,
+              autonomyPolicy,
+            }
+          const issuePayloadWithTriage = triageResult == null
+            ? issuePayloadWithAutonomyPolicy
+            : {
+              ...issuePayloadWithAutonomyPolicy,
               triage: triageResult.triage,
             }
           console.log(JSON.stringify(

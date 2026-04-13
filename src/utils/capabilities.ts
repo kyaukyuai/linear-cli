@@ -3,6 +3,7 @@ import {
   AGENT_SAFE_WRITE_TIMEOUT_MS,
   HUMAN_DEBUG_PROFILE,
 } from "./execution_profile.ts"
+import { SOURCE_INTAKE_AUTONOMY_POLICIES } from "./source_intake_policy.ts"
 
 export type AutomationContractVersion =
   | "v1"
@@ -45,6 +46,7 @@ export type CapabilityValueType =
   | "workflow_state_id"
   | "label_ref"
   | "relation_type"
+  | "source_intake_policy"
   | "url"
 
 export type CapabilityAllowedValue = {
@@ -257,6 +259,25 @@ export type CapabilityExecutionProfiles = {
   availableProfiles: CapabilityExecutionProfile[]
 }
 
+export type CapabilityRuntimePolicyValue = {
+  value: string
+  description: string
+  effects: {
+    requiresDryRun: boolean
+    allowsMutation: boolean
+    allowsTriageApply: boolean
+  }
+}
+
+export type CapabilityRuntimePolicy = {
+  description: string
+  defaultValue: string
+  appliesTo: string[]
+  values: CapabilityRuntimePolicyValue[]
+}
+
+export type CapabilityRuntimePolicies = Record<string, CapabilityRuntimePolicy>
+
 export type CapabilitySurfaceClass =
   | "stable"
   | "partial"
@@ -287,6 +308,7 @@ export type CapabilityCommand = {
   path: string
   summary: string
   surface: CapabilitySurfaceClassification
+  runtimePolicies: string[]
   json: {
     supported: boolean
     contractVersion: AutomationContractVersion | null
@@ -311,7 +333,7 @@ export type CapabilityCommand = {
 
 type CapabilityRegistryEntry = Omit<
   CapabilityCommand,
-  "surface" | "schema" | "output" | "writeSemantics"
+  "surface" | "runtimePolicies" | "schema" | "output" | "writeSemantics"
 >
 export type CapabilityCommandV1 = CapabilityRegistryEntry
 
@@ -356,6 +378,7 @@ export type CapabilitiesPayloadV2 = CapabilitiesPayloadBase & {
   }
   surfaceClasses: CapabilitySurfaceClasses
   executionProfiles: CapabilityExecutionProfiles
+  runtimePolicies: CapabilityRuntimePolicies
   commands: CapabilityCommand[]
 }
 
@@ -1137,6 +1160,18 @@ const FLAG_OVERRIDES: Record<string, CapabilityFlagSchema[]> = {
       "Apply deterministic triage hints from --context-file when routing fields are omitted.",
     ),
     flag(
+      "--autonomy-policy",
+      null,
+      "source_intake_policy",
+      "Gate source-adjacent intake to suggest-only, preview-required, or apply-allowed.",
+      false,
+      enumValues(SOURCE_INTAKE_AUTONOMY_POLICIES),
+      {
+        defaultValue: "apply-allowed",
+        examples: ["suggest-only", "preview-required", "apply-allowed"],
+      },
+    ),
+    flag(
       "--label",
       "-l",
       "label_ref",
@@ -1456,6 +1491,18 @@ const FLAG_OVERRIDES: Record<string, CapabilityFlagSchema[]> = {
       null,
       "boolean",
       "Apply deterministic triage hints from --context-file when routing fields are omitted.",
+    ),
+    flag(
+      "--autonomy-policy",
+      null,
+      "source_intake_policy",
+      "Gate source-adjacent intake to suggest-only, preview-required, or apply-allowed.",
+      false,
+      enumValues(SOURCE_INTAKE_AUTONOMY_POLICIES),
+      {
+        defaultValue: "apply-allowed",
+        examples: ["suggest-only", "preview-required", "apply-allowed"],
+      },
     ),
     flag(
       "--label",
@@ -1832,6 +1879,12 @@ const INPUT_DEFAULTS: Record<string, CapabilityInputDefault[]> = {
     ),
     inputDefault(
       "flag",
+      "--autonomy-policy",
+      "Defaults to apply-allowed when --context-file is provided.",
+      "apply-allowed",
+    ),
+    inputDefault(
+      "flag",
       "--timeout-ms",
       "Falls back to LINEAR_WRITE_TIMEOUT_MS or the built-in timeout.",
     ),
@@ -1875,6 +1928,12 @@ const INPUT_DEFAULTS: Record<string, CapabilityInputDefault[]> = {
       "--context-target",
       "Defaults to comment when --context-file is provided.",
       "comment",
+    ),
+    inputDefault(
+      "flag",
+      "--autonomy-policy",
+      "Defaults to apply-allowed when --context-file is provided.",
+      "apply-allowed",
     ),
     inputDefault(
       "flag",
@@ -2331,6 +2390,12 @@ const COMMAND_CONSTRAINTS: Record<string, CapabilityConstraint[]> = {
       [inputRef("flag", "--context-file")],
       "--apply-triage only applies when a normalized context file is provided.",
     ),
+    constraint(
+      inputRef("flag", "--autonomy-policy"),
+      "requires_all_of",
+      [inputRef("flag", "--context-file")],
+      "--autonomy-policy only applies when a normalized context file is provided.",
+    ),
     constraintGroup(
       "requires_any_of",
       [
@@ -2396,6 +2461,12 @@ const COMMAND_CONSTRAINTS: Record<string, CapabilityConstraint[]> = {
       "requires_all_of",
       [inputRef("flag", "--context-file")],
       "--apply-triage only applies when a normalized context file is provided.",
+    ),
+    constraint(
+      inputRef("flag", "--autonomy-policy"),
+      "requires_all_of",
+      [inputRef("flag", "--context-file")],
+      "--autonomy-policy only applies when a normalized context file is provided.",
     ),
     constraintGroup(
       "at_most_one_of",
@@ -2497,6 +2568,17 @@ const COMMAND_EXAMPLES: Record<string, CapabilityCommandExample[]> = {
       "--dry-run",
       "--json",
     ]),
+    example("Preview source-intake suggestions without applying them.", [
+      "linear",
+      "issue",
+      "create",
+      "--context-file",
+      "slack-thread.json",
+      "--autonomy-policy",
+      "suggest-only",
+      "--dry-run",
+      "--json",
+    ]),
   ],
   "linear issue list": [
     example("Read issue list data with a stable JSON envelope.", [
@@ -2546,6 +2628,18 @@ const COMMAND_EXAMPLES: Record<string, CapabilityCommandExample[]> = {
       "--context-file",
       "slack-thread.json",
       "--apply-triage",
+      "--dry-run",
+      "--json",
+    ]),
+    example("Preview source-intake suggestions without applying them.", [
+      "linear",
+      "issue",
+      "update",
+      "ENG-123",
+      "--context-file",
+      "slack-thread.json",
+      "--autonomy-policy",
+      "suggest-only",
       "--dry-run",
       "--json",
     ]),
@@ -3533,6 +3627,7 @@ function buildSuccessTopLevelFields(
       "parent",
       "state",
       "sourceContext",
+      "autonomyPolicy",
       "triage",
       "receipt",
       "operation",
@@ -3597,6 +3692,7 @@ function buildSuccessTopLevelFields(
       "state",
       "comment",
       "sourceContext",
+      "autonomyPolicy",
       "triage",
       "receipt",
       "operation",
@@ -3692,6 +3788,7 @@ function buildSuccessTopLevelFields(
       "automationTier",
       "commands",
       "compatibility",
+      "runtimePolicies",
     ]
   }
 
@@ -4021,6 +4118,62 @@ function buildExecutionProfiles(): CapabilityExecutionProfiles {
   }
 }
 
+function buildRuntimePolicies(): CapabilityRuntimePolicies {
+  return {
+    source_intake_autonomy: {
+      description:
+        "Controls how far normalized source-adjacent intake is allowed to progress in a single run.",
+      defaultValue: "apply-allowed",
+      appliesTo: ["linear issue create", "linear issue update"],
+      values: [
+        {
+          value: "suggest-only",
+          description:
+            "Preview source context and triage suggestions without applying triage or mutating Linear.",
+          effects: {
+            requiresDryRun: true,
+            allowsMutation: false,
+            allowsTriageApply: false,
+          },
+        },
+        {
+          value: "preview-required",
+          description:
+            "Allow deterministic triage planning, but require a dry-run preview before any later apply.",
+          effects: {
+            requiresDryRun: true,
+            allowsMutation: false,
+            allowsTriageApply: true,
+          },
+        },
+        {
+          value: "apply-allowed",
+          description:
+            "Allow the source-adjacent intake flow to apply once the caller omits --dry-run.",
+          effects: {
+            requiresDryRun: false,
+            allowsMutation: true,
+            allowsTriageApply: true,
+          },
+        },
+      ],
+    },
+  }
+}
+
+function buildCommandRuntimePolicies(
+  command: CapabilityRegistryEntry,
+): string[] {
+  if (
+    command.path === "linear issue create" ||
+    command.path === "linear issue update"
+  ) {
+    return ["source_intake_autonomy"]
+  }
+
+  return []
+}
+
 function buildSurfaceClasses(): CapabilitySurfaceClasses {
   return {
     stable: {
@@ -4135,9 +4288,11 @@ function buildCapabilitiesPayloadV2(version: string): CapabilitiesPayloadV2 {
     },
     surfaceClasses: buildSurfaceClasses(),
     executionProfiles: buildExecutionProfiles(),
+    runtimePolicies: buildRuntimePolicies(),
     commands: CAPABILITY_COMMANDS.map((command) => ({
       ...command,
       surface: buildSurfaceClassification(command),
+      runtimePolicies: buildCommandRuntimePolicies(command),
       json: { ...command.json },
       dryRun: { ...command.dryRun },
       stdin: { ...command.stdin },

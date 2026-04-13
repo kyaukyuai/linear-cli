@@ -54,6 +54,11 @@ import {
   renderExternalContextMarkdown,
 } from "../../utils/external_context.ts"
 import {
+  buildSourceIntakeAutonomyPolicyContract,
+  resolveSourceIntakeAutonomyPolicy,
+  validateSourceIntakeAutonomyPolicy,
+} from "../../utils/source_intake_policy.ts"
+import {
   buildWriteApplyOperationFromReceipt,
   buildWritePreviewOperation,
   withWriteOperationContract,
@@ -518,6 +523,10 @@ export const createCommand = new Command()
     "Apply deterministic triage hints from --context-file when routing fields are omitted.",
   )
   .option(
+    "--autonomy-policy <policy:string>",
+    "Gate source-adjacent intake to suggest-only, preview-required, or apply-allowed.",
+  )
+  .option(
     "-l, --label <label:string>",
     "Issue label associated with the issue. May be repeated.",
     { collect: true },
@@ -580,6 +589,10 @@ export const createCommand = new Command()
     "linear issue create --context-file slack-thread.json --apply-triage --dry-run --json",
   )
   .example(
+    "Preview source-intake suggestions without applying them",
+    "linear issue create --context-file slack-thread.json --autonomy-policy suggest-only --dry-run --json",
+  )
+  .example(
     "Create an issue with human-readable output",
     'linear issue create --title "Fix auth expiry bug" --team ENG --text',
   )
@@ -613,6 +626,7 @@ export const createCommand = new Command()
         descriptionFile,
         contextFile,
         applyTriage,
+        autonomyPolicy: autonomyPolicyValue,
         label: labels,
         team,
         project,
@@ -665,6 +679,16 @@ export const createCommand = new Command()
             },
           )
         }
+        const selectedAutonomyPolicy = resolveSourceIntakeAutonomyPolicy(
+          autonomyPolicyValue,
+        )
+        validateSourceIntakeAutonomyPolicy({
+          policy: selectedAutonomyPolicy,
+          explicit: autonomyPolicyValue != null,
+          hasContextFile: contextFile != null,
+          dryRun: dryRun === true,
+          applyTriage: applyTriage === true,
+        })
         if (json && start && !dryRun) {
           throw new ValidationError(
             "Cannot use machine-readable output with --start",
@@ -714,6 +738,9 @@ export const createCommand = new Command()
         const sourceContext = externalContext == null
           ? null
           : buildExternalContextPayload(externalContext, "description")
+        const autonomyPolicy = externalContext == null
+          ? null
+          : buildSourceIntakeAutonomyPolicyContract(selectedAutonomyPolicy)
         if (applyTriage && externalContext?.triage == null) {
           throw new ValidationError(
             "--apply-triage requires triage hints inside --context-file",
@@ -884,19 +911,23 @@ export const createCommand = new Command()
         }
 
         const explicitTeam = team == null ? null : team.toUpperCase()
-        const triageResult = externalContext == null || applyTriage !== true
-          ? null
-          : await buildSourceTriageContract({
-            context: externalContext,
-            target: "issue.create",
-            applyRequested: applyTriage === true,
-            fallbackTeamKey: explicitTeam ?? getTeamKey() ?? null,
-            preferTriageTeamForResolution: true,
-            explicitTeam,
-            explicitState: state ?? null,
-            explicitLabels: labels ?? [],
-            supportsTeamApply: true,
-          })
+        const shouldBuildTriagePreview = externalContext?.triage != null &&
+          (applyTriage === true || selectedAutonomyPolicy === "suggest-only")
+        const triageResult =
+          externalContext == null || !shouldBuildTriagePreview
+            ? null
+            : await buildSourceTriageContract({
+              context: externalContext,
+              target: "issue.create",
+              applyRequested: applyTriage === true,
+              autonomyPolicy: selectedAutonomyPolicy,
+              fallbackTeamKey: explicitTeam ?? getTeamKey() ?? null,
+              preferTriageTeamForResolution: true,
+              explicitTeam,
+              explicitState: state ?? null,
+              explicitLabels: labels ?? [],
+              supportsTeamApply: true,
+            })
 
         if (applyTriage && triageResult != null) {
           const { team: triageTeam, state: triageState, labels: triageLabels } =
@@ -1115,6 +1146,7 @@ export const createCommand = new Command()
           },
           start: start === true,
           sourceContext: sourceContext ?? undefined,
+          autonomyPolicy: autonomyPolicy ?? undefined,
           triage: triageResult?.triage,
         })
         if (dryRun) {
@@ -1128,6 +1160,7 @@ export const createCommand = new Command()
               resource: "issue",
               action: "create",
               summary,
+              autonomyPolicy: autonomyPolicy ?? undefined,
               refs: {
                 teamKey: team,
                 project: effectiveProject ?? null,
@@ -1143,6 +1176,9 @@ export const createCommand = new Command()
             lines: [
               `Title: ${title}`,
               `Team: ${team}`,
+              ...(autonomyPolicy != null
+                ? [`Autonomy policy: ${autonomyPolicy.selected}`]
+                : []),
               ...(triageResult != null
                 ? [
                   `Triage suggestions: ${
@@ -1244,10 +1280,16 @@ export const createCommand = new Command()
               ...issuePayload,
               sourceContext,
             }
-          const issuePayloadWithTriage = triageResult == null
+          const issuePayloadWithAutonomyPolicy = autonomyPolicy == null
             ? issuePayloadWithContext
             : {
               ...issuePayloadWithContext,
+              autonomyPolicy,
+            }
+          const issuePayloadWithTriage = triageResult == null
+            ? issuePayloadWithAutonomyPolicy
+            : {
+              ...issuePayloadWithAutonomyPolicy,
               triage: triageResult.triage,
             }
           const receipt = buildOperationReceipt({
@@ -1280,6 +1322,7 @@ export const createCommand = new Command()
               ...(issuePayload.state != null ? ["state"] : []),
             ],
             nextSafeAction: "read_before_retry",
+            autonomyPolicy: autonomyPolicy ?? undefined,
             sourceProvenance,
           })
           console.log(JSON.stringify(

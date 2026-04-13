@@ -2,6 +2,7 @@ import type {
   OperationReceipt,
   OperationReceiptNextSafeAction,
 } from "./operation_receipt.ts"
+import type { SourceIntakeAutonomyPolicyContract } from "./source_intake_policy.ts"
 
 export type WriteOperationContractVersion = "v1"
 export type WriteOperationPhase = "preview" | "apply"
@@ -24,6 +25,7 @@ export type WriteOperationContract = {
   noOp: boolean
   partialSuccess: boolean
   nextSafeAction: WriteOperationNextSafeAction
+  autonomyPolicy?: SourceIntakeAutonomyPolicyContract
 }
 
 type GenericWritePreviewPayload = {
@@ -57,6 +59,7 @@ export function buildWritePreviewOperation(options: {
   refs?: Record<string, unknown>
   changes?: string[]
   nextSafeAction?: WriteOperationNextSafeAction
+  autonomyPolicy?: SourceIntakeAutonomyPolicyContract
 }): WriteOperationContract {
   return {
     family: "write_operation",
@@ -71,6 +74,9 @@ export function buildWritePreviewOperation(options: {
     noOp: false,
     partialSuccess: false,
     nextSafeAction: options.nextSafeAction ?? "apply",
+    ...(options.autonomyPolicy != null
+      ? { autonomyPolicy: options.autonomyPolicy }
+      : {}),
   }
 }
 
@@ -100,6 +106,7 @@ export function buildWriteApplyOperation(options: {
   noOp?: boolean
   partialSuccess?: boolean
   nextSafeAction?: OperationReceiptNextSafeAction
+  autonomyPolicy?: SourceIntakeAutonomyPolicyContract
 }): WriteOperationContract {
   return {
     family: "write_operation",
@@ -114,6 +121,9 @@ export function buildWriteApplyOperation(options: {
     noOp: options.noOp ?? false,
     partialSuccess: options.partialSuccess ?? false,
     nextSafeAction: options.nextSafeAction ?? "continue",
+    ...(options.autonomyPolicy != null
+      ? { autonomyPolicy: options.autonomyPolicy }
+      : {}),
   }
 }
 
@@ -131,6 +141,7 @@ export function buildWriteApplyOperationFromReceipt(
     noOp: receipt.noOp,
     partialSuccess: receipt.partialSuccess,
     nextSafeAction: receipt.nextSafeAction,
+    autonomyPolicy: receipt.autonomyPolicy,
   })
 }
 
