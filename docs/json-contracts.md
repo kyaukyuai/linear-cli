@@ -75,8 +75,8 @@ Default top-level shape from `linear capabilities`:
   },
   "contractVersions": {
     "automation": {
-      "latest": "v7",
-      "supported": ["v1", "v2", "v3", "v4", "v5", "v6", "v7"]
+      "latest": "v8",
+      "supported": ["v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8"]
     },
     "dryRunPreview": {
       "latest": "v1",
@@ -88,7 +88,7 @@ Default top-level shape from `linear capabilities`:
     }
   },
   "automationTier": {
-    "latestVersion": "v7",
+    "latestVersion": "v8",
     "byVersion": {
       "v1": ["linear issue list"],
       "v2": ["linear project list"],
@@ -96,7 +96,8 @@ Default top-level shape from `linear capabilities`:
       "v4": ["linear team list"],
       "v5": ["linear initiative list"],
       "v6": ["linear resolve issue"],
-      "v7": ["linear issue assign"]
+      "v7": ["linear issue assign"],
+      "v8": ["linear resolve pack"]
     },
     "allCommands": [
       "linear issue list",
@@ -105,7 +106,8 @@ Default top-level shape from `linear capabilities`:
       "linear team list",
       "linear initiative list",
       "linear resolve issue",
-      "linear issue assign"
+      "linear issue assign",
+      "linear resolve pack"
     ]
   },
   "executionProfiles": {
@@ -2458,6 +2460,161 @@ Top-level shape for `delete`:
     },
     "changes": ["webhook"],
     "noOp": false
+  }
+}
+```
+
+## Automation Contract v8
+
+Automation Contract v8 extends the read-only resolve surface with a stable multi-entity context pack for agent workflows that want one normalized object before preview/apply.
+
+The v8 additions are:
+
+- `linear resolve pack --json`
+
+V8 reuses the same machine-readable failure envelope described above. Successful context-pack resolution returns data, not a `success/data` wrapper.
+
+### `resolve pack --json`
+
+Top-level shape:
+
+```json
+{
+  "kind": "context_pack_resolution",
+  "version": "v1",
+  "requested": {
+    "issue": "ENG-123",
+    "team": null,
+    "workflowState": "started",
+    "user": "self",
+    "project": "auth-refresh",
+    "labels": ["Bug"]
+  },
+  "status": "resolved",
+  "teamContext": {
+    "source": "resolved_issue_team",
+    "input": "ENG",
+    "resolved": {
+      "id": "team-123",
+      "key": "ENG",
+      "name": "Engineering"
+    },
+    "unresolvedReason": null
+  },
+  "entities": {
+    "issue": {
+      "kind": "reference_resolution",
+      "version": "v1",
+      "refType": "issue",
+      "input": "ENG-123",
+      "source": "argument",
+      "status": "resolved",
+      "matchedBy": "identifier",
+      "ambiguous": false,
+      "resolved": {
+        "id": "issue-123",
+        "identifier": "ENG-123",
+        "title": "Stabilize auth expiry handling",
+        "url": "https://linear.app/acme/issue/ENG-123/stabilize-auth",
+        "team": {
+          "id": "team-123",
+          "key": "ENG",
+          "name": "Engineering"
+        }
+      },
+      "candidates": [],
+      "unresolvedReason": null
+    },
+    "team": null,
+    "workflowState": {
+      "kind": "reference_resolution",
+      "version": "v1",
+      "refType": "workflow_state",
+      "input": "started",
+      "source": "argument",
+      "status": "resolved",
+      "matchedBy": "state_type",
+      "ambiguous": false,
+      "resolved": {
+        "id": "state-123",
+        "name": "In Progress",
+        "type": "started",
+        "color": "#f97316",
+        "team": {
+          "id": "team-123",
+          "key": "ENG",
+          "name": "Engineering"
+        }
+      },
+      "candidates": [],
+      "unresolvedReason": null
+    },
+    "user": {
+      "kind": "reference_resolution",
+      "version": "v1",
+      "refType": "user",
+      "input": "self",
+      "source": "argument",
+      "status": "resolved",
+      "matchedBy": "viewer",
+      "ambiguous": false,
+      "resolved": {
+        "id": "user-123",
+        "name": "alice.bot",
+        "displayName": "Alice Bot",
+        "email": "alice@example.com"
+      },
+      "candidates": [],
+      "unresolvedReason": null
+    },
+    "project": {
+      "kind": "reference_resolution",
+      "version": "v1",
+      "refType": "project",
+      "input": "auth-refresh",
+      "source": "argument",
+      "status": "resolved",
+      "matchedBy": "project_slug",
+      "ambiguous": false,
+      "resolved": {
+        "id": "project-123",
+        "slugId": "auth-refresh",
+        "name": "Auth Refresh",
+        "url": "https://linear.app/acme/project/auth-refresh"
+      },
+      "candidates": [],
+      "unresolvedReason": null
+    },
+    "labels": [
+      {
+        "kind": "reference_resolution",
+        "version": "v1",
+        "refType": "label",
+        "input": "Bug",
+        "source": "argument",
+        "status": "resolved",
+        "matchedBy": "label_name",
+        "ambiguous": false,
+        "resolved": {
+          "id": "label-123",
+          "name": "Bug",
+          "color": "#ef4444",
+          "team": {
+            "id": "team-123",
+            "key": "ENG",
+            "name": "Engineering"
+          }
+        },
+        "candidates": [],
+        "unresolvedReason": null
+      }
+    ]
+  },
+  "summary": {
+    "requestedCount": 5,
+    "resolvedCount": 5,
+    "unresolvedCount": 0,
+    "ambiguousCount": 0
   }
 }
 ```

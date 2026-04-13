@@ -1,6 +1,9 @@
 import { Command } from "@cliffy/command"
 import { handleAutomationContractParseError } from "../../utils/json_output.ts"
-import { resolveWorkflowStateReference } from "../../utils/reference_resolution.ts"
+import {
+  printReferenceResolution,
+  resolveWorkflowStateReference,
+} from "../../utils/reference_resolution.ts"
 import { runResolveCommand } from "./resolve-common.ts"
 
 export const workflowStateCommand = new Command()
@@ -31,5 +34,6 @@ export const workflowStateCommand = new Command()
       { json, text },
       "Failed to resolve workflow state reference",
       () => resolveWorkflowStateReference(state, team),
+      printReferenceResolution,
     )
   })

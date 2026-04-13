@@ -34,7 +34,7 @@ stdout:
 "linear-cli 3.1.0
 capabilities schema latest: v2
 json compatibility default: v2
-automation contract latest: v7
+automation contract latest: v8
 dry-run preview contract: v1
 stdin policy: v1
 
@@ -114,6 +114,8 @@ agent-facing commands
     note: Returns canonical issue metadata and unresolved reasons without mutating Linear.
   linear resolve label :: json=v6 dry-run=no inputs=flags success=automation_contract confirm=none idempotency=read_only
     note: Team-scoped label resolution falls back to the configured current team when --team is omitted.
+  linear resolve pack :: json=v8 dry-run=no inputs=flags success=automation_contract confirm=none idempotency=read_only
+    note: Resolves issue, user, project, and team-scoped state/label references in one deterministic context pack without mutating Linear.
   linear resolve team :: json=v6 dry-run=no inputs=flags success=automation_contract confirm=none idempotency=read_only
     note: If omitted, the team reference resolves from the configured current team.
   linear resolve user :: json=v6 dry-run=no inputs=flags success=automation_contract confirm=none idempotency=read_only
@@ -148,7 +150,7 @@ stdout:
   },
   "contractVersions": {
     "automation": {
-      "latest": "v7",
+      "latest": "v8",
       "supported": [
         "v1",
         "v2",
@@ -156,7 +158,8 @@ stdout:
         "v4",
         "v5",
         "v6",
-        "v7"
+        "v7",
+        "v8"
       ]
     },
     "dryRunPreview": {
@@ -173,7 +176,7 @@ stdout:
     }
   },
   "automationTier": {
-    "latestVersion": "v7",
+    "latestVersion": "v8",
     "byVersion": {
       "v1": [
         "linear issue children",
@@ -243,6 +246,9 @@ stdout:
         "linear webhook create",
         "linear webhook delete",
         "linear webhook update"
+      ],
+      "v8": [
+        "linear resolve pack"
       ]
     },
     "allCommands": [
@@ -300,7 +306,8 @@ stdout:
       "linear project label remove",
       "linear webhook create",
       "linear webhook delete",
-      "linear webhook update"
+      "linear webhook update",
+      "linear resolve pack"
     ]
   },
   "compatibility": {
@@ -9761,6 +9768,314 @@ stdout:
       }
     },
     {
+      "path": "linear resolve pack",
+      "summary": "Resolve a multi-entity context pack",
+      "json": {
+        "supported": true,
+        "contractVersion": "v8"
+      },
+      "dryRun": {
+        "supported": false,
+        "contractVersion": null
+      },
+      "stdin": {
+        "mode": "none"
+      },
+      "confirmationBypass": null,
+      "idempotency": {
+        "category": "read_only",
+        "notes": null
+      },
+      "notes": "Resolves issue, user, project, and team-scoped state/label references in one deterministic context pack without mutating Linear.",
+      "surface": {
+        "class": "stable",
+        "reason": "automation_contract"
+      },
+      "writeSemantics": {
+        "timeoutAware": false,
+        "timeoutReconciliation": false,
+        "mayReturnNoOp": false,
+        "mayReturnPartialSuccess": false
+      },
+      "schema": {
+        "coverage": "curated_primary_inputs",
+        "arguments": [],
+        "flags": [
+          {
+            "name": "--json",
+            "short": "-j",
+            "required": false,
+            "valueType": "boolean",
+            "description": "Emit machine-readable JSON output.",
+            "allowedValues": null
+          },
+          {
+            "name": "--issue",
+            "short": null,
+            "required": false,
+            "valueType": "issue_ref",
+            "description": "Issue identifier for shared issue/team context.",
+            "allowedValues": null,
+            "examples": [
+              "ENG-123"
+            ]
+          },
+          {
+            "name": "--team",
+            "short": null,
+            "required": false,
+            "valueType": "team_key",
+            "description": "Explicit team key for team-scoped resolution.",
+            "allowedValues": null,
+            "examples": [
+              "ENG"
+            ]
+          },
+          {
+            "name": "--workflow-state",
+            "short": null,
+            "required": false,
+            "valueType": "state_ref",
+            "description": "Workflow state name, type, or ID within the effective team context.",
+            "allowedValues": null,
+            "examples": [
+              "started",
+              "Done"
+            ]
+          },
+          {
+            "name": "--user",
+            "short": null,
+            "required": false,
+            "valueType": "user_ref",
+            "description": "User email, display name, or self.",
+            "allowedValues": null,
+            "examples": [
+              "self"
+            ]
+          },
+          {
+            "name": "--project",
+            "short": null,
+            "required": false,
+            "valueType": "project_ref",
+            "description": "Project ID or slug.",
+            "allowedValues": null,
+            "examples": [
+              "auth-refresh"
+            ]
+          },
+          {
+            "name": "--label",
+            "short": null,
+            "required": false,
+            "valueType": "label_ref",
+            "description": "Issue label name. May be repeated.",
+            "allowedValues": null,
+            "repeatable": true,
+            "examples": [
+              "Bug"
+            ]
+          }
+        ],
+        "inputModes": [
+          "flags"
+        ],
+        "requiredInputs": [],
+        "optionalInputs": [
+          {
+            "source": "flag",
+            "name": "--json"
+          },
+          {
+            "source": "flag",
+            "name": "--issue"
+          },
+          {
+            "source": "flag",
+            "name": "--team"
+          },
+          {
+            "source": "flag",
+            "name": "--workflow-state"
+          },
+          {
+            "source": "flag",
+            "name": "--user"
+          },
+          {
+            "source": "flag",
+            "name": "--project"
+          },
+          {
+            "source": "flag",
+            "name": "--label"
+          }
+        ],
+        "defaults": [
+          {
+            "source": "flag",
+            "name": "--team",
+            "description": "If omitted, team-scoped entries use the resolved issue team first and then the configured current team.",
+            "value": null
+          }
+        ],
+        "resolutions": [
+          {
+            "source": "flag",
+            "name": "--team",
+            "strategy": "context_pack_team_context",
+            "description": "If omitted, team-scoped entries reuse the resolved issue team when available and otherwise fall back to the configured current team.",
+            "sources": [
+              {
+                "kind": "resolved_context",
+                "name": "resolved issue team",
+                "value": null
+              },
+              {
+                "kind": "config",
+                "name": "currentTeam",
+                "value": null
+              }
+            ]
+          }
+        ],
+        "constraints": [
+          {
+            "kind": "requires_any_of",
+            "targets": [
+              {
+                "source": "flag",
+                "name": "--issue"
+              },
+              {
+                "source": "flag",
+                "name": "--team"
+              },
+              {
+                "source": "flag",
+                "name": "--workflow-state"
+              },
+              {
+                "source": "flag",
+                "name": "--user"
+              },
+              {
+                "source": "flag",
+                "name": "--project"
+              },
+              {
+                "source": "flag",
+                "name": "--label"
+              }
+            ],
+            "reason": "Context pack resolution needs at least one requested entity."
+          },
+          {
+            "kind": "at_most_one_of",
+            "targets": [
+              {
+                "source": "flag",
+                "name": "--json"
+              },
+              {
+                "source": "flag",
+                "name": "--text"
+              }
+            ],
+            "reason": "Choose either machine-readable JSON output or the human-readable summary."
+          }
+        ],
+        "stdinTargets": [],
+        "fileTargets": [],
+        "examples": [
+          {
+            "description": "Resolve a multi-entity pack around an issue.",
+            "argv": [
+              "linear",
+              "resolve",
+              "pack",
+              "--issue",
+              "ENG-123",
+              "--workflow-state",
+              "started",
+              "--label",
+              "Bug",
+              "--json"
+            ]
+          },
+          {
+            "description": "Resolve a user and project pack.",
+            "argv": [
+              "linear",
+              "resolve",
+              "pack",
+              "--user",
+              "self",
+              "--project",
+              "auth-refresh",
+              "--json"
+            ]
+          }
+        ]
+      },
+      "output": {
+        "success": {
+          "category": "automation_contract",
+          "contractTarget": "automation_contract:v8",
+          "contract": {
+            "kind": "automation_contract",
+            "version": "v8"
+          },
+          "shape": "object",
+          "exitCode": 0,
+          "topLevelFields": [
+            "kind",
+            "version",
+            "requested",
+            "status",
+            "teamContext",
+            "entities",
+            "summary"
+          ]
+        },
+        "preview": {
+          "supported": false,
+          "contractTarget": null,
+          "contract": null,
+          "shape": null,
+          "exitCode": null,
+          "topLevelFields": null
+        },
+        "failure": {
+          "jsonWhenRequested": true,
+          "parseErrorsJsonWhenRequested": true,
+          "exitCodes": [
+            {
+              "code": 1,
+              "meaning": "generic_failure"
+            },
+            {
+              "code": 4,
+              "meaning": "auth_error"
+            }
+          ],
+          "topLevelFields": [
+            "success",
+            "error"
+          ],
+          "errorFields": [
+            "type",
+            "message",
+            "suggestion",
+            "context",
+            "details"
+          ],
+          "detailFields": []
+        }
+      }
+    },
+    {
       "path": "linear resolve team",
       "summary": "Resolve a team reference",
       "json": {
@@ -11819,7 +12134,7 @@ stdout:
   },
   "contractVersions": {
     "automation": {
-      "latest": "v7",
+      "latest": "v8",
       "supported": [
         "v1",
         "v2",
@@ -11827,7 +12142,8 @@ stdout:
         "v4",
         "v5",
         "v6",
-        "v7"
+        "v7",
+        "v8"
       ]
     },
     "dryRunPreview": {
@@ -11844,7 +12160,7 @@ stdout:
     }
   },
   "automationTier": {
-    "latestVersion": "v7",
+    "latestVersion": "v8",
     "byVersion": {
       "v1": [
         "linear issue children",
@@ -11914,6 +12230,9 @@ stdout:
         "linear webhook create",
         "linear webhook delete",
         "linear webhook update"
+      ],
+      "v8": [
+        "linear resolve pack"
       ]
     },
     "allCommands": [
@@ -11971,7 +12290,8 @@ stdout:
       "linear project label remove",
       "linear webhook create",
       "linear webhook delete",
-      "linear webhook update"
+      "linear webhook update",
+      "linear resolve pack"
     ]
   },
   "commands": [
@@ -13066,6 +13386,27 @@ stdout:
         "notes": null
       },
       "notes": "Team-scoped label resolution falls back to the configured current team when --team is omitted."
+    },
+    {
+      "path": "linear resolve pack",
+      "summary": "Resolve a multi-entity context pack",
+      "json": {
+        "supported": true,
+        "contractVersion": "v8"
+      },
+      "dryRun": {
+        "supported": false,
+        "contractVersion": null
+      },
+      "stdin": {
+        "mode": "none"
+      },
+      "confirmationBypass": null,
+      "idempotency": {
+        "category": "read_only",
+        "notes": null
+      },
+      "notes": "Resolves issue, user, project, and team-scoped state/label references in one deterministic context pack without mutating Linear."
     },
     {
       "path": "linear resolve team",

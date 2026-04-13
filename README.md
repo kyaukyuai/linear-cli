@@ -8,6 +8,7 @@ if you want an agent to read Linear state, resolve refs, preview a write, apply 
 linear capabilities
 linear capabilities --compat v1
 linear resolve issue ENG-123
+linear resolve pack --issue ENG-123 --workflow-state started --label Bug
 linear issue update ENG-123 --state done --dry-run --json
 linear issue list
 linear issue view ENG-123
@@ -39,7 +40,7 @@ Treat `linear-cli` as a shell-native control plane for agents:
 
 - startup discovery comes from `linear capabilities`
 - startup-critical reads and core write surfaces default to machine-readable JSON
-- refs can be normalized with `linear resolve ...`
+- refs can be normalized with `linear resolve ...`, including multi-entity `linear resolve pack`
 - write previews use `--dry-run --json`
 - write results expose `operation`, `receipt`, and structured `error.details`
 - `linear capabilities` classifies commands as `stable`, `partial`, or `escape_hatch`
@@ -59,7 +60,7 @@ If an agent only reads one page, it should be this README plus the two contract 
 
 - start with `linear capabilities` for the default schema-like discovery shape; use `linear capabilities --compat v1` only when an older consumer still expects the legacy startup shape
 - use the default runtime for predictable non-interactive agent execution; `--profile human-debug` is the explicit escape hatch for pager and prompt-driven debugging
-- resolve ambiguous issue/team/state/user/label refs with `linear resolve ...` before previewing or applying writes
+- resolve ambiguous issue/team/state/user/label refs with `linear resolve ...` before previewing or applying writes; use `linear resolve pack` when a workflow needs one shared issue/team/user/project context object
 - prefer stable read surfaces such as `issue`, `project`, `cycle`, `milestone`, `document`, `webhook`, `notification`, `team`, `user`, `workflow-state`, `label`, `initiative`, and update feeds; those agent-first entrypoints now default to machine-readable JSON
 - preview writes with `--dry-run --json` before mutating Linear
 - apply writes on default-JSON surfaces without `--text`, then inspect exit codes and `error.details` instead of parsing terminal text
@@ -245,6 +246,7 @@ runtime surface classes:
 - v5 additions: `initiative list/view --json`, `project-update list --json`, `initiative-update list --json`
 - v6 additions: `resolve issue/team/workflow-state/user/label --json`
 - v7 additions: `issue assign/estimate/move/priority --json`, `notification read/archive --json`, `project create --json`, `project label add/remove --json`, `webhook create/update/delete --json`
+- v8 additions: `resolve pack --json`
 - partial surfaces today include high-value dry-run adopters that do not yet expose a stable apply contract, such as `document create/update/delete`, `milestone create/update/delete`, `project update/delete`, and `issue start`
 - escape-hatch only surfaces include non-JSON terminal flows, `linear api`, and explicit human/debug output paths
 

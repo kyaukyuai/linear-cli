@@ -60,6 +60,7 @@ When a caller needs canonical IDs, current-team fallback, or ambiguity data, res
 
 ```bash
 linear resolve issue ENG-123
+linear resolve pack --issue ENG-123 --workflow-state started --label Bug
 linear resolve team ENG
 linear resolve workflow-state started --team ENG
 linear resolve user self
@@ -68,9 +69,9 @@ linear resolve label Bug --team ENG
 
 This lets an agent:
 
-- confirm how the CLI resolved issue, team, workflow state, user, and label refs
+- confirm how the CLI resolved issue, team, workflow state, user, label, and project refs
 - inspect `status`, `matchedBy`, `candidates`, and `unresolvedReason` without scraping terminal text
-- reuse canonical IDs and team context across preview/apply steps
+- reuse canonical IDs and shared team context across preview/apply steps; `linear resolve pack` is the fast path for multi-entity agent workflows
 
 ## 3. Read State With Stable JSON
 

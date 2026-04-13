@@ -1,16 +1,13 @@
 import { handleAutomationCommandError } from "../../utils/json_output.ts"
 import { resolveJsonOutputMode } from "../../utils/output_mode.ts"
-import {
-  type AnyReferenceResolutionPayload,
-  printReferenceResolution,
-} from "../../utils/reference_resolution.ts"
 import { withSpinner } from "../../utils/spinner.ts"
 
-export async function runResolveCommand(
+export async function runResolveCommand<TPayload>(
   commandPath: string,
   options: { json?: boolean; text?: boolean },
   context: string,
-  resolver: () => Promise<AnyReferenceResolutionPayload>,
+  resolver: () => Promise<TPayload>,
+  printPayload: (payload: TPayload) => void,
 ): Promise<void> {
   const json = resolveJsonOutputMode(commandPath, options)
 
@@ -22,7 +19,7 @@ export async function runResolveCommand(
       return
     }
 
-    printReferenceResolution(payload)
+    printPayload(payload)
   } catch (error) {
     handleAutomationCommandError(error, context, json)
   }

@@ -15,6 +15,7 @@ export type ReferenceResolutionType =
   | "team"
   | "workflow_state"
   | "user"
+  | "project"
   | "label"
 
 export type ReferenceResolutionStatus = "resolved" | "unresolved"
@@ -69,6 +70,13 @@ export type ResolvedUserReference = {
   email: string | null
 }
 
+export type ResolvedProjectReference = {
+  id: string
+  slugId: string
+  name: string
+  url: string
+}
+
 export type ResolvedLabelReference = {
   id: string
   name: string
@@ -99,11 +107,74 @@ export type AnyResolvedReference =
   | ResolvedTeamReference
   | ResolvedWorkflowStateReference
   | ResolvedUserReference
+  | ResolvedProjectReference
   | ResolvedLabelReference
 
 export type AnyReferenceResolutionPayload = ReferenceResolutionPayload<
   AnyResolvedReference
 >
+
+export type ContextPackResolutionVersion = "v1"
+export type ContextPackResolutionStatus =
+  | "resolved"
+  | "partially_resolved"
+  | "unresolved"
+export type ContextPackTeamContextSource =
+  | "none"
+  | "explicit_team_argument"
+  | "resolved_issue_team"
+  | "configured_team_context"
+
+export type ContextPackTeamContext = {
+  source: ContextPackTeamContextSource
+  input: string | null
+  resolved: ResolvedTeamReference | null
+  unresolvedReason: ReferenceResolutionReason | null
+}
+
+export type ContextPackRequest = {
+  issue: string | null
+  team: string | null
+  workflowState: string | null
+  user: string | null
+  project: string | null
+  labels: string[]
+}
+
+export type ContextPackEntities = {
+  issue: ReferenceResolutionPayload<ResolvedIssueReference> | null
+  team: ReferenceResolutionPayload<ResolvedTeamReference> | null
+  workflowState:
+    | ReferenceResolutionPayload<ResolvedWorkflowStateReference>
+    | null
+  user: ReferenceResolutionPayload<ResolvedUserReference> | null
+  project: ReferenceResolutionPayload<ResolvedProjectReference> | null
+  labels: ReferenceResolutionPayload<ResolvedLabelReference>[]
+}
+
+export type ContextPackResolutionPayload = {
+  kind: "context_pack_resolution"
+  version: ContextPackResolutionVersion
+  requested: ContextPackRequest
+  status: ContextPackResolutionStatus
+  teamContext: ContextPackTeamContext
+  entities: ContextPackEntities
+  summary: {
+    requestedCount: number
+    resolvedCount: number
+    unresolvedCount: number
+    ambiguousCount: number
+  }
+}
+
+export type ResolveContextPackInput = {
+  issue?: string
+  team?: string
+  workflowState?: string
+  user?: string
+  project?: string
+  labels?: string[]
+}
 
 const ResolveIssueReferenceQuery = gql(/* GraphQL */ `
   query ResolveIssueReference($id: String!) {
@@ -158,6 +229,30 @@ const ResolveUserReferenceQuery = gql(/* GraphQL */ `
         email
         displayName
         name
+      }
+    }
+  }
+`)
+
+const ResolveProjectReferenceByIdQuery = gql(/* GraphQL */ `
+  query ResolveProjectReferenceById($id: String!) {
+    project(id: $id) {
+      id
+      slugId
+      name
+      url
+    }
+  }
+`)
+
+const ResolveProjectReferenceBySlugQuery = gql(/* GraphQL */ `
+  query ResolveProjectReferenceBySlug($slugId: String!) {
+    projects(filter: { slugId: { eq: $slugId } }) {
+      nodes {
+        id
+        slugId
+        name
+        url
       }
     }
   }
@@ -395,8 +490,20 @@ export async function resolveWorkflowStateReference(
     })
   }
 
+  return await resolveWorkflowStateReferenceForTeam(
+    input,
+    teamResolution.resolved,
+  )
+}
+
+async function resolveWorkflowStateReferenceForTeam(
+  input: string,
+  team: ResolvedTeamReference,
+): Promise<ReferenceResolutionPayload<ResolvedWorkflowStateReference>> {
+  const source: ReferenceResolutionSource = "argument"
+
   if (isUuid(input)) {
-    const states = await getWorkflowStates(teamResolution.resolved.key)
+    const states = await getWorkflowStates(team.key)
     const directMatch = states.find((state) => state.id === input)
     if (directMatch != null) {
       return buildResolvedPayload({
@@ -409,7 +516,7 @@ export async function resolveWorkflowStateReference(
     }
   }
 
-  const states = await getWorkflowStates(teamResolution.resolved.key)
+  const states = await getWorkflowStates(team.key)
   const exactNameMatches = states.filter((state) =>
     state.name.toLowerCase() === input.toLowerCase()
   )
@@ -444,8 +551,7 @@ export async function resolveWorkflowStateReference(
     input,
     source,
     code: "not_found",
-    message:
-      `Workflow state not found for team ${teamResolution.resolved.key}: ${input}`,
+    message: `Workflow state not found for team ${team.key}: ${input}`,
   })
 }
 
@@ -516,6 +622,60 @@ export async function resolveUserReference(
   })
 }
 
+export async function resolveProjectReference(
+  input: string,
+): Promise<ReferenceResolutionPayload<ResolvedProjectReference>> {
+  const client = getGraphQLClient()
+
+  if (isUuid(input)) {
+    const result = await client.request(ResolveProjectReferenceByIdQuery, {
+      id: input,
+    })
+
+    if (result.project == null) {
+      return buildUnresolvedPayload({
+        refType: "project",
+        input,
+        source: "argument",
+        code: "not_found",
+        message: `Project not found: ${input}`,
+      })
+    }
+
+    return buildResolvedPayload({
+      refType: "project",
+      input,
+      source: "argument",
+      matchedBy: "project_id",
+      resolved: result.project,
+    })
+  }
+
+  const result = await client.request(ResolveProjectReferenceBySlugQuery, {
+    slugId: input,
+  })
+  const projects = result.projects?.nodes ?? []
+
+  if (projects.length === 0) {
+    return buildUnresolvedPayload({
+      refType: "project",
+      input,
+      source: "argument",
+      code: "not_found",
+      message: `Project not found: ${input}`,
+    })
+  }
+
+  return buildResolvedPayload({
+    refType: "project",
+    input,
+    source: "argument",
+    matchedBy: "project_slug",
+    resolved: projects[0],
+    candidates: projects,
+  })
+}
+
 export async function resolveIssueLabelReference(
   input: string,
   teamInput?: string,
@@ -536,10 +696,18 @@ export async function resolveIssueLabelReference(
     })
   }
 
+  return await resolveIssueLabelReferenceForTeam(input, teamResolution.resolved)
+}
+
+async function resolveIssueLabelReferenceForTeam(
+  input: string,
+  team: ResolvedTeamReference,
+): Promise<ReferenceResolutionPayload<ResolvedLabelReference>> {
+  const source: ReferenceResolutionSource = "argument"
   const client = getGraphQLClient()
   const result = await client.request(ResolveIssueLabelReferenceQuery, {
     name: input,
-    teamKey: teamResolution.resolved.key,
+    teamKey: team.key,
   })
   const labels = result.issueLabels?.nodes ?? []
 
@@ -549,8 +717,7 @@ export async function resolveIssueLabelReference(
       input,
       source,
       code: "not_found",
-      message:
-        `Label not found for team ${teamResolution.resolved.key}: ${input}`,
+      message: `Label not found for team ${team.key}: ${input}`,
     })
   }
 
@@ -568,6 +735,207 @@ export async function resolveIssueLabelReference(
       team: label.team ?? null,
     })),
   })
+}
+
+function buildTeamScopedUnresolvedPayload<
+  TResolved extends
+    | ResolvedWorkflowStateReference
+    | ResolvedLabelReference,
+>(
+  refType: "workflow_state" | "label",
+  input: string,
+  reason: ReferenceResolutionReason,
+): ReferenceResolutionPayload<TResolved> {
+  return buildUnresolvedPayload({
+    refType,
+    input,
+    source: "argument",
+    code: reason.code,
+    message: reason.message,
+  })
+}
+
+function buildContextPackTeamContext(
+  options: {
+    source: ContextPackTeamContextSource
+    input: string | null
+    resolved: ResolvedTeamReference | null
+    unresolvedReason?: ReferenceResolutionReason | null
+  },
+): ContextPackTeamContext {
+  return {
+    source: options.source,
+    input: options.input,
+    resolved: options.resolved,
+    unresolvedReason: options.unresolvedReason ?? null,
+  }
+}
+
+export async function resolveContextPack(
+  input: ResolveContextPackInput,
+): Promise<ContextPackResolutionPayload> {
+  const labels = input.labels ?? []
+  const requested: ContextPackRequest = {
+    issue: input.issue ?? null,
+    team: input.team ?? null,
+    workflowState: input.workflowState ?? null,
+    user: input.user ?? null,
+    project: input.project ?? null,
+    labels,
+  }
+
+  const requestedCount = [
+    requested.issue,
+    requested.team,
+    requested.workflowState,
+    requested.user,
+    requested.project,
+  ].filter((value) => value != null).length + requested.labels.length
+
+  if (requestedCount === 0) {
+    throw new ValidationError(
+      "At least one reference is required to build a context pack.",
+      {
+        suggestion:
+          "Pass one or more of --issue, --team, --workflow-state, --user, --project, or --label.",
+      },
+    )
+  }
+
+  const entities: ContextPackEntities = {
+    issue: null,
+    team: null,
+    workflowState: null,
+    user: null,
+    project: null,
+    labels: [],
+  }
+
+  if (requested.issue != null) {
+    entities.issue = await resolveIssueReference(requested.issue)
+  }
+  if (requested.team != null) {
+    entities.team = await resolveTeamReference(requested.team)
+  }
+  if (requested.user != null) {
+    entities.user = await resolveUserReference(requested.user)
+  }
+  if (requested.project != null) {
+    entities.project = await resolveProjectReference(requested.project)
+  }
+
+  let teamContext = buildContextPackTeamContext({
+    source: "none",
+    input: null,
+    resolved: null,
+  })
+
+  if (requested.team != null) {
+    teamContext = buildContextPackTeamContext({
+      source: "explicit_team_argument",
+      input: requested.team,
+      resolved: entities.team?.resolved ?? null,
+      unresolvedReason: entities.team?.unresolvedReason ?? null,
+    })
+  } else if (
+    entities.issue?.status === "resolved" && entities.issue.resolved != null
+  ) {
+    teamContext = buildContextPackTeamContext({
+      source: "resolved_issue_team",
+      input: entities.issue.resolved.team.key,
+      resolved: entities.issue.resolved.team,
+    })
+  } else if (requested.workflowState != null || requested.labels.length > 0) {
+    const configuredTeam = await resolveTeamReference()
+    teamContext = buildContextPackTeamContext({
+      source: "configured_team_context",
+      input: null,
+      resolved: configuredTeam.resolved,
+      unresolvedReason: configuredTeam.unresolvedReason,
+    })
+  }
+
+  if (requested.workflowState != null) {
+    if (teamContext.resolved != null) {
+      entities.workflowState = await resolveWorkflowStateReferenceForTeam(
+        requested.workflowState,
+        teamContext.resolved,
+      )
+    } else {
+      const unresolvedReason = teamContext.unresolvedReason ?? {
+        code: "missing_context" as const,
+        message: "A team context is required to resolve workflow states.",
+      }
+      entities.workflowState = buildTeamScopedUnresolvedPayload(
+        "workflow_state",
+        requested.workflowState,
+        unresolvedReason,
+      )
+    }
+  }
+
+  if (requested.labels.length > 0) {
+    for (const label of requested.labels) {
+      if (teamContext.resolved != null) {
+        entities.labels.push(
+          await resolveIssueLabelReferenceForTeam(label, teamContext.resolved),
+        )
+      } else {
+        const unresolvedReason = teamContext.unresolvedReason ?? {
+          code: "missing_context" as const,
+          message: "A team context is required to resolve issue labels.",
+        }
+        entities.labels.push(
+          buildTeamScopedUnresolvedPayload("label", label, unresolvedReason),
+        )
+      }
+    }
+  }
+
+  const payloads: AnyReferenceResolutionPayload[] = []
+  for (
+    const payload of [
+      entities.issue,
+      entities.team,
+      entities.workflowState,
+      entities.user,
+      entities.project,
+    ]
+  ) {
+    if (payload != null) {
+      payloads.push(payload)
+    }
+  }
+  for (const label of entities.labels) {
+    payloads.push(label)
+  }
+
+  const resolvedCount =
+    payloads.filter((payload) => payload.status === "resolved")
+      .length
+  const unresolvedCount = payloads.length - resolvedCount
+  const ambiguousCount = payloads.filter((payload) => payload.ambiguous).length
+
+  const status: ContextPackResolutionStatus = unresolvedCount === 0
+    ? "resolved"
+    : resolvedCount === 0
+    ? "unresolved"
+    : "partially_resolved"
+
+  return {
+    kind: "context_pack_resolution",
+    version: "v1",
+    requested,
+    status,
+    teamContext,
+    entities,
+    summary: {
+      requestedCount,
+      resolvedCount,
+      unresolvedCount,
+      ambiguousCount,
+    },
+  }
 }
 
 function formatCandidateSummary(
@@ -590,6 +958,10 @@ function formatCandidateSummary(
     case "user": {
       const user = candidate as ResolvedUserReference
       return `${user.displayName} <${user.email ?? "no-email"}> (${user.id})`
+    }
+    case "project": {
+      const project = candidate as ResolvedProjectReference
+      return `${project.name} (${project.slugId})`
     }
     case "label": {
       const label = candidate as ResolvedLabelReference
@@ -627,5 +999,47 @@ export function printReferenceResolution(
         gray(`- ${formatCandidateSummary(payload.refType, candidate)}`),
       )
     }
+  }
+}
+
+export function printContextPackResolution(
+  payload: ContextPackResolutionPayload,
+): void {
+  console.log(
+    `Context pack: ${payload.summary.resolvedCount}/${payload.summary.requestedCount} resolved`,
+  )
+
+  if (payload.teamContext.source !== "none") {
+    if (payload.teamContext.resolved != null) {
+      console.log(
+        gray(
+          `Team context (${payload.teamContext.source}): ${payload.teamContext.resolved.key} (${payload.teamContext.resolved.id})`,
+        ),
+      )
+    } else if (payload.teamContext.unresolvedReason != null) {
+      console.log(
+        gray(
+          `Team context (${payload.teamContext.source}): ${payload.teamContext.unresolvedReason.message}`,
+        ),
+      )
+    }
+  }
+
+  for (
+    const resolution of [
+      payload.entities.issue,
+      payload.entities.team,
+      payload.entities.workflowState,
+      payload.entities.user,
+      payload.entities.project,
+    ]
+  ) {
+    if (resolution != null) {
+      printReferenceResolution(resolution)
+    }
+  }
+
+  for (const label of payload.entities.labels) {
+    printReferenceResolution(label)
   }
 }

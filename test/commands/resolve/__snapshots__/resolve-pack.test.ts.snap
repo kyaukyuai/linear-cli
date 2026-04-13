@@ -1,0 +1,251 @@
+export const snapshot = {};
+
+snapshot[`Resolve Pack Command - JSON Resolved 1`] = `
+stdout:
+'{
+  "kind": "context_pack_resolution",
+  "version": "v1",
+  "requested": {
+    "issue": "ENG-123",
+    "team": null,
+    "workflowState": "started",
+    "user": "self",
+    "project": "auth-refresh",
+    "labels": [
+      "Bug",
+      "Customer"
+    ]
+  },
+  "status": "resolved",
+  "teamContext": {
+    "source": "resolved_issue_team",
+    "input": "ENG",
+    "resolved": {
+      "id": "team-1",
+      "key": "ENG",
+      "name": "Engineering"
+    },
+    "unresolvedReason": null
+  },
+  "entities": {
+    "issue": {
+      "kind": "reference_resolution",
+      "version": "v1",
+      "refType": "issue",
+      "input": "ENG-123",
+      "source": "argument",
+      "status": "resolved",
+      "matchedBy": "identifier",
+      "ambiguous": false,
+      "resolved": {
+        "id": "issue-123",
+        "identifier": "ENG-123",
+        "title": "Stabilize auth expiry handling",
+        "url": "https://linear.app/test/issue/ENG-123/auth-expiry",
+        "team": {
+          "id": "team-1",
+          "key": "ENG",
+          "name": "Engineering"
+        }
+      },
+      "candidates": [
+        {
+          "id": "issue-123",
+          "identifier": "ENG-123",
+          "title": "Stabilize auth expiry handling",
+          "url": "https://linear.app/test/issue/ENG-123/auth-expiry",
+          "team": {
+            "id": "team-1",
+            "key": "ENG",
+            "name": "Engineering"
+          }
+        }
+      ],
+      "unresolvedReason": null
+    },
+    "team": null,
+    "workflowState": {
+      "kind": "reference_resolution",
+      "version": "v1",
+      "refType": "workflow_state",
+      "input": "started",
+      "source": "argument",
+      "status": "resolved",
+      "matchedBy": "state_type",
+      "ambiguous": false,
+      "resolved": {
+        "id": "state-2",
+        "name": "In Progress",
+        "type": "started",
+        "position": 2,
+        "color": "#f97316",
+        "description": null,
+        "createdAt": "2026-04-13T00:00:00Z",
+        "updatedAt": "2026-04-13T00:00:00Z",
+        "archivedAt": null,
+        "team": {
+          "id": "team-1",
+          "key": "ENG",
+          "name": "Engineering"
+        },
+        "inheritedFrom": null
+      },
+      "candidates": [
+        {
+          "id": "state-2",
+          "name": "In Progress",
+          "type": "started",
+          "position": 2,
+          "color": "#f97316",
+          "description": null,
+          "createdAt": "2026-04-13T00:00:00Z",
+          "updatedAt": "2026-04-13T00:00:00Z",
+          "archivedAt": null,
+          "team": {
+            "id": "team-1",
+            "key": "ENG",
+            "name": "Engineering"
+          },
+          "inheritedFrom": null
+        }
+      ],
+      "unresolvedReason": null
+    },
+    "user": {
+      "kind": "reference_resolution",
+      "version": "v1",
+      "refType": "user",
+      "input": "self",
+      "source": "argument",
+      "status": "resolved",
+      "matchedBy": "viewer",
+      "ambiguous": false,
+      "resolved": {
+        "id": "user-1",
+        "name": "alice.bot",
+        "displayName": "Alice Bot",
+        "email": "alice@example.com"
+      },
+      "candidates": [
+        {
+          "id": "user-1",
+          "name": "alice.bot",
+          "displayName": "Alice Bot",
+          "email": "alice@example.com"
+        }
+      ],
+      "unresolvedReason": null
+    },
+    "project": {
+      "kind": "reference_resolution",
+      "version": "v1",
+      "refType": "project",
+      "input": "auth-refresh",
+      "source": "argument",
+      "status": "resolved",
+      "matchedBy": "project_slug",
+      "ambiguous": false,
+      "resolved": {
+        "id": "project-1",
+        "slugId": "auth-refresh",
+        "name": "Auth Refresh",
+        "url": "https://linear.app/test/project/auth-refresh"
+      },
+      "candidates": [
+        {
+          "id": "project-1",
+          "slugId": "auth-refresh",
+          "name": "Auth Refresh",
+          "url": "https://linear.app/test/project/auth-refresh"
+        }
+      ],
+      "unresolvedReason": null
+    },
+    "labels": [
+      {
+        "kind": "reference_resolution",
+        "version": "v1",
+        "refType": "label",
+        "input": "Bug",
+        "source": "argument",
+        "status": "resolved",
+        "matchedBy": "label_name",
+        "ambiguous": false,
+        "resolved": {
+          "id": "label-1",
+          "name": "Bug",
+          "color": "#ef4444",
+          "team": {
+            "id": "team-1",
+            "key": "ENG",
+            "name": "Engineering"
+          }
+        },
+        "candidates": [
+          {
+            "id": "label-1",
+            "name": "Bug",
+            "color": "#ef4444",
+            "team": {
+              "id": "team-1",
+              "key": "ENG",
+              "name": "Engineering"
+            }
+          }
+        ],
+        "unresolvedReason": null
+      },
+      {
+        "kind": "reference_resolution",
+        "version": "v1",
+        "refType": "label",
+        "input": "Customer",
+        "source": "argument",
+        "status": "resolved",
+        "matchedBy": "label_name",
+        "ambiguous": false,
+        "resolved": {
+          "id": "label-2",
+          "name": "Customer",
+          "color": "#3b82f6",
+          "team": null
+        },
+        "candidates": [
+          {
+            "id": "label-2",
+            "name": "Customer",
+            "color": "#3b82f6",
+            "team": null
+          }
+        ],
+        "unresolvedReason": null
+      }
+    ]
+  },
+  "summary": {
+    "requestedCount": 6,
+    "resolvedCount": 6,
+    "unresolvedCount": 0,
+    "ambiguousCount": 0
+  }
+}
+'
+stderr:
+""
+`;
+
+snapshot[`Resolve Pack Command - JSON Requires At Least One Reference 1`] = `
+stdout:
+'{
+  "success": false,
+  "error": {
+    "type": "validation_error",
+    "message": "At least one reference is required to build a context pack.",
+    "suggestion": "Pass one or more of --issue, --team, --workflow-state, --user, --project, or --label.",
+    "context": "Failed to resolve context pack"
+  }
+}
+'
+stderr:
+""
+`;

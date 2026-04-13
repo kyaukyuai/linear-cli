@@ -10,7 +10,7 @@ Deno.test("buildCapabilitiesPayload defaults to the v2 compatibility shape", () 
     binary: "linear",
     version: "2.11.0",
   })
-  assertEquals(payload.contractVersions.automation.latest, "v7")
+  assertEquals(payload.contractVersions.automation.latest, "v8")
   assertEquals(payload.contractVersions.automation.supported, [
     "v1",
     "v2",
@@ -19,6 +19,7 @@ Deno.test("buildCapabilitiesPayload defaults to the v2 compatibility shape", () 
     "v5",
     "v6",
     "v7",
+    "v8",
   ])
   assertEquals(payload.contractVersions.dryRunPreview.latest, "v1")
   assertEquals(payload.contractVersions.stdinPolicy.latest, "v1")
@@ -65,6 +66,9 @@ Deno.test("buildCapabilitiesPayload defaults to the v2 compatibility shape", () 
   )
   assert(
     payload.automationTier.byVersion.v7.includes("linear notification read"),
+  )
+  assert(
+    payload.automationTier.byVersion.v8.includes("linear resolve pack"),
   )
 
   const issueUpdate = payload.commands.find((entry) =>
@@ -595,6 +599,54 @@ Deno.test("buildCapabilitiesPayload promotes remaining high-value writes into au
     "receipt",
     "operation",
   ])
+})
+
+Deno.test("buildCapabilitiesPayload exposes context-pack resolution as automation contract v8", () => {
+  const payload = buildCapabilitiesPayload("2.11.0", "v2")
+  const command = payload.commands.find((entry) =>
+    entry.path === "linear resolve pack"
+  )
+
+  assert(command != null)
+  assertEquals(command.json.contractVersion, "v8")
+  assertEquals(command.output.success.category, "automation_contract")
+  assertEquals(command.output.success.contractTarget, "automation_contract:v8")
+  assertEquals(command.output.success.topLevelFields, [
+    "kind",
+    "version",
+    "requested",
+    "status",
+    "teamContext",
+    "entities",
+    "summary",
+  ])
+  assertEquals(command.schema.arguments, [])
+  assert(
+    command.schema.flags.some((flag) => flag.name === "--issue"),
+  )
+  assert(
+    command.schema.flags.some((flag) =>
+      flag.name === "--label" && flag.repeatable === true
+    ),
+  )
+  assertEquals(command.schema.defaults, [
+    {
+      source: "flag",
+      name: "--team",
+      value: null,
+      description:
+        "If omitted, team-scoped entries use the resolved issue team first and then the configured current team.",
+    },
+  ])
+  assertObjectMatch(command.schema.resolutions[0], {
+    source: "flag",
+    name: "--team",
+    strategy: "context_pack_team_context",
+    sources: [
+      { kind: "resolved_context", name: "resolved issue team" },
+      { kind: "config", name: "currentTeam" },
+    ],
+  })
 })
 
 Deno.test("buildCapabilitiesPayload v2 exposes parser-oriented metadata for representative commands", () => {
