@@ -299,6 +299,13 @@ Deno.test("buildCapabilitiesPayload v2 includes issue update capability traits",
         "Normalized source context and --description-file are mutually exclusive.",
     },
     {
+      source: { source: "flag", name: "--apply-triage" },
+      kind: "requires_all_of",
+      targets: [{ source: "flag", name: "--context-file" }],
+      reason:
+        "--apply-triage only applies when a normalized context file is provided.",
+    },
+    {
       kind: "at_most_one_of",
       targets: [
         { source: "flag", name: "--json" },
@@ -345,6 +352,21 @@ Deno.test("buildCapabilitiesPayload v2 includes issue update capability traits",
       ],
     },
     {
+      description:
+        "Preview deterministic triage from normalized source context.",
+      argv: [
+        "linear",
+        "issue",
+        "update",
+        "ENG-123",
+        "--context-file",
+        "slack-thread.json",
+        "--apply-triage",
+        "--dry-run",
+        "--json",
+      ],
+    },
+    {
       description: "Apply an update and append a comment.",
       argv: [
         "linear",
@@ -368,6 +390,7 @@ Deno.test("buildCapabilitiesPayload v2 includes issue update capability traits",
   assert(command.schema.flags.some((flag) => flag.name === "--label"))
   assert(command.schema.flags.some((flag) => flag.name === "--context-file"))
   assert(command.schema.flags.some((flag) => flag.name === "--context-target"))
+  assert(command.schema.flags.some((flag) => flag.name === "--apply-triage"))
   assertEquals(command.output.success, {
     category: "automation_contract",
     contractTarget: "automation_contract:v1",
@@ -388,6 +411,7 @@ Deno.test("buildCapabilitiesPayload v2 includes issue update capability traits",
       "state",
       "comment",
       "sourceContext",
+      "triage",
       "receipt",
       "operation",
     ],
@@ -628,6 +652,9 @@ Deno.test("buildCapabilitiesPayload v2 exposes parser-oriented metadata for repr
     issueCreate.schema.flags.some((flag) => flag.name === "--interactive"),
   )
   assert(
+    issueCreate.schema.flags.some((flag) => flag.name === "--apply-triage"),
+  )
+  assert(
     issueCreate.schema.fileTargets.some((target) =>
       target.field === "sourceContext"
     ),
@@ -635,6 +662,13 @@ Deno.test("buildCapabilitiesPayload v2 exposes parser-oriented metadata for repr
   assert(
     issueCreate.schema.constraints.some((constraint) =>
       constraint.kind === "requires_any_of" &&
+      constraint.targets.some((target) => target.name === "--context-file")
+    ),
+  )
+  assert(
+    issueCreate.schema.constraints.some((constraint) =>
+      constraint.source?.name === "--apply-triage" &&
+      constraint.kind === "requires_all_of" &&
       constraint.targets.some((target) => target.name === "--context-file")
     ),
   )
@@ -654,8 +688,18 @@ Deno.test("buildCapabilitiesPayload v2 exposes parser-oriented metadata for repr
     ["comment", "description"],
   )
   assert(
+    issueUpdate.schema.flags.some((flag) => flag.name === "--apply-triage"),
+  )
+  assert(
     issueUpdate.schema.fileTargets.some((target) =>
       target.field === "sourceContext"
+    ),
+  )
+  assert(
+    issueUpdate.schema.constraints.some((constraint) =>
+      constraint.source?.name === "--apply-triage" &&
+      constraint.kind === "requires_all_of" &&
+      constraint.targets.some((target) => target.name === "--context-file")
     ),
   )
 

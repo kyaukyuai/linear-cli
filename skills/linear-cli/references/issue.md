@@ -327,41 +327,44 @@ Description:
 
 Options:
 
-  -h, --help                                - Show this help.                                                         
-  -w, --workspace            <slug>         - Target workspace (uses credentials)                                     
-  --profile                  <profile>      - Execution profile override (agent-safe default, human-debug opt-in)     
-  --start                                   - Start the issue after creation                                          
-  -a, --assignee             <assignee>     - Assign the issue to 'self' or someone (by username or name)             
-  --due-date                 <dueDate>      - Due date of the issue                                                   
-  --parent                   <parent>       - Parent issue (if any) as a team_number code                             
-  -p, --priority             <priority>     - Priority of the issue (1-4, descending priority)                        
-  --estimate                 <estimate>     - Points estimate of the issue                                            
-  -d, --description          <description>  - Description of the issue (prefer --description-file for markdown)       
-  --description-file         <path>         - Read description from a file (preferred for markdown content)           
-  --context-file             <path>         - Read a normalized external context JSON envelope from a file.           
-  -l, --label                <label>        - Issue label associated with the issue. May be repeated.                 
-  --team                     <team>         - Team associated with the issue (if not your default team)               
-  --project                  <project>      - Name or slug ID of the project with the issue                           
-  -s, --state                <state>        - Workflow state for the issue (by name or type)                          
-  --milestone                <milestone>    - Name of the project milestone                                           
-  --cycle                    <cycle>        - Cycle name, number, or 'active'                                         
-  -j, --json                                - Force machine-readable JSON output                                      
-  --text                                    - Output human-readable text                                              
-  --dry-run                                 - Preview the created issue without creating it                           
-  --timeout-ms               <timeoutMs>    - Timeout for write confirmation in milliseconds                          
-  --no-pager                                - Accepted for compatibility; issue create does not use a pager           
-  --no-use-default-template                 - Do not use default template for the issue                               
-  -i, --interactive                         - Enable interactive prompts and editor flow                              
-  --no-interactive                          - Accepted for compatibility; issue create is non-interactive by default  
-  -t, --title                <title>        - Title of the issue                                                      
+  -h, --help                                - Show this help.                                                               
+  -w, --workspace            <slug>         - Target workspace (uses credentials)                                           
+  --profile                  <profile>      - Execution profile override (agent-safe default, human-debug opt-in)           
+  --start                                   - Start the issue after creation                                                
+  -a, --assignee             <assignee>     - Assign the issue to 'self' or someone (by username or name)                   
+  --due-date                 <dueDate>      - Due date of the issue                                                         
+  --parent                   <parent>       - Parent issue (if any) as a team_number code                                   
+  -p, --priority             <priority>     - Priority of the issue (1-4, descending priority)                              
+  --estimate                 <estimate>     - Points estimate of the issue                                                  
+  -d, --description          <description>  - Description of the issue (prefer --description-file for markdown)             
+  --description-file         <path>         - Read description from a file (preferred for markdown content)                 
+  --context-file             <path>         - Read a normalized external context JSON envelope from a file.                 
+  --apply-triage                            - Apply deterministic triage hints from --context-file when routing fields are  
+                                              omitted.                                                                      
+  -l, --label                <label>        - Issue label associated with the issue. May be repeated.                       
+  --team                     <team>         - Team associated with the issue (if not your default team)                     
+  --project                  <project>      - Name or slug ID of the project with the issue                                 
+  -s, --state                <state>        - Workflow state for the issue (by name or type)                                
+  --milestone                <milestone>    - Name of the project milestone                                                 
+  --cycle                    <cycle>        - Cycle name, number, or 'active'                                               
+  -j, --json                                - Force machine-readable JSON output                                            
+  --text                                    - Output human-readable text                                                    
+  --dry-run                                 - Preview the created issue without creating it                                 
+  --timeout-ms               <timeoutMs>    - Timeout for write confirmation in milliseconds                                
+  --no-pager                                - Accepted for compatibility; issue create does not use a pager                 
+  --no-use-default-template                 - Do not use default template for the issue                                     
+  -i, --interactive                         - Enable interactive prompts and editor flow                                    
+  --no-interactive                          - Accepted for compatibility; issue create is non-interactive by default        
+  -t, --title                <title>        - Title of the issue                                                            
 
 Examples:
 
-  Create an issue as JSON                               linear issue create --title "Fix auth expiry bug" --team ENG                          
-  Create an issue with a piped description              cat description.md | linear issue create --title "Fix auth expiry bug" --team ENG     
-  Create an issue from a normalized source context file linear issue create --team ENG --context-file slack-thread.json --dry-run --json      
-  Create an issue with human-readable output            linear issue create --title "Fix auth expiry bug" --team ENG --text                   
-  Preview issue creation                                linear issue create --title "Fix auth expiry bug" --team ENG --state started --dry-run
+  Create an issue as JSON                                   linear issue create --title "Fix auth expiry bug" --team ENG                          
+  Create an issue with a piped description                  cat description.md | linear issue create --title "Fix auth expiry bug" --team ENG     
+  Create an issue from a normalized source context file     linear issue create --team ENG --context-file slack-thread.json --dry-run --json      
+  Apply deterministic triage from normalized source context linear issue create --context-file slack-thread.json --apply-triage --dry-run --json  
+  Create an issue with human-readable output                linear issue create --title "Fix auth expiry bug" --team ENG --text                   
+  Preview issue creation                                    linear issue create --title "Fix auth expiry bug" --team ENG --state started --dry-run
 ```
 
 ### create-batch
@@ -406,41 +409,44 @@ Description:
 
 Options:
 
-  -h, --help                         - Show this help.                                                      
-  -w, --workspace     <slug>         - Target workspace (uses credentials)                                  
-  --profile           <profile>      - Execution profile override (agent-safe default, human-debug opt-in)  
-  -a, --assignee      <assignee>     - Assign the issue to 'self' or someone (by username or name)          
-  --due-date          <dueDate>      - Due date of the issue                                                
-  --clear-due-date                   - Clear the due date on the issue                                      
-  --parent            <parent>       - Parent issue (if any) as a team_number code                          
-  -p, --priority      <priority>     - Priority of the issue (1-4, descending priority)                     
-  --estimate          <estimate>     - Points estimate of the issue                                         
-  -d, --description   <description>  - Description of the issue (prefer --description-file for markdown)    
-  --comment           <comment>      - Add a comment after successfully updating the issue                  
-  --description-file  <path>         - Read description from a file (preferred for markdown content)        
-  --context-file      <path>         - Read a normalized external context JSON envelope from a file.        
-  --context-target    <target>       - Map --context-file into description or comment (default: comment).   
-  -l, --label         <label>        - Issue label associated with the issue. May be repeated.              
-  --team              <team>         - Team associated with the issue (if not your default team)            
-  --project           <project>      - Name or slug ID of the project with the issue                        
-  -s, --state         <state>        - Workflow state for the issue (by name or type)                       
-  --milestone         <milestone>    - Name of the project milestone                                        
-  --cycle             <cycle>        - Cycle name, number, or 'active'                                      
-  --no-interactive                   - Accepted for compatibility; issue update is always non-interactive   
-  -j, --json                         - Force machine-readable JSON output                                   
-  --text                             - Output human-readable text                                           
-  --dry-run                          - Preview the update without mutating the issue                        
-  --timeout-ms        <timeoutMs>    - Timeout for write confirmation in milliseconds                       
-  -t, --title         <title>        - Title of the issue                                                   
+  -h, --help                         - Show this help.                                                               
+  -w, --workspace     <slug>         - Target workspace (uses credentials)                                           
+  --profile           <profile>      - Execution profile override (agent-safe default, human-debug opt-in)           
+  -a, --assignee      <assignee>     - Assign the issue to 'self' or someone (by username or name)                   
+  --due-date          <dueDate>      - Due date of the issue                                                         
+  --clear-due-date                   - Clear the due date on the issue                                               
+  --parent            <parent>       - Parent issue (if any) as a team_number code                                   
+  -p, --priority      <priority>     - Priority of the issue (1-4, descending priority)                              
+  --estimate          <estimate>     - Points estimate of the issue                                                  
+  -d, --description   <description>  - Description of the issue (prefer --description-file for markdown)             
+  --comment           <comment>      - Add a comment after successfully updating the issue                           
+  --description-file  <path>         - Read description from a file (preferred for markdown content)                 
+  --context-file      <path>         - Read a normalized external context JSON envelope from a file.                 
+  --context-target    <target>       - Map --context-file into description or comment (default: comment).            
+  --apply-triage                     - Apply deterministic triage hints from --context-file when routing fields are  
+                                       omitted.                                                                      
+  -l, --label         <label>        - Issue label associated with the issue. May be repeated.                       
+  --team              <team>         - Team associated with the issue (if not your default team)                     
+  --project           <project>      - Name or slug ID of the project with the issue                                 
+  -s, --state         <state>        - Workflow state for the issue (by name or type)                                
+  --milestone         <milestone>    - Name of the project milestone                                                 
+  --cycle             <cycle>        - Cycle name, number, or 'active'                                               
+  --no-interactive                   - Accepted for compatibility; issue update is always non-interactive            
+  -j, --json                         - Force machine-readable JSON output                                            
+  --text                             - Output human-readable text                                                    
+  --dry-run                          - Preview the update without mutating the issue                                 
+  --timeout-ms        <timeoutMs>    - Timeout for write confirmation in milliseconds                                
+  -t, --title         <title>        - Title of the issue                                                            
 
 Examples:
 
-  Update state and assignee                        linear issue update ENG-123 --state started --assignee self                                 
-  Preview an update with a comment                 linear issue update ENG-123 --state completed --comment "Ready for review" --dry-run        
-  Pipe a description into an update                cat description.md | linear issue update ENG-123 --state started --dry-run --json           
-  Preview an update with normalized source context linear issue update ENG-123 --state triage --context-file slack-thread.json --dry-run --json
-  Return the updated issue as JSON                 linear issue update ENG-123 --title "Fix auth timeout edge case"                            
-  Return human-readable terminal output            linear issue update ENG-123 --title "Fix auth timeout edge case" --text
+  Update state and assignee                                 linear issue update ENG-123 --state started --assignee self                                 
+  Preview an update with a comment                          linear issue update ENG-123 --state completed --comment "Ready for review" --dry-run        
+  Pipe a description into an update                         cat description.md | linear issue update ENG-123 --state started --dry-run --json           
+  Preview an update with normalized source context          linear issue update ENG-123 --state triage --context-file slack-thread.json --dry-run --json
+  Apply deterministic triage from normalized source context linear issue update ENG-123 --context-file slack-thread.json --apply-triage --dry-run --json
+  Return the updated issue as JSON                          linear issue update ENG-123 --title "Fix auth timeout edge case"                            
+  Return human-readable terminal output                     linear issue update ENG-123 --title "Fix auth timeout edge case" --text
 ```
 
 ### move

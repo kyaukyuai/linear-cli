@@ -17,6 +17,11 @@ Deno.test("external context file loads normalized envelope", async () => {
   assertEquals(context.participants.length, 2)
   assertEquals(context.textBlocks.length, 2)
   assertEquals(context.attachments.length, 1)
+  assertEquals(context.triage?.team, "ENG")
+  assertEquals(context.triage?.state, "triage")
+  assertEquals(context.triage?.labels, ["customer", "incident"])
+  assertEquals(context.triage?.duplicateIssueRefs, ["ENG-88"])
+  assertEquals(context.triage?.relatedIssueRefs, ["ENG-42"])
   assertEquals(context.metadata.customerId, "cust_123")
 })
 

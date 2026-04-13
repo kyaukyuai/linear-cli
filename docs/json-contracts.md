@@ -645,12 +645,22 @@ Top-level shape:
     "attachmentCount": 1,
     "metadataKeys": ["customerId", "severity"]
   },
+  "triage": {
+    "family": "source_intake_triage",
+    "version": "v1",
+    "target": "issue.create",
+    "applyRequested": true,
+    "appliedChanges": ["team", "state", "labels"],
+    "suggestions": { "...": "triageSuggestions" }
+  },
   "receipt": { "...": "operationReceipt" },
   "operation": { "...": "writeOperation" }
 }
 ```
 
 `sourceContext` is optional and is present only when the caller supplied `--context-file`.
+
+`triage` is optional and is present only when the caller supplied both `--context-file` and `--apply-triage`, and the normalized envelope included a deterministic `triage` object. `--apply-triage` applies team/state/label suggestions when the corresponding routing flags were omitted; duplicate and related issue candidates remain preview-only suggestions in the returned `triage` contract.
 
 When `issue update --json` is called with `--comment` or with `--context-file --context-target comment`, the same top-level object is returned with an additional `comment` field shaped like `issue comment add --json`.
 

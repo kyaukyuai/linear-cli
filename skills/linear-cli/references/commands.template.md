@@ -14,6 +14,7 @@ linear capabilities --compat v1
 # Resolve refs before preview/apply
 linear resolve issue ENG-123
 linear resolve team ENG
+linear issue update ENG-123 --context-file slack-thread.json --apply-triage --dry-run --json
 
 # Get help for any command
 linear <command> --help

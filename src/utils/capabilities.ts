@@ -1125,6 +1125,12 @@ const FLAG_OVERRIDES: Record<string, CapabilityFlagSchema[]> = {
       { examples: ["slack-thread.json"] },
     ),
     flag(
+      "--apply-triage",
+      null,
+      "boolean",
+      "Apply deterministic triage hints from --context-file when routing fields are omitted.",
+    ),
+    flag(
       "--label",
       "-l",
       "label_ref",
@@ -1438,6 +1444,12 @@ const FLAG_OVERRIDES: Record<string, CapabilityFlagSchema[]> = {
       "Choose whether --context-file fills the description or comment surface.",
       false,
       enumValues(["comment", "description"]),
+    ),
+    flag(
+      "--apply-triage",
+      null,
+      "boolean",
+      "Apply deterministic triage hints from --context-file when routing fields are omitted.",
     ),
     flag(
       "--label",
@@ -2232,6 +2244,12 @@ const COMMAND_CONSTRAINTS: Record<string, CapabilityConstraint[]> = {
       ],
       "Normalized source context supplies the description body, so it cannot be combined with explicit description text, a description file, or piped stdin content.",
     ),
+    constraint(
+      inputRef("flag", "--apply-triage"),
+      "requires_all_of",
+      [inputRef("flag", "--context-file")],
+      "--apply-triage only applies when a normalized context file is provided.",
+    ),
     constraintGroup(
       "requires_any_of",
       [
@@ -2291,6 +2309,12 @@ const COMMAND_CONSTRAINTS: Record<string, CapabilityConstraint[]> = {
         inputRef("flag", "--description-file"),
       ],
       "Normalized source context and --description-file are mutually exclusive.",
+    ),
+    constraint(
+      inputRef("flag", "--apply-triage"),
+      "requires_all_of",
+      [inputRef("flag", "--context-file")],
+      "--apply-triage only applies when a normalized context file is provided.",
     ),
     constraintGroup(
       "at_most_one_of",
@@ -2360,6 +2384,16 @@ const COMMAND_EXAMPLES: Record<string, CapabilityCommandExample[]> = {
       "--dry-run",
       "--json",
     ]),
+    example("Preview deterministic triage from normalized source context.", [
+      "linear",
+      "issue",
+      "create",
+      "--context-file",
+      "slack-thread.json",
+      "--apply-triage",
+      "--dry-run",
+      "--json",
+    ]),
   ],
   "linear issue list": [
     example("Read issue list data with a stable JSON envelope.", [
@@ -2398,6 +2432,17 @@ const COMMAND_EXAMPLES: Record<string, CapabilityCommandExample[]> = {
       "triage",
       "--context-file",
       "slack-thread.json",
+      "--dry-run",
+      "--json",
+    ]),
+    example("Preview deterministic triage from normalized source context.", [
+      "linear",
+      "issue",
+      "update",
+      "ENG-123",
+      "--context-file",
+      "slack-thread.json",
+      "--apply-triage",
       "--dry-run",
       "--json",
     ]),
@@ -3341,6 +3386,7 @@ function buildSuccessTopLevelFields(
       "parent",
       "state",
       "sourceContext",
+      "triage",
       "receipt",
       "operation",
     ],
@@ -3404,6 +3450,7 @@ function buildSuccessTopLevelFields(
       "state",
       "comment",
       "sourceContext",
+      "triage",
       "receipt",
       "operation",
     ],

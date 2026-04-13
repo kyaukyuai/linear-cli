@@ -57,6 +57,7 @@ import {
   buildWritePreviewOperation,
   withWriteOperationContract,
 } from "../../utils/write_operation.ts"
+import { buildSourceTriageContract } from "../../utils/source_triage.ts"
 import { buildIssueCreateDryRunPayload } from "./issue-dry-run-payload.ts"
 import { buildIssueWritePayload } from "./issue-write-payload.ts"
 import { maybeHandleIssueDescriptionParseError } from "./issue-description-parse.ts"
@@ -512,6 +513,10 @@ export const createCommand = new Command()
     "Read a normalized external context JSON envelope from a file.",
   )
   .option(
+    "--apply-triage",
+    "Apply deterministic triage hints from --context-file when routing fields are omitted.",
+  )
+  .option(
     "-l, --label <label:string>",
     "Issue label associated with the issue. May be repeated.",
     { collect: true },
@@ -570,6 +575,10 @@ export const createCommand = new Command()
     "linear issue create --team ENG --context-file slack-thread.json --dry-run --json",
   )
   .example(
+    "Apply deterministic triage from normalized source context",
+    "linear issue create --context-file slack-thread.json --apply-triage --dry-run --json",
+  )
+  .example(
     "Create an issue with human-readable output",
     'linear issue create --title "Fix auth expiry bug" --team ENG --text',
   )
@@ -602,6 +611,7 @@ export const createCommand = new Command()
         description,
         descriptionFile,
         contextFile,
+        applyTriage,
         label: labels,
         team,
         project,
@@ -642,6 +652,15 @@ export const createCommand = new Command()
             {
               suggestion:
                 "Use --context-file to derive the description from normalized source context, or --description-file to provide explicit markdown content.",
+            },
+          )
+        }
+        if (applyTriage && contextFile == null) {
+          throw new ValidationError(
+            "--apply-triage requires --context-file",
+            {
+              suggestion:
+                "Pass --context-file with a normalized external context envelope before applying deterministic triage.",
             },
           )
         }
@@ -694,6 +713,15 @@ export const createCommand = new Command()
         const sourceContext = externalContext == null
           ? null
           : buildExternalContextPayload(externalContext, "description")
+        if (applyTriage && externalContext?.triage == null) {
+          throw new ValidationError(
+            "--apply-triage requires triage hints inside --context-file",
+            {
+              suggestion:
+                "Add a triage object with team, state, labels, duplicateIssueRefs, or relatedIssueRefs to the normalized context envelope.",
+            },
+          )
+        }
 
         // If no flags are provided (or only parent is provided), interactive mode
         // must be explicitly requested.
@@ -852,6 +880,77 @@ export const createCommand = new Command()
                 : "Use --title, provide title-bearing --context-file input, or pass --profile human-debug --interactive to create the issue with prompts.",
             },
           )
+        }
+
+        const explicitTeam = team == null ? null : team.toUpperCase()
+        const triageResult = externalContext == null || applyTriage !== true
+          ? null
+          : await buildSourceTriageContract({
+            context: externalContext,
+            target: "issue.create",
+            applyRequested: applyTriage === true,
+            fallbackTeamKey: explicitTeam ?? getTeamKey() ?? null,
+            preferTriageTeamForResolution: true,
+            explicitTeam,
+            explicitState: state ?? null,
+            explicitLabels: labels ?? [],
+            supportsTeamApply: true,
+          })
+
+        if (applyTriage && triageResult != null) {
+          const { team: triageTeam, state: triageState, labels: triageLabels } =
+            triageResult.triage.suggestions
+
+          if (team == null && externalContext?.triage?.team != null) {
+            if (triageTeam.status === "unresolved") {
+              throw new ValidationError(
+                "Failed to apply triage team suggestion",
+                {
+                  suggestion: triageTeam.reason ??
+                    "Fix the triage team hint in --context-file or pass --team explicitly.",
+                },
+              )
+            }
+            if (triageTeam.applied && triageResult.resolved.team != null) {
+              team = triageResult.resolved.team.key
+            }
+          }
+
+          if (state == null && externalContext?.triage?.state != null) {
+            if (triageState.status === "unresolved") {
+              throw new ValidationError(
+                "Failed to apply triage workflow state suggestion",
+                {
+                  suggestion: triageState.reason ??
+                    "Fix the triage state hint in --context-file or pass --state explicitly.",
+                },
+              )
+            }
+            if (triageState.applied && triageResult.resolved.state != null) {
+              state = triageResult.resolved.state.name
+            }
+          }
+
+          const unresolvedTriageLabels = triageLabels.filter((label) =>
+            label.status === "unresolved"
+          )
+          if (unresolvedTriageLabels.length > 0) {
+            throw new ValidationError(
+              "Failed to apply triage label suggestions",
+              {
+                suggestion: unresolvedTriageLabels.map((label) =>
+                  label.reason ?? `Fix triage label hint: ${label.requested}`
+                ).join(" "),
+              },
+            )
+          }
+
+          const appliedTriageLabels = triageLabels.flatMap((label) =>
+            label.applied && label.resolved != null ? [label.resolved.name] : []
+          )
+          if (appliedTriageLabels.length > 0) {
+            labels = [...new Set([...(labels ?? []), ...appliedTriageLabels])]
+          }
         }
 
         team = (team == null) ? getTeamKey() : team.toUpperCase()
@@ -1015,6 +1114,7 @@ export const createCommand = new Command()
           },
           start: start === true,
           sourceContext: sourceContext ?? undefined,
+          triage: triageResult?.triage,
         })
         if (dryRun) {
           const summary = `Would create issue in ${team}`
@@ -1042,6 +1142,15 @@ export const createCommand = new Command()
             lines: [
               `Title: ${title}`,
               `Team: ${team}`,
+              ...(triageResult != null
+                ? [
+                  `Triage suggestions: ${
+                    triageResult.triage.appliedChanges.length > 0
+                      ? triageResult.triage.appliedChanges.join(", ")
+                      : "preview only"
+                  }`,
+                ]
+                : []),
               ...(start ? ["Start work after creation: yes"] : []),
             ],
           })
@@ -1125,6 +1234,12 @@ export const createCommand = new Command()
               ...issuePayload,
               sourceContext,
             }
+          const issuePayloadWithTriage = triageResult == null
+            ? issuePayloadWithContext
+            : {
+              ...issuePayloadWithContext,
+              triage: triageResult.triage,
+            }
           const receipt = buildOperationReceipt({
             operationId: "issue.create",
             resource: "issue",
@@ -1158,7 +1273,7 @@ export const createCommand = new Command()
           })
           console.log(JSON.stringify(
             withWriteOperationContract(
-              withOperationReceipt(issuePayloadWithContext, receipt),
+              withOperationReceipt(issuePayloadWithTriage, receipt),
               buildWriteApplyOperationFromReceipt(
                 `Created issue ${issue.identifier}`,
                 receipt,
