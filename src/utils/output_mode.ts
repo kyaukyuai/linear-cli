@@ -3,6 +3,7 @@ import { ValidationError } from "./errors.ts"
 const DEFAULT_JSON_COMMAND_PATHS = new Set<string>([
   "linear capabilities",
   "linear resolve issue",
+  "linear resolve pack",
   "linear resolve team",
   "linear resolve workflow-state",
   "linear resolve user",

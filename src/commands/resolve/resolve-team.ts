@@ -1,6 +1,9 @@
 import { Command } from "@cliffy/command"
 import { handleAutomationContractParseError } from "../../utils/json_output.ts"
-import { resolveTeamReference } from "../../utils/reference_resolution.ts"
+import {
+  printReferenceResolution,
+  resolveTeamReference,
+} from "../../utils/reference_resolution.ts"
 import { runResolveCommand } from "./resolve-common.ts"
 
 export const teamCommand = new Command()
@@ -30,5 +33,6 @@ export const teamCommand = new Command()
       { json, text },
       "Failed to resolve team reference",
       () => resolveTeamReference(team),
+      printReferenceResolution,
     )
   })

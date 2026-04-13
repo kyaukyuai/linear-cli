@@ -12,6 +12,7 @@ export type AutomationContractVersion =
   | "v5"
   | "v6"
   | "v7"
+  | "v8"
 export type DryRunContractVersion = "v1"
 export type StdinPolicyVersion = "v1"
 export type CapabilitiesSchemaVersion = "v1" | "v2"
@@ -100,6 +101,7 @@ export type CapabilityInputDefault = CapabilityInputReference & {
 export type CapabilityInputResolutionStrategy =
   | "current_issue_context"
   | "configured_team_context"
+  | "context_pack_team_context"
   | "env_or_internal_default"
   | "config_or_env_default"
   | "implicit_input_source"
@@ -110,6 +112,7 @@ export type CapabilityResolutionSourceKind =
   | "git_branch"
   | "jj_trailer"
   | "stdin"
+  | "resolved_context"
   | "internal_default"
 
 export type CapabilityResolutionSource = {
@@ -366,6 +369,7 @@ const AUTOMATION_CONTRACT_VERSIONS = [
   "v5",
   "v6",
   "v7",
+  "v8",
 ] as const
 const DRY_RUN_CONTRACT_VERSIONS = ["v1"] as const
 const STDIN_POLICY_VERSIONS = ["v1"] as const
@@ -629,6 +633,7 @@ const JSON_FAILURE_COMMANDS = new Set<string>([
   "linear project-label list",
   "linear resolve issue",
   "linear resolve label",
+  "linear resolve pack",
   "linear resolve team",
   "linear resolve user",
   "linear resolve workflow-state",
@@ -837,6 +842,7 @@ const PRIMARY_ARGUMENTS: Record<string, CapabilityArgumentSchema[]> = {
   "linear resolve label": [
     argument("label", "label_ref", "Issue label name."),
   ],
+  "linear resolve pack": [],
   "linear resolve team": [
     argument(
       "team",
@@ -1639,6 +1645,62 @@ const FLAG_OVERRIDES: Record<string, CapabilityFlagSchema[]> = {
       "Team key. Falls back to the configured current team.",
     ),
   ],
+  "linear resolve pack": [
+    flag(
+      "--issue",
+      null,
+      "issue_ref",
+      "Issue identifier for shared issue/team context.",
+      false,
+      null,
+      { examples: ["ENG-123"] },
+    ),
+    flag(
+      "--team",
+      null,
+      "team_key",
+      "Explicit team key for team-scoped resolution.",
+      false,
+      null,
+      { examples: ["ENG"] },
+    ),
+    flag(
+      "--workflow-state",
+      null,
+      "state_ref",
+      "Workflow state name, type, or ID within the effective team context.",
+      false,
+      null,
+      { examples: ["started", "Done"] },
+    ),
+    flag(
+      "--user",
+      null,
+      "user_ref",
+      "User email, display name, or self.",
+      false,
+      null,
+      { examples: ["self"] },
+    ),
+    flag(
+      "--project",
+      null,
+      "project_ref",
+      "Project ID or slug.",
+      false,
+      null,
+      { examples: ["auth-refresh"] },
+    ),
+    flag(
+      "--label",
+      null,
+      "label_ref",
+      "Issue label name. May be repeated.",
+      false,
+      null,
+      { repeatable: true, examples: ["Bug"] },
+    ),
+  ],
   "linear resolve workflow-state": [
     flag(
       "--team",
@@ -1853,6 +1915,13 @@ const INPUT_DEFAULTS: Record<string, CapabilityInputDefault[]> = {
       "flag",
       "--team",
       "Falls back to the configured current team when omitted.",
+    ),
+  ],
+  "linear resolve pack": [
+    inputDefault(
+      "flag",
+      "--team",
+      "If omitted, team-scoped entries use the resolved issue team first and then the configured current team.",
     ),
   ],
   "linear resolve team": [
@@ -2144,6 +2213,18 @@ const INPUT_RESOLUTIONS: Record<string, CapabilityInputResolution[]> = {
       [resolutionSource("config", "currentTeam")],
     ),
   ],
+  "linear resolve pack": [
+    inputResolution(
+      "flag",
+      "--team",
+      "context_pack_team_context",
+      "If omitted, team-scoped entries reuse the resolved issue team when available and otherwise fall back to the configured current team.",
+      [
+        resolutionSource("resolved_context", "resolved issue team"),
+        resolutionSource("config", "currentTeam"),
+      ],
+    ),
+  ],
   "linear resolve team": [
     inputResolution(
       "argument",
@@ -2325,6 +2406,28 @@ const COMMAND_CONSTRAINTS: Record<string, CapabilityConstraint[]> = {
       "Choose either machine-readable JSON output or human-readable text.",
     ),
   ],
+  "linear resolve pack": [
+    constraintGroup(
+      "requires_any_of",
+      [
+        inputRef("flag", "--issue"),
+        inputRef("flag", "--team"),
+        inputRef("flag", "--workflow-state"),
+        inputRef("flag", "--user"),
+        inputRef("flag", "--project"),
+        inputRef("flag", "--label"),
+      ],
+      "Context pack resolution needs at least one requested entity.",
+    ),
+    constraintGroup(
+      "at_most_one_of",
+      [
+        inputRef("flag", "--json"),
+        inputRef("flag", "--text"),
+      ],
+      "Choose either machine-readable JSON output or the human-readable summary.",
+    ),
+  ],
   "linear project delete": [
     constraintGroup(
       "requires_any_of",
@@ -2490,6 +2593,30 @@ const COMMAND_EXAMPLES: Record<string, CapabilityCommandExample[]> = {
       "Bug",
       "--team",
       "ENG",
+      "--json",
+    ]),
+  ],
+  "linear resolve pack": [
+    example("Resolve a multi-entity pack around an issue.", [
+      "linear",
+      "resolve",
+      "pack",
+      "--issue",
+      "ENG-123",
+      "--workflow-state",
+      "started",
+      "--label",
+      "Bug",
+      "--json",
+    ]),
+    example("Resolve a user and project pack.", [
+      "linear",
+      "resolve",
+      "pack",
+      "--user",
+      "self",
+      "--project",
+      "auth-refresh",
       "--json",
     ]),
   ],
@@ -3095,6 +3222,17 @@ const COMMANDS: CapabilityRegistryEntry[] = [
       "Team-scoped label resolution falls back to the configured current team when --team is omitted.",
   },
   {
+    path: "linear resolve pack",
+    summary: "Resolve a multi-entity context pack",
+    json: jsonContract("v8"),
+    dryRun: dryRunContract(null),
+    stdin: stdin("none"),
+    confirmationBypass: null,
+    idempotency: idempotency("read_only"),
+    notes:
+      "Resolves issue, user, project, and team-scoped state/label references in one deterministic context pack without mutating Linear.",
+  },
+  {
     path: "linear resolve team",
     summary: "Resolve a team reference",
     json: jsonContract("v6"),
@@ -3359,6 +3497,15 @@ function buildSuccessTopLevelFields(
   command: CapabilityRegistryEntry,
 ): string[] {
   const explicitFields: Record<string, string[]> = {
+    "linear resolve pack": [
+      "kind",
+      "version",
+      "requested",
+      "status",
+      "teamContext",
+      "entities",
+      "summary",
+    ],
     "linear issue assign": [
       "identifier",
       "assignee",
@@ -3806,6 +3953,7 @@ function buildAutomationTier() {
     v5: [] as string[],
     v6: [] as string[],
     v7: [] as string[],
+    v8: [] as string[],
   }
 
   for (const command of CAPABILITY_COMMANDS) {
@@ -3816,7 +3964,7 @@ function buildAutomationTier() {
   }
 
   return {
-    latestVersion: "v7" as const,
+    latestVersion: "v8" as const,
     byVersion,
     allCommands: [
       ...byVersion.v1,
@@ -3826,6 +3974,7 @@ function buildAutomationTier() {
       ...byVersion.v5,
       ...byVersion.v6,
       ...byVersion.v7,
+      ...byVersion.v8,
     ],
   }
 }
@@ -3945,7 +4094,7 @@ function buildCapabilitiesPayloadBase(
     },
     contractVersions: {
       automation: {
-        latest: "v7",
+        latest: "v8",
         supported: [...AUTOMATION_CONTRACT_VERSIONS],
       },
       dryRunPreview: {

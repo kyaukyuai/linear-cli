@@ -7,6 +7,7 @@ import { ValidationError } from "../../src/utils/errors.ts"
 
 Deno.test("defaultsToJsonOutput tracks v3 default-json surfaces", () => {
   assertEquals(defaultsToJsonOutput("linear issue view"), true)
+  assertEquals(defaultsToJsonOutput("linear resolve pack"), true)
   assertEquals(defaultsToJsonOutput("linear team list"), false)
 })
 

@@ -15,11 +15,12 @@ Options:
 
 Commands:
 
-  issue           [issue]  - Resolve an issue reference without mutating Linear        
-  team            [team]   - Resolve a team reference without mutating Linear          
-  workflow-state  <state>  - Resolve a workflow state reference without mutating Linear
-  user            <user>   - Resolve a user reference without mutating Linear          
-  label           <label>  - Resolve an issue label reference without mutating Linear  
+  issue           [issue]  - Resolve an issue reference without mutating Linear         
+  team            [team]   - Resolve a team reference without mutating Linear           
+  workflow-state  <state>  - Resolve a workflow state reference without mutating Linear 
+  user            <user>   - Resolve a user reference without mutating Linear           
+  pack                     - Resolve a multi-entity context pack without mutating Linear
+  label           <label>  - Resolve an issue label reference without mutating Linear   
 
 "
 stderr:

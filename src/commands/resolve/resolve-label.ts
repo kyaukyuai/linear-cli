@@ -1,6 +1,9 @@
 import { Command } from "@cliffy/command"
 import { handleAutomationContractParseError } from "../../utils/json_output.ts"
-import { resolveIssueLabelReference } from "../../utils/reference_resolution.ts"
+import {
+  printReferenceResolution,
+  resolveIssueLabelReference,
+} from "../../utils/reference_resolution.ts"
 import { runResolveCommand } from "./resolve-common.ts"
 
 export const labelCommand = new Command()
@@ -27,5 +30,6 @@ export const labelCommand = new Command()
       { json, text },
       "Failed to resolve label reference",
       () => resolveIssueLabelReference(label, team),
+      printReferenceResolution,
     )
   })
