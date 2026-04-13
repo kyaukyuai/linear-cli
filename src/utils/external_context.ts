@@ -1,4 +1,5 @@
 import { ValidationError } from "./errors.ts"
+import type { OperationReceiptSourceProvenance } from "./operation_receipt.ts"
 
 type ExternalContextMetadataValue = string | number | boolean | null
 
@@ -477,5 +478,71 @@ export function buildExternalContextPayload(
     textBlockCount: context.textBlocks.length,
     attachmentCount: context.attachments.length,
     metadataKeys: Object.keys(context.metadata),
+  }
+}
+
+function dedupeStrings(values: Array<string | null>): string[] {
+  const definedValues = values.filter((value): value is string =>
+    value != null && value.length > 0
+  )
+
+  return [
+    ...new Set(definedValues),
+  ]
+}
+
+function buildContextIds(
+  metadata: Record<string, ExternalContextMetadataValue>,
+): Record<string, string> {
+  return Object.fromEntries(
+    Object.entries(metadata).flatMap(([key, value]) => {
+      const looksLikeContextId = key === "id" ||
+        key.endsWith("Id") ||
+        key.endsWith("_id") ||
+        key.endsWith("ID")
+
+      if (!looksLikeContextId || value == null) {
+        return []
+      }
+
+      if (typeof value === "string" || typeof value === "number") {
+        return [[key, String(value)]]
+      }
+
+      return []
+    }),
+  )
+}
+
+export function buildExternalContextSourceProvenance(
+  context: ExternalContextEnvelope,
+  target: ExternalContextTarget,
+  options?: {
+    triageApplied?: boolean
+  },
+): OperationReceiptSourceProvenance {
+  const attachmentUrls = dedupeStrings(
+    context.attachments.map((attachment) => attachment.url),
+  )
+
+  return {
+    version: "v1",
+    target,
+    source: context.source,
+    contextIds: buildContextIds(context.metadata),
+    evidenceRefs: attachmentUrls,
+    relatedUrls: dedupeStrings([context.source.url, ...attachmentUrls]),
+    participantHandles: dedupeStrings(
+      context.participants.map((participant) => participant.handle),
+    ),
+    metadataKeys: Object.keys(context.metadata),
+    triage: context.triage == null ? null : {
+      applied: options?.triageApplied ?? false,
+      team: context.triage.team,
+      state: context.triage.state,
+      labels: context.triage.labels,
+      duplicateIssueRefs: context.triage.duplicateIssueRefs,
+      relatedIssueRefs: context.triage.relatedIssueRefs,
+    },
   }
 }

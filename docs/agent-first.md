@@ -125,6 +125,8 @@ The receipt is the shared place for:
 - `noOp`
 - `nextSafeAction`
 
+When the write came from `--context-file`, also inspect `receipt.sourceProvenance`. That is the machine-readable audit trail for source system, source ref, related URLs, context IDs, and deterministic triage hints.
+
 Important non-zero exit codes:
 
 - `4`: auth or authorization failure

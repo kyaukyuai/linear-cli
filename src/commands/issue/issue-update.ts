@@ -46,6 +46,7 @@ import {
 } from "./issue-reconciliation.ts"
 import {
   buildExternalContextPayload,
+  buildExternalContextSourceProvenance,
   type ExternalContextTarget,
   readExternalContextFromFile,
   renderExternalContextMarkdown,
@@ -737,6 +738,15 @@ export const updateCommand = new Command()
           throw new CliError("Issue update failed - no issue returned")
         }
         const issuePayload = buildIssueWritePayload(issue)
+        const sourceProvenance = externalContext == null
+          ? undefined
+          : buildExternalContextSourceProvenance(
+            externalContext,
+            resolvedContextTarget,
+            {
+              triageApplied: triageResult != null,
+            },
+          )
         const receipt = buildOperationReceipt({
           operationId: "issue.update",
           resource: "issue",
@@ -754,6 +764,7 @@ export const updateCommand = new Command()
           nextSafeAction: finalComment != null
             ? "read_before_retry"
             : "continue",
+          sourceProvenance,
         })
 
         let createdComment = null

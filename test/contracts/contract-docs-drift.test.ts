@@ -259,6 +259,11 @@ Deno.test("contract docs describe capabilities compat modes that match runtime o
     "`stable`, `partial`, and `escape_hatch`",
     "docs/json-contracts.md must document runtime surface classes",
   )
+  assertStringIncludes(
+    docs,
+    "`receipt.sourceProvenance`",
+    "docs/json-contracts.md must document source provenance on intake receipts",
+  )
 
   const docsDefaultIssueUpdate = findCapabilityCommand(
     defaultExample,
@@ -425,6 +430,11 @@ Deno.test("agent-native docs keep named consumer certification suites", async ()
     runbook,
     "linear issue update ENG-123 --context-file ./slack-thread.json --apply-triage --dry-run --json",
     "docs/agent-first.md must keep the triage preview example",
+  )
+  assertStringIncludes(
+    runbook,
+    "`receipt.sourceProvenance`",
+    "docs/agent-first.md must document source provenance for intake receipts",
   )
 })
 

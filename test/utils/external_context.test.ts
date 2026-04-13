@@ -1,6 +1,7 @@
 import { assertEquals, assertStringIncludes } from "@std/assert"
 import {
   buildExternalContextPayload,
+  buildExternalContextSourceProvenance,
   deriveTitleFromExternalContext,
   readExternalContextFromFile,
   renderExternalContextMarkdown,
@@ -69,6 +70,47 @@ Deno.test("external context payload exposes deterministic summary fields", async
       textBlockCount: 2,
       attachmentCount: 1,
       metadataKeys: ["customerId", "severity"],
+    },
+  )
+})
+
+Deno.test("external context source provenance exposes deterministic receipt fields", async () => {
+  const context = await readExternalContextFromFile(
+    "test/fixtures/external-context/slack-thread.json",
+  )
+
+  assertEquals(
+    buildExternalContextSourceProvenance(context, "comment", {
+      triageApplied: true,
+    }),
+    {
+      version: "v1",
+      target: "comment",
+      source: {
+        system: "slack",
+        ref: "C12345:1712382000.100200",
+        url: "https://example.slack.com/archives/C12345/p1712382000100200",
+        title: "Customer reports auth refresh failures",
+        capturedAt: "2026-04-12T10:00:00Z",
+      },
+      contextIds: {
+        customerId: "cust_123",
+      },
+      evidenceRefs: ["https://example.com/auth-refresh.log"],
+      relatedUrls: [
+        "https://example.slack.com/archives/C12345/p1712382000100200",
+        "https://example.com/auth-refresh.log",
+      ],
+      participantHandles: ["alice", "bob"],
+      metadataKeys: ["customerId", "severity"],
+      triage: {
+        applied: true,
+        team: "ENG",
+        state: "triage",
+        labels: ["customer", "incident"],
+        duplicateIssueRefs: ["ENG-88"],
+        relatedIssueRefs: ["ENG-42"],
+      },
     },
   )
 })

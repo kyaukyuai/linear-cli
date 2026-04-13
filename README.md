@@ -185,6 +185,7 @@ compared to upstream, this fork adds and maintains capabilities aimed at automat
 - a self-describing `linear capabilities` surface with richer schema and output metadata by default and an explicit `--compat v1` fallback for legacy consumers
 - `--dry-run` previews for high-value write commands, including `issue start`, issue writes, and non-issue writes
 - additive operation receipts on high-value JSON write success paths
+- source-adjacent intake receipts now carry machine-readable source provenance when `--context-file` is used
 - a shared top-level `operation` contract on representative preview/apply JSON write paths
 - stdin and pipeline support for high-value write paths
 - normalized source-context intake for issue create/update through `--context-file`
